@@ -8,7 +8,7 @@
     </article>
     <article v-else style="margin-bottom: 0">
       <header>
-        <strong>Have a laugh!</strong>
+        <strong>{{ title }}</strong>
       </header>
       <p class="marginless" aria-busy="true">{{ url }} might be down.</p>
     </article>

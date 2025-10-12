@@ -31,7 +31,7 @@
     </template>
     <template v-else>
       <Paragraph
-        :paragraph="`The page <strong>${$route.params.pathMatch[0]}</strong> does not exist!`"
+        :paragraph="`The page <strong>${route.params.name}</strong> does not exist!`"
         :last="true"
       />
     </template>
@@ -50,10 +50,11 @@ const route = useRoute();
 const page = computed(() => {
   if (route.params.name) {
     return (
-      pages.find((p) => p.link.slice(1) === route.params.name) || pages[0]
+      pages.find((p) => p.link.slice(1) === route.params.name)
     );
   }
   if (route.params.pathMatch) {
+    debugger;
     return null;
   }
   return pages[0];
@@ -70,7 +71,7 @@ watch(
   () => route.params.name,
   () => {
     const newPage =
-      pages.find((p) => p.link.slice(1) === route.params.name) || pages[0];
+      pages.find((p) => p.link.slice(1) === route.params.name);
     if (newPage) {
       document.title = "Elliot > " + newPage.title;
     }

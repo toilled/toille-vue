@@ -75,7 +75,7 @@ watch(
   () => route.params.name,
   (newName) => {
     const currentPage = pages.find((page) => page.link.slice(1) === newName);
-    document.title = "Elliot > " + (currentPage || pages[0]).title;
+    document.title = "Elliot > " + (currentPage || {title: "404"}).title;
   },
   { immediate: true },
 );

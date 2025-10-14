@@ -12,7 +12,7 @@ const routes = [
   { path: "/", redirect: pages[0].link },
   { path: "/:name", component: PageContent, props: true },
   { path: "/checker", component: Checker },
-  { path: "/hidden-game", component: MiniGame },
+  { path: "/game", component: MiniGame },
   { path: "/:pathMatch(.*)*", component: PageContent },
 ];
 

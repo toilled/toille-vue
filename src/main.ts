@@ -5,12 +5,14 @@ import "./index.css";
 import App from "./App.vue";
 import PageContent from "./components/PageContent.vue";
 import Checker from "./components/Checker.vue";
+import MiniGame from "./components/MiniGame.vue";
 import pages from "./configs/pages.json";
 
 const routes = [
   { path: "/", redirect: pages[0].link },
   { path: "/:name", component: PageContent, props: true },
   { path: "/checker", component: Checker },
+  { path: "/game", component: MiniGame },
   { path: "/:pathMatch(.*)*", component: PageContent },
 ];
 

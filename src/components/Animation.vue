@@ -11,15 +11,15 @@
 </template>
 
 <script setup lang="ts">
-import { TresCanvas, useRenderLoop } from '@tresjs/core';
+import { TresCanvas, useLoop } from '@tresjs/core';
 import { ref } from 'vue';
 import { Mesh } from 'three';
 
 const torusRef = ref<Mesh | null>(null);
 
-const { onLoop } = useRenderLoop();
+const { onBeforeRender } = useLoop();
 
-onLoop(({ delta }) => {
+onBeforeRender(({ delta }) => {
   if (torusRef.value) {
     torusRef.value.rotation.y += delta;
     torusRef.value.rotation.x += delta;

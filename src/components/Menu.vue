@@ -8,6 +8,15 @@
 import MenuItem from "./MenuItem.vue";
 import { Page } from "../interfaces/Page";
 
+/**
+ * @file Menu.vue
+ * @description A component that renders a list of menu items based on a pages array.
+ */
+
+/**
+ * @props {Object}
+ * @property {Page[]} pages - An array of page objects to be rendered as menu items.
+ */
 defineProps<{
   pages: Page[];
 }>();

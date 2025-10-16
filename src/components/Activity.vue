@@ -30,10 +30,37 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 
+/**
+ * @file Activity.vue
+ * @description A component that fetches and displays a random activity suggestion from The Bored API.
+ * It shows a loading state and allows users to fetch a new suggestion by clicking on it.
+ */
+
+/**
+ * @type {import('vue').Ref<any>}
+ * @description A reactive reference to the activity object fetched from the API.
+ * It is null until the first activity is fetched.
+ */
 const activity = ref<any>(null);
+
+/**
+ * @type {import('vue').Ref<boolean>}
+ * @description A reactive reference to indicate if an activity is currently being fetched.
+ */
 const loading = ref(false);
+
+/**
+ * @type {import('vue').Ref<boolean>}
+ * @description A reactive reference to control the visibility of the "Click to update" hint.
+ * It becomes true after the first user-initiated suggestion fetch.
+ */
 const hideHint = ref(false);
 
+/**
+ * @description Fetches a random activity from The Bored API and updates the component's state.
+ * Sets the loading state during the fetch operation.
+ * @returns {Promise<void>} A promise that resolves when the activity has been fetched and state updated.
+ */
 async function fetchActivity() {
   loading.value = true;
   try {
@@ -46,6 +73,9 @@ async function fetchActivity() {
   }
 }
 
+/**
+ * @description Initiates fetching a new activity suggestion and hides the hint text.
+ */
 function newSuggestion() {
   fetchActivity();
   if (!hideHint.value) {
@@ -53,5 +83,8 @@ function newSuggestion() {
   }
 }
 
+/**
+ * @description A Vue lifecycle hook that fetches an initial activity when the component is mounted.
+ */
 onMounted(fetchActivity);
 </script>

@@ -1,25 +1,13 @@
 <template>
   <main>
-    <header>
+    <header style="display: flex; align-items: center;">
       <h2 class="title" @mousedown="handleMouseDown">
         <template v-if="page">
           {{ page.title }}
-          <Transition name="fade">
-            <span
-              v-if="showHint"
-              style="
-                font-weight: 100;
-                font-style: italic;
-                font-size: 0.6em;
-                vertical-align: middle;
-              "
-            >
-              - Nothing here
-            </span>
-          </Transition>
         </template>
         <template v-else> 404 - Page not found </template>
       </h2>
+      <Animation v-if="showAnimation" />
     </header>
     <template v-if="page">
       <Paragraph
@@ -43,6 +31,7 @@ import { ref, computed, watch } from "vue";
 import { useRoute } from "vue-router";
 import pages from "../configs/pages.json";
 import Paragraph from "./Paragraph.vue";
+import Animation from "./Animation.vue";
 
 /**
  * @file PageContent.vue
@@ -54,7 +43,7 @@ import Paragraph from "./Paragraph.vue";
  * @type {import('vue').Ref<boolean>}
  * @description A reactive reference to control the visibility of a hint on the title.
  */
-const showHint = ref(false);
+const showAnimation = ref(false);
 
 /**
  * @type {import('vue-router').RouteLocationNormalizedLoaded}
@@ -83,10 +72,7 @@ const page = computed(() => {
  * @description Handles the mouse down event on the title, showing a hint for a short duration.
  */
 function handleMouseDown() {
-  showHint.value = true;
-  setTimeout(() => {
-    showHint.value = false;
-  }, 500);
+  showAnimation.value = !showAnimation.value;
 }
 
 /**

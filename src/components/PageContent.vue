@@ -1,6 +1,6 @@
 <template>
   <main>
-    <header>
+    <header style="display: flex; align-items: center;">
       <h2 class="title" @mousedown="handleMouseDown">
         <template v-if="page">
           {{ page.title }}

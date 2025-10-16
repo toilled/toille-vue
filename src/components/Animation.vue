@@ -1,6 +1,6 @@
 <template>
   <div style="width: 40px; height: 40px; display: inline-block; vertical-align: middle; margin-left: 10px;">
-    <TresCanvas>
+    <TresCanvas :alpha="true" :clear-color="0x000000" :clear-alpha="0">
       <TresPerspectiveCamera :position="[0, 0, 5]" />
       <Torus />
     </TresCanvas>

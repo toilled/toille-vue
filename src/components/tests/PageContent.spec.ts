@@ -1,14 +1,15 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
 import PageContent from "../PageContent.vue";
 import Paragraph from "../Paragraph.vue";
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createMemoryHistory } from "vue-router";
 import pages from "../../configs/pages.json";
 import flushPromises from "flush-promises";
+import Animation from "../Animation.vue";
 
-const createTestRouter = (path: string) => {
+const createTestRouter = () => {
   return createRouter({
-    history: createWebHistory(),
+    history: createMemoryHistory(),
     routes: [
       { path: "/:name", component: PageContent, name: "page" },
       { path: "/", component: PageContent, name: "home" },
@@ -81,24 +82,26 @@ describe("PageContent.vue", () => {
     expect(wrapper.text()).toContain("404 - Page not found");
   });
 
-  it("shows a hint on title mousedown", async () => {
-    vi.useFakeTimers();
-    const router = createTestRouter("/");
+  it("toggles the animation on title mousedown", async () => {
+    const router = createTestRouter();
     router.push("/");
     await router.isReady();
     const wrapper = mount(PageContent, {
       global: {
         plugins: [router],
+        stubs: {
+          Animation: true,
+        },
       },
     });
     await flushPromises();
     const title = wrapper.find(".title");
     await title.trigger("mousedown");
-    expect(wrapper.text()).toContain("Nothing here");
-    vi.runAllTimers();
     await flushPromises();
-    expect(wrapper.text()).not.toContain("Nothing here");
-    vi.useRealTimers();
+    expect(wrapper.findComponent(Animation).exists()).toBe(true);
+    await title.trigger("mousedown");
+    await flushPromises();
+    expect(wrapper.findComponent(Animation).exists()).toBe(false);
   });
 
   it("updates the document title", async () => {

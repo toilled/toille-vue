@@ -74,7 +74,6 @@ const page = computed(() => {
     );
   }
   if (route.params.pathMatch) {
-    debugger;
     return null;
   }
   return pages[0];

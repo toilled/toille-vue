@@ -105,6 +105,6 @@ describe("Suggestion.vue", () => {
       },
     });
     await flushPromises();
-    expect(wrapper.find("article").attributes("title")).toBe("Click for a new joke");
+    expect(wrapper.find('div[title="Click for a new joke"]').exists()).toBe(true);
   });
 });

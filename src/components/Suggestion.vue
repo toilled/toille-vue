@@ -1,25 +1,30 @@
 <template>
-  <footer @click="newSuggestion" :style="{ cursor: loading ? 'progress' : '' }">
-    <article v-if="suggestion" :title="hoverHintText" style="margin-bottom: 0">
-      <header>
+  <div
+    @click="newSuggestion"
+    :class="['container mx-auto px-4 mt-8', { 'cursor-progress': loading }]"
+  >
+    <div
+      v-if="suggestion"
+      :title="hoverHintText"
+      class="bg-gray-800 rounded-lg shadow-lg p-4"
+    >
+      <div class="text-xl font-bold mb-2">
         <strong>{{ title }}</strong>
-      </header>
-      <p class="marginless">{{ suggestion[valueName] }}</p>
-    </article>
-    <article v-else style="margin-bottom: 0">
-      <header>
+      </div>
+      <p class="mb-0">{{ suggestion[valueName] }}</p>
+    </div>
+    <div v-else class="bg-gray-800 rounded-lg shadow-lg p-4">
+      <div class="text-xl font-bold mb-2">
         <strong>{{ title }}</strong>
-      </header>
-      <p class="marginless" aria-busy="true">{{ url }} might be down.</p>
-    </article>
+      </div>
+      <p class="mb-0 animate-pulse">{{ url }} might be down.</p>
+    </div>
     <Transition name="fade">
-      <article v-if="!hideHint" style="padding-top: 0; margin-top: 0; margin-bottom: 0">
-        <footer style="font-style: oblique; font-size: 0.8em; margin-top: 0">
-          Click to update
-        </footer>
-      </article>
+      <div v-if="!hideHint" class="text-center italic text-sm mt-2">
+        Click to update
+      </div>
     </Transition>
-  </footer>
+  </div>
 </template>
 
 <script setup lang="ts">

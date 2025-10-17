@@ -1,30 +1,31 @@
 <template>
-  <footer @click="newSuggestion" :style="{ cursor: loading ? 'progress' : '' }">
-    <article v-if="activity" title="Click for a new suggestion" style="margin-bottom: 0">
-      <header>
-        <strong>
-          Try this {{ activity.type }} activity
-        </strong>
-        (The Bored API)
-      </header>
-      <p class="marginless">{{ activity.activity }}</p>
-    </article>
-    <article v-else style="margin-bottom: 0">
-      <header>
+  <div
+    @click="newSuggestion"
+    :class="['container mx-auto px-4 mt-8', { 'cursor-progress': loading }]"
+  >
+    <div
+      v-if="activity"
+      title="Click for a new suggestion"
+      class="bg-gray-800 rounded-lg shadow-lg p-4"
+    >
+      <div class="text-xl font-bold mb-2">
+        <strong> Try this {{ activity.type }} activity </strong>
+        <span class="text-sm font-normal">(The Bored API)</span>
+      </div>
+      <p class="mb-0">{{ activity.activity }}</p>
+    </div>
+    <div v-else class="bg-gray-800 rounded-lg shadow-lg p-4">
+      <div class="text-xl font-bold mb-2">
         <strong>Try this activity</strong>
-      </header>
-      <p class="marginless" aria-busy="true">
-        Loading from The Bored API.
-      </p>
-    </article>
+      </div>
+      <p class="mb-0 animate-pulse">Loading from The Bored API.</p>
+    </div>
     <Transition name="fade">
-      <article v-if="!hideHint" style="padding-top: 0; margin-top: 0; margin-bottom: 0">
-        <footer style="font-style: oblique; font-size: 0.8em; margin-top: 0">
-          Click to update
-        </footer>
-      </article>
+      <div v-if="!hideHint" class="text-center italic text-sm mt-2">
+        Click to update
+      </div>
     </Transition>
-  </footer>
+  </div>
 </template>
 
 <script setup lang="ts">

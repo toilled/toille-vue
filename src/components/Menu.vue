@@ -1,7 +1,7 @@
 <template>
-  <ul>
+  <nav class="flex justify-center space-x-4">
     <MenuItem v-for="page in pages" :key="page.link" :page="page" />
-  </ul>
+  </nav>
 </template>
 
 <script setup lang="ts">

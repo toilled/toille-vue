@@ -1,18 +1,13 @@
 <template>
-  <main>
-    <header>
-      <h2 class="title" @mousedown="handleMouseDown">
+  <div class="container mx-auto px-4">
+    <div class="text-center my-8">
+      <h2 class="text-3xl font-bold title" @mousedown="handleMouseDown">
         <template v-if="page">
           {{ page.title }}
           <Transition name="fade">
             <span
               v-if="showHint"
-              style="
-                font-weight: 100;
-                font-style: italic;
-                font-size: 0.6em;
-                vertical-align: middle;
-              "
+              class="font-thin italic text-sm align-middle"
             >
               - Nothing here
             </span>
@@ -20,7 +15,7 @@
         </template>
         <template v-else> 404 - Page not found </template>
       </h2>
-    </header>
+    </div>
     <template v-if="page">
       <Paragraph
         v-for="(paragraph, index) in page.body"
@@ -35,7 +30,7 @@
         :last="true"
       />
     </template>
-  </main>
+  </div>
 </template>
 
 <script setup lang="ts">

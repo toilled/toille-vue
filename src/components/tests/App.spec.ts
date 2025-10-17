@@ -61,10 +61,10 @@ describe("App.vue", () => {
     const title = wrapper.findComponent({ name: "Title" });
     await title.vm.$emit("activity");
     await flushPromises();
-    expect(wrapper.findComponent({ name: "Activity" }).exists()).toBe(true);
+    expect(wrapper.vm.activity).toBe(true);
     await title.vm.$emit("activity");
     await flushPromises();
-    expect(wrapper.findComponent({ name: "Activity" }).exists()).toBe(false);
+    expect(wrapper.vm.activity).toBe(false);
   });
 
   it("toggles the Suggestion component", async () => {
@@ -80,10 +80,10 @@ describe("App.vue", () => {
     const title = wrapper.findComponent({ name: "Title" });
     await title.vm.$emit("joke");
     await flushPromises();
-    expect(wrapper.findComponent({ name: "Suggestion" }).exists()).toBe(true);
+    expect(wrapper.vm.joke).toBe(true);
     await title.vm.$emit("joke");
     await flushPromises();
-    expect(wrapper.findComponent({ name: "Suggestion" }).exists()).toBe(false);
+    expect(wrapper.vm.joke).toBe(false);
   });
 
   it("toggles the Checker component", async () => {

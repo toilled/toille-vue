@@ -1,29 +1,39 @@
 <template>
-  <footer>
-    <article style="margin-bottom: 0">
-      <header>Alcohol Checker</header>
-      <section class="grid">
-        <button @click="add" class="outline">Add</button>
-        <button @click="subtract" class="outline">Subtract</button>
-      </section>
-      <table class="marginless">
+  <div class="container mx-auto px-4 mt-8">
+    <div class="bg-gray-800 rounded-lg shadow-lg p-4">
+      <div class="text-center text-xl font-bold mb-4">Alcohol Checker</div>
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <button
+          @click="add"
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Add
+        </button>
+        <button
+          @click="subtract"
+          class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Subtract
+        </button>
+      </div>
+      <table class="w-full text-center">
         <thead>
           <tr>
-            <th>Units consumed</th>
-            <th>Borderline time</th>
-            <th>Safe time</th>
+            <th class="py-2">Units consumed</th>
+            <th class="py-2">Borderline time</th>
+            <th class="py-2">Safe time</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>{{ count }}</td>
-            <td>{{ limitTime }}</td>
-            <td>{{ soberTime }}</td>
+            <td class="py-2">{{ count }}</td>
+            <td class="py-2">{{ limitTime }}</td>
+            <td class="py-2">{{ soberTime }}</td>
           </tr>
         </tbody>
       </table>
-    </article>
-  </footer>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">

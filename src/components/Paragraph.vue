@@ -1,5 +1,5 @@
 <template>
-  <p :class="{ marginless: last }" v-html="paragraph"></p>
+  <p :class="last ? 'mb-0' : 'mb-4'" v-html="paragraph"></p>
 </template>
 
 <script setup lang="ts">

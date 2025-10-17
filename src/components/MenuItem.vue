@@ -1,7 +1,9 @@
 <template>
-  <li>
-    <router-link :to="page.link">{{ page.name }}</router-link>
-  </li>
+  <router-link
+    :to="page.link"
+    class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-gray-700"
+    >{{ page.name }}</router-link
+  >
 </template>
 
 <script setup lang="ts">

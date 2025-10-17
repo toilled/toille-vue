@@ -1,15 +1,21 @@
 <template>
-  <div class="container">
-    <h1>Catch the Button!</h1>
-    <p>Score: {{ score }}</p>
-    <div class="game-area">
-      <button @click="moveButton" :style="buttonStyle">Click Me!</button>
+  <div class="flex flex-col items-center pt-8">
+    <h1 class="text-3xl font-bold">Catch the Button!</h1>
+    <p class="text-xl">Score: {{ score }}</p>
+    <div class="relative w-full h-[70vh] border border-gray-300 mt-4">
+      <button
+        @click="moveButton"
+        :style="buttonStyle"
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      >
+        Click Me!
+      </button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive } from "vue";
 
 /**
  * @file MiniGame.vue
@@ -27,11 +33,11 @@ const score = ref(0);
  * @description A reactive object for the button's CSS styles, allowing its position to be updated dynamically.
  */
 const buttonStyle = reactive({
-  position: 'absolute',
-  left: '50%',
-  top: '50%',
-  transform: 'translate(-50%, -50%)',
-  transition: 'all 0.3s ease',
+  position: "absolute",
+  left: "50%",
+  top: "50%",
+  transform: "translate(-50%, -50%)",
+  transition: "all 0.3s ease",
 });
 
 /**
@@ -45,19 +51,3 @@ const moveButton = () => {
   buttonStyle.top = `${newY}%`;
 };
 </script>
-
-<style scoped>
-.container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 2rem;
-}
-.game-area {
-  position: relative;
-  width: 100%;
-  height: 70vh;
-  border: 1px solid #ccc;
-  margin-top: 1rem;
-}
-</style>

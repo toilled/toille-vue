@@ -1,16 +1,15 @@
 <template>
-  <ul>
-    <li>
-      <hgroup>
-        <h1 class="title question" @mousedown="$emit('activity')">
-          {{ title }}
-        </h1>
-        <h2 class="title question" @mousedown="$emit('joke')">
-          {{ subtitle }}
-        </h2>
-      </hgroup>
-    </li>
-  </ul>
+  <div class="text-center">
+    <h1
+      class="text-4xl font-bold title question"
+      @mousedown="$emit('activity')"
+    >
+      {{ title }}
+    </h1>
+    <h2 class="text-2xl title question" @mousedown="$emit('joke')">
+      {{ subtitle }}
+    </h2>
+  </div>
 </template>
 
 <script setup lang="ts">

@@ -20,11 +20,11 @@
     <Checker v-if="checker" />
   </Transition>
   <Transition name="fade">
-    <Activity v-if="activity" />
+    <Activity v-show="activity" />
   </Transition>
   <Transition name="fade">
     <Suggestion
-      v-if="joke"
+      v-show="joke"
       url="https://icanhazdadjoke.com/"
       valueName="joke"
       title="Have a laugh!"

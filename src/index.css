@@ -26,7 +26,11 @@ h2 > a {
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.2s ease;
+}
+
+.fade-leave-active {
   position: absolute;
+  width: 100%;
 }
 
 .fade-enter-from,

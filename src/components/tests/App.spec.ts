@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import App from "../../App.vue";
+import SolarSystem from "./mocks/SolarSystem.vue";
 import { createRouter, createMemoryHistory } from "vue-router";
 import flushPromises from "flush-promises";
 
@@ -39,6 +40,7 @@ describe("App.vue", () => {
         plugins: [router],
         stubs: {
           "router-view": true,
+          "SolarSystem": SolarSystem,
         },
       },
     });
@@ -55,6 +57,9 @@ describe("App.vue", () => {
     const wrapper = mount(App, {
       global: {
         plugins: [router],
+        stubs: {
+          "SolarSystem": SolarSystem,
+        }
       },
     });
     await flushPromises();
@@ -74,6 +79,9 @@ describe("App.vue", () => {
     const wrapper = mount(App, {
       global: {
         plugins: [router],
+        stubs: {
+          "SolarSystem": SolarSystem,
+        }
       },
     });
     await flushPromises();
@@ -94,6 +102,9 @@ describe("App.vue", () => {
     const wrapper = mount(App, {
       global: {
         plugins: [router],
+        stubs: {
+          "SolarSystem": SolarSystem,
+        }
       },
     });
     await flushPromises();
@@ -114,6 +125,9 @@ describe("App.vue", () => {
     const wrapper = mount(App, {
       global: {
         plugins: [router],
+        stubs: {
+          "SolarSystem": SolarSystem,
+        }
       },
     });
     await flushPromises();

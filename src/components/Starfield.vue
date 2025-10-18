@@ -72,11 +72,29 @@ onMounted(() => {
       let starX = remap(xRatio, 0, 1, 0, canvasWidth);
       let starY = remap(yRatio, 0, 1, 0, canvasHeight);
 
-      let radius = remap(this.counter, 0, canvasWidth, this.radiusMax, 0);
+      let outerRadius = remap(this.counter, 0, canvasWidth, this.radiusMax, 0);
+      let innerRadius = outerRadius / 2;
+
+      let rot = Math.PI / 2 * 3;
+      const spikes = 5;
+      let step = Math.PI / spikes;
 
       mainContext!.beginPath();
+      mainContext!.moveTo(starX, starY - outerRadius);
 
-      mainContext!.arc(starX, starY, radius, 0, Math.PI * 2, false);
+      for (let i = 0; i < spikes; i++) {
+        let x = starX + Math.cos(rot) * outerRadius;
+        let y = starY + Math.sin(rot) * outerRadius;
+        mainContext!.lineTo(x, y);
+        rot += step;
+
+        x = starX + Math.cos(rot) * innerRadius;
+        y = starY + Math.sin(rot) * innerRadius;
+        mainContext!.lineTo(x, y);
+        rot += step;
+      }
+
+      mainContext!.lineTo(starX, starY - outerRadius);
       mainContext!.closePath();
 
       mainContext!.fillStyle = "#FFF";

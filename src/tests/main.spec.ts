@@ -43,7 +43,7 @@ describe("main.ts", () => {
     expect(createRouter).toHaveBeenCalledWith({
       history: undefined,
       routes: [
-        { path: "/", redirect: pages[0].link },
+        { path: "/", component: expect.any(Object), props: { name: "home" } },
         { path: "/:name", component: expect.any(Object), props: true },
         { path: "/checker", component: expect.any(Object) },
         { path: "/game", component: expect.any(Object) },

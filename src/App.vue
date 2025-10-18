@@ -10,7 +10,11 @@
     />
     <Menu :pages="pages" />
   </nav>
-  <router-view></router-view>
+  <router-view v-slot="{ Component }">
+    <Transition name="fade" mode="out-in">
+      <component :is="Component" />
+    </Transition>
+  </router-view>
   <Starfield />
   <Transition name="fade">
     <footer v-if="noFootersShowing && showHint" @click="checker = !checker">
@@ -82,15 +86,3 @@ watch(
   { immediate: true },
 );
 </script>
-
-<style>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>

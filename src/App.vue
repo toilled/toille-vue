@@ -17,7 +17,6 @@
       </Transition>
     </router-view>
   </div>
-  <Starfield />
   <Transition name="fade">
     <footer v-if="noFootersShowing && showHint" @click="checker = !checker">
       The titles might be clickable...
@@ -47,7 +46,6 @@ import Menu from "./components/Menu.vue";
 import Checker from "./components/Checker.vue";
 import Activity from "./components/Activity.vue";
 import Suggestion from "./components/Suggestion.vue";
-import Starfield from "./components/Starfield.vue";
 import pages from "./configs/pages.json";
 import titles from "./configs/titles.json";
 

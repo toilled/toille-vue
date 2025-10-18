@@ -39,6 +39,7 @@ describe("App.vue", () => {
         plugins: [router],
         stubs: {
           "router-view": true,
+          "Starfield": true,
         },
       },
     });
@@ -55,6 +56,9 @@ describe("App.vue", () => {
     const wrapper = mount(App, {
       global: {
         plugins: [router],
+        stubs: {
+          "Starfield": true,
+        },
       },
     });
     await flushPromises();
@@ -74,6 +78,9 @@ describe("App.vue", () => {
     const wrapper = mount(App, {
       global: {
         plugins: [router],
+        stubs: {
+          "Starfield": true,
+        },
       },
     });
     await flushPromises();
@@ -94,6 +101,9 @@ describe("App.vue", () => {
     const wrapper = mount(App, {
       global: {
         plugins: [router],
+        stubs: {
+          "Starfield": true,
+        },
       },
     });
     await flushPromises();
@@ -114,6 +124,9 @@ describe("App.vue", () => {
     const wrapper = mount(App, {
       global: {
         plugins: [router],
+        stubs: {
+          "Starfield": true,
+        },
       },
     });
     await flushPromises();

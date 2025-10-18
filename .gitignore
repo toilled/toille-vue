@@ -4,3 +4,4 @@ node_modules
 dist
 coverage
 npm_output.log
+dev_server.log

@@ -10,11 +10,13 @@
     />
     <Menu :pages="pages" />
   </nav>
-  <router-view v-slot="{ Component }">
-    <Transition name="fade">
-      <component :is="Component" :key="route.path" />
-    </Transition>
-  </router-view>
+  <div class="router-view-wrapper">
+    <router-view v-slot="{ Component }">
+      <Transition name="fade">
+        <component :is="Component" :key="route.path" />
+      </Transition>
+    </router-view>
+  </div>
   <Starfield />
   <Transition name="fade">
     <footer v-if="noFootersShowing && showHint" @click="checker = !checker">

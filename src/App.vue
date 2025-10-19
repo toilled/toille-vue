@@ -86,6 +86,7 @@ function onEnter(el: HTMLElement, done: () => void) {
 }
 
 function onLeave(el: HTMLElement, done: () => void) {
+  el.style.position = 'absolute';
   const s = spring(
     {
       transform: "perspective(1000px) rotateX(0deg) scale3d(1, 1, 1)",
@@ -149,5 +150,6 @@ watch(
 
 .wrapper {
   perspective: 1000px;
+  overflow: hidden;
 }
 </style>

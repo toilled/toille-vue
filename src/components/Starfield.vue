@@ -76,6 +76,8 @@ onMounted(() => {
 
       let outerRadius = remap(this.counter, 0, canvasWidth, this.radiusMax, 0);
 
+      mainContext!.shadowBlur = 10;
+      mainContext!.shadowColor = this.color;
       mainContext!.fillStyle = this.color;
 
       if (this.isSpiky) {
@@ -102,10 +104,12 @@ onMounted(() => {
         mainContext!.lineTo(starX, starY - outerRadius);
         mainContext!.closePath();
         mainContext!.fill();
+        mainContext!.shadowBlur = 0;
       } else {
         mainContext!.beginPath();
         mainContext!.arc(starX, starY, outerRadius, 0, Math.PI * 2);
         mainContext!.fill();
+        mainContext!.shadowBlur = 0;
       }
     }
   }

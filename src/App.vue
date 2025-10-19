@@ -10,7 +10,18 @@
     />
     <Menu :pages="pages" />
   </nav>
-  <router-view></router-view>
+  <router-view v-slot="{ Component, route }">
+    <Transition
+      :key="route.path"
+      @enter="onEnter"
+      @leave="onLeave"
+      :css="false"
+    >
+      <div class="wrapper">
+        <component :is="Component" />
+      </div>
+    </Transition>
+  </router-view>
   <Starfield />
   <Transition name="fade">
     <footer v-if="noFootersShowing && showHint" @click="checker = !checker">
@@ -36,6 +47,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from "vue";
 import { useRoute } from "vue-router";
+import { spring } from "vue3-spring";
 import Title from "./components/Title.vue";
 import Menu from "./components/Menu.vue";
 import Checker from "./components/Checker.vue";
@@ -54,6 +66,42 @@ const route = useRoute();
 const noFootersShowing = computed(() => {
   return !activity.value && !checker.value && !joke.value;
 });
+
+function onEnter(el: HTMLElement, done: () => void) {
+  const s = spring(
+    {
+      transform: "perspective(1000px) rotateX(-90deg) scale3d(0.9, 0.9, 0.9)",
+    },
+    {
+      stiffness: 150,
+      onUpdate: (val) => {
+        el.style.transform = val.transform;
+      },
+      onComplete: done,
+    },
+  );
+  s.to({
+    transform: "perspective(1000px) rotateX(0deg) scale3d(1, 1, 1)",
+  });
+}
+
+function onLeave(el: HTMLElement, done: () => void) {
+  const s = spring(
+    {
+      transform: "perspective(1000px) rotateX(0deg) scale3d(1, 1, 1)",
+    },
+    {
+      stiffness: 150,
+      onUpdate: (val) => {
+        el.style.transform = val.transform;
+      },
+      onComplete: done,
+    },
+  );
+  s.to({
+    transform: "perspective(1000px) rotateX(90deg) scale3d(0.9, 0.9, 0.9)",
+  });
+}
 
 function toggleActivity() {
   activity.value = !activity.value;
@@ -97,5 +145,9 @@ watch(
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.wrapper {
+  perspective: 1000px;
 }
 </style>

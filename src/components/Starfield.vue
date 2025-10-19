@@ -50,6 +50,8 @@ onMounted(() => {
 
       this.radiusMax = 1 + Math.random() * 2;
       this.speed = getRandomInt(1, 5);
+      this.color = `rgba(255, 255, 255, ${0.5 + Math.random() * 0.5})`;
+      this.isSpiky = Math.random() > 0.5;
 
       this.context = mainContext as CanvasRenderingContext2D;
     }
@@ -73,32 +75,42 @@ onMounted(() => {
       let starY = remap(yRatio, 0, 1, 0, canvasHeight);
 
       let outerRadius = remap(this.counter, 0, canvasWidth, this.radiusMax, 0);
-      let innerRadius = outerRadius / 2;
 
-      let rot = Math.PI / 2 * 3;
-      const spikes = 5;
-      let step = Math.PI / spikes;
+      mainContext!.shadowBlur = 10;
+      mainContext!.shadowColor = this.color;
+      mainContext!.fillStyle = this.color;
 
-      mainContext!.beginPath();
-      mainContext!.moveTo(starX, starY - outerRadius);
+      if (this.isSpiky) {
+        let innerRadius = outerRadius / 2;
+        let rot = Math.PI / 2 * 3;
+        const spikes = 5;
+        let step = Math.PI / spikes;
 
-      for (let i = 0; i < spikes; i++) {
-        let x = starX + Math.cos(rot) * outerRadius;
-        let y = starY + Math.sin(rot) * outerRadius;
-        mainContext!.lineTo(x, y);
-        rot += step;
+        mainContext!.beginPath();
+        mainContext!.moveTo(starX, starY - outerRadius);
 
-        x = starX + Math.cos(rot) * innerRadius;
-        y = starY + Math.sin(rot) * innerRadius;
-        mainContext!.lineTo(x, y);
-        rot += step;
+        for (let i = 0; i < spikes; i++) {
+          let x = starX + Math.cos(rot) * outerRadius;
+          let y = starY + Math.sin(rot) * outerRadius;
+          mainContext!.lineTo(x, y);
+          rot += step;
+
+          x = starX + Math.cos(rot) * innerRadius;
+          y = starY + Math.sin(rot) * innerRadius;
+          mainContext!.lineTo(x, y);
+          rot += step;
+        }
+
+        mainContext!.lineTo(starX, starY - outerRadius);
+        mainContext!.closePath();
+        mainContext!.fill();
+        mainContext!.shadowBlur = 0;
+      } else {
+        mainContext!.beginPath();
+        mainContext!.arc(starX, starY, outerRadius, 0, Math.PI * 2);
+        mainContext!.fill();
+        mainContext!.shadowBlur = 0;
       }
-
-      mainContext!.lineTo(starX, starY - outerRadius);
-      mainContext!.closePath();
-
-      mainContext!.fillStyle = "#FFF";
-      mainContext!.fill();
     }
   }
 
@@ -119,6 +131,23 @@ onMounted(() => {
     mainContext!.fillStyle = gradient;
     mainContext!.beginPath();
     mainContext!.arc(0, 0, canvasWidth * 0.6, 0, Math.PI * 2);
+    mainContext!.fill();
+
+    const secondGradient = mainContext!.createRadialGradient(
+      canvasWidth * 0.2,
+      canvasHeight * 0.2,
+      0,
+      canvasWidth * 0.2,
+      canvasHeight * 0.2,
+      canvasWidth * 0.3
+    );
+    secondGradient.addColorStop(0, 'rgba(255, 100, 200, 0.3)');
+    secondGradient.addColorStop(0.5, 'rgba(100, 150, 255, 0.1)');
+    secondGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+    mainContext!.fillStyle = secondGradient;
+    mainContext!.beginPath();
+    mainContext!.arc(canvasWidth * 0.2, canvasHeight * 0.2, canvasWidth * 0.3, 0, Math.PI * 2);
     mainContext!.fill();
   }
 

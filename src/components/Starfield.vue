@@ -110,6 +110,18 @@ onMounted(() => {
   }
   setup();
 
+  function drawNebula() {
+    const gradient = mainContext!.createRadialGradient(0, 0, 0, 0, 0, canvasWidth * 0.6);
+    gradient.addColorStop(0, 'rgba(100, 50, 150, 0.4)');
+    gradient.addColorStop(0.5, 'rgba(50, 20, 100, 0.2)');
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+    mainContext!.fillStyle = gradient;
+    mainContext!.beginPath();
+    mainContext!.arc(0, 0, canvasWidth * 0.6, 0, Math.PI * 2);
+    mainContext!.fill();
+  }
+
   function draw(timestamp: number) {
     currentTime = timestamp;
     deltaTime = currentTime - previousTime;
@@ -122,6 +134,8 @@ onMounted(() => {
       mainContext!.fillRect(0, 0, canvasWidth, canvasHeight);
 
       mainContext!.translate(centerX, centerY);
+
+      drawNebula();
 
       for (let i = 0; i < stars.length; i++) {
         let star = stars[i];

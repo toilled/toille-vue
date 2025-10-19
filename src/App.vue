@@ -76,8 +76,13 @@ onMounted(() => {
 watch(
   () => route.params.name,
   (newName) => {
-    const currentPage = pages.find((page) => page.link.slice(1) === newName);
-    document.title = "Elliot > " + (currentPage || {title: "404"}).title;
+    let currentPage;
+    if (newName) {
+      currentPage = pages.find((page) => page.link.slice(1) === newName);
+    } else if (route.path === "/") {
+      currentPage = pages[0];
+    }
+    document.title = "Elliot > " + (currentPage || { title: "404" }).title;
   },
   { immediate: true },
 );

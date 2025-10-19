@@ -12,13 +12,12 @@
   </nav>
   <router-view v-slot="{ Component, route }">
     <Transition
-      :key="route.path"
       @enter="onEnter"
       @leave="onLeave"
       :css="false"
       mode="out-in"
     >
-      <div class="wrapper">
+      <div class="wrapper" :key="route.path">
         <component :is="Component" />
       </div>
     </Transition>

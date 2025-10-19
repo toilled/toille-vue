@@ -16,6 +16,7 @@
       @enter="onEnter"
       @leave="onLeave"
       :css="false"
+      mode="out-in"
     >
       <div class="wrapper">
         <component :is="Component" />

@@ -101,17 +101,4 @@ describe("PageContent.vue", () => {
     vi.useRealTimers();
   });
 
-  it("updates the document title", async () => {
-    const pageName = pages[1].link.slice(1);
-    const router = createTestRouter(`/${pageName}`);
-    router.push({ name: "page", params: { name: pageName } });
-    await router.isReady();
-    mount(PageContent, {
-      global: {
-        plugins: [router],
-      },
-    });
-    await flushPromises();
-    expect(document.title).toBe(`Elliot > ${pages[1].title}`);
-  });
 });

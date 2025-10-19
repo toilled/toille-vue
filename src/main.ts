@@ -24,7 +24,7 @@ import pages from "./configs/pages.json";
  * - `/:pathMatch(.*)*` is a catch-all route for any other paths, also mapping to `PageContent` to display a 404 message.
  */
 const routes = [
-  { path: "/", redirect: pages[0].link },
+  { path: "/", component: PageContent, props: { name: "home" } },
   { path: "/:name", component: PageContent, props: true },
   { path: "/checker", component: Checker },
   { path: "/game", component: MiniGame },

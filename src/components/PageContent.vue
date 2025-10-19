@@ -89,18 +89,4 @@ function handleMouseDown() {
   }, 500);
 }
 
-/**
- * @description A Vue watcher that updates the document's title whenever the route's `name` parameter changes.
- */
-watch(
-  () => route.params.name,
-  () => {
-    const newPage =
-      pages.find((p) => p.link.slice(1) === route.params.name);
-    if (newPage) {
-      document.title = "Elliot > " + newPage.title;
-    }
-  },
-  { immediate: true },
-);
 </script>

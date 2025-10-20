@@ -9,7 +9,7 @@ const createTestRouter = () => {
     history: createMemoryHistory(),
     routes: [
       { path: "/", component: { template: "Home" } },
-      { path: "/about", component: { template: "About" } },
+      { path: "/:name", component: { template: "Page" } },
       { path: "/:pathMatch(.*)*", component: { template: "NotFound" } },
     ],
   });
@@ -139,5 +139,30 @@ describe("App.vue", () => {
     await flushPromises();
     expect(wrapper.findComponent({ name: "TypingText" }).exists()).toBe(false);
     vi.useRealTimers();
+  });
+
+  it("updates the document title on route change", async () => {
+    const router = createTestRouter();
+    router.push("/");
+    await router.isReady();
+    mount(App, {
+      global: {
+        plugins: [router],
+        stubs: {
+          "router-view": true,
+          "Starfield": true,
+        },
+      },
+    });
+    await flushPromises();
+    expect(document.title).toBe("Elliot > Home");
+
+    await router.push("/about");
+    await flushPromises();
+    expect(document.title).toBe("Elliot > About Me");
+
+    await router.push("/non-existent-page");
+    await flushPromises();
+    expect(document.title).toBe("Elliot > 404");
   });
 });

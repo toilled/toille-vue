@@ -126,17 +126,18 @@ describe("App.vue", () => {
         plugins: [router],
         stubs: {
           "Starfield": true,
+          "TypingText": true,
         },
       },
     });
     await flushPromises();
-    expect(wrapper.text()).not.toContain("The titles might be clickable...");
+    expect(wrapper.findComponent({ name: "TypingText" }).exists()).toBe(false);
     vi.advanceTimersByTime(2000);
     await flushPromises();
-    expect(wrapper.text()).toContain("The titles might be clickable...");
+    expect(wrapper.findComponent({ name: "TypingText" }).exists()).toBe(true);
     vi.advanceTimersByTime(3000);
     await flushPromises();
-    expect(wrapper.text()).not.toContain("The titles might be clickable...");
+    expect(wrapper.findComponent({ name: "TypingText" }).exists()).toBe(false);
     vi.useRealTimers();
   });
 });

@@ -14,7 +14,7 @@
   <Starfield />
   <Transition name="fade">
     <footer v-if="noFootersShowing && showHint" @click="checker = !checker">
-      The titles might be clickable...
+      <TypingText text="The titles might be clickable..." />
     </footer>
   </Transition>
   <Transition name="fade">
@@ -42,6 +42,7 @@ import Checker from "./components/Checker.vue";
 import Activity from "./components/Activity.vue";
 import Suggestion from "./components/Suggestion.vue";
 import Starfield from "./components/Starfield.vue";
+import TypingText from "./components/TypingText.vue";
 import pages from "./configs/pages.json";
 import titles from "./configs/titles.json";
 

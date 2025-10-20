@@ -49,8 +49,8 @@ onMounted(() => {
       this.counter = getRandomInt(1, canvasWidth);
 
       this.radiusMax = 1 + Math.random() * 2;
-      this.speed = getRandomInt(1, 5);
-      this.color = `rgba(255, 255, 255, ${0.5 + Math.random() * 0.5})`;
+      this.speed = getRandomInt(5, 10);
+      this.color = `rgba(255, 255, 255, ${0.8 + Math.random() * 0.2})`;
       this.isSpiky = Math.random() > 0.5;
 
       this.context = mainContext as CanvasRenderingContext2D;
@@ -158,8 +158,7 @@ onMounted(() => {
     if (deltaTime > interval) {
       previousTime = currentTime - (deltaTime % interval);
 
-      mainContext!.clearRect(0, 0, canvasWidth, canvasHeight);
-      mainContext!.fillStyle = "#000";
+      mainContext!.fillStyle = "rgba(0, 0, 0, 0.3)";
       mainContext!.fillRect(0, 0, canvasWidth, canvasHeight);
 
       mainContext!.translate(centerX, centerY);

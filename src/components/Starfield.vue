@@ -158,7 +158,7 @@ onMounted(() => {
     if (deltaTime > interval) {
       previousTime = currentTime - (deltaTime % interval);
 
-      mainContext!.fillStyle = "rgba(0, 0, 0, 0.1)";
+      mainContext!.fillStyle = "rgba(0, 0, 0, 0.3)";
       mainContext!.fillRect(0, 0, canvasWidth, canvasHeight);
 
       mainContext!.translate(centerX, centerY);

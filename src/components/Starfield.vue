@@ -35,6 +35,9 @@ onMounted(() => {
   let currentTime = 0;
   let deltaTime = 0;
 
+  let nebulaCanvas: HTMLCanvasElement;
+  let nebulaContext: CanvasRenderingContext2D;
+
   class Star {
     x: number;
     y: number;
@@ -76,9 +79,11 @@ onMounted(() => {
 
       let outerRadius = remap(this.counter, 0, canvasWidth, this.radiusMax, 0);
 
-      mainContext!.shadowBlur = 10;
-      mainContext!.shadowColor = this.color;
-      mainContext!.fillStyle = this.color;
+      const gradient = mainContext!.createRadialGradient(starX, starY, 0, starX, starY, outerRadius * 2);
+      gradient.addColorStop(0, this.color);
+      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+      mainContext!.fillStyle = gradient;
 
       if (this.isSpiky) {
         let innerRadius = outerRadius / 2;
@@ -104,12 +109,10 @@ onMounted(() => {
         mainContext!.lineTo(starX, starY - outerRadius);
         mainContext!.closePath();
         mainContext!.fill();
-        mainContext!.shadowBlur = 0;
       } else {
         mainContext!.beginPath();
         mainContext!.arc(starX, starY, outerRadius, 0, Math.PI * 2);
         mainContext!.fill();
-        mainContext!.shadowBlur = 0;
       }
     }
   }
@@ -119,36 +122,52 @@ onMounted(() => {
       let star = new Star();
       stars.push(star);
     }
+
+    createNebula();
   }
   setup();
 
-  function drawNebula() {
-    const gradient = mainContext!.createRadialGradient(0, 0, 0, 0, 0, canvasWidth * 0.6);
+  function createNebula() {
+    nebulaCanvas = document.createElement('canvas');
+    nebulaCanvas.width = canvasWidth;
+    nebulaCanvas.height = canvasHeight;
+    nebulaContext = nebulaCanvas.getContext('2d')!;
+
+    // First nebula (centered)
+    const gradient = nebulaContext.createRadialGradient(
+      canvasWidth * 0.5,
+      canvasHeight * 0.5,
+      0,
+      canvasWidth * 0.5,
+      canvasHeight * 0.5,
+      canvasWidth * 0.6
+    );
     gradient.addColorStop(0, 'rgba(100, 50, 150, 0.4)');
     gradient.addColorStop(0.5, 'rgba(50, 20, 100, 0.2)');
     gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
-    mainContext!.fillStyle = gradient;
-    mainContext!.beginPath();
-    mainContext!.arc(0, 0, canvasWidth * 0.6, 0, Math.PI * 2);
-    mainContext!.fill();
+    nebulaContext.fillStyle = gradient;
+    nebulaContext.beginPath();
+    nebulaContext.arc(canvasWidth * 0.5, canvasHeight * 0.5, canvasWidth * 0.6, 0, Math.PI * 2);
+    nebulaContext.fill();
 
-    const secondGradient = mainContext!.createRadialGradient(
-      canvasWidth * 0.2,
-      canvasHeight * 0.2,
+    // Second nebula (top-left)
+    const secondGradient = nebulaContext.createRadialGradient(
+      canvasWidth * 0.3, // Corrected position based on review feedback
+      canvasHeight * 0.3, // Corrected position based on review feedback
       0,
-      canvasWidth * 0.2,
-      canvasHeight * 0.2,
+      canvasWidth * 0.3,
+      canvasHeight * 0.3,
       canvasWidth * 0.3
     );
     secondGradient.addColorStop(0, 'rgba(255, 100, 200, 0.3)');
     secondGradient.addColorStop(0.5, 'rgba(100, 150, 255, 0.1)');
     secondGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
-    mainContext!.fillStyle = secondGradient;
-    mainContext!.beginPath();
-    mainContext!.arc(canvasWidth * 0.2, canvasHeight * 0.2, canvasWidth * 0.3, 0, Math.PI * 2);
-    mainContext!.fill();
+    nebulaContext.fillStyle = secondGradient;
+    nebulaContext.beginPath();
+    nebulaContext.arc(canvasWidth * 0.3, canvasHeight * 0.3, canvasWidth * 0.3, 0, Math.PI * 2);
+    nebulaContext.fill();
   }
 
   function draw(timestamp: number) {
@@ -161,9 +180,9 @@ onMounted(() => {
       mainContext!.fillStyle = "rgba(0, 0, 0, 0.3)";
       mainContext!.fillRect(0, 0, canvasWidth, canvasHeight);
 
-      mainContext!.translate(centerX, centerY);
+      mainContext!.drawImage(nebulaCanvas, 0, 0);
 
-      drawNebula();
+      mainContext!.translate(centerX, centerY);
 
       for (let i = 0; i < stars.length; i++) {
         let star = stars[i];
@@ -200,6 +219,8 @@ onMounted(() => {
     canvasHeight = outerspace.height;
     centerX = canvasWidth * 0.5;
     centerY = canvasHeight * 0.5;
+
+    createNebula();
   });
 });
 </script>

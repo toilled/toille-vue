@@ -1,9 +1,10 @@
 <template>
   <main>
-    <header>
-      <h2 class="title" @mousedown="handleMouseDown">
-        <template v-if="page">
-          {{ page.title }}
+    <section>
+      <header>
+        <h2 class="title" @mousedown="handleMouseDown">
+          <template v-if="page">
+            {{ page.title }}
           <Transition name="fade">
             <span
               v-if="showHint"
@@ -35,6 +36,7 @@
         :last="true"
       />
     </template>
+  </section>
   </main>
 </template>
 

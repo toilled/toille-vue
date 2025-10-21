@@ -13,7 +13,11 @@
   <router-view></router-view>
   <Starfield />
   <Transition name="fade">
-    <footer v-if="noFootersShowing && showHint" @click="checker = !checker">
+    <footer
+      v-if="noFootersShowing && showHint"
+      @click="checker = !checker"
+      class="content-container"
+    >
       <TypingText text="The titles might be clickable..." />
     </footer>
   </Transition>

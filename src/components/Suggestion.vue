@@ -1,5 +1,9 @@
 <template>
-  <footer @click="newSuggestion" :style="{ cursor: loading ? 'progress' : '' }">
+  <footer
+    @click="newSuggestion"
+    :style="{ cursor: loading ? 'progress' : '' }"
+    class="content-container"
+  >
     <article v-if="suggestion" :title="hoverHintText" style="margin-bottom: 0">
       <header>
         <strong>{{ title }}</strong>

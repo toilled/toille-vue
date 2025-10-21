@@ -22,3 +22,25 @@ h1 > a,
 h2 > a {
   text-decoration: none !important;
 }
+
+section,
+.content-container {
+  max-width: 50em;
+  margin: 0 auto;
+  animation: 1s ease 0s 1 fadein;
+}
+
+section p,
+.content-container p {
+  line-height: 1.2em;
+  text-shadow: 1px 1px 1px rgb(0 0 0 / 0.2);
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

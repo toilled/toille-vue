@@ -3,10 +3,16 @@
     <MenuItem v-for="page in pages" :key="page.link" :page="page" />
     <li @click="toggleSound" class="sound-icon-container">
       <img
+        v-if="soundOn"
         src="/sound-icon.svg"
         alt="Toggle sound"
         class="sound-icon"
-        :class="{ 'sound-on': soundOn }"
+      />
+      <img
+        v-else
+        src="/mute-icon.svg"
+        alt="Toggle sound"
+        class="sound-icon"
       />
     </li>
   </ul>

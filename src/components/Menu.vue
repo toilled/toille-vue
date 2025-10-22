@@ -41,12 +41,7 @@ const toggleSound = () => {
 
   soundOn.value = !soundOn.value;
   if (soundOn.value) {
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-      playPromise.catch(error => {
-        console.error("Audio playback failed:", error);
-      });
-    }
+    audio.play();
   } else {
     audio.pause();
   }

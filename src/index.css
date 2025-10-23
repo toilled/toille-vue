@@ -48,3 +48,11 @@ section p,
     opacity: 1;
   }
 }
+
+.main-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1em;
+  flex-wrap: wrap;
+}

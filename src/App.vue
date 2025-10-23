@@ -1,5 +1,5 @@
 <template>
-  <nav>
+  <nav class="main-nav">
     <Title
       :title="titles.title"
       :subtitle="titles.subtitle"

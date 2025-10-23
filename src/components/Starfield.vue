@@ -4,6 +4,8 @@
 
 <script setup lang="ts">
 import { onMounted } from "vue";
+import { Star } from "./lib/Star";
+import { Spaceship } from "./lib/Spaceship";
 
 onMounted(() => {
   let outerspace = document.querySelector("#outerspace") as HTMLCanvasElement;
@@ -23,8 +25,10 @@ onMounted(() => {
   let centerY = canvasHeight * 0.5;
 
   let numberOfStars = 500;
+  let numberOfSpaceships = 10;
 
   let stars: Star[] = [];
+  let spaceships: Spaceship[] = [];
 
   let frames_per_second = 60;
 
@@ -38,89 +42,15 @@ onMounted(() => {
   let nebulaCanvas: HTMLCanvasElement;
   let nebulaContext: CanvasRenderingContext2D;
 
-  class Star {
-    x: number;
-    y: number;
-    counter: number;
-    radiusMax: number;
-    speed: number;
-    context: CanvasRenderingContext2D;
-
-    constructor() {
-      this.x = getRandomInt(-centerX, centerX);
-      this.y = getRandomInt(-centerY, centerY);
-      this.counter = getRandomInt(1, canvasWidth);
-
-      this.radiusMax = 1 + Math.random() * 2;
-      this.speed = getRandomInt(5, 10);
-      this.color = `rgba(255, 255, 255, ${0.8 + Math.random() * 0.2})`;
-      this.isSpiky = Math.random() > 0.5;
-
-      this.context = mainContext as CanvasRenderingContext2D;
-    }
-
-    drawStar() {
-      this.counter -= this.speed;
-
-      if (this.counter < 1) {
-        this.counter = canvasWidth;
-        this.x = getRandomInt(-centerX, centerX);
-        this.y = getRandomInt(-centerY, centerY);
-
-        this.radiusMax = getRandomInt(1, 10);
-        this.speed = getRandomInt(1, 5);
-      }
-
-      let xRatio = this.x / this.counter;
-      let yRatio = this.y / this.counter;
-
-      let starX = remap(xRatio, 0, 1, 0, canvasWidth);
-      let starY = remap(yRatio, 0, 1, 0, canvasHeight);
-
-      let outerRadius = remap(this.counter, 0, canvasWidth, this.radiusMax, 0);
-
-      const gradient = mainContext!.createRadialGradient(starX, starY, 0, starX, starY, outerRadius * 2);
-      gradient.addColorStop(0, this.color);
-      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-
-      mainContext!.fillStyle = gradient;
-
-      if (this.isSpiky) {
-        let innerRadius = outerRadius / 2;
-        let rot = Math.PI / 2 * 3;
-        const spikes = 5;
-        let step = Math.PI / spikes;
-
-        mainContext!.beginPath();
-        mainContext!.moveTo(starX, starY - outerRadius);
-
-        for (let i = 0; i < spikes; i++) {
-          let x = starX + Math.cos(rot) * outerRadius;
-          let y = starY + Math.sin(rot) * outerRadius;
-          mainContext!.lineTo(x, y);
-          rot += step;
-
-          x = starX + Math.cos(rot) * innerRadius;
-          y = starY + Math.sin(rot) * innerRadius;
-          mainContext!.lineTo(x, y);
-          rot += step;
-        }
-
-        mainContext!.lineTo(starX, starY - outerRadius);
-        mainContext!.closePath();
-        mainContext!.fill();
-      } else {
-        mainContext!.beginPath();
-        mainContext!.arc(starX, starY, outerRadius, 0, Math.PI * 2);
-        mainContext!.fill();
-      }
-    }
-  }
-
   function setup() {
     for (let i = 0; i < numberOfStars; i++) {
-      let star = new Star();
+      let star = new Star(mainContext!, canvasWidth, centerX, centerY, getRandomInt, remap);
       stars.push(star);
+    }
+
+    for (let i = 0; i < numberOfSpaceships; i++) {
+      let spaceship = new Spaceship(mainContext!, canvasWidth, centerX, centerY, getRandomInt, remap);
+      spaceships.push(spaceship);
     }
 
     createNebula();
@@ -189,6 +119,12 @@ onMounted(() => {
         star.drawStar();
       }
 
+      for (let i = 0; i < spaceships.length; i++) {
+        let spaceship = spaceships[i];
+        spaceship.update();
+        spaceship.draw();
+      }
+
       mainContext!.translate(-centerX, -centerY);
     }
 
@@ -232,6 +168,5 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: -1;
 }
 </style>

@@ -3,7 +3,9 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { onMounted, ref } from "vue";
+
+const warp = ref(false);
 
 onMounted(() => {
   let outerspace = document.querySelector("#outerspace") as HTMLCanvasElement;
@@ -60,7 +62,10 @@ onMounted(() => {
     }
 
     drawStar() {
-      this.counter -= this.speed;
+      const currentSpeed = warp.value ? this.speed * 25 : this.speed;
+      const prevCounter = this.counter;
+      this.counter -= currentSpeed;
+
 
       if (this.counter < 1) {
         this.counter = canvasWidth;
@@ -68,7 +73,7 @@ onMounted(() => {
         this.y = getRandomInt(-centerY, centerY);
 
         this.radiusMax = getRandomInt(1, 10);
-        this.speed = getRandomInt(1, 5);
+        this.speed = getRandomInt(5, 10);
       }
 
       let xRatio = this.x / this.counter;
@@ -79,40 +84,54 @@ onMounted(() => {
 
       let outerRadius = remap(this.counter, 0, canvasWidth, this.radiusMax, 0);
 
-      const gradient = mainContext!.createRadialGradient(starX, starY, 0, starX, starY, outerRadius * 2);
-      gradient.addColorStop(0, this.color);
-      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      if (warp.value) {
+        const prevXRatio = this.x / prevCounter;
+        const prevYRatio = this.y / prevCounter;
+        const prevStarX = remap(prevXRatio, 0, 1, 0, canvasWidth);
+        const prevStarY = remap(prevYRatio, 0, 1, 0, canvasHeight);
 
-      mainContext!.fillStyle = gradient;
-
-      if (this.isSpiky) {
-        let innerRadius = outerRadius / 2;
-        let rot = Math.PI / 2 * 3;
-        const spikes = 5;
-        let step = Math.PI / spikes;
-
+        mainContext!.strokeStyle = this.color;
+        mainContext!.lineWidth = outerRadius;
         mainContext!.beginPath();
-        mainContext!.moveTo(starX, starY - outerRadius);
-
-        for (let i = 0; i < spikes; i++) {
-          let x = starX + Math.cos(rot) * outerRadius;
-          let y = starY + Math.sin(rot) * outerRadius;
-          mainContext!.lineTo(x, y);
-          rot += step;
-
-          x = starX + Math.cos(rot) * innerRadius;
-          y = starY + Math.sin(rot) * innerRadius;
-          mainContext!.lineTo(x, y);
-          rot += step;
-        }
-
-        mainContext!.lineTo(starX, starY - outerRadius);
-        mainContext!.closePath();
-        mainContext!.fill();
+        mainContext!.moveTo(prevStarX, prevStarY);
+        mainContext!.lineTo(starX, starY);
+        mainContext!.stroke();
       } else {
-        mainContext!.beginPath();
-        mainContext!.arc(starX, starY, outerRadius, 0, Math.PI * 2);
-        mainContext!.fill();
+        const gradient = mainContext!.createRadialGradient(starX, starY, 0, starX, starY, outerRadius * 2);
+        gradient.addColorStop(0, this.color);
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+        mainContext!.fillStyle = gradient;
+
+        if (this.isSpiky) {
+          let innerRadius = outerRadius / 2;
+          let rot = Math.PI / 2 * 3;
+          const spikes = 5;
+          let step = Math.PI / spikes;
+
+          mainContext!.beginPath();
+          mainContext!.moveTo(starX, starY - outerRadius);
+
+          for (let i = 0; i < spikes; i++) {
+            let x = starX + Math.cos(rot) * outerRadius;
+            let y = starY + Math.sin(rot) * outerRadius;
+            mainContext!.lineTo(x, y);
+            rot += step;
+
+            x = starX + Math.cos(rot) * innerRadius;
+            y = starY + Math.sin(rot) * innerRadius;
+            mainContext!.lineTo(x, y);
+            rot += step;
+          }
+
+          mainContext!.lineTo(starX, starY - outerRadius);
+          mainContext!.closePath();
+          mainContext!.fill();
+        } else {
+          mainContext!.beginPath();
+          mainContext!.arc(starX, starY, outerRadius, 0, Math.PI * 2);
+          mainContext!.fill();
+        }
       }
     }
   }
@@ -221,6 +240,20 @@ onMounted(() => {
     centerY = canvasHeight * 0.5;
 
     createNebula();
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'w') {
+      warp.value = !warp.value;
+    }
+  });
+
+  window.addEventListener('touchstart', () => {
+    warp.value = true;
+  });
+
+  window.addEventListener('touchend', () => {
+    warp.value = false;
   });
 });
 </script>

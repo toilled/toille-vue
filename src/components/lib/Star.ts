@@ -63,6 +63,7 @@ export class Star {
   constructor(
     private mainContext: CanvasRenderingContext2D,
     private canvasWidth: number,
+    private canvasHeight: number,
     private centerX: number,
     private centerY: number,
     private getRandomInt: (min: number, max: number) => number,
@@ -95,8 +96,8 @@ export class Star {
     let xRatio = this.x / this.counter;
     let yRatio = this.y / this.counter;
 
-    let starX = this.remap(xRatio, 0, 1, 0, this.canvasWidth);
-    let starY = this.remap(yRatio, 0, 1, 0, this.canvasWidth);
+    let starX = this.remap(this.x, 0, this.counter, 0, this.canvasWidth);
+    let starY = this.remap(this.y, 0, this.counter, 0, this.canvasHeight);
 
     let outerRadius = this.remap(this.counter, 0, this.canvasWidth, this.radiusMax, 0);
 

@@ -57,6 +57,7 @@ export class Spaceship {
   constructor(
     private mainContext: CanvasRenderingContext2D,
     private canvasWidth: number,
+    private canvasHeight: number,
     private centerX: number,
     private centerY: number,
     private getRandomInt: (min: number, max: number) => number,
@@ -72,9 +73,9 @@ export class Spaceship {
   }
 
   /**
-   * Updates the spaceship's position.
+   * Draws the spaceship on the canvas.
    */
-  update() {
+  draw() {
     this.counter -= this.speed;
 
     if (this.counter < 1) {
@@ -84,17 +85,12 @@ export class Spaceship {
       this.radiusMax = this.getRandomInt(1, 10);
       this.speed = this.getRandomInt(15, 20);
     }
-  }
 
-  /**
-   * Draws the spaceship on the canvas.
-   */
-  draw() {
     let xRatio = this.x / this.counter;
     let yRatio = this.y / this.counter;
 
-    let shipX = this.remap(xRatio, 0, 1, 0, this.canvasWidth);
-    let shipY = this.remap(yRatio, 0, 1, 0, this.canvasWidth);
+    let shipX = this.remap(this.x, 0, this.counter, 0, this.canvasWidth);
+    let shipY = this.remap(this.y, 0, this.counter, 0, this.canvasHeight);
 
     let shipSize = this.remap(this.counter, 0, this.canvasWidth, this.radiusMax, 0);
 

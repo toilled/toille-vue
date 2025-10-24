@@ -44,12 +44,12 @@ onMounted(() => {
 
   function setup() {
     for (let i = 0; i < numberOfStars; i++) {
-      let star = new Star(mainContext!, canvasWidth, centerX, centerY, getRandomInt, remap);
+      let star = new Star(mainContext!, canvasWidth, canvasHeight, centerX, centerY, getRandomInt, remap);
       stars.push(star);
     }
 
     for (let i = 0; i < numberOfSpaceships; i++) {
-      let spaceship = new Spaceship(mainContext!, canvasWidth, centerX, centerY, getRandomInt, remap);
+      let spaceship = new Spaceship(mainContext!, canvasWidth, canvasHeight, centerX, centerY, getRandomInt, remap);
       spaceships.push(spaceship);
     }
 
@@ -121,7 +121,6 @@ onMounted(() => {
 
       for (let i = 0; i < spaceships.length; i++) {
         let spaceship = spaceships[i];
-        spaceship.update();
         spaceship.draw();
       }
 

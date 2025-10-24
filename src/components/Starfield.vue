@@ -1,5 +1,5 @@
 <template>
-  <canvas id="outerspace"></canvas>
+  <canvas id="starfield"></canvas>
 </template>
 
 <script setup lang="ts">
@@ -8,7 +8,7 @@ import { Star } from "./lib/Star";
 import { Spaceship } from "./lib/Spaceship";
 
 onMounted(() => {
-  let outerspace = document.querySelector("#outerspace") as HTMLCanvasElement;
+  let outerspace = document.querySelector("#starfield") as HTMLCanvasElement;
   let mainContext = outerspace.getContext('2d');
 
   if (!mainContext) {
@@ -24,6 +24,7 @@ onMounted(() => {
   let centerX = canvasWidth * 0.5;
   let centerY = canvasHeight * 0.5;
 
+  let focalLength = 200;
   let numberOfStars = 500;
   let numberOfSpaceships = 10;
 
@@ -44,12 +45,12 @@ onMounted(() => {
 
   function setup() {
     for (let i = 0; i < numberOfStars; i++) {
-      let star = new Star(mainContext!, canvasWidth, canvasHeight, centerX, centerY, getRandomInt, remap);
+      let star = new Star(mainContext!, canvasWidth, canvasHeight, centerX, centerY, focalLength, getRandomInt, remap);
       stars.push(star);
     }
 
     for (let i = 0; i < numberOfSpaceships; i++) {
-      let spaceship = new Spaceship(mainContext!, canvasWidth, canvasHeight, centerX, centerY, getRandomInt, remap);
+      let spaceship = new Spaceship(mainContext!, canvasWidth, canvasHeight, centerX, centerY, focalLength, getRandomInt, remap);
       spaceships.push(spaceship);
     }
 

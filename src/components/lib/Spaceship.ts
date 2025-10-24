@@ -51,6 +51,7 @@ export class Spaceship {
    * @param {number} canvasWidth - The width of the canvas.
    * @param {number} centerX - The x-coordinate of the canvas center.
    * @param {number} centerY - The y-coordinate of the canvas center.
+   * @param {number} focalLength - The focal length for the 3D projection.
    * @param {function} getRandomInt - A function that returns a random integer.
    * @param {function} remap - A function that remaps a value from one range to another.
    */
@@ -60,12 +61,13 @@ export class Spaceship {
     private canvasHeight: number,
     private centerX: number,
     private centerY: number,
+    private focalLength: number,
     private getRandomInt: (min: number, max: number) => number,
     private remap: (value: number, istart: number, istop: number, ostart: number, ostop: number) => number
   ) {
     this.x = this.getRandomInt(-this.centerX, this.centerX);
     this.y = this.getRandomInt(-this.centerY, this.centerY);
-    this.counter = this.getRandomInt(1, this.canvasWidth);
+    this.counter = this.getRandomInt(1, 400); // Start closer to the screen
     this.radiusMax = 1 + Math.random() * 2;
     this.speed = this.getRandomInt(15, 20);
     this.color = `rgba(255, 255, 255, ${0.8 + Math.random() * 0.2})`;
@@ -79,20 +81,18 @@ export class Spaceship {
     this.counter -= this.speed;
 
     if (this.counter < 1) {
-      this.counter = this.canvasWidth;
+      this.counter = 400; // Reset to a position behind the screen
       this.x = this.getRandomInt(-this.centerX, this.centerX);
       this.y = this.getRandomInt(-this.centerY, this.centerY);
       this.radiusMax = this.getRandomInt(1, 10);
       this.speed = this.getRandomInt(15, 20);
     }
 
-    let xRatio = this.x / this.counter;
-    let yRatio = this.y / this.counter;
-
-    let shipX = this.remap(this.x, 0, this.counter, 0, this.canvasWidth);
-    let shipY = this.remap(this.y, 0, this.counter, 0, this.canvasHeight);
-
-    let shipSize = this.remap(this.counter, 0, this.canvasWidth, this.radiusMax, 0);
+    // Perspective projection
+    const scale = this.focalLength / (this.focalLength + this.counter);
+    const shipX = this.x * scale;
+    const shipY = this.y * scale;
+    const shipSize = (1 - this.counter / 400) * this.radiusMax;
 
     // Draw the spaceship body
     this.mainContext.fillStyle = 'rgba(200, 200, 255, 1)';

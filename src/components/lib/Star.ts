@@ -57,6 +57,7 @@ export class Star {
    * @param {number} canvasWidth - The width of the canvas.
    * @param {number} centerX - The x-coordinate of the canvas center.
    * @param {number} centerY - The y-coordinate of the canvas center.
+   * @param {number} focalLength - The focal length for the 3D projection.
    * @param {function} getRandomInt - A function that returns a random integer.
    * @param {function} remap - A function that remaps a value from one range to another.
    */
@@ -66,6 +67,7 @@ export class Star {
     private canvasHeight: number,
     private centerX: number,
     private centerY: number,
+    private focalLength: number,
     private getRandomInt: (min: number, max: number) => number,
     private remap: (value: number, istart: number, istop: number, ostart: number, ostop: number) => number
   ) {
@@ -93,13 +95,11 @@ export class Star {
       this.speed = this.getRandomInt(1, 5);
     }
 
-    let xRatio = this.x / this.counter;
-    let yRatio = this.y / this.counter;
-
-    let starX = this.remap(this.x, 0, this.counter, 0, this.canvasWidth);
-    let starY = this.remap(this.y, 0, this.counter, 0, this.canvasHeight);
-
-    let outerRadius = this.remap(this.counter, 0, this.canvasWidth, this.radiusMax, 0);
+    // Perspective projection
+    const scale = this.focalLength / (this.focalLength + this.counter);
+    const starX = this.x * scale;
+    const starY = this.y * scale;
+    const outerRadius = (1 - this.counter / this.canvasWidth) * this.radiusMax;
 
     const gradient = this.mainContext.createRadialGradient(starX, starY, 0, starX, starY, outerRadius * 2);
     gradient.addColorStop(0, this.color);

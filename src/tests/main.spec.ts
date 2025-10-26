@@ -47,6 +47,7 @@ describe("main.ts", () => {
         { path: "/:name", component: expect.any(Object), props: true },
         { path: "/checker", component: expect.any(Object) },
         { path: "/game", component: expect.any(Object) },
+        { path: "/noughts-and-crosses", component: expect.any(Object) },
         { path: "/:pathMatch(.*)*", component: expect.any(Object) },
       ],
     });

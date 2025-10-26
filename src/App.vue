@@ -79,15 +79,33 @@ onMounted(() => {
 });
 
 watch(
-  () => route.params.name,
-  (newName) => {
-    let currentPage;
-    if (newName) {
-      currentPage = pages.find((page) => page.link.slice(1) === newName);
-    } else if (route.path === "/") {
-      currentPage = pages[0];
+  () => route.path,
+  (newPath) => {
+    let pageTitle;
+
+    if (newPath === '/noughts-and-crosses') {
+      pageTitle = 'Noughts and Crosses';
+    } else if (newPath === '/game') {
+      pageTitle = 'Catch the Button!';
+    } else if (newPath === '/checker') {
+      pageTitle = 'Checker';
+    } else {
+      let routeName;
+      if (route.params.name) {
+        routeName = route.params.name;
+      } else if (newPath === '/') {
+        routeName = 'home';
+      }
+
+      if (routeName) {
+        const currentPage = pages.find((page) => page.link.slice(1) === routeName);
+        pageTitle = currentPage ? currentPage.title : '404';
+      } else {
+        pageTitle = '404';
+      }
     }
-    document.title = "Elliot > " + (currentPage || { title: "404" }).title;
+
+    document.title = "Elliot > " + pageTitle;
   },
   { immediate: true },
 );

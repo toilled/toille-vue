@@ -2,7 +2,7 @@
   <div class="container">
     <h1>Noughts and Crosses</h1>
     <div v-if="winner" class="winner">
-      <h2>{{ winner === 'draw' ? 'It\'s a draw!' : `Player ${winner} wins!` }}</h2>
+      <h2>{{ winner === 'draw' ? "It's a draw!" : (winner === 'X' ? 'You win!' : 'You lose!') }}</h2>
       <button @click="resetGame">Play Again</button>
     </div>
     <div class="board">

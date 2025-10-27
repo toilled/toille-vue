@@ -37,6 +37,9 @@ section p,
 
 .router-view-container {
   perspective: 1000px;
+  position: relative;
+  transition: height 0.5s ease;
+  overflow: hidden;
 }
 
 .cards-enter-active,
@@ -47,6 +50,8 @@ section p,
     transform 0.35s ease,
     opacity 0.35s ease;
   transform-style: preserve-3d;
+  width: 100%;
+  position: absolute;
 }
 
 .cards-enter-from {

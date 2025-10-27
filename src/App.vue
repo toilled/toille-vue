@@ -10,7 +10,13 @@
     />
     <Menu :pages="pages" />
   </nav>
-  <router-view></router-view>
+  <div class="router-view-container">
+    <router-view v-slot="{ Component, route }">
+      <Transition :name="transitionName" mode="out-in">
+        <component :is="Component" :key="route.path" />
+      </Transition>
+    </router-view>
+  </div>
   <Starfield />
   <Transition name="fade">
     <footer
@@ -55,6 +61,14 @@ const activity = ref(false);
 const joke = ref(false);
 const showHint = ref(false);
 const route = useRoute();
+const transitionName = ref("cards");
+
+function getPageIndex(routeName: any) {
+  if (routeName === '/') {
+    return pages.findIndex((page) => page.link === '/');
+  }
+  return pages.findIndex((page) => page.link.slice(1) === routeName);
+}
 
 const noFootersShowing = computed(() => {
   return !activity.value && !checker.value && !joke.value;
@@ -80,7 +94,14 @@ onMounted(() => {
 
 watch(
   () => route.path,
-  (newPath) => {
+  (newPath, oldPath) => {
+    if (oldPath) {
+      const oldPageIndex = getPageIndex(oldPath.slice(1));
+      const newPageIndex = getPageIndex(newPath.slice(1));
+
+      transitionName.value = newPageIndex > oldPageIndex ? 'cards' : 'cards-reverse';
+    }
+
     let pageTitle;
 
     if (newPath === '/noughts-and-crosses') {

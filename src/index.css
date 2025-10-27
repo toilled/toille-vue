@@ -36,10 +36,12 @@ section p,
 }
 
 .cards-enter-active,
-.cards-leave-active {
+.cards-leave-active,
+.cards-reverse-enter-active,
+.cards-reverse-leave-active {
   transition:
-    transform 0.5s ease,
-    opacity 0.5s ease;
+    transform 0.35s ease,
+    opacity 0.35s ease;
 }
 
 .cards-enter-from {
@@ -49,5 +51,15 @@ section p,
 
 .cards-leave-to {
   transform: translateY(100%) scale(0.8);
+  opacity: 0;
+}
+
+.cards-reverse-enter-from {
+  transform: translateY(100%) scale(0.8);
+  opacity: 0;
+}
+
+.cards-reverse-leave-to {
+  transform: translateY(-100%) scale(0.8);
   opacity: 0;
 }

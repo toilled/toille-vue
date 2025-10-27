@@ -10,9 +10,14 @@
     />
     <Menu :pages="pages" />
   </nav>
-  <div class="router-view-container">
+  <div class="router-view-container" ref="containerRef">
     <router-view v-slot="{ Component, route }">
-      <Transition :name="transitionName" mode="out-in">
+      <Transition
+        :name="transitionName"
+        @before-leave="onBeforeLeave"
+        @enter="onEnter"
+        @after-enter="onAfterEnter"
+      >
         <component :is="Component" :key="route.path" />
       </Transition>
     </router-view>
@@ -56,12 +61,33 @@ import TypingText from "./components/TypingText.vue";
 import pages from "./configs/pages.json";
 import titles from "./configs/titles.json";
 
+const containerRef = ref<HTMLElement | null>(null);
 const checker = ref(false);
 const activity = ref(false);
 const joke = ref(false);
 const showHint = ref(false);
 const route = useRoute();
 const transitionName = ref("cards");
+
+function onBeforeLeave(el: Element) {
+  if (containerRef.value) {
+    const { height } = getComputedStyle(el);
+    containerRef.value.style.height = height;
+  }
+}
+
+function onEnter(el: Element) {
+  if (containerRef.value) {
+    const { height } = getComputedStyle(el);
+    containerRef.value.style.height = height;
+  }
+}
+
+function onAfterEnter() {
+  if (containerRef.value) {
+    containerRef.value.style.height = "";
+  }
+}
 
 function getPageIndex(routeName: any) {
   if (routeName === '/') {

@@ -7,6 +7,7 @@ import PageContent from "./components/PageContent.vue";
 import Checker from "./components/Checker.vue";
 import MiniGame from "./components/MiniGame.vue";
 import NoughtsAndCrosses from "./components/NoughtsAndCrosses.vue";
+import Maze from "./components/Maze.vue";
 import pages from "./configs/pages.json";
 
 /**
@@ -30,6 +31,7 @@ const routes = [
   { path: "/checker", component: Checker },
   { path: "/game", component: MiniGame },
   { path: "/noughts-and-crosses", component: NoughtsAndCrosses },
+  { path: "/maze", component: Maze },
   { path: "/:pathMatch(.*)*", component: PageContent },
 ];
 

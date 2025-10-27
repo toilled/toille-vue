@@ -23,10 +23,6 @@ h2>a {
   text-decoration: none !important;
 }
 
-section {
-  animation: 1s ease 0s 1 fadein;
-}
-
 section,
 .content-container {
   max-width: 50em;
@@ -39,12 +35,19 @@ section p,
   text-shadow: 1px 1px 1px rgb(0 0 0 / 0.2);
 }
 
-@keyframes fadein {
-  from {
-    opacity: 0;
-  }
+.cards-enter-active,
+.cards-leave-active {
+  transition:
+    transform 0.5s ease,
+    opacity 0.5s ease;
+}
 
-  to {
-    opacity: 1;
-  }
+.cards-enter-from {
+  transform: translateY(-100%) scale(0.8);
+  opacity: 0;
+}
+
+.cards-leave-to {
+  transform: translateY(100%) scale(0.8);
+  opacity: 0;
 }

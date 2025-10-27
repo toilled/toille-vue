@@ -10,7 +10,11 @@
     />
     <Menu :pages="pages" />
   </nav>
-  <router-view></router-view>
+  <router-view v-slot="{ Component, route }">
+    <Transition name="cards" mode="out-in">
+      <component :is="Component" :key="route.path" />
+    </Transition>
+  </router-view>
   <Starfield />
   <Transition name="fade">
     <footer

@@ -10,7 +10,13 @@
     />
     <Menu :pages="pages" />
   </nav>
-  <router-view></router-view>
+  <div class="router-view-container">
+    <router-view v-slot="{ Component, route }">
+      <Transition :name="transitionName" mode="out-in">
+        <component :is="Component" :key="route.path" />
+      </Transition>
+    </router-view>
+  </div>
   <Starfield />
   <Transition name="fade">
     <footer
@@ -55,6 +61,7 @@ const activity = ref(false);
 const joke = ref(false);
 const showHint = ref(false);
 const route = useRoute();
+const transitionName = ref("fade");
 
 const noFootersShowing = computed(() => {
   return !activity.value && !checker.value && !joke.value;
@@ -80,7 +87,15 @@ onMounted(() => {
 
 watch(
   () => route.path,
-  (newPath) => {
+  (newPath, oldPath) => {
+    const newIndex = pages.findIndex((page) => page.link === newPath);
+    const oldIndex = pages.findIndex((page) => page.link === oldPath);
+    if (newIndex > oldIndex) {
+      transitionName.value = "slide-right";
+    } else {
+      transitionName.value = "slide-left";
+    }
+
     let pageTitle;
 
     if (newPath === '/noughts-and-crosses') {

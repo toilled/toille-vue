@@ -23,6 +23,7 @@
     </router-view>
   </div>
   <Starfield />
+  <DVDLogo />
   <Transition name="fade">
     <footer
       v-if="noFootersShowing && showHint"
@@ -57,6 +58,7 @@ import Checker from "./components/Checker.vue";
 import Activity from "./components/Activity.vue";
 import Suggestion from "./components/Suggestion.vue";
 import Starfield from "./components/Starfield.vue";
+import DVDLogo from "./components/DVDLogo.vue";
 import TypingText from "./components/TypingText.vue";
 import pages from "./configs/pages.json";
 import titles from "./configs/titles.json";

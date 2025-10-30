@@ -46,30 +46,43 @@ section p,
 .cards-leave-active,
 .cards-reverse-enter-active,
 .cards-reverse-leave-active {
-  transition:
-    transform 0.35s ease,
-    opacity 0.35s ease;
-  transform-style: preserve-3d;
+  transition: all 0.5s ease-out;
   width: 100%;
   position: absolute;
 }
 
 .cards-enter-from {
-  transform: translateY(-100%) scale(0.8) rotateY(90deg);
   opacity: 0;
+  transform: translateY(30px) scale(0.95);
+  z-index: 1;
+}
+
+.cards-enter-to {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  z-index: 1;
 }
 
 .cards-leave-to {
-  transform: translateY(100%) scale(0.8) rotateY(-90deg);
   opacity: 0;
+  transform: translateY(-30px) scale(0.95);
+  z-index: 0;
 }
 
 .cards-reverse-enter-from {
-  transform: translateY(100%) scale(0.8) rotateY(-90deg);
   opacity: 0;
+  transform: translateY(-30px) scale(0.95);
+  z-index: 1;
+}
+
+.cards-reverse-enter-to {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  z-index: 1;
 }
 
 .cards-reverse-leave-to {
-  transform: translateY(-100%) scale(0.8) rotateY(90deg);
   opacity: 0;
+  transform: translateY(30px) scale(0.95);
+  z-index: 0;
 }

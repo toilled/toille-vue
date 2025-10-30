@@ -8,7 +8,7 @@
       @activity="toggleActivity"
       @joke="toggleJoke"
     />
-    <Menu :pages="pages" />
+    <Menu :pages="visiblePages" />
   </nav>
   <div class="router-view-container" ref="containerRef">
     <router-view v-slot="{ Component, route }">
@@ -60,6 +60,11 @@ import Starfield from "./components/Starfield.vue";
 import TypingText from "./components/TypingText.vue";
 import pages from "./configs/pages.json";
 import titles from "./configs/titles.json";
+import { Page } from "./interfaces/Page";
+
+const visiblePages = computed(() => {
+  return pages.filter((page: Page) => !page.hidden);
+});
 
 const containerRef = ref<HTMLElement | null>(null);
 const checker = ref(false);
@@ -90,10 +95,12 @@ function onAfterEnter() {
 }
 
 function getPageIndex(routeName: any) {
-  if (routeName === '/') {
-    return pages.findIndex((page) => page.link === '/');
+  if (routeName === "/") {
+    return pages.findIndex((page) => page.link === "/");
   }
-  return pages.findIndex((page) => page.link.slice(1) === routeName);
+
+  const index = pages.findIndex((page) => page.link.slice(1) === routeName);
+  return index === -1 ? Object.keys(pages).length : index;
 }
 
 const noFootersShowing = computed(() => {

@@ -4,51 +4,39 @@
     <meta charset="UTF-8" />
     <meta
       name="description"
-      content="The experimental website of Elliot Dickerson made in Vue."
+      content="The experimental website of Elliot Dickerson made with HTMX."
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Elliot Dickerson</title>
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
-      />
-    </noscript>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+    />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="manifest" href="/site.webmanifest" />
+    <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
   </head>
 
-  <body id="app" class="container">
-    <script type="module" src="/src/main.ts"></script>
-    <noscript>
+  <body class="container">
+    <header>
+      <hgroup>
+        <h1>Elliot Dickerson</h1>
+        <h2>A site to test things</h2>
+      </hgroup>
       <nav>
         <ul>
-          <li>
-            <hgroup>
-              <h1 class="title">Elliot Dickerson</h1>
-              <h2 class="title">A site to test things</h2>
-            </hgroup>
-          </li>
+          <li><a href="/" hx-get="public/partials/home.html" hx-target="#content">Home</a></li>
+          <li><a href="/about" hx-get="public/partials/about.html" hx-target="#content">About</a></li>
+          <li><a href="/interests" hx-get="public/partials/interests.html" hx-target="#content">Interests</a></li>
         </ul>
       </nav>
-      <main>
-        <header>
-          <h2 class="title">Home</h2>
-        </header>
-        <p>You need to enable JavaScript to run this app.</p>
-        <p>
-          The source code for this site is available on
-          <a
-            href="https://github.com/toilled/toille-solid"
-            class="contrast"
-            target="_blank"
-            >this GitHub repository</a
-          >.
-        </p>
-      </main>
-    </noscript>
+    </header>
+    <main id="content" hx-get="public/partials/home.html" hx-trigger="load">
+      <!-- Content will be loaded here by HTMX -->
+    </main>
+    <script src="public/app.js"></script>
   </body>
 </html>

@@ -43,8 +43,10 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
 import { useRoute } from "vue-router";
-import pages from "../configs/pages.json";
+import { useDatabase } from "../composables/useDatabase";
 import Paragraph from "./Paragraph.vue";
+
+const { pages, ready, loadDatabase } = useDatabase();
 
 /**
  * @file PageContent.vue
@@ -72,13 +74,13 @@ const route = useRoute();
 const page = computed(() => {
   if (route.params.name) {
     return (
-      pages.find((p) => p.link.slice(1) === route.params.name)
+      pages.value.find((p) => p.link.slice(1) === route.params.name)
     );
   }
   if (route.params.pathMatch) {
     return null;
   }
-  return pages[0];
+  return pages.value[0];
 });
 
 /**
@@ -91,4 +93,9 @@ function handleMouseDown() {
   }, 500);
 }
 
+watch(ready, async (isReady) => {
+  if (!isReady) {
+    await loadDatabase();
+  }
+});
 </script>

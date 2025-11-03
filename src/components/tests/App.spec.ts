@@ -15,18 +15,21 @@ const createTestRouter = () => {
   });
 };
 
-vi.mock("../../configs/pages.json", () => ({
-  default: [
-    { name: "Home", link: "/", title: "Home" },
-    { name: "About", link: "/about", title: "About Me" },
-  ],
-}));
+import { ref } from 'vue';
 
-vi.mock("../../configs/titles.json", () => ({
-  default: {
-    title: "Main Title",
-    subtitle: "Main Subtitle",
-  },
+vi.mock("../../composables/useDatabase", () => ({
+  useDatabase: () => ({
+    pages: ref([
+      { name: "Home", link: "/", title: "Home", body: [], hidden: false },
+      { name: "About", link: "/about", title: "About Me", body: [], hidden: false },
+    ]),
+    titles: ref({
+      title: "Main Title",
+      subtitle: "Main Subtitle",
+    }),
+    ready: ref(true),
+    loadDatabase: vi.fn(),
+  }),
 }));
 
 describe("App.vue", () => {

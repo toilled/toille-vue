@@ -3,8 +3,21 @@ import { mount } from "@vue/test-utils";
 import PageContent from "../PageContent.vue";
 import Paragraph from "../Paragraph.vue";
 import { createRouter, createWebHistory } from "vue-router";
-import pages from "../../configs/pages.json";
 import flushPromises from "flush-promises";
+import { ref } from 'vue';
+
+const pages = [
+  { name: "Home", link: "/", title: "Home", body: ["Body 1"], hidden: false },
+  { name: "About", link: "/about", title: "About Me", body: ["Body 2"], hidden: false },
+];
+
+vi.mock("../../composables/useDatabase", () => ({
+  useDatabase: () => ({
+    pages: ref(pages),
+    ready: ref(true),
+    loadDatabase: vi.fn(),
+  }),
+}));
 
 const createTestRouter = (path: string) => {
   return createRouter({

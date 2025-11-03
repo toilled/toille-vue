@@ -1,6 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import pages from "../configs/pages.json";
 import App from "../App.vue";
+import { ref } from "vue";
+
+vi.mock("../composables/useDatabase", () => ({
+  useDatabase: () => ({
+    pages: ref([]),
+    titles: ref({}),
+    ready: ref(true),
+    loadDatabase: vi.fn(),
+  }),
+}));
 
 const mockApp = {
   use: vi.fn(),

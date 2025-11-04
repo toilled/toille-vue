@@ -86,3 +86,9 @@ section p,
   transform: translateY(30px) scale(0.95);
   z-index: 0;
 }
+
+.page-content {
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 1em;
+  border-radius: 1em;
+}

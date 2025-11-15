@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
 import { mount } from "@vue/test-utils";
-import PageContent from "../PageContent.vue";
-import Paragraph from "../Paragraph.vue";
+import PageContent from "../components/PageContent.vue";
+import Paragraph from "../components/Paragraph.vue";
 import { createRouter, createWebHistory } from "vue-router";
-import pages from "../../configs/pages.json";
+import pages from "../configs/pages.json";
 import flushPromises from "flush-promises";
 
 const createTestRouter = (path: string) => {

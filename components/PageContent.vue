@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
 import { useRoute } from "vue-router";
-import pages from "../configs/pages.json";
+import pages from "~/pages.json";
 import Paragraph from "./Paragraph.vue";
 
 /**

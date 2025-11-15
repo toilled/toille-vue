@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
-import Title from "../Title.vue";
+import Title from "../components/Title.vue";
 
 describe("Title.vue", () => {
   it("renders the title and subtitle", () => {

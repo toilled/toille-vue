@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
-import Menu from "../Menu.vue";
-import MenuItem from "../MenuItem.vue";
+import Menu from "../components/Menu.vue";
+import MenuItem from "../components/MenuItem.vue";
 import { createRouter, createWebHistory } from "vue-router";
 
 const routes = [

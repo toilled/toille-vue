@@ -1,10 +1,10 @@
 import { mount } from "@vue/test-utils";
 import { describe, it, expect, vi } from "vitest";
 import { ref } from "vue";
-import NoughtsAndCrosses from "../NoughtsAndCrosses.vue";
-import { useNoughtsAndCrosses } from "../../composables/useNoughtsAndCrosses";
+import NoughtsAndCrosses from "../components/NoughtsAndCrosses.vue";
+import { useNoughtsAndCrosses } from "../composables/useNoughtsAndCrosses";
 
-vi.mock("../../composables/useNoughtsAndCrosses");
+vi.mock("../composables/useNoughtsAndCrosses");
 
 describe("NoughtsAndCrosses.vue", () => {
   it("should declare a win when the player gets three in a row", async () => {

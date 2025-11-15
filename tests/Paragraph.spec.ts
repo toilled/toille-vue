@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
-import Paragraph from "../Paragraph.vue";
+import Paragraph from "../components/Paragraph.vue";
 
 describe("Paragraph.vue", () => {
   it("renders the paragraph content", () => {

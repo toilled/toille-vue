@@ -1,38 +1,75 @@
-# toille-vue
+# Nuxt Minimal Starter
 
-This is a simple Vue.js web application built with Vite and TypeScript. It serves as a personal website and includes a few interactive components.
+Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
-## Features
+## Setup
 
-*   **Dynamic Pages**: Page content is loaded from a JSON file and rendered dynamically using Vue Router.
-*   **Interactive Components**: Includes an alcohol unit checker, a mini-game, and components that fetch data from external APIs.
-*   **Styling**: Uses `@picocss/pico` for lightweight and clean styling.
+Make sure to install dependencies:
 
-## Project Structure
+```bash
+# npm
+npm install
 
-*   `src/components`: Contains all the Vue components.
-*   `src/configs/pages.json`: Defines the pages and their content.
-*   `src/interfaces`: Contains TypeScript interfaces.
-*   `src/main.ts`: The application's entry point.
+# pnpm
+pnpm install
 
-## Setup and Installation
+# yarn
+yarn install
 
-1.  **Clone the repository:**
-    ```bash
-    git clone <repository-url>
-    ```
-2.  **Navigate to the project directory:**
-    ```bash
-    cd toille-vue
-    ```
-3.  **Install dependencies:**
-    ```bash
-    npm install
-    ```
+# bun
+bun install
+```
 
-## Available Scripts
+## Development Server
 
-*   **`npm run dev`**: Starts the development server.
-*   **`npm run build`**: Builds the application for production.
-*   **`npm run serve`**: Serves the production build locally.
-*   **`npm test`**: Runs the unit tests.
+Start the development server on `http://localhost:3000`:
+
+```bash
+# npm
+npm run dev
+
+# pnpm
+pnpm dev
+
+# yarn
+yarn dev
+
+# bun
+bun run dev
+```
+
+## Production
+
+Build the application for production:
+
+```bash
+# npm
+npm run build
+
+# pnpm
+pnpm build
+
+# yarn
+yarn build
+
+# bun
+bun run build
+```
+
+Locally preview production build:
+
+```bash
+# npm
+npm run preview
+
+# pnpm
+pnpm preview
+
+# yarn
+yarn preview
+
+# bun
+bun run preview
+```
+
+Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.

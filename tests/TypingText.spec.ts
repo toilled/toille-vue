@@ -1,7 +1,7 @@
 
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, vi } from 'vitest'
-import TypingText from '../TypingText.vue'
+import TypingText from '../components/TypingText.vue'
 import flushPromises from 'flush-promises'
 
 describe('TypingText.vue', () => {

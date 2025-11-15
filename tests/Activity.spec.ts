@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mount } from "@vue/test-utils";
-import Activity from "../Activity.vue";
+import Activity from "../components/Activity.vue";
 import flushPromises from "flush-promises";
 
 const mockActivity = {

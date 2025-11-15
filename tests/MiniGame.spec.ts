@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
-import MiniGame from "../MiniGame.vue";
+import MiniGame from "../components/MiniGame.vue";
 
 describe("MiniGame.vue", () => {
   it("renders the initial score", () => {

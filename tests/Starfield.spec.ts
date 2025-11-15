@@ -1,6 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import Starfield from "../Starfield.vue";
+import Starfield from "../components/Starfield.vue";
 import flushPromises from "flush-promises";
 
 describe("Starfield.vue", () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { mount } from "@vue/test-utils";
-import Checker from "../Checker.vue";
+import Checker from "../components/Checker.vue";
 
 describe("Checker.vue", () => {
   vi.useFakeTimers();

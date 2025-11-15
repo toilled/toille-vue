@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mount } from "@vue/test-utils";
-import Suggestion from "../Suggestion.vue";
+import Suggestion from "../components/Suggestion.vue";
 import flushPromises from "flush-promises";
 
 const mockSuggestion = {

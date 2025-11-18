@@ -30,6 +30,9 @@ describe("Starfield.vue", () => {
           fillRect: vi.fn(),
           drawImage: vi.fn(),
           translate: vi.fn(),
+          save: vi.fn(),
+          rotate: vi.fn(),
+          restore: vi.fn(),
         };
         return mockContext as any;
       });

@@ -23,8 +23,10 @@ onMounted(() => {
   let centerY = canvasHeight * 0.5;
 
   let numberOfStars = 500;
+  let numberOfSpaceships = 5;
 
   let stars: Star[] = [];
+  let spaceships: Spaceship[] = [];
 
   let frames_per_second = 60;
 
@@ -37,6 +39,56 @@ onMounted(() => {
 
   let nebulaCanvas: HTMLCanvasElement;
   let nebulaContext: CanvasRenderingContext2D;
+
+  class Spaceship {
+    x: number;
+    y: number;
+    size: number;
+    speed: number;
+    angle: number;
+    context: CanvasRenderingContext2D;
+
+    constructor() {
+      this.x = Math.random() * canvasWidth;
+      this.y = Math.random() * canvasHeight;
+      this.size = Math.random() * 20 + 10;
+      this.speed = Math.random() * 2 + 1;
+      this.angle = Math.random() * Math.PI * 2;
+      this.context = mainContext as CanvasRenderingContext2D;
+    }
+
+    draw() {
+      this.context.save();
+      this.context.translate(this.x, this.y);
+      this.context.rotate(this.angle);
+      this.context.fillStyle = 'white';
+      this.context.beginPath();
+      this.context.moveTo(0, -this.size);
+      this.context.lineTo(this.size / 2, this.size / 2);
+      this.context.lineTo(-this.size / 2, this.size / 2);
+      this.context.closePath();
+      this.context.fill();
+      this.context.restore();
+    }
+
+    update() {
+      this.x += Math.cos(this.angle) * this.speed;
+      this.y += Math.sin(this.angle) * this.speed;
+
+      if (this.x < 0) {
+        this.x = canvasWidth;
+      }
+      if (this.x > canvasWidth) {
+        this.x = 0;
+      }
+      if (this.y < 0) {
+        this.y = canvasHeight;
+      }
+      if (this.y > canvasHeight) {
+        this.y = 0;
+      }
+    }
+  }
 
   class Star {
     x: number;
@@ -123,6 +175,11 @@ onMounted(() => {
       stars.push(star);
     }
 
+    for (let i = 0; i < numberOfSpaceships; i++) {
+      let spaceship = new Spaceship();
+      spaceships.push(spaceship);
+    }
+
     createNebula();
   }
   setup();
@@ -190,6 +247,12 @@ onMounted(() => {
       }
 
       mainContext!.translate(-centerX, -centerY);
+
+      for (let i = 0; i < spaceships.length; i++) {
+        let spaceship = spaceships[i];
+        spaceship.update();
+        spaceship.draw();
+      }
     }
 
     requestAnimationFrame(draw);

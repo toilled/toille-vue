@@ -19,9 +19,11 @@
     "globals": "^15.15.0",
     "jsdom": "^27.0.0",
     "prettier": "3.5.3",
+    "terser": "^5.44.1",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.26.0",
     "vite": "6.1.0",
+    "vite-plugin-compression": "^0.5.1",
     "vitest": "^3.2.4"
   },
   "dependencies": {

@@ -3,7 +3,6 @@ import { createRouter, createWebHistory } from "vue-router";
 import "@picocss/pico";
 import "./index.css";
 import App from "./App.vue";
-import PageContent from "./components/PageContent.vue";
 import pages from "./configs/pages.json";
 
 /**
@@ -11,6 +10,9 @@ import pages from "./configs/pages.json";
  * @description The main entry point for the Vue application.
  * It sets up the Vue app, creates the router, and mounts the application to the DOM.
  */
+
+// Lazy load PageContent
+const PageContent = () => import("./components/PageContent.vue");
 
 /**
  * @const {Array<import('vue-router').RouteRecordRaw>} routes

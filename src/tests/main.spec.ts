@@ -43,12 +43,12 @@ describe("main.ts", () => {
     expect(createRouter).toHaveBeenCalledWith({
       history: undefined,
       routes: [
-        { path: "/", component: expect.any(Object), props: { name: "home" } },
-        { path: "/:name", component: expect.any(Object), props: true },
+        { path: "/", component: expect.any(Function), props: { name: "home" } },
+        { path: "/:name", component: expect.any(Function), props: true },
         { path: "/checker", component: expect.any(Function) },
         { path: "/game", component: expect.any(Function) },
         { path: "/noughts-and-crosses", component: expect.any(Function) },
-        { path: "/:pathMatch(.*)*", component: expect.any(Object) },
+        { path: "/:pathMatch(.*)*", component: expect.any(Function) },
       ],
     });
   });

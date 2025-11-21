@@ -1,9 +1,13 @@
 /// <reference types="vitest" />
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
+import viteCompression from 'vite-plugin-compression';
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    viteCompression()
+  ],
   test: {
     globals: true,
     environment: "jsdom",
@@ -13,5 +17,12 @@ export default defineConfig({
   },
   build: {
     target: "esnext",
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
   },
 });

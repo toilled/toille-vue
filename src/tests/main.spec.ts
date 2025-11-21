@@ -45,9 +45,9 @@ describe("main.ts", () => {
       routes: [
         { path: "/", component: expect.any(Object), props: { name: "home" } },
         { path: "/:name", component: expect.any(Object), props: true },
-        { path: "/checker", component: expect.any(Object) },
-        { path: "/game", component: expect.any(Object) },
-        { path: "/noughts-and-crosses", component: expect.any(Object) },
+        { path: "/checker", component: expect.any(Function) },
+        { path: "/game", component: expect.any(Function) },
+        { path: "/noughts-and-crosses", component: expect.any(Function) },
         { path: "/:pathMatch(.*)*", component: expect.any(Object) },
       ],
     });

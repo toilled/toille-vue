@@ -4,9 +4,6 @@ import "@picocss/pico";
 import "./index.css";
 import App from "./App.vue";
 import PageContent from "./components/PageContent.vue";
-import Checker from "./components/Checker.vue";
-import MiniGame from "./components/MiniGame.vue";
-import NoughtsAndCrosses from "./components/NoughtsAndCrosses.vue";
 import pages from "./configs/pages.json";
 
 /**
@@ -27,9 +24,12 @@ import pages from "./configs/pages.json";
 const routes = [
   { path: "/", component: PageContent, props: { name: "home" } },
   { path: "/:name", component: PageContent, props: true },
-  { path: "/checker", component: Checker },
-  { path: "/game", component: MiniGame },
-  { path: "/noughts-and-crosses", component: NoughtsAndCrosses },
+  { path: "/checker", component: () => import("./components/Checker.vue") },
+  { path: "/game", component: () => import("./components/MiniGame.vue") },
+  {
+    path: "/noughts-and-crosses",
+    component: () => import("./components/NoughtsAndCrosses.vue"),
+  },
   { path: "/:pathMatch(.*)*", component: PageContent },
 ];
 

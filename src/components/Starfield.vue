@@ -7,7 +7,7 @@ import { onMounted } from "vue";
 
 onMounted(() => {
   let outerspace = document.querySelector("#outerspace") as HTMLCanvasElement;
-  let mainContext = outerspace.getContext('2d');
+  let mainContext = outerspace.getContext('2d', { alpha: false }); // alpha: false might help compositing if background is opaque, but here we clear with alpha
 
   if (!mainContext) {
     return;
@@ -26,17 +26,14 @@ onMounted(() => {
 
   let stars: Star[] = [];
 
-  let frames_per_second = 60;
-
-  let interval = Math.floor(1000 / frames_per_second);
-  let startTime = performance.now();
-  let previousTime = startTime;
-
-  let currentTime = 0;
-  let deltaTime = 0;
-
   let nebulaCanvas: HTMLCanvasElement;
   let nebulaContext: CanvasRenderingContext2D;
+
+  // Pre-rendered star assets
+  let roundStarCanvas: HTMLCanvasElement;
+  let spikyStarCanvas: HTMLCanvasElement;
+  const STAR_SIZE = 20; // Base size for pre-rendering
+  const HALF_STAR_SIZE = STAR_SIZE / 2;
 
   class Star {
     x: number;
@@ -44,7 +41,8 @@ onMounted(() => {
     counter: number;
     radiusMax: number;
     speed: number;
-    context: CanvasRenderingContext2D;
+    alpha: number;
+    isSpiky: boolean;
 
     constructor() {
       this.x = getRandomInt(-centerX, centerX);
@@ -53,22 +51,23 @@ onMounted(() => {
 
       this.radiusMax = 1 + Math.random() * 2;
       this.speed = getRandomInt(5, 10);
-      this.color = `rgba(255, 255, 255, ${0.8 + Math.random() * 0.2})`;
+      this.alpha = 0.8 + Math.random() * 0.2;
       this.isSpiky = Math.random() > 0.5;
+    }
 
-      this.context = mainContext as CanvasRenderingContext2D;
+    reset() {
+        this.counter = canvasWidth;
+        this.x = getRandomInt(-centerX, centerX);
+        this.y = getRandomInt(-centerY, centerY);
+        this.radiusMax = getRandomInt(1, 10);
+        this.speed = getRandomInt(1, 5);
     }
 
     drawStar() {
       this.counter -= this.speed;
 
       if (this.counter < 1) {
-        this.counter = canvasWidth;
-        this.x = getRandomInt(-centerX, centerX);
-        this.y = getRandomInt(-centerY, centerY);
-
-        this.radiusMax = getRandomInt(1, 10);
-        this.speed = getRandomInt(1, 5);
+        this.reset();
       }
 
       let xRatio = this.x / this.counter;
@@ -79,45 +78,79 @@ onMounted(() => {
 
       let outerRadius = remap(this.counter, 0, canvasWidth, this.radiusMax, 0);
 
-      const gradient = mainContext!.createRadialGradient(starX, starY, 0, starX, starY, outerRadius * 2);
-      gradient.addColorStop(0, this.color);
-      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      // Don't draw if too small
+      if (outerRadius <= 0) return;
 
-      mainContext!.fillStyle = gradient;
+      const diameter = outerRadius * 2;
 
-      if (this.isSpiky) {
-        let innerRadius = outerRadius / 2;
-        let rot = Math.PI / 2 * 3;
-        const spikes = 5;
-        let step = Math.PI / spikes;
+      mainContext!.globalAlpha = this.alpha;
 
-        mainContext!.beginPath();
-        mainContext!.moveTo(starX, starY - outerRadius);
+      const img = this.isSpiky ? spikyStarCanvas : roundStarCanvas;
+      mainContext!.drawImage(img, starX - outerRadius, starY - outerRadius, diameter, diameter);
 
-        for (let i = 0; i < spikes; i++) {
-          let x = starX + Math.cos(rot) * outerRadius;
-          let y = starY + Math.sin(rot) * outerRadius;
-          mainContext!.lineTo(x, y);
-          rot += step;
-
-          x = starX + Math.cos(rot) * innerRadius;
-          y = starY + Math.sin(rot) * innerRadius;
-          mainContext!.lineTo(x, y);
-          rot += step;
-        }
-
-        mainContext!.lineTo(starX, starY - outerRadius);
-        mainContext!.closePath();
-        mainContext!.fill();
-      } else {
-        mainContext!.beginPath();
-        mainContext!.arc(starX, starY, outerRadius, 0, Math.PI * 2);
-        mainContext!.fill();
-      }
+      mainContext!.globalAlpha = 1.0;
     }
   }
 
+  function preRenderStars() {
+    // Round Star
+    roundStarCanvas = document.createElement('canvas');
+    roundStarCanvas.width = STAR_SIZE;
+    roundStarCanvas.height = STAR_SIZE;
+    const rCtx = roundStarCanvas.getContext('2d')!;
+
+    const rGradient = rCtx.createRadialGradient(HALF_STAR_SIZE, HALF_STAR_SIZE, 0, HALF_STAR_SIZE, HALF_STAR_SIZE, HALF_STAR_SIZE);
+    rGradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+    rGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+    rCtx.fillStyle = rGradient;
+    rCtx.beginPath();
+    rCtx.arc(HALF_STAR_SIZE, HALF_STAR_SIZE, HALF_STAR_SIZE, 0, Math.PI * 2);
+    rCtx.fill();
+
+    // Spiky Star
+    spikyStarCanvas = document.createElement('canvas');
+    spikyStarCanvas.width = STAR_SIZE;
+    spikyStarCanvas.height = STAR_SIZE;
+    const sCtx = spikyStarCanvas.getContext('2d')!;
+
+    const sGradient = sCtx.createRadialGradient(HALF_STAR_SIZE, HALF_STAR_SIZE, 0, HALF_STAR_SIZE, HALF_STAR_SIZE, HALF_STAR_SIZE);
+    sGradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+    sGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+    sCtx.fillStyle = sGradient;
+
+    // Draw star shape path to clip or fill
+    // Actually, applying gradient to the fill style of the star shape is better
+
+    let innerRadius = HALF_STAR_SIZE / 2;
+    let outerRadius = HALF_STAR_SIZE;
+    let rot = Math.PI / 2 * 3;
+    const spikes = 5;
+    let step = Math.PI / spikes;
+
+    sCtx.beginPath();
+    sCtx.moveTo(HALF_STAR_SIZE, HALF_STAR_SIZE - outerRadius);
+
+    for (let i = 0; i < spikes; i++) {
+      let x = HALF_STAR_SIZE + Math.cos(rot) * outerRadius;
+      let y = HALF_STAR_SIZE + Math.sin(rot) * outerRadius;
+      sCtx.lineTo(x, y);
+      rot += step;
+
+      x = HALF_STAR_SIZE + Math.cos(rot) * innerRadius;
+      y = HALF_STAR_SIZE + Math.sin(rot) * innerRadius;
+      sCtx.lineTo(x, y);
+      rot += step;
+    }
+    sCtx.lineTo(HALF_STAR_SIZE, HALF_STAR_SIZE - outerRadius);
+    sCtx.closePath();
+    sCtx.fill();
+  }
+
   function setup() {
+    preRenderStars();
+
     for (let i = 0; i < numberOfStars; i++) {
       let star = new Star();
       stars.push(star);
@@ -153,8 +186,8 @@ onMounted(() => {
 
     // Second nebula (top-left)
     const secondGradient = nebulaContext.createRadialGradient(
-      canvasWidth * 0.3, // Corrected position based on review feedback
-      canvasHeight * 0.3, // Corrected position based on review feedback
+      canvasWidth * 0.3,
+      canvasHeight * 0.3,
       0,
       canvasWidth * 0.3,
       canvasHeight * 0.3,
@@ -170,13 +203,7 @@ onMounted(() => {
     nebulaContext.fill();
   }
 
-  function draw(timestamp: number) {
-    currentTime = timestamp;
-    deltaTime = currentTime - previousTime;
-
-    if (deltaTime > interval) {
-      previousTime = currentTime - (deltaTime % interval);
-
+  function draw() {
       mainContext!.fillStyle = "rgba(0, 0, 0, 0.3)";
       mainContext!.fillRect(0, 0, canvasWidth, canvasHeight);
 
@@ -190,25 +217,16 @@ onMounted(() => {
       }
 
       mainContext!.translate(-centerX, -centerY);
-    }
 
-    requestAnimationFrame(draw);
+      requestAnimationFrame(draw);
   }
-  draw(0);
+  requestAnimationFrame(draw);
 
   function getRandomInt(min: number, max: number) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
   function remap(value: number, istart: number, istop: number, ostart: number, ostop: number) {
-    // Ensure values are numerical to avoid potential errors
-    value = Number(value);
-    istart = Number(istart);
-    istop = Number(istop);
-    ostart = Number(ostart);
-    ostop = Number(ostop);
-
-    // Perform the mapping calculation
     return ostart + (ostop - ostart) * ((value - istart) / (istop - istart));
   }
 

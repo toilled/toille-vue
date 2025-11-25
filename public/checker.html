@@ -1,0 +1,74 @@
+<footer>
+    <article style="margin-bottom: 0">
+      <header>Alcohol Checker</header>
+      <section class="grid">
+        <button id="add-unit" class="outline">Add</button>
+        <button id="subtract-unit" class="outline">Subtract</button>
+      </section>
+      <table class="marginless">
+        <thead>
+          <tr>
+            <th>Units consumed</th>
+            <th>Borderline time</th>
+            <th>Safe time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td id="unit-count">0</td>
+            <td id="limit-time"></td>
+            <td id="sober-time"></td>
+          </tr>
+        </tbody>
+      </table>
+    </article>
+  </footer>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const countElement = document.getElementById('unit-count');
+        const limitTimeElement = document.getElementById('limit-time');
+        const soberTimeElement = document.getElementById('sober-time');
+        const addButton = document.getElementById('add-unit');
+        const subtractButton = document.getElementById('subtract-unit');
+
+        let count = 0;
+
+        function updateTimes() {
+            const options = {
+                hour: "2-digit",
+                minute: "2-digit",
+            };
+            const currentTime = new Date().getTime();
+            if (count === 0) {
+                limitTimeElement.textContent = new Date(currentTime).toLocaleTimeString([], options);
+                soberTimeElement.textContent = new Date(currentTime).toLocaleTimeString([], options);
+            } else {
+                limitTimeElement.textContent = new Date(
+                    currentTime + count * 60 * 60 * 1000,
+                ).toLocaleTimeString([], options);
+                soberTimeElement.textContent = new Date(
+                    currentTime + (count + 1) * 60 * 60 * 1000,
+                ).toLocaleTimeString([], options);
+            }
+        }
+
+        function add() {
+            count++;
+            countElement.textContent = count;
+            updateTimes();
+        }
+
+        function subtract() {
+            if (count > 0) {
+                count--;
+                countElement.textContent = count;
+                updateTimes();
+            }
+        }
+
+        addButton.addEventListener('click', add);
+        subtractButton.addEventListener('click', subtract);
+
+        updateTimes();
+    });
+  </script>

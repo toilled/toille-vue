@@ -1,0 +1,3 @@
+<div hx-target="this" hx-swap="outerHTML" hx-on:htmx:after-on-load="if(event.detail.xhr.status === 200) { this.innerHTML = JSON.parse(event.detail.xhr.responseText).joke; }">
+    <button hx-get="https://icanhazdadjoke.com/" hx-trigger="click" hx-headers='{"Accept": "application/json"}'>Get a Dad Joke</button>
+</div>

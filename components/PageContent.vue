@@ -55,7 +55,10 @@ const props = defineProps({
 const showHint = ref(false);
 
 const page = computed(() => {
-  return pages.find((p) => p.name === props.name);
+  if (props.name === "home") {
+    return pages.find((p) => p.link === "/");
+  }
+  return pages.find((p) => p.link === `/${props.name}`);
 });
 
 function handleMouseDown() {

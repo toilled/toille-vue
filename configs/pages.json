@@ -1,0 +1,19 @@
+[
+  {
+    "name": "home",
+    "link": "/",
+    "title": "Home",
+    "body": [
+      "Welcome to the new Nuxt site!",
+      "This page is rendered using PageContent.vue."
+    ]
+  },
+  {
+    "name": "about",
+    "link": "/about",
+    "title": "About",
+    "body": [
+      "This is the about page."
+    ]
+  }
+]

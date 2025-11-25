@@ -1,0 +1,13 @@
+:root {
+  --font-family: Avenir, Helvetica, Arial, sans-serif;
+  --primary: #333;
+  --secondary: #555;
+  --background: #fff;
+  --text-color: #2c3e50;
+}
+
+body {
+  font-family: var(--font-family);
+  color: var(--text-color);
+  background-color: var(--background);
+}

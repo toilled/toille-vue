@@ -1,0 +1,1 @@
+import{_ as l,x as o,y as s,z as n,V as r}from"./CHkZzQDn.js";const a={},d={class:"container"};function u(t,e){return s(),o("div",null,[e[0]||(e[0]=n("header",null,null,-1)),n("main",d,[r(t.$slots,"default",{},void 0)]),e[1]||(e[1]=n("footer",null,null,-1))])}const c=l(a,[["render",u],["__scopeId","data-v-3dc0394e"]]);export{c as default};

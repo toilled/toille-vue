@@ -1,0 +1,1 @@
+import{L as e,P as o,y as r}from"./CHkZzQDn.js";import{_ as m}from"./CuF6bliE.js";const p={__name:"[name]",setup(n){return(a,s)=>(r(),e(m,{name:(a._.provides[o]||a.$route).params.name},null,8,["name"]))}};export{p as default};

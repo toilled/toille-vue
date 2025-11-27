@@ -1,12 +1,5 @@
-<template>
-  <canvas id="outerspace"></canvas>
-</template>
-
-<script setup lang="ts">
-import { onMounted } from "vue";
-
-onMounted(() => {
-  let outerspace = document.querySelector("#outerspace") as HTMLCanvasElement;
+document.addEventListener('DOMContentLoaded', () => {
+  let outerspace = document.querySelector("#starfield");
   let mainContext = outerspace.getContext('2d', { alpha: false });
 
   if (!mainContext) {
@@ -24,14 +17,14 @@ onMounted(() => {
 
   let numberOfStars = 500;
 
-  let stars: Star[] = [];
-  let shootingStar: ShootingStar;
+  let stars = [];
+  let shootingStar;
 
-  let nebulaCanvas: HTMLCanvasElement;
-  let nebulaContext: CanvasRenderingContext2D;
+  let nebulaCanvas;
+  let nebulaContext;
 
   // Pre-rendered star assets
-  let starAssets: Record<string, { round: HTMLCanvasElement, spiky: HTMLCanvasElement }> = {};
+  let starAssets = {};
   const STAR_SIZE = 20;
   const HALF_STAR_SIZE = STAR_SIZE / 2;
 
@@ -43,16 +36,6 @@ onMounted(() => {
   ];
 
   class Star {
-    x: number;
-    y: number;
-    counter: number;
-    radiusMax: number;
-    speed: number;
-    alpha: number;
-    isSpiky: boolean;
-    colorName: string;
-    twinkleOffset: number;
-
     constructor() {
       this.x = getRandomInt(-centerX, centerX);
       this.y = getRandomInt(-centerY, centerY);
@@ -102,23 +85,16 @@ onMounted(() => {
       if (currentAlpha < 0.2) currentAlpha = 0.2;
       if (currentAlpha > 1) currentAlpha = 1;
 
-      mainContext!.globalAlpha = currentAlpha;
+      mainContext.globalAlpha = currentAlpha;
 
       const img = this.isSpiky ? starAssets[this.colorName].spiky : starAssets[this.colorName].round;
-      mainContext!.drawImage(img, starX - outerRadius, starY - outerRadius, diameter, diameter);
+      mainContext.drawImage(img, starX - outerRadius, starY - outerRadius, diameter, diameter);
 
-      mainContext!.globalAlpha = 1.0;
+      mainContext.globalAlpha = 1.0;
     }
   }
 
   class ShootingStar {
-    x: number;
-    y: number;
-    vx: number;
-    vy: number;
-    active: boolean;
-    opacity: number;
-
     constructor() {
       this.x = 0;
       this.y = 0;
@@ -162,16 +138,16 @@ onMounted(() => {
             return;
         }
 
-        mainContext!.beginPath();
-        const gradient = mainContext!.createLinearGradient(this.x, this.y, this.x - this.vx * 3, this.y - this.vy * 3);
+        mainContext.beginPath();
+        const gradient = mainContext.createLinearGradient(this.x, this.y, this.x - this.vx * 3, this.y - this.vy * 3);
         gradient.addColorStop(0, `rgba(255, 255, 255, ${this.opacity})`);
         gradient.addColorStop(1, `rgba(255, 255, 255, 0)`);
 
-        mainContext!.lineWidth = 2;
-        mainContext!.strokeStyle = gradient;
-        mainContext!.moveTo(this.x, this.y);
-        mainContext!.lineTo(this.x - this.vx * 3, this.y - this.vy * 3);
-        mainContext!.stroke();
+        mainContext.lineWidth = 2;
+        mainContext.strokeStyle = gradient;
+        mainContext.moveTo(this.x, this.y);
+        mainContext.lineTo(this.x - this.vx * 3, this.y - this.vy * 3);
+        mainContext.stroke();
     }
   }
 
@@ -181,7 +157,7 @@ onMounted(() => {
         const roundStarCanvas = document.createElement('canvas');
         roundStarCanvas.width = STAR_SIZE;
         roundStarCanvas.height = STAR_SIZE;
-        const rCtx = roundStarCanvas.getContext('2d')!;
+        const rCtx = roundStarCanvas.getContext('2d');
 
         const rGradient = rCtx.createRadialGradient(HALF_STAR_SIZE, HALF_STAR_SIZE, 0, HALF_STAR_SIZE, HALF_STAR_SIZE, HALF_STAR_SIZE);
         rGradient.addColorStop(0, color.stops[0]);
@@ -196,7 +172,7 @@ onMounted(() => {
         const spikyStarCanvas = document.createElement('canvas');
         spikyStarCanvas.width = STAR_SIZE;
         spikyStarCanvas.height = STAR_SIZE;
-        const sCtx = spikyStarCanvas.getContext('2d')!;
+        const sCtx = spikyStarCanvas.getContext('2d');
 
         const sGradient = sCtx.createRadialGradient(HALF_STAR_SIZE, HALF_STAR_SIZE, 0, HALF_STAR_SIZE, HALF_STAR_SIZE, HALF_STAR_SIZE);
         sGradient.addColorStop(0, color.stops[0]);
@@ -250,7 +226,7 @@ onMounted(() => {
     nebulaCanvas = document.createElement('canvas');
     nebulaCanvas.width = canvasWidth;
     nebulaCanvas.height = canvasHeight;
-    nebulaContext = nebulaCanvas.getContext('2d')!;
+    nebulaContext = nebulaCanvas.getContext('2d');
 
     // First nebula (centered)
     const gradient = nebulaContext.createRadialGradient(
@@ -291,21 +267,21 @@ onMounted(() => {
 
   function draw() {
       // Background clear
-      mainContext!.fillStyle = "rgba(0, 0, 0, 0.3)";
-      mainContext!.fillRect(0, 0, canvasWidth, canvasHeight);
+      mainContext.fillStyle = "rgba(0, 0, 0, 0.3)";
+      mainContext.fillRect(0, 0, canvasWidth, canvasHeight);
 
       // Nebula
-      mainContext!.drawImage(nebulaCanvas, 0, 0);
+      mainContext.drawImage(nebulaCanvas, 0, 0);
 
       // Stars
-      mainContext!.translate(centerX, centerY);
+      mainContext.translate(centerX, centerY);
 
       for (let i = 0; i < stars.length; i++) {
         let star = stars[i];
         star.drawStar();
       }
 
-      mainContext!.translate(-centerX, -centerY);
+      mainContext.translate(-centerX, -centerY);
 
       // Shooting star
       shootingStar.draw();
@@ -314,11 +290,11 @@ onMounted(() => {
   }
   requestAnimationFrame(draw);
 
-  function getRandomInt(min: number, max: number) {
+  function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
-  function remap(value: number, istart: number, istop: number, ostart: number, ostop: number) {
+  function remap(value, istart, istop, ostart, ostop) {
     return ostart + (ostop - ostart) * ((value - istart) / (istop - istart));
   }
 
@@ -333,15 +309,3 @@ onMounted(() => {
     createNebula();
   });
 });
-</script>
-
-<style scoped>
-#outerspace {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
-}
-</style>

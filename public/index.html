@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="description"
+      content="The experimental website of Elliot Dickerson made with HTMX."
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Elliot Dickerson</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+    />
+    <link rel="stylesheet" href="/css/index.css" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+    <style>
+      #starfield {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+      }
+    </style>
+  </head>
+
+  <body id="app" class="container">
+    <nav hx-trigger="load" hx-get="/nav.html" hx-swap="outerHTML"></nav>
+    <main id="content" hx-trigger="load" hx-get="/home.html" hx-swap="innerHTML">
+        <!-- Page content will be loaded here -->
+    </main>
+    <canvas id="starfield"></canvas>
+    <script src="/js/starfield.js"></script>
+    <div id="activity-container"></div>
+    <div id="suggestion-container"></div>
+    <div id="checker-container"></div>
+    <div id="hint-container">
+        <p class="typing-effect"><span id="typing-text"></span><span class="cursor"></span></p>
+    </div>
+    <footer class="content-container" hx-get="/checker.html" hx-target="#checker-container" hx-swap="innerHTML">
+        <button>Alcohol Checker</button>
+    </footer>
+    <script src="/js/typingtext.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const hintContainer = document.getElementById('hint-container');
+            const typingTextElement = document.getElementById('typing-text');
+            setTimeout(() => {
+                typingText(typingTextElement, "The titles might be clickable...");
+            }, 2000);
+
+            setTimeout(() => {
+                hintContainer.style.display = 'none';
+            }, 5000);
+        });
+    </script>
+  </body>
+</html>

@@ -1,5 +1,5 @@
 <template>
-  <nav>
+  <nav class="container-fluid">
     <Title
       :title="titles.title"
       :subtitle="titles.subtitle"

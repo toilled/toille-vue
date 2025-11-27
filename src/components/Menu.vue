@@ -56,15 +56,11 @@ const toggleSound = () => {
 
 <style scoped>
 ul {
-  position: relative;
 }
 
 .sound-icon-container {
   cursor: pointer;
   padding: 10px;
-  position: absolute;
-  right: 0;
-  top: 0;
 }
 
 .sound-icon {

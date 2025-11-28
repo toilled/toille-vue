@@ -1,5 +1,5 @@
 <template>
-  <main>
+  <main class="page-content">
     <section>
       <header>
         <h2 class="title" @mousedown="handleMouseDown">

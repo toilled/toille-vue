@@ -8,6 +8,7 @@ import { onMounted, ref } from "vue";
 
 const score = ref(0);
 const warpFactor = ref(1);
+let warpAnimationId: number | null = null;
 
 let outerspace: HTMLCanvasElement;
 let mainContext: CanvasRenderingContext2D | null;
@@ -41,8 +42,14 @@ function remap(value: number, istart: number, istop: number, ostart: number, ost
 }
 
 function triggerWarp() {
+  if (warpAnimationId !== null) {
+    cancelAnimationFrame(warpAnimationId);
+  }
+
   const start = performance.now();
-  const targetSpeed = 50;
+  // Reduce speed for mobile devices (screens smaller than 768px)
+  const isMobile = window.innerWidth < 768;
+  const targetSpeed = isMobile ? 25 : 50;
 
   function animateWarp(time: number) {
     const elapsed = time - start;
@@ -50,18 +57,19 @@ function triggerWarp() {
     if (elapsed < 1000) {
         // Ramp up over 1 second
         warpFactor.value = 1 + (targetSpeed - 1) * (elapsed / 1000);
-        requestAnimationFrame(animateWarp);
+        warpAnimationId = requestAnimationFrame(animateWarp);
     } else if (elapsed < 3000) {
         // Ramp down over 2 seconds
         const progress = (elapsed - 1000) / 2000;
         warpFactor.value = targetSpeed - (targetSpeed - 1) * progress;
-        requestAnimationFrame(animateWarp);
+        warpAnimationId = requestAnimationFrame(animateWarp);
     } else {
         warpFactor.value = 1;
+        warpAnimationId = null;
     }
   }
 
-  requestAnimationFrame(animateWarp);
+  warpAnimationId = requestAnimationFrame(animateWarp);
 }
 
 defineExpose({ triggerWarp });

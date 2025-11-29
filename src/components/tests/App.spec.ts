@@ -29,6 +29,15 @@ vi.mock("../../configs/titles.json", () => ({
   },
 }));
 
+// Mock Starfield with triggerWarp
+const triggerWarpSpy = vi.fn();
+const StarfieldStub = {
+  template: '<div></div>',
+  methods: {
+    triggerWarp: triggerWarpSpy,
+  }
+};
+
 describe("App.vue", () => {
   it("renders the main components", async () => {
     const router = createTestRouter();
@@ -39,7 +48,7 @@ describe("App.vue", () => {
         plugins: [router],
         stubs: {
           "router-view": true,
-          "Starfield": true,
+          "Starfield": StarfieldStub,
         },
       },
     });
@@ -57,7 +66,7 @@ describe("App.vue", () => {
       global: {
         plugins: [router],
         stubs: {
-          "Starfield": true,
+          "Starfield": StarfieldStub,
         },
       },
     });
@@ -66,6 +75,11 @@ describe("App.vue", () => {
     await title.vm.$emit("activity");
     await flushPromises();
     expect(wrapper.vm.activity).toBe(true);
+
+    // Verify triggerWarp was called
+    expect(triggerWarpSpy).toHaveBeenCalled();
+    triggerWarpSpy.mockClear();
+
     await title.vm.$emit("activity");
     await flushPromises();
     expect(wrapper.vm.activity).toBe(false);
@@ -79,7 +93,7 @@ describe("App.vue", () => {
       global: {
         plugins: [router],
         stubs: {
-          "Starfield": true,
+          "Starfield": StarfieldStub,
         },
       },
     });
@@ -88,6 +102,11 @@ describe("App.vue", () => {
     await title.vm.$emit("joke");
     await flushPromises();
     expect(wrapper.vm.joke).toBe(true);
+
+    // Verify triggerWarp was called
+    expect(triggerWarpSpy).toHaveBeenCalled();
+    triggerWarpSpy.mockClear();
+
     await title.vm.$emit("joke");
     await flushPromises();
     expect(wrapper.vm.joke).toBe(false);
@@ -102,7 +121,7 @@ describe("App.vue", () => {
       global: {
         plugins: [router],
         stubs: {
-          "Starfield": true,
+          "Starfield": StarfieldStub,
         },
       },
     });
@@ -125,7 +144,7 @@ describe("App.vue", () => {
       global: {
         plugins: [router],
         stubs: {
-          "Starfield": true,
+          "Starfield": StarfieldStub,
           "TypingText": true,
         },
       },
@@ -150,7 +169,7 @@ describe("App.vue", () => {
         plugins: [router],
         stubs: {
           "router-view": true,
-          "Starfield": true,
+          "Starfield": StarfieldStub,
         },
       },
     });

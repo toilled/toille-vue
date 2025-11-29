@@ -22,7 +22,7 @@
       </Transition>
     </router-view>
   </div>
-  <Starfield />
+  <Starfield ref="starfieldRef" />
   <Transition name="fade">
     <footer
       v-if="noFootersShowing && showHint"
@@ -71,6 +71,7 @@ const checker = ref(false);
 const activity = ref(false);
 const joke = ref(false);
 const showHint = ref(false);
+const starfieldRef = ref<InstanceType<typeof Starfield> | null>(null);
 const route = useRoute();
 const transitionName = ref("cards");
 
@@ -109,10 +110,12 @@ const noFootersShowing = computed(() => {
 
 function toggleActivity() {
   activity.value = !activity.value;
+  starfieldRef.value?.triggerWarp();
 }
 
 function toggleJoke() {
   joke.value = !joke.value;
+  starfieldRef.value?.triggerWarp();
 }
 
 onMounted(() => {

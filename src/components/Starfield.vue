@@ -7,6 +7,7 @@
 import { onMounted, ref } from "vue";
 
 const score = ref(0);
+const warpFactor = ref(1);
 
 let outerspace: HTMLCanvasElement;
 let mainContext: CanvasRenderingContext2D | null;
@@ -38,6 +39,32 @@ function getRandomInt(min: number, max: number) {
 function remap(value: number, istart: number, istop: number, ostart: number, ostop: number) {
   return ostart + (ostop - ostart) * ((value - istart) / (istop - istart));
 }
+
+function triggerWarp() {
+  const start = performance.now();
+  const targetSpeed = 50;
+
+  function animateWarp(time: number) {
+    const elapsed = time - start;
+
+    if (elapsed < 1000) {
+        // Ramp up over 1 second
+        warpFactor.value = 1 + (targetSpeed - 1) * (elapsed / 1000);
+        requestAnimationFrame(animateWarp);
+    } else if (elapsed < 3000) {
+        // Ramp down over 2 seconds
+        const progress = (elapsed - 1000) / 2000;
+        warpFactor.value = targetSpeed - (targetSpeed - 1) * progress;
+        requestAnimationFrame(animateWarp);
+    } else {
+        warpFactor.value = 1;
+    }
+  }
+
+  requestAnimationFrame(animateWarp);
+}
+
+defineExpose({ triggerWarp });
 
 class Star {
   x: number;
@@ -79,7 +106,7 @@ class Star {
   }
 
   drawStar() {
-    this.counter -= this.speed;
+    this.counter -= this.speed * warpFactor.value;
 
     if (this.counter < 1) {
       this.reset();

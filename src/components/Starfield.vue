@@ -1,43 +1,142 @@
 <template>
-  <canvas id="outerspace" @click="handleClick"></canvas>
+  <canvas id="outerspace" ref="canvasRef" @click="handleClick"></canvas>
   <div class="score-counter" v-if="score > 0">Score: {{ score }}</div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, onBeforeUnmount } from "vue";
 
 const score = ref(0);
+const canvasRef = ref<HTMLCanvasElement | null>(null);
 
-let outerspace: HTMLCanvasElement;
-let mainContext: CanvasRenderingContext2D | null;
+// Shaders
+const NEBULA_VS = `
+attribute vec2 a_position;
+varying vec2 v_uv;
+void main() {
+    v_uv = a_position * 0.5 + 0.5;
+    v_uv.y = 1.0 - v_uv.y;
+    gl_Position = vec4(a_position, 0.0, 1.0);
+}
+`;
 
-let canvasWidth = window.innerWidth;
-let canvasHeight = window.innerHeight;
+const NEBULA_FS = `
+precision mediump float;
+uniform sampler2D u_texture;
+varying vec2 v_uv;
+void main() {
+    gl_FragColor = texture2D(u_texture, v_uv);
+}
+`;
 
-let centerX = canvasWidth * 0.5;
-let centerY = canvasHeight * 0.5;
+const STAR_VS = `
+attribute vec2 a_position;
+attribute float a_z;
+attribute float a_size;
+attribute vec3 a_color;
+attribute float a_type;
+attribute float a_twinkle;
 
-let numberOfStars = 500;
+uniform vec2 u_resolution;
+uniform float u_time;
 
-// Pre-rendered star assets
-let starAssets: Record<string, { round: HTMLCanvasElement, spiky: HTMLCanvasElement }> = {};
-const STAR_SIZE = 20;
-const HALF_STAR_SIZE = STAR_SIZE / 2;
+varying vec3 v_color;
+varying float v_type;
+varying float v_alpha;
 
+void main() {
+    float x = a_position.x;
+    float y = a_position.y;
+    float z = a_z;
+
+    // Perspective projection
+    // Matches logic: screenX = centerX + (x/z)*width
+    // In clip space: (x/z) * 2.0
+    gl_Position = vec4((x / z) * 2.0, -(y / z) * 2.0, 0.0, 1.0);
+
+    // Point Size
+    // Matches logic: outerRadius = size * (1.0 - z/width)
+    float outerRadius = a_size * (1.0 - z / u_resolution.x);
+    gl_PointSize = outerRadius * 2.0;
+
+    // Twinkle
+    float twinkle = sin(u_time * 0.003 + a_twinkle) * 0.15;
+    float alpha = 0.7 + twinkle;
+    v_alpha = clamp(alpha, 0.2, 1.0);
+
+    v_color = a_color;
+    v_type = a_type;
+}
+`;
+
+const STAR_FS = `
+precision mediump float;
+uniform sampler2D u_atlas;
+varying vec3 v_color;
+varying float v_type;
+varying float v_alpha;
+
+void main() {
+    vec2 uv = gl_PointCoord;
+
+    // Atlas: Left half (0.0-0.5) is Round, Right half (0.5-1.0) is Spiky
+    // Type 0.0 -> Round, Type 1.0 -> Spiky
+    float u = uv.x * 0.5 + (v_type > 0.5 ? 0.5 : 0.0);
+
+    vec4 tex = texture2D(u_atlas, vec2(u, uv.y));
+
+    // Texture is white with gradient alpha. Multiply by color.
+    gl_FragColor = vec4(v_color, 1.0) * tex * v_alpha;
+}
+`;
+
+const LINE_VS = `
+attribute vec2 a_position;
+attribute float a_alpha;
+varying float v_alpha;
+
+void main() {
+    gl_Position = vec4(a_position, 0.0, 1.0);
+    v_alpha = a_alpha;
+}
+`;
+
+const LINE_FS = `
+precision mediump float;
+varying float v_alpha;
+void main() {
+    gl_FragColor = vec4(1.0, 1.0, 1.0, v_alpha);
+}
+`;
+
+// WebGL Context and State
+let gl: WebGLRenderingContext | null = null;
+let nebulaProgram: WebGLProgram | null = null;
+let starProgram: WebGLProgram | null = null;
+let lineProgram: WebGLProgram | null = null;
+
+let nebulaTexture: WebGLTexture | null = null;
+let starAtlasTexture: WebGLTexture | null = null;
+
+let starBuffer: WebGLBuffer | null = null;
+let lineBuffer: WebGLBuffer | null = null;
+let quadBuffer: WebGLBuffer | null = null;
+
+let canvasWidth = 0;
+let canvasHeight = 0;
+let centerX = 0;
+let centerY = 0;
+
+let animationFrameId: number;
+
+// Game State
+const NUMBER_OF_STARS = 500;
 const STAR_COLORS = [
-  { name: 'white', stops: ['rgba(255, 255, 255, 1)', 'rgba(255, 255, 255, 0)'] },
-  { name: 'blue', stops: ['rgba(170, 191, 255, 1)', 'rgba(170, 191, 255, 0)'] },
-  { name: 'red', stops: ['rgba(255, 204, 170, 1)', 'rgba(255, 204, 170, 0)'] },
-  { name: 'yellow', stops: ['rgba(255, 255, 170, 1)', 'rgba(255, 255, 170, 0)'] },
+  { r: 1.0, g: 1.0, b: 1.0 }, // white
+  { r: 0.67, g: 0.75, b: 1.0 }, // blue (170, 191, 255)
+  { r: 1.0, g: 0.8, b: 0.67 }, // red (255, 204, 170)
+  { r: 1.0, g: 1.0, b: 0.67 }, // yellow (255, 255, 170)
 ];
-
-function getRandomInt(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function remap(value: number, istart: number, istop: number, ostart: number, ostop: number) {
-  return ostart + (ostop - ostart) * ((value - istart) / (istop - istart));
-}
 
 class Star {
   x: number;
@@ -45,129 +144,61 @@ class Star {
   counter: number;
   radiusMax: number;
   speed: number;
-  alpha: number;
-  isSpiky: boolean;
-  colorName: string;
+  type: number; // 0 or 1
+  color: { r: number, g: number, b: number };
   twinkleOffset: number;
   
-  // Track current render properties for click detection
-  currentX: number = 0;
-  currentY: number = 0;
-  currentRadius: number = 0;
+  // For hit testing
+  screenX: number = 0;
+  screenY: number = 0;
+  screenRadius: number = 0;
 
   constructor() {
-    this.x = getRandomInt(-centerX, centerX);
-    this.y = getRandomInt(-centerY, centerY);
-    this.counter = getRandomInt(1, canvasWidth);
-
-    this.radiusMax = 1 + Math.random() * 2;
-    this.speed = getRandomInt(5, 10);
-    this.alpha = 0.7 + Math.random() * 0.3;
-    this.isSpiky = Math.random() > 0.5;
-    this.colorName = STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)].name;
-    this.twinkleOffset = Math.random() * Math.PI * 2;
+      this.x = 0;
+      this.y = 0;
+      this.counter = 0;
+      this.radiusMax = 0;
+      this.speed = 0;
+      this.type = 0;
+      this.color = STAR_COLORS[0];
+      this.twinkleOffset = 0;
+      this.reset(true);
   }
 
-  reset() {
-      this.counter = canvasWidth;
+  reset(initial = false) {
+      this.counter = initial ? getRandomInt(1, canvasWidth) : canvasWidth;
       this.x = getRandomInt(-centerX, centerX);
       this.y = getRandomInt(-centerY, centerY);
-      this.radiusMax = getRandomInt(1, 10);
-      this.speed = getRandomInt(1, 5);
-      this.colorName = STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)].name;
-      this.isSpiky = Math.random() > 0.5;
+      this.radiusMax = 1 + Math.random() * 2; // Keep small to match original look
+      this.speed = getRandomInt(5, 10);
+      this.color = STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)];
+      this.type = Math.random() > 0.5 ? 1.0 : 0.0;
+      this.twinkleOffset = Math.random() * Math.PI * 2;
   }
 
-  drawStar() {
-    this.counter -= this.speed;
+  update() {
+      this.counter -= this.speed;
+      if (this.counter < 1) {
+          this.reset();
+      }
 
-    if (this.counter < 1) {
-      this.reset();
-    }
+      const starX = (this.x / this.counter) * canvasWidth;
+      const starY = (this.y / this.counter) * canvasHeight;
 
-    let xRatio = this.x / this.counter;
-    let yRatio = this.y / this.counter;
+      this.screenX = centerX + starX;
+      this.screenY = centerY + starY;
 
-    let starX = remap(xRatio, 0, 1, 0, canvasWidth);
-    let starY = remap(yRatio, 0, 1, 0, canvasHeight);
-
-    let outerRadius = remap(this.counter, 0, canvasWidth, this.radiusMax, 0);
-
-    // Don't draw if too small
-    if (outerRadius <= 0) return;
-
-    // Update current properties for click detection
-    this.currentX = starX;
-    this.currentY = starY;
-    this.currentRadius = outerRadius;
-
-    const diameter = outerRadius * 2;
-
-    // Twinkling
-    const twinkle = Math.sin(Date.now() * 0.003 + this.twinkleOffset) * 0.15;
-    let currentAlpha = this.alpha + twinkle;
-    if (currentAlpha < 0.2) currentAlpha = 0.2;
-    if (currentAlpha > 1) currentAlpha = 1;
-
-    if (mainContext) {
-      mainContext.globalAlpha = currentAlpha;
-
-      const img = this.isSpiky ? starAssets[this.colorName].spiky : starAssets[this.colorName].round;
-      mainContext.drawImage(img, starX - outerRadius, starY - outerRadius, diameter, diameter);
-
-      mainContext.globalAlpha = 1.0;
-    }
+      this.screenRadius = this.radiusMax * (1.0 - this.counter / canvasWidth);
   }
 }
 
-let stars: Star[] = [];
-let shootingStar: ShootingStar;
-
-let nebulaCanvas: HTMLCanvasElement;
-let nebulaContext: CanvasRenderingContext2D;
-
-const handleClick = (event: MouseEvent) => {
-  const rect = (event.target as HTMLCanvasElement).getBoundingClientRect();
-  const clickX = event.clientX - rect.left;
-  const clickY = event.clientY - rect.top;
-
-  // Iterate backwards to check top-most stars first
-  for (let i = stars.length - 1; i >= 0; i--) {
-    const star = stars[i];
-    // Adjust click coordinates to account for canvas translation in draw loop
-    const translatedClickX = clickX - centerX;
-    const translatedClickY = clickY - centerY;
-
-    const dx = translatedClickX - star.currentX;
-    const dy = translatedClickY - star.currentY;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    // Add some padding to make it easier to click small stars
-    const hitRadius = Math.max(star.currentRadius, 5); 
-
-    if (distance <= hitRadius) {
-      score.value++;
-      break;
-    }
-  }
-};
-
 class ShootingStar {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  active: boolean;
-  opacity: number;
-
-  constructor() {
-    this.x = 0;
-    this.y = 0;
-    this.vx = 0;
-    this.vy = 0;
-    this.active = false;
-    this.opacity = 0;
-  }
+  x: number = 0;
+  y: number = 0;
+  vx: number = 0;
+  vy: number = 0;
+  active: boolean = false;
+  opacity: number = 0;
 
   trigger() {
       if (this.active) return;
@@ -183,205 +214,383 @@ class ShootingStar {
       this.vy = Math.sin(angle) * speed;
   }
 
-  draw() {
+  update() {
       if (!this.active) {
-          if (Math.random() < 0.005) {
-              this.trigger();
-          }
+          if (Math.random() < 0.005) this.trigger();
           return;
       }
-
       this.x += this.vx;
       this.y += this.vy;
       this.opacity -= 0.015;
-
-      if (this.opacity <= 0) {
-          this.active = false;
-          return;
-      }
-
-      if (mainContext) {
-          mainContext.beginPath();
-          const gradient = mainContext.createLinearGradient(this.x, this.y, this.x - this.vx * 3, this.y - this.vy * 3);
-          gradient.addColorStop(0, `rgba(255, 255, 255, ${this.opacity})`);
-          gradient.addColorStop(1, `rgba(255, 255, 255, 0)`);
-
-          mainContext.lineWidth = 2;
-          mainContext.strokeStyle = gradient;
-          mainContext.moveTo(this.x, this.y);
-          mainContext.lineTo(this.x - this.vx * 3, this.y - this.vy * 3);
-          mainContext.stroke();
-      }
+      if (this.opacity <= 0) this.active = false;
   }
 }
 
-function preRenderStars() {
-  STAR_COLORS.forEach(color => {
-      // Round Star
-      const roundStarCanvas = document.createElement('canvas');
-      roundStarCanvas.width = STAR_SIZE;
-      roundStarCanvas.height = STAR_SIZE;
-      const rCtx = roundStarCanvas.getContext('2d')!;
+const stars: Star[] = [];
+const shootingStar = new ShootingStar();
+// Float32Array for Star Data
+// Structure per star: x, y, z, size, r, g, b, type, twinkleOffset (9 floats)
+const STAR_VERTEX_SIZE = 9;
+const starData = new Float32Array(NUMBER_OF_STARS * STAR_VERTEX_SIZE);
 
-      const rGradient = rCtx.createRadialGradient(HALF_STAR_SIZE, HALF_STAR_SIZE, 0, HALF_STAR_SIZE, HALF_STAR_SIZE, HALF_STAR_SIZE);
-      rGradient.addColorStop(0, color.stops[0]);
-      rGradient.addColorStop(1, color.stops[1]);
-
-      rCtx.fillStyle = rGradient;
-      rCtx.beginPath();
-      rCtx.arc(HALF_STAR_SIZE, HALF_STAR_SIZE, HALF_STAR_SIZE, 0, Math.PI * 2);
-      rCtx.fill();
-
-      // Spiky Star
-      const spikyStarCanvas = document.createElement('canvas');
-      spikyStarCanvas.width = STAR_SIZE;
-      spikyStarCanvas.height = STAR_SIZE;
-      const sCtx = spikyStarCanvas.getContext('2d')!;
-
-      const sGradient = sCtx.createRadialGradient(HALF_STAR_SIZE, HALF_STAR_SIZE, 0, HALF_STAR_SIZE, HALF_STAR_SIZE, HALF_STAR_SIZE, HALF_STAR_SIZE);
-      sGradient.addColorStop(0, color.stops[0]);
-      sGradient.addColorStop(1, color.stops[1]);
-
-      sCtx.fillStyle = sGradient;
-
-      let innerRadius = HALF_STAR_SIZE / 2;
-      let outerRadius = HALF_STAR_SIZE;
-      let rot = Math.PI / 2 * 3;
-      const spikes = 5;
-      let step = Math.PI / spikes;
-
-      sCtx.beginPath();
-      sCtx.moveTo(HALF_STAR_SIZE, HALF_STAR_SIZE - outerRadius);
-
-      for (let i = 0; i < spikes; i++) {
-          let x = HALF_STAR_SIZE + Math.cos(rot) * outerRadius;
-          let y = HALF_STAR_SIZE + Math.sin(rot) * outerRadius;
-          sCtx.lineTo(x, y);
-          rot += step;
-
-          x = HALF_STAR_SIZE + Math.cos(rot) * innerRadius;
-          y = HALF_STAR_SIZE + Math.sin(rot) * innerRadius;
-          sCtx.lineTo(x, y);
-          rot += step;
-      }
-      sCtx.lineTo(HALF_STAR_SIZE, HALF_STAR_SIZE - outerRadius);
-      sCtx.closePath();
-      sCtx.fill();
-
-      starAssets[color.name] = { round: roundStarCanvas, spiky: spikyStarCanvas };
-  });
+function getRandomInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function createNebula() {
-  nebulaCanvas = document.createElement('canvas');
-  nebulaCanvas.width = canvasWidth;
-  nebulaCanvas.height = canvasHeight;
-  nebulaContext = nebulaCanvas.getContext('2d')!;
-
-  // First nebula (centered)
-  const gradient = nebulaContext.createRadialGradient(
-    canvasWidth * 0.5,
-    canvasHeight * 0.5,
-    0,
-    canvasWidth * 0.5,
-    canvasHeight * 0.5,
-    canvasWidth * 0.6
-  );
-  gradient.addColorStop(0, 'rgba(100, 50, 150, 0.4)');
-  gradient.addColorStop(0.5, 'rgba(50, 20, 100, 0.2)');
-  gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-
-  nebulaContext.fillStyle = gradient;
-  nebulaContext.beginPath();
-  nebulaContext.arc(canvasWidth * 0.5, canvasHeight * 0.5, canvasWidth * 0.6, 0, Math.PI * 2);
-  nebulaContext.fill();
-
-  // Second nebula (top-left)
-  const secondGradient = nebulaContext.createRadialGradient(
-    canvasWidth * 0.3,
-    canvasHeight * 0.3,
-    0,
-    canvasWidth * 0.3,
-    canvasHeight * 0.3,
-    canvasWidth * 0.3
-  );
-  secondGradient.addColorStop(0, 'rgba(255, 100, 200, 0.3)');
-  secondGradient.addColorStop(0.5, 'rgba(100, 150, 255, 0.1)');
-  secondGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-
-  nebulaContext.fillStyle = secondGradient;
-  nebulaContext.beginPath();
-  nebulaContext.arc(canvasWidth * 0.3, canvasHeight * 0.3, canvasWidth * 0.3, 0, Math.PI * 2);
-  nebulaContext.fill();
-}
-
-function draw() {
-    if (!mainContext) return;
-
-    // Background clear
-    mainContext.fillStyle = "rgba(0, 0, 0, 0.3)";
-    mainContext.fillRect(0, 0, canvasWidth, canvasHeight);
-
-    // Nebula
-    mainContext.drawImage(nebulaCanvas, 0, 0);
-
-    // Stars
-    mainContext.translate(centerX, centerY);
-
-    for (let i = 0; i < stars.length; i++) {
-      let star = stars[i];
-      star.drawStar();
+// Shader Helpers
+function createShader(gl: WebGLRenderingContext, type: number, source: string): WebGLShader | null {
+    const shader = gl.createShader(type);
+    if (!shader) return null;
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+        gl.deleteShader(shader);
+        return null;
     }
-
-    mainContext.translate(-centerX, -centerY);
-
-    // Shooting star
-    shootingStar.draw();
-
-    requestAnimationFrame(draw);
+    return shader;
 }
 
-onMounted(() => {
-  outerspace = document.querySelector("#outerspace") as HTMLCanvasElement;
-  mainContext = outerspace.getContext('2d', { alpha: false });
+function createProgram(gl: WebGLRenderingContext, vsSource: string, fsSource: string): WebGLProgram | null {
+    const vs = createShader(gl, gl.VERTEX_SHADER, vsSource);
+    const fs = createShader(gl, gl.FRAGMENT_SHADER, fsSource);
+    if (!vs || !fs) return null;
 
-  if (!mainContext) {
-    return;
-  }
+    const program = gl.createProgram();
+    if (!program) return null;
+    gl.attachShader(program, vs);
+    gl.attachShader(program, fs);
+    gl.linkProgram(program);
 
-  outerspace.width = window.innerWidth;
-  outerspace.height = window.innerHeight;
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        console.error('Program link error:', gl.getProgramInfoLog(program));
+        return null;
+    }
+    return program;
+}
 
-  canvasWidth = outerspace.width;
-  canvasHeight = outerspace.height;
+function initWebGL() {
+    if (!canvasRef.value) return;
 
-  centerX = canvasWidth * 0.5;
-  centerY = canvasHeight * 0.5;
-
-  preRenderStars();
-
-  for (let i = 0; i < numberOfStars; i++) {
-    let star = new Star();
-    stars.push(star);
-  }
-
-  shootingStar = new ShootingStar();
-
-  createNebula();
-
-  requestAnimationFrame(draw);
-
-  window.addEventListener('resize', () => {
-    outerspace.width = window.innerWidth;
-    outerspace.height = window.innerHeight;
-    canvasWidth = outerspace.width;
-    canvasHeight = outerspace.height;
+    // Resize canvas
+    canvasWidth = window.innerWidth;
+    canvasHeight = window.innerHeight;
+    canvasRef.value.width = canvasWidth;
+    canvasRef.value.height = canvasHeight;
     centerX = canvasWidth * 0.5;
     centerY = canvasHeight * 0.5;
 
-    createNebula();
-  });
+    gl = canvasRef.value.getContext('webgl', { alpha: false });
+    if (!gl) return;
+
+    // Enable Blending
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+    // Create Programs (if not exists)
+    if (!nebulaProgram) nebulaProgram = createProgram(gl, NEBULA_VS, NEBULA_FS);
+    if (!starProgram) starProgram = createProgram(gl, STAR_VS, STAR_FS);
+    if (!lineProgram) lineProgram = createProgram(gl, LINE_VS, LINE_FS);
+
+    // Init Buffers (if not exists)
+    if (!quadBuffer) {
+        quadBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+            -1, -1,
+            1, -1,
+            -1,  1,
+            -1,  1,
+            1, -1,
+            1,  1
+        ]), gl.STATIC_DRAW);
+    }
+
+    if (!starBuffer) {
+        starBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, starBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, starData.byteLength, gl.DYNAMIC_DRAW);
+    }
+
+    if (!lineBuffer) {
+        lineBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, lineBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, 4 * 3 * Float32Array.BYTES_PER_ELEMENT, gl.DYNAMIC_DRAW);
+    }
+
+    // Init Textures (always re-create nebula on resize, atlas is static but check existence)
+    createNebulaTexture();
+    if (!starAtlasTexture) createStarAtlasTexture();
+}
+
+function createNebulaTexture() {
+    if (!gl) return;
+
+    // Create temporary 2D canvas to draw gradient
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvasWidth;
+    tempCanvas.height = canvasHeight;
+    const ctx = tempCanvas.getContext('2d')!;
+
+    // Replicate Nebula Logic
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+    // First nebula
+    const g1 = ctx.createRadialGradient(
+        canvasWidth * 0.5, canvasHeight * 0.5, 0,
+        canvasWidth * 0.5, canvasHeight * 0.5, canvasWidth * 0.6
+    );
+    g1.addColorStop(0, 'rgba(100, 50, 150, 0.4)');
+    g1.addColorStop(0.5, 'rgba(50, 20, 100, 0.2)');
+    g1.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = g1;
+    ctx.fillRect(0,0, canvasWidth, canvasHeight);
+
+    // Second nebula
+    const g2 = ctx.createRadialGradient(
+        canvasWidth * 0.3, canvasHeight * 0.3, 0,
+        canvasWidth * 0.3, canvasHeight * 0.3, canvasWidth * 0.3
+    );
+    g2.addColorStop(0, 'rgba(255, 100, 200, 0.3)');
+    g2.addColorStop(0.5, 'rgba(100, 150, 255, 0.1)');
+    g2.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = g2;
+    ctx.fillRect(0,0, canvasWidth, canvasHeight);
+
+    // Upload to texture
+    if (nebulaTexture) gl.deleteTexture(nebulaTexture);
+    nebulaTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, nebulaTexture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tempCanvas);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+}
+
+function createStarAtlasTexture() {
+    if (!gl) return;
+
+    const size = 64;
+    const half = size / 2;
+    const canvas = document.createElement('canvas');
+    canvas.width = size; // 32 for Round, 32 for Spiky
+    canvas.height = half;
+    const ctx = canvas.getContext('2d')!;
+
+    // Clear
+    ctx.clearRect(0,0, size, half);
+
+    // Left: Round (0-31)
+    const rGrad = ctx.createRadialGradient(half/2, half/2, 0, half/2, half/2, half/2);
+    rGrad.addColorStop(0, 'rgba(255,255,255,1)');
+    rGrad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = rGrad;
+    ctx.beginPath();
+    ctx.arc(half/2, half/2, half/2, 0, Math.PI*2);
+    ctx.fill();
+
+    // Right: Spiky (32-63)
+    const sGrad = ctx.createRadialGradient(half + half/2, half/2, 0, half + half/2, half/2, half/2);
+    sGrad.addColorStop(0, 'rgba(255,255,255,1)');
+    sGrad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = sGrad;
+
+    // Draw Star Shape
+    let innerRadius = half/4;
+    let outerRadius = half/2;
+    let rot = Math.PI / 2 * 3;
+    const spikes = 5;
+    let step = Math.PI / spikes;
+
+    ctx.beginPath();
+    ctx.moveTo(half + half/2, half/2 - outerRadius);
+    for(let i=0; i<spikes; i++) {
+        let x = half + half/2 + Math.cos(rot) * outerRadius;
+        let y = half/2 + Math.sin(rot) * outerRadius;
+        ctx.lineTo(x, y);
+        rot += step;
+
+        x = half + half/2 + Math.cos(rot) * innerRadius;
+        y = half/2 + Math.sin(rot) * innerRadius;
+        ctx.lineTo(x, y);
+        rot += step;
+    }
+    ctx.closePath();
+    ctx.fill();
+
+    if (starAtlasTexture) gl.deleteTexture(starAtlasTexture);
+    starAtlasTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, starAtlasTexture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+}
+
+function renderLoop() {
+    if (!gl || !nebulaProgram || !starProgram || !lineProgram || !quadBuffer || !starBuffer || !lineBuffer) return;
+
+    // Update Stars
+    let offset = 0;
+    for(let i=0; i<NUMBER_OF_STARS; i++) {
+        stars[i].update();
+        starData[offset++] = stars[i].x;
+        starData[offset++] = stars[i].y;
+        starData[offset++] = stars[i].counter;
+        starData[offset++] = stars[i].radiusMax;
+        starData[offset++] = stars[i].color.r;
+        starData[offset++] = stars[i].color.g;
+        starData[offset++] = stars[i].color.b;
+        starData[offset++] = stars[i].type;
+        starData[offset++] = stars[i].twinkleOffset;
+    }
+
+    // Update Shooting Star
+    shootingStar.update();
+
+    // -- Draw --
+    gl.viewport(0, 0, canvasWidth, canvasHeight);
+
+    // 1. Nebula
+    gl.useProgram(nebulaProgram);
+    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+    const posLocNeb = gl.getAttribLocation(nebulaProgram, 'a_position');
+    gl.enableVertexAttribArray(posLocNeb);
+    gl.vertexAttribPointer(posLocNeb, 2, gl.FLOAT, false, 0, 0);
+
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, nebulaTexture);
+    gl.uniform1i(gl.getUniformLocation(nebulaProgram, 'u_texture'), 0);
+
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+    // 2. Stars
+    gl.useProgram(starProgram);
+    gl.bindBuffer(gl.ARRAY_BUFFER, starBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, starData, gl.DYNAMIC_DRAW); // Re-upload
+
+    const aPos = gl.getAttribLocation(starProgram, 'a_position');
+    const aZ = gl.getAttribLocation(starProgram, 'a_z');
+    const aSize = gl.getAttribLocation(starProgram, 'a_size');
+    const aColor = gl.getAttribLocation(starProgram, 'a_color');
+    const aType = gl.getAttribLocation(starProgram, 'a_type');
+    const aTwinkle = gl.getAttribLocation(starProgram, 'a_twinkle');
+
+    const stride = STAR_VERTEX_SIZE * 4; // bytes
+
+    gl.enableVertexAttribArray(aPos);
+    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, stride, 0);
+
+    gl.enableVertexAttribArray(aZ);
+    gl.vertexAttribPointer(aZ, 1, gl.FLOAT, false, stride, 2 * 4);
+
+    gl.enableVertexAttribArray(aSize);
+    gl.vertexAttribPointer(aSize, 1, gl.FLOAT, false, stride, 3 * 4);
+
+    gl.enableVertexAttribArray(aColor);
+    gl.vertexAttribPointer(aColor, 3, gl.FLOAT, false, stride, 4 * 4);
+
+    gl.enableVertexAttribArray(aType);
+    gl.vertexAttribPointer(aType, 1, gl.FLOAT, false, stride, 7 * 4);
+
+    gl.enableVertexAttribArray(aTwinkle);
+    gl.vertexAttribPointer(aTwinkle, 1, gl.FLOAT, false, stride, 8 * 4);
+
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, starAtlasTexture);
+    gl.uniform1i(gl.getUniformLocation(starProgram, 'u_atlas'), 0);
+
+    gl.uniform2f(gl.getUniformLocation(starProgram, 'u_resolution'), canvasWidth, canvasHeight);
+    gl.uniform1f(gl.getUniformLocation(starProgram, 'u_time'), Date.now());
+
+    gl.drawArrays(gl.POINTS, 0, NUMBER_OF_STARS);
+
+    // 3. Shooting Star
+    if (shootingStar.active) {
+        gl.useProgram(lineProgram);
+        gl.bindBuffer(gl.ARRAY_BUFFER, lineBuffer);
+
+        // Map line to clip space
+        // Logic: x -> (x/width)*2 - 1 ?
+        // No, I need a simple projection for 2D UI overlay style, or match the perspective?
+        // Shooting star is drawn in 2D space in original.
+        // So I'll just map 0..width to -1..1
+
+        const x1 = (shootingStar.x / canvasWidth) * 2 - 1;
+        const y1 = -((shootingStar.y / canvasHeight) * 2 - 1); // Flip Y
+        const x2 = ((shootingStar.x - shootingStar.vx * 3) / canvasWidth) * 2 - 1;
+        const y2 = -(((shootingStar.y - shootingStar.vy * 3) / canvasHeight) * 2 - 1);
+
+        const lineData = new Float32Array([
+            x1, y1, shootingStar.opacity,
+            x2, y2, 0.0
+        ]);
+
+        gl.bufferData(gl.ARRAY_BUFFER, lineData, gl.DYNAMIC_DRAW);
+
+        const laPos = gl.getAttribLocation(lineProgram, 'a_position');
+        const laAlpha = gl.getAttribLocation(lineProgram, 'a_alpha');
+
+        gl.enableVertexAttribArray(laPos);
+        gl.vertexAttribPointer(laPos, 2, gl.FLOAT, false, 3*4, 0);
+
+        gl.enableVertexAttribArray(laAlpha);
+        gl.vertexAttribPointer(laAlpha, 1, gl.FLOAT, false, 3*4, 2*4);
+
+        gl.drawArrays(gl.LINES, 0, 2);
+    }
+
+    animationFrameId = requestAnimationFrame(renderLoop);
+}
+
+const handleClick = (event: MouseEvent) => {
+  if (!canvasRef.value) return;
+  const rect = canvasRef.value.getBoundingClientRect();
+  const clickX = event.clientX - rect.left;
+  const clickY = event.clientY - rect.top;
+
+  // Iterate backwards (top-most first)
+  for (let i = stars.length - 1; i >= 0; i--) {
+    const star = stars[i];
+    // Distance check using stored screen coordinates
+    const dx = clickX - star.screenX;
+    const dy = clickY - star.screenY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    const hitRadius = Math.max(star.screenRadius, 5); // Minimum 5px hit area
+
+    if (distance <= hitRadius) {
+      score.value++;
+      break;
+    }
+  }
+};
+
+onMounted(() => {
+    // Initialize
+    for (let i = 0; i < NUMBER_OF_STARS; i++) {
+        stars.push(new Star());
+    }
+
+    initWebGL();
+
+    // Start loop
+    renderLoop();
+
+    window.addEventListener('resize', handleResize);
 });
+
+onBeforeUnmount(() => {
+    window.removeEventListener('resize', handleResize);
+    cancelAnimationFrame(animationFrameId);
+});
+
+function handleResize() {
+    // Just re-run init to update canvas size and texture.
+    // Programs/buffers reuse existing if present.
+    initWebGL();
+}
 </script>
 
 <style scoped>

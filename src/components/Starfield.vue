@@ -166,7 +166,9 @@ class Star {
   }
 
   reset(initial = false) {
-      this.counter = initial ? getRandomInt(1, canvasWidth) : canvasWidth;
+      const depth = Math.max(canvasWidth, canvasHeight);
+      this.counter = initial ? getRandomInt(1, depth) : depth;
+
       this.x = getRandomInt(-centerX, centerX);
       this.y = getRandomInt(-centerY, centerY);
       this.radiusMax = 1 + Math.random() * 2; // Keep small to match original look
@@ -188,7 +190,8 @@ class Star {
       this.screenX = centerX + starX;
       this.screenY = centerY + starY;
 
-      this.screenRadius = this.radiusMax * (1.0 - this.counter / canvasWidth);
+      const depth = Math.max(canvasWidth, canvasHeight);
+      this.screenRadius = this.radiusMax * (1.0 - this.counter / depth);
   }
 }
 

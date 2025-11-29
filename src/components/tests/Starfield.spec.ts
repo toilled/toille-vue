@@ -15,21 +15,86 @@ describe("Starfield.vue", () => {
     // Mock the canvas getContext method as it's not supported in jsdom
     getContextMock = vi
       .spyOn(HTMLCanvasElement.prototype, "getContext")
-      .mockImplementation(() => {
+      .mockImplementation((contextId) => {
+        if (contextId === '2d') {
+            return {
+                createRadialGradient: vi.fn(() => ({
+                    addColorStop: vi.fn(),
+                })),
+                fillStyle: "",
+                beginPath: vi.fn(),
+                moveTo: vi.fn(),
+                lineTo: vi.fn(),
+                closePath: vi.fn(),
+                fill: vi.fn(),
+                arc: vi.fn(),
+                fillRect: vi.fn(),
+                clearRect: vi.fn(),
+                drawImage: vi.fn(),
+                translate: vi.fn(),
+            } as any;
+        }
+
         mockContext = {
-          createRadialGradient: vi.fn(() => ({
-            addColorStop: vi.fn(),
-          })),
-          fillStyle: "",
-          beginPath: vi.fn(),
-          moveTo: vi.fn(),
-          lineTo: vi.fn(),
-          closePath: vi.fn(),
-          fill: vi.fn(),
-          arc: vi.fn(),
-          fillRect: vi.fn(),
-          drawImage: vi.fn(),
-          translate: vi.fn(),
+          enable: vi.fn(),
+          blendFunc: vi.fn(),
+          createShader: vi.fn(() => ({})),
+          shaderSource: vi.fn(),
+          compileShader: vi.fn(),
+          getShaderParameter: vi.fn(() => true),
+          createProgram: vi.fn(() => ({})),
+          attachShader: vi.fn(),
+          linkProgram: vi.fn(),
+          getProgramParameter: vi.fn(() => true),
+          createBuffer: vi.fn(() => ({})),
+          bindBuffer: vi.fn(),
+          bufferData: vi.fn(),
+          createTexture: vi.fn(),
+          bindTexture: vi.fn(),
+          texImage2D: vi.fn(),
+          texParameteri: vi.fn(),
+          getAttribLocation: vi.fn(() => 0),
+          getUniformLocation: vi.fn(() => ({})),
+          enableVertexAttribArray: vi.fn(),
+          vertexAttribPointer: vi.fn(),
+          uniform1i: vi.fn(),
+          uniform1f: vi.fn(),
+          uniform2f: vi.fn(),
+          viewport: vi.fn(),
+          clearColor: vi.fn(),
+          clear: vi.fn(),
+          useProgram: vi.fn(),
+          activeTexture: vi.fn(),
+          drawArrays: vi.fn(),
+          deleteShader: vi.fn(),
+          deleteTexture: vi.fn(),
+          // Constants
+          VERTEX_SHADER: 35633,
+          FRAGMENT_SHADER: 35632,
+          COMPILE_STATUS: 35713,
+          LINK_STATUS: 35714,
+          ARRAY_BUFFER: 34962,
+          STATIC_DRAW: 35044,
+          DYNAMIC_DRAW: 35048,
+          BLEND: 3042,
+          SRC_ALPHA: 770,
+          ONE: 1,
+          ONE_MINUS_SRC_ALPHA: 771,
+          TEXTURE_2D: 3553,
+          RGBA: 6408,
+          UNSIGNED_BYTE: 5121,
+          TEXTURE0: 33984,
+          FLOAT: 5126,
+          TRIANGLES: 4,
+          POINTS: 0,
+          LINES: 1,
+          COLOR_BUFFER_BIT: 16384,
+          CLAMP_TO_EDGE: 33071,
+          LINEAR: 9729,
+          TEXTURE_WRAP_S: 10242,
+          TEXTURE_WRAP_T: 10243,
+          TEXTURE_MIN_FILTER: 10241,
+          TEXTURE_MAG_FILTER: 10240,
         };
         return mockContext as any;
       });
@@ -68,7 +133,7 @@ describe("Starfield.vue", () => {
     wrapper.unmount();
   });
 
-  it("calls drawStar in the animation loop", async () => {
+  it("calls drawArrays in the animation loop", async () => {
     const wrapper = mount(Starfield, {
       attachTo: document.body,
     });
@@ -77,9 +142,8 @@ describe("Starfield.vue", () => {
     requestAnimationFrameMock.mock.calls[0][0](1000);
     await flushPromises();
 
-    // Expect the fill method of the context to have been called,
-    // which is a good indicator that the star is being drawn.
-    expect(mockContext.fill).toHaveBeenCalled();
+    // Expect drawArrays to have been called
+    expect(mockContext.drawArrays).toHaveBeenCalled();
 
     wrapper.unmount();
   });
@@ -108,8 +172,19 @@ describe("Starfield.vue", () => {
     }));
 
     // Trigger animation to position stars
-    // With Math.random() mocked to 0.5, stars should be at (0,0) relative to center
-    // Center is (500, 500)
+    // With Math.random() mocked to 0.5:
+    // Star init:
+    // x = random(-500, 500) -> 0.5 -> 0.
+    // y = 0.
+    // z = random(1, 1000) -> 500.5 -> 500.
+    // Update: counter -= speed (10). -> 490.
+    // ScreenX = centerX + (x/z)*width.
+    // ScreenX = 500 + (0/490)*1000 = 500.
+    // ScreenY = 500 + 0 = 500.
+
+    // So star should be at 500, 500.
+
+    // We need to advance at least one frame because update happens in loop
     requestAnimationFrameMock.mock.calls[0][0](1000);
     await flushPromises();
 

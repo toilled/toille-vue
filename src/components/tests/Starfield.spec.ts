@@ -83,4 +83,44 @@ describe("Starfield.vue", () => {
 
     wrapper.unmount();
   });
+
+  it("increments score when a star is clicked", async () => {
+    // Mock window dimensions to be deterministic
+    window.innerWidth = 1000;
+    window.innerHeight = 1000;
+
+    const wrapper = mount(Starfield, {
+      attachTo: document.body,
+    });
+
+    // Mock getBoundingClientRect
+    const canvas = wrapper.find('canvas').element;
+    canvas.getBoundingClientRect = vi.fn(() => ({
+      left: 0,
+      top: 0,
+      width: 1000,
+      height: 1000,
+      right: 1000,
+      bottom: 1000,
+      x: 0,
+      y: 0,
+      toJSON: () => { }
+    }));
+
+    // Trigger animation to position stars
+    // With Math.random() mocked to 0.5, stars should be at (0,0) relative to center
+    // Center is (500, 500)
+    requestAnimationFrameMock.mock.calls[0][0](1000);
+    await flushPromises();
+
+    // Click at the center of the canvas
+    await wrapper.find('canvas').trigger('click', {
+      clientX: 500,
+      clientY: 500
+    });
+
+    expect(wrapper.find('.score-counter').text()).toBe("Score: 1");
+
+    wrapper.unmount();
+  });
 });

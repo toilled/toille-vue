@@ -19,4 +19,8 @@ export interface Page {
    * @property {string[]} body - An array of strings, where each string is a paragraph of the page's content.
    */
   body: string[];
+  /**
+   * @property {boolean} [hidden] - Optional flag to hide the page from the menu.
+   */
+  hidden?: boolean;
 }

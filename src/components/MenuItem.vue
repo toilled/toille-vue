@@ -37,7 +37,7 @@ defineProps<{
 }
 
 /* Hover Effect: Subtle Space Glow */
-.menu-item a:hover {
+.can-hover .menu-item a:hover {
   background: rgba(20, 30, 60, 0.6); /* Deep space blue/purple */
   box-shadow: 0 0 15px rgba(100, 149, 237, 0.5), /* Cornflower blue glow */
               0 0 5px rgba(255, 255, 255, 0.2); /* Inner white hint */

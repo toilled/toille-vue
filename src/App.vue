@@ -123,6 +123,20 @@ onMounted(() => {
   setTimeout(() => {
     showHint.value = false;
   }, 5000);
+
+  // Input detection for sticky hover fix
+  let lastTouchTime = 0;
+
+  document.body.addEventListener('touchstart', () => {
+    lastTouchTime = Date.now();
+    document.body.classList.remove('can-hover');
+  });
+
+  document.body.addEventListener('mousemove', () => {
+    if (Date.now() - lastTouchTime > 500) {
+      document.body.classList.add('can-hover');
+    }
+  });
 });
 
 watch(

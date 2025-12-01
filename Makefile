@@ -1,15 +1,5 @@
 build:
-	npm run build
+	dart compile js -O2 -o web/main.dart.js web/main.dart
 
-ci:
-	npm ci
-
-dev:
-	npm run dev
-
-preview:
-	$(MAKE) build
-	npm run serve
-
-lint:
-	npx eslint .
+serve:
+	python3 -m http.server 3000 --directory web

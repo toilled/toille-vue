@@ -1,38 +1,47 @@
-# toille-vue
+# Starfield Dart
 
-This is a simple Vue.js web application built with Vite and TypeScript. It serves as a personal website and includes a few interactive components.
+A complete rewrite of the Starfield site using Dart.
 
-## Features
+## Prerequisites
 
-*   **Dynamic Pages**: Page content is loaded from a JSON file and rendered dynamically using Vue Router.
-*   **Interactive Components**: Includes an alcohol unit checker, a mini-game, and components that fetch data from external APIs.
-*   **Styling**: Uses `@picocss/pico` for lightweight and clean styling.
+- [Dart SDK](https://dart.dev/get-dart) (Version 3.10.0 or later)
 
 ## Project Structure
 
-*   `src/components`: Contains all the Vue components.
-*   `src/configs/pages.json`: Defines the pages and their content.
-*   `src/interfaces`: Contains TypeScript interfaces.
-*   `src/main.ts`: The application's entry point.
+- `web/`: Contains the source code and static assets.
+  - `main.dart`: The main entry point for the Dart application.
+  - `index.html`: The HTML entry point.
+  - `styles.css`: The stylesheet.
 
-## Setup and Installation
+## Setup
 
-1.  **Clone the repository:**
+1.  **Install Dependencies:**
     ```bash
-    git clone <repository-url>
-    ```
-2.  **Navigate to the project directory:**
-    ```bash
-    cd toille-vue
-    ```
-3.  **Install dependencies:**
-    ```bash
-    npm install
+    dart pub get
     ```
 
-## Available Scripts
+## Build
 
-*   **`npm run dev`**: Starts the development server.
-*   **`npm run build`**: Builds the application for production.
-*   **`npm run serve`**: Serves the production build locally.
-*   **`npm test`**: Runs the unit tests.
+To compile the Dart code to JavaScript for production:
+
+```bash
+dart compile js -O2 -o web/main.dart.js web/main.dart
+# OR
+make build
+# OR
+npm run build
+```
+
+## Run
+
+To serve the site locally:
+
+```bash
+python3 -m http.server 3000 --directory web
+# OR
+make serve
+# OR
+npm run serve
+```
+
+Then open `http://localhost:3000` in your browser.

@@ -5,3 +5,5 @@ dist
 coverage
 npm_output.log
 dev_server.log
+dart-sdk/
+*.zip

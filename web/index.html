@@ -13,26 +13,30 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <!-- Reusing the CSS logic if possible, or I will inject it via Dart or copy it -->
     <link rel="stylesheet" href="styles.css">
     <script defer src="main.dart.js"></script>
   </head>
 
   <body id="app" class="container">
+    <nav>
+      <ul>
+        <li>
+          <hgroup>
+            <h1 class="title">Elliot Dickerson</h1>
+            <h2 class="title">A site to test things</h2>
+          </hgroup>
+        </li>
+      </ul>
+    </nav>
+    <main>
+       <!-- Initial content can be a loading state or the default view -->
+       <p id="loading">Loading application...</p>
+    </main>
+
     <noscript>
-      <nav>
-        <ul>
-          <li>
-            <hgroup>
-              <h1 class="title">Elliot Dickerson</h1>
-              <h2 class="title">A site to test things</h2>
-            </hgroup>
-          </li>
-        </ul>
-      </nav>
-      <main>
+      <div class="container">
         <header>
-          <h2 class="title">Home</h2>
+          <h2 class="title">JavaScript Required</h2>
         </header>
         <p>You need to enable JavaScript to run this app.</p>
         <p>
@@ -44,7 +48,7 @@
             >this GitHub repository</a
           >.
         </p>
-      </main>
+      </div>
     </noscript>
   </body>
 </html>

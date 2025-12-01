@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import { defineComponent, ref, computed, onMounted } from '@vue/composition-api'
+import { defineComponent, ref, computed, onMounted } from 'vue'
 
 export default defineComponent({
   props: {

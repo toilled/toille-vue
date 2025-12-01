@@ -32,7 +32,7 @@
 </template>
 
 <script>
-import { defineComponent, ref, onMounted } from '@vue/composition-api'
+import { defineComponent, ref, onMounted } from 'vue'
 
 export default defineComponent({
   setup() {

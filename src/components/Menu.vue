@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import { defineComponent, ref } from '@vue/composition-api'
+import { defineComponent, ref } from 'vue'
 import MenuItem from './MenuItem.vue'
 
 export default defineComponent({

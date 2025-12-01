@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import { defineComponent, ref, computed } from '@vue/composition-api'
+import { defineComponent, ref, computed } from 'vue'
 import Paragraph from '~/components/Paragraph.vue'
 import pages from '~/configs/pages.json'
 

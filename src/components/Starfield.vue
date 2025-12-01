@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import { defineComponent, onMounted, ref, onBeforeUnmount } from '@vue/composition-api'
+import { defineComponent, onMounted, ref, onBeforeUnmount } from 'vue'
 
 export default defineComponent({
   setup() {

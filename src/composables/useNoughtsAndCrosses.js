@@ -1,4 +1,4 @@
-import { ref } from '@vue/composition-api'
+import { ref } from 'vue'
 
 export function useNoughtsAndCrosses() {
   const board = ref(Array(9).fill(''))

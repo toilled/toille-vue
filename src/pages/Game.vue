@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import { defineComponent, ref, reactive } from '@vue/composition-api'
+import { defineComponent, ref, reactive } from 'vue'
 
 export default defineComponent({
   setup() {

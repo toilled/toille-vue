@@ -43,7 +43,7 @@
 </template>
 
 <script>
-import { defineComponent, ref } from '@vue/composition-api'
+import { defineComponent, ref } from 'vue'
 import Paragraph from '~/components/Paragraph.vue'
 
 export default defineComponent({

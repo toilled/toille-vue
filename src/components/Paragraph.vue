@@ -2,19 +2,19 @@
   <p :class="{ marginless: last }" v-html="paragraph"></p>
 </template>
 
-<script setup lang="ts">
-/**
- * @file Paragraph.vue
- * @description Renders a single paragraph of text. It can apply a specific class if it's the last paragraph.
- */
+<script>
+import { defineComponent } from 'vue'
 
-/**
- * @props {Object}
- * @property {string} paragraph - The HTML content of the paragraph to be rendered.
- * @property {boolean} last - A boolean indicating if this is the last paragraph, used to apply a 'marginless' class.
- */
-defineProps<{
-  paragraph: string;
-  last: boolean;
-}>();
+export default defineComponent({
+  props: {
+    paragraph: {
+      type: String,
+      required: true
+    },
+    last: {
+      type: Boolean,
+      default: false
+    }
+  }
+})
 </script>

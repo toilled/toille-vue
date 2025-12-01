@@ -2,26 +2,36 @@
   <p class="typing-effect">{{ displayedText }}<span class="cursor"></span></p>
 </template>
 
-<script setup lang="ts">
-import { ref, onMounted } from 'vue';
+<script>
+import { defineComponent, ref, onMounted } from 'vue'
 
-const props = defineProps<{
-  text: string;
-}>();
-
-const displayedText = ref('');
-let index = 0;
-
-onMounted(() => {
-  const typing = setInterval(() => {
-    if (index < props.text.length) {
-      displayedText.value += props.text.charAt(index);
-      index++;
-    } else {
-      clearInterval(typing);
+export default defineComponent({
+  props: {
+    text: {
+      type: String,
+      required: true
     }
-  }, 100);
-});
+  },
+  setup(props) {
+    const displayedText = ref('')
+    let index = 0
+
+    onMounted(() => {
+      const typing = setInterval(() => {
+        if (index < props.text.length) {
+          displayedText.value += props.text.charAt(index)
+          index++
+        } else {
+          clearInterval(typing)
+        }
+      }, 100)
+    })
+
+    return {
+      displayedText
+    }
+  }
+})
 </script>
 
 <style scoped>

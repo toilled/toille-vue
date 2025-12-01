@@ -1,24 +1,20 @@
 <template>
   <li class="menu-item">
-    <router-link :to="page.link">{{ page.name }}</router-link>
+    <g-link :to="page.link">{{ page.name }}</g-link>
   </li>
 </template>
 
-<script setup lang="ts">
-import { Page } from "../interfaces/Page";
+<script>
+import { defineComponent } from 'vue'
 
-/**
- * @file MenuItem.vue
- * @description A component that displays a single menu item as a router link.
- */
-
-/**
- * @props {Object}
- * @property {Page} page - The page object containing the link and name for the menu item.
- */
-defineProps<{
-  page: Page;
-}>();
+export default defineComponent({
+  props: {
+    page: {
+      type: Object,
+      required: true
+    }
+  }
+})
 </script>
 
 <style scoped>
@@ -54,7 +50,8 @@ defineProps<{
   border-color: rgba(100, 149, 237, 0.8);
 }
 
-/* Current Page Indicator */
+/* Current Page Indicator - g-link adds 'active--exact' class usually, but let's check config */
+.menu-item a.active--exact,
 .menu-item a.router-link-active {
   background: rgba(30, 45, 80, 0.7);
   box-shadow: 0 0 10px rgba(100, 149, 237, 0.4);

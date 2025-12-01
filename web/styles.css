@@ -1,0 +1,55 @@
+@import url('https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css');
+
+html {
+  user-select: none;
+}
+
+.question {
+  cursor: help;
+}
+
+.marginless {
+  margin: 0;
+}
+
+.title {
+  text-shadow: 2px 2px 2px rgb(0 0 0 / 0.2);
+}
+
+article {
+  box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+}
+
+h1>a,
+h2>a {
+  text-decoration: none !important;
+}
+
+section,
+.content-container {
+  max-width: 50em;
+  margin: 0 auto;
+}
+
+section p,
+.content-container p {
+  line-height: 1.2em;
+  text-shadow: 1px 1px 1px rgb(0 0 0 / 0.2);
+}
+
+.router-view-container {
+  perspective: 1000px;
+  position: relative;
+  transition: height 0.5s ease;
+  overflow: hidden;
+}
+
+/* Animations adapted for manual implementation if needed, though Vue specific classes are removed in Dart unless I reimplement transition */
+.fade-in {
+    animation: fadeIn 0.5s forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(30px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}

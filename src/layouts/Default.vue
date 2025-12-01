@@ -18,7 +18,9 @@
         @enter="onEnter"
         @after-enter="onAfterEnter"
       >
-        <slot />
+        <div :key="$route.path">
+          <slot />
+        </div>
       </transition>
     </div>
     <Starfield />

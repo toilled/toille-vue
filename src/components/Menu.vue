@@ -18,40 +18,48 @@
   </ul>
 </template>
 
-<script setup lang="ts">
-import { ref } from "vue";
-import MenuItem from "./MenuItem.vue";
-import { Page } from "../interfaces/Page";
+<script>
+import { defineComponent, ref } from '@vue/composition-api'
+import MenuItem from './MenuItem.vue'
 
-/**
- * @file Menu.vue
- * @description A component that renders a list of menu items based on a pages array.
- */
+export default defineComponent({
+  components: {
+    MenuItem
+  },
+  props: {
+    pages: {
+      type: Array,
+      required: true
+    }
+  },
+  setup() {
+    const soundOn = ref(false)
+    let audio = null
 
-/**
- * @props {Object}
- * @property {Page[]} pages - An array of page objects to be rendered as menu items.
- */
-defineProps<{
-  pages: Page[];
-}>();
+    const toggleSound = () => {
+      // In Gridsome/SSR, window/document might not be available immediately during build,
+      // but click handlers run on client.
+      if (!audio && typeof window !== 'undefined') {
+        audio = new Audio('/ambient-space-sound.mp3')
+        audio.loop = true
+      }
 
-const soundOn = ref(false);
-let audio: HTMLAudioElement | null = null;
+      soundOn.value = !soundOn.value
+      if (audio) {
+        if (soundOn.value) {
+          audio.play()
+        } else {
+          audio.pause()
+        }
+      }
+    }
 
-const toggleSound = () => {
-  if (!audio) {
-    audio = new Audio("/ambient-space-sound.mp3");
-    audio.loop = true;
+    return {
+      soundOn,
+      toggleSound
+    }
   }
-
-  soundOn.value = !soundOn.value;
-  if (soundOn.value) {
-    audio.play();
-  } else {
-    audio.pause();
-  }
-};
+})
 </script>
 
 <style scoped>
@@ -71,8 +79,5 @@ ul {
   width: 24px;
   height: 24px;
   filter: invert(1);
-}
-
-.sound-on {
 }
 </style>

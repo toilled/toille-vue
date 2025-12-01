@@ -21,58 +21,52 @@
   </ul>
 </template>
 
-<script setup lang="ts">
-import { ref } from "vue";
+<script>
+import { defineComponent, ref } from '@vue/composition-api'
 
-/**
- * @file Title.vue
- * @description A component that displays a title and a subtitle.
- * It emits events when the title or subtitle is clicked.
- */
+export default defineComponent({
+  props: {
+    title: {
+      type: String,
+      required: true
+    },
+    subtitle: {
+      type: String,
+      required: true
+    },
+    activity: Boolean,
+    joke: Boolean
+  },
+  setup(props, { emit }) {
+    const animatingTitle = ref(false)
+    const animatingSubtitle = ref(false)
 
-/**
- * @props {Object}
- * @property {string} title - The main title text.
- * @property {string} subtitle - The subtitle text.
- * @property {boolean} activity - A boolean prop (not directly used in script, but likely for parent logic).
- * @property {boolean} joke - A boolean prop (not directly used in script, but likely for parent logic).
- */
-defineProps<{
-  title: string;
-  subtitle: string;
-  activity: boolean;
-  joke: boolean;
-}>();
+    function handleTitleClick() {
+      emit('activity')
+      triggerAnimation(animatingTitle)
+    }
 
-/**
- * @emits activity - Emitted when the main title is clicked.
- * @emits joke - Emitted when the subtitle is clicked.
- */
-const emit = defineEmits<{
-  (e: "activity"): void;
-  (e: "joke"): void;
-}>();
+    function handleSubtitleClick() {
+      emit('joke')
+      triggerAnimation(animatingSubtitle)
+    }
 
-const animatingTitle = ref(false);
-const animatingSubtitle = ref(false);
+    function triggerAnimation(animatingRef) {
+      if (animatingRef.value) return
+      animatingRef.value = true
+      setTimeout(() => {
+        animatingRef.value = false
+      }, 1000)
+    }
 
-function handleTitleClick() {
-  emit("activity");
-  triggerAnimation(animatingTitle);
-}
-
-function handleSubtitleClick() {
-  emit("joke");
-  triggerAnimation(animatingSubtitle);
-}
-
-function triggerAnimation(animatingRef: any) {
-  if (animatingRef.value) return;
-  animatingRef.value = true;
-  setTimeout(() => {
-    animatingRef.value = false;
-  }, 1000); // Duration matches CSS animation
-}
+    return {
+      animatingTitle,
+      animatingSubtitle,
+      handleTitleClick,
+      handleSubtitleClick
+    }
+  }
+})
 </script>
 
 <style scoped>

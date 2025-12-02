@@ -1,21 +1,24 @@
 <template>
-  <ul>
-    <MenuItem v-for="page in pages" :key="page.link" :page="page" />
-    <li @click="toggleSound" class="sound-icon-container">
-      <img
-        v-if="soundOn"
-        src="/sound-icon.svg"
-        alt="Toggle sound"
-        class="sound-icon"
-      />
-      <img
-        v-else
-        src="/mute-icon.svg"
-        alt="Toggle sound"
-        class="sound-icon"
-      />
-    </li>
-  </ul>
+  <div class="d-flex align-center">
+    <template v-if="$vuetify.display.mdAndUp">
+        <MenuItem v-for="page in pages" :key="page.link" :page="page" />
+    </template>
+
+    <v-menu v-else>
+      <template v-slot:activator="{ props }">
+        <v-btn icon="mdi-menu" v-bind="props"></v-btn>
+      </template>
+      <v-list>
+        <v-list-item v-for="page in pages" :key="page.link" :to="page.link">
+           <v-list-item-title>{{ page.name }}</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-menu>
+
+    <v-btn icon @click="toggleSound" class="ml-2">
+      <v-icon>{{ soundOn ? 'mdi-volume-high' : 'mdi-volume-off' }}</v-icon>
+    </v-btn>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -23,15 +26,6 @@ import { ref } from "vue";
 import MenuItem from "./MenuItem.vue";
 import { Page } from "../interfaces/Page";
 
-/**
- * @file Menu.vue
- * @description A component that renders a list of menu items based on a pages array.
- */
-
-/**
- * @props {Object}
- * @property {Page[]} pages - An array of page objects to be rendered as menu items.
- */
 defineProps<{
   pages: Page[];
 }>();
@@ -53,26 +47,3 @@ const toggleSound = () => {
   }
 };
 </script>
-
-<style scoped>
-ul {
-  position: relative;
-}
-
-.sound-icon-container {
-  cursor: pointer;
-  padding: 10px;
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
-.sound-icon {
-  width: 24px;
-  height: 24px;
-  filter: invert(1);
-}
-
-.sound-on {
-}
-</style>

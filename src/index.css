@@ -1,40 +1,9 @@
 html {
   user-select: none;
+  overflow-y: auto; /* Allow scrolling if needed, though Vuetify handles it mostly */
 }
 
-.question {
-  cursor: help;
-}
-
-.marginless {
-  margin: 0;
-}
-
-.title {
-  text-shadow: 2px 2px 2px rgb(0 0 0 / 0.2);
-}
-
-article {
-  box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
-}
-
-h1>a,
-h2>a {
-  text-decoration: none !important;
-}
-
-section,
-.content-container {
-  max-width: 50em;
-  margin: 0 auto;
-}
-
-section p,
-.content-container p {
-  line-height: 1.2em;
-  text-shadow: 1px 1px 1px rgb(0 0 0 / 0.2);
-}
-
+/* Transitions */
 .router-view-container {
   perspective: 1000px;
   position: relative;
@@ -49,6 +18,8 @@ section p,
   transition: all 0.5s ease-out;
   width: 100%;
   position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .cards-enter-from {

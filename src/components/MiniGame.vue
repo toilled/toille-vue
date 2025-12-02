@@ -1,31 +1,18 @@
 <template>
-  <div class="container">
-    <h1>Catch the Button!</h1>
-    <p>Score: {{ score }}</p>
-    <div class="game-area">
-      <button @click="moveButton" :style="buttonStyle">Click Me!</button>
-    </div>
-  </div>
+  <v-container class="fill-height flex-column">
+    <h1 class="text-h3 mb-4">Catch the Button!</h1>
+    <p class="text-h5 mb-4">Score: {{ score }}</p>
+    <v-card width="100%" height="70vh" class="position-relative" variant="outlined">
+      <v-btn @click="moveButton" :style="buttonStyle" color="primary">Click Me!</v-btn>
+    </v-card>
+  </v-container>
 </template>
 
 <script setup>
 import { ref, reactive } from 'vue';
 
-/**
- * @file MiniGame.vue
- * @description A simple mini-game where the user tries to click a button that moves to a random position on each click.
- */
-
-/**
- * @type {import('vue').Ref<number>}
- * @description A reactive reference to the player's score.
- */
 const score = ref(0);
 
-/**
- * @type {import('vue').Reactive<object>}
- * @description A reactive object for the button's CSS styles, allowing its position to be updated dynamically.
- */
 const buttonStyle = reactive({
   position: 'absolute',
   left: '50%',
@@ -34,9 +21,6 @@ const buttonStyle = reactive({
   transition: 'all 0.3s ease',
 });
 
-/**
- * @description Handles the button click event. It increments the score and moves the button to a new random position within the game area.
- */
 const moveButton = () => {
   score.value++;
   const newX = Math.random() * 90;
@@ -45,19 +29,3 @@ const moveButton = () => {
   buttonStyle.top = `${newY}%`;
 };
 </script>
-
-<style scoped>
-.container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 2rem;
-}
-.game-area {
-  position: relative;
-  width: 100%;
-  height: 70vh;
-  border: 1px solid #ccc;
-  margin-top: 1rem;
-}
-</style>

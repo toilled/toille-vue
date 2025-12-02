@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mount } from "@vue/test-utils";
 import Suggestion from "../Suggestion.vue";
 import flushPromises from "flush-promises";
+import { VApp } from "vuetify/components";
+import { h } from "vue";
 
 const mockSuggestion = {
   joke: "Why don't scientists trust atoms? Because they make up everything!",
@@ -18,14 +20,19 @@ afterEach(() => {
 });
 
 describe("Suggestion.vue", () => {
+  const mountOptions = {
+    props: {
+      url: "https://icanhazdadjoke.com/",
+      valueName: "joke",
+      title: "Dad Joke",
+    },
+  };
+
   it("fetches and displays a suggestion on mount", async () => {
-    const wrapper = mount(Suggestion, {
-      props: {
-        url: "https://icanhazdadjoke.com/",
-        valueName: "joke",
-        title: "Dad Joke",
-      },
+    const wrapper = mount(VApp, {
+        slots: { default: () => h(Suggestion, mountOptions.props) }
     });
+    // Loading state text
     expect(wrapper.text()).toContain("https://icanhazdadjoke.com/ might be down.");
     await flushPromises();
     expect(wrapper.text()).toContain(mockSuggestion.joke);
@@ -33,32 +40,26 @@ describe("Suggestion.vue", () => {
   });
 
   it("fetches a new suggestion when clicked", async () => {
-    const wrapper = mount(Suggestion, {
-      props: {
-        url: "https://icanhazdadjoke.com/",
-        valueName: "joke",
-        title: "Dad Joke",
-      },
+    const wrapper = mount(VApp, {
+        slots: { default: () => h(Suggestion, mountOptions.props) }
     });
     await flushPromises();
     const newMockSuggestion = {
       joke: "I'm reading a book on anti-gravity. It's impossible to put down!",
     };
+    // @ts-ignore
     global.fetch.mockResolvedValue({
       json: () => Promise.resolve(newMockSuggestion),
     } as Response);
-    await wrapper.trigger("click");
+
+    await wrapper.findComponent(Suggestion).find('.v-card').trigger("click");
     await flushPromises();
     expect(wrapper.text()).toContain(newMockSuggestion.joke);
   });
 
   it("shows a loading state while fetching", async () => {
-    const wrapper = mount(Suggestion, {
-      props: {
-        url: "https://icanhazdadjoke.com/",
-        valueName: "joke",
-        title: "Dad Joke",
-      },
+    const wrapper = mount(VApp, {
+        slots: { default: () => h(Suggestion, mountOptions.props) }
     });
     expect(wrapper.text()).toContain("https://icanhazdadjoke.com/ might be down.");
     await flushPromises();
@@ -66,29 +67,22 @@ describe("Suggestion.vue", () => {
   });
 
   it("hides the hint after the first click", async () => {
-    const wrapper = mount(Suggestion, {
-      props: {
-        url: "https://icanhazdadjoke.com/",
-        valueName: "joke",
-        title: "Dad Joke",
-      },
+    const wrapper = mount(VApp, {
+        slots: { default: () => h(Suggestion, mountOptions.props) }
     });
     await flushPromises();
     expect(wrapper.text()).toContain("Click to update");
-    await wrapper.trigger("click");
+    await wrapper.findComponent(Suggestion).find('.v-card').trigger("click");
     await flushPromises();
     expect(wrapper.text()).not.toContain("Click to update");
   });
 
   it("handles fetch errors gracefully", async () => {
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    // @ts-ignore
     global.fetch.mockRejectedValue(new Error("API is down"));
-    const wrapper = mount(Suggestion, {
-      props: {
-        url: "https://icanhazdadjoke.com/",
-        valueName: "joke",
-        title: "Dad Joke",
-      },
+    const wrapper = mount(VApp, {
+        slots: { default: () => h(Suggestion, mountOptions.props) }
     });
     await flushPromises();
     expect(wrapper.text()).toContain("https://icanhazdadjoke.com/ might be down.");
@@ -97,14 +91,12 @@ describe("Suggestion.vue", () => {
   });
 
   it("displays the correct hover hint", async () => {
-    const wrapper = mount(Suggestion, {
-      props: {
-        url: "https://icanhazdadjoke.com/",
-        valueName: "joke",
-        title: "Dad Joke",
-      },
+    const wrapper = mount(VApp, {
+        slots: { default: () => h(Suggestion, mountOptions.props) }
     });
     await flushPromises();
-    expect(wrapper.find("article").attributes("title")).toBe("Click for a new joke");
+    // Check the title prop on the VCard component
+    const vCard = wrapper.findComponent({ name: 'VCard' });
+    expect(vCard.props('title')).toBe("Click for a new joke");
   });
 });

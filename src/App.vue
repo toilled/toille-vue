@@ -1,51 +1,64 @@
 <template>
-  <nav>
-    <Title
-      :title="titles.title"
-      :subtitle="titles.subtitle"
-      :activity="activity"
-      :joke="joke"
-      @activity="toggleActivity"
-      @joke="toggleJoke"
-    />
-    <Menu :pages="visiblePages" />
-  </nav>
-  <div class="router-view-container" ref="containerRef">
-    <router-view v-slot="{ Component, route }">
-      <Transition
-        :name="transitionName"
-        @before-leave="onBeforeLeave"
-        @enter="onEnter"
-        @after-enter="onAfterEnter"
+  <v-app>
+    <v-app-bar app color="primary" dark>
+      <v-container class="d-flex align-center">
+        <Title
+          :title="titles.title"
+          :subtitle="titles.subtitle"
+          :activity="activity"
+          :joke="joke"
+          @activity="toggleActivity"
+          @joke="toggleJoke"
+        />
+        <v-spacer></v-spacer>
+        <Menu :pages="visiblePages" />
+      </v-container>
+    </v-app-bar>
+
+    <v-main>
+      <v-container fluid class="fill-height pa-0 router-view-container" ref="containerRef">
+        <router-view v-slot="{ Component, route }">
+          <Transition
+            :name="transitionName"
+            @before-leave="onBeforeLeave"
+            @enter="onEnter"
+            @after-enter="onAfterEnter"
+          >
+            <component :is="Component" :key="route.path" />
+          </Transition>
+        </router-view>
+      </v-container>
+    </v-main>
+
+    <Starfield />
+
+    <Transition name="fade">
+      <v-footer
+        v-if="noFootersShowing && showHint"
+        @click="checker = !checker"
+        app
+        color="transparent"
+        class="justify-center"
       >
-        <component :is="Component" :key="route.path" />
-      </Transition>
-    </router-view>
-  </div>
-  <Starfield />
-  <Transition name="fade">
-    <footer
-      v-if="noFootersShowing && showHint"
-      @click="checker = !checker"
-      class="content-container"
-    >
-      <TypingText text="The titles might be clickable..." />
-    </footer>
-  </Transition>
-  <Transition name="fade">
-    <Checker v-if="checker" />
-  </Transition>
-  <Transition name="fade">
-    <Activity v-show="activity" />
-  </Transition>
-  <Transition name="fade">
-    <Suggestion
-      v-show="joke"
-      url="https://icanhazdadjoke.com/"
-      valueName="joke"
-      title="Have a laugh!"
-    />
-  </Transition>
+        <TypingText text="The titles might be clickable..." />
+      </v-footer>
+    </Transition>
+
+    <Transition name="fade">
+      <Checker v-if="checker" />
+    </Transition>
+    <Transition name="fade">
+      <Activity v-show="activity" />
+    </Transition>
+    <Transition name="fade">
+      <Suggestion
+        v-show="joke"
+        url="https://icanhazdadjoke.com/"
+        valueName="joke"
+        title="Have a laugh!"
+      />
+    </Transition>
+  </v-app>
 </template>
 
 <script setup lang="ts">

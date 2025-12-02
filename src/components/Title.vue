@@ -1,42 +1,26 @@
 <template>
-  <ul>
-    <li>
-      <hgroup>
-        <h1
-          class="title question"
-          :class="{ 'space-warp': animatingTitle }"
-          @mousedown="handleTitleClick"
-        >
-          {{ title }}
-        </h1>
-        <h2
-          class="title question"
-          :class="{ 'space-warp': animatingSubtitle }"
-          @mousedown="handleSubtitleClick"
-        >
-          {{ subtitle }}
-        </h2>
-      </hgroup>
-    </li>
-  </ul>
+  <div class="d-flex flex-column">
+    <h1
+      class="text-h4 font-weight-bold question cursor-pointer"
+      :class="{ 'space-warp': animatingTitle }"
+      @mousedown="handleTitleClick"
+    >
+      {{ title }}
+    </h1>
+    <h2
+      class="text-subtitle-1 question cursor-pointer"
+      style="opacity: 0.9;"
+      :class="{ 'space-warp': animatingSubtitle }"
+      @mousedown="handleSubtitleClick"
+    >
+      {{ subtitle }}
+    </h2>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
 
-/**
- * @file Title.vue
- * @description A component that displays a title and a subtitle.
- * It emits events when the title or subtitle is clicked.
- */
-
-/**
- * @props {Object}
- * @property {string} title - The main title text.
- * @property {string} subtitle - The subtitle text.
- * @property {boolean} activity - A boolean prop (not directly used in script, but likely for parent logic).
- * @property {boolean} joke - A boolean prop (not directly used in script, but likely for parent logic).
- */
 defineProps<{
   title: string;
   subtitle: string;
@@ -44,10 +28,6 @@ defineProps<{
   joke: boolean;
 }>();
 
-/**
- * @emits activity - Emitted when the main title is clicked.
- * @emits joke - Emitted when the subtitle is clicked.
- */
 const emit = defineEmits<{
   (e: "activity"): void;
   (e: "joke"): void;
@@ -76,6 +56,10 @@ function triggerAnimation(animatingRef: any) {
 </script>
 
 <style scoped>
+.question {
+  cursor: help;
+}
+
 .space-warp {
   animation: space-warp 1s ease-in-out;
 }

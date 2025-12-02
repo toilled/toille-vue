@@ -92,7 +92,8 @@ describe("PageContent.vue", () => {
       },
     });
     await flushPromises();
-    const title = wrapper.find(".title");
+    // In Vuetify version, I used v-card-title, which renders a div with class v-card-title
+    const title = wrapper.find(".v-card-title");
     await title.trigger("mousedown");
     expect(wrapper.text()).toContain("Nothing here");
     vi.runAllTimers();
@@ -100,5 +101,4 @@ describe("PageContent.vue", () => {
     expect(wrapper.text()).not.toContain("Nothing here");
     vi.useRealTimers();
   });
-
 });

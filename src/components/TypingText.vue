@@ -1,5 +1,5 @@
 <template>
-  <p class="typing-effect">{{ displayedText }}<span class="cursor"></span></p>
+  <p class="typing-effect text-body-1">{{ displayedText }}<span class="cursor"></span></p>
 </template>
 
 <script setup lang="ts">
@@ -36,6 +36,7 @@ onMounted(() => {
   height: 1.2em;
   background-color: #00ff00;
   animation: blink 0.7s infinite;
+  vertical-align: text-bottom;
 }
 
 @keyframes blink {

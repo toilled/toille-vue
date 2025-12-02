@@ -25,7 +25,8 @@ describe("Title.vue", () => {
         joke: false,
       },
     });
-    await wrapper.find(".title.question").trigger("mousedown");
+    // Class changed from .title.question to .text-h4.question
+    await wrapper.find("h1").trigger("mousedown");
     expect(wrapper.emitted("activity")).toBeTruthy();
   });
 
@@ -38,7 +39,8 @@ describe("Title.vue", () => {
             joke: false,
         },
     });
-    await wrapper.find("h2.title.question").trigger("mousedown");
+    // Class changed
+    await wrapper.find("h2").trigger("mousedown");
     expect(wrapper.emitted("joke")).toBeTruthy();
   });
 });

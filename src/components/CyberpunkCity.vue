@@ -249,6 +249,49 @@ onMounted(() => {
     cars.push(carGroup as unknown as THREE.Mesh);
   }
 
+  // Starfield
+  const starGeo = new THREE.BufferGeometry();
+  const starCount = 2000;
+  const starPositions = new Float32Array(starCount * 3);
+  const starColors = new Float32Array(starCount * 3);
+
+  const color1 = new THREE.Color(0xff00cc); // Neon pink
+  const color2 = new THREE.Color(0x00ccff); // Neon cyan
+  const color3 = new THREE.Color(0xffffff); // White
+
+  for (let i = 0; i < starCount; i++) {
+    // Spread stars in a dome/box above the city
+    const x = (Math.random() - 0.5) * 3000;
+    const y = 400 + Math.random() * 1000; // Above the camera roughly
+    const z = (Math.random() - 0.5) * 3000;
+
+    starPositions[i * 3] = x;
+    starPositions[i * 3 + 1] = y;
+    starPositions[i * 3 + 2] = z;
+
+    const c = Math.random();
+    let finalColor = color3;
+    if (c < 0.33) finalColor = color1;
+    else if (c < 0.66) finalColor = color2;
+
+    starColors[i * 3] = finalColor.r;
+    starColors[i * 3 + 1] = finalColor.g;
+    starColors[i * 3 + 2] = finalColor.b;
+  }
+
+  starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+  starGeo.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
+
+  const starMaterial = new THREE.PointsMaterial({
+    size: 2.5,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.8,
+  });
+
+  const stars = new THREE.Points(starGeo, starMaterial);
+  scene.add(stars);
+
   window.addEventListener("resize", onResize);
   animate();
 });

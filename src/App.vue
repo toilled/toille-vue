@@ -22,7 +22,7 @@
       </Transition>
     </router-view>
   </div>
-  <Starfield />
+  <CyberpunkCity />
   <Transition name="fade">
     <footer
       v-if="noFootersShowing && showHint"
@@ -56,7 +56,7 @@ import Menu from "./components/Menu.vue";
 import Checker from "./components/Checker.vue";
 import Activity from "./components/Activity.vue";
 import Suggestion from "./components/Suggestion.vue";
-import Starfield from "./components/Starfield.vue";
+import CyberpunkCity from "./components/CyberpunkCity.vue";
 import TypingText from "./components/TypingText.vue";
 import pages from "./configs/pages.json";
 import titles from "./configs/titles.json";

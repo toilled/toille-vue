@@ -58,6 +58,9 @@ vi.mock('three', () => {
     })),
     Float32BufferAttribute: vi.fn(),
     BufferAttribute: vi.fn(),
+    CanvasTexture: vi.fn(),
+    RepeatWrapping: 1000,
+    NearestFilter: 1001,
     MathUtils: {
         randFloatSpread: vi.fn(() => 100),
         randFloat: vi.fn(() => 100)

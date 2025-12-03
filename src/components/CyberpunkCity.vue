@@ -13,7 +13,7 @@ let camera: THREE.PerspectiveCamera;
 let renderer: THREE.WebGLRenderer;
 let animationId: number;
 
-const buildings: THREE.Mesh[] = [];
+const buildings: THREE.Object3D[] = [];
 const cars: THREE.Mesh[] = [];
 
 // Configuration
@@ -27,6 +27,32 @@ const GRID_SIZE = Math.floor(CITY_SIZE / CELL_SIZE);
 // Grid range: -GRID_SIZE/2 to GRID_SIZE/2
 
 const CAR_COUNT = 150;
+
+// Reusable Texture for Windows
+function createWindowTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 32;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+        ctx.fillStyle = '#020202';
+        ctx.fillRect(0, 0, 32, 64);
+        // random windows
+        for (let y = 2; y < 64; y += 4) {
+            for (let x = 2; x < 32; x += 4) {
+               if (Math.random() > 0.6) {
+                   ctx.fillStyle = Math.random() > 0.5 ? '#ff00cc' : '#00ccff';
+                   ctx.fillRect(x, y, 2, 2);
+               }
+            }
+        }
+    }
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.magFilter = THREE.NearestFilter;
+    return texture;
+}
 
 onMounted(() => {
   if (!canvasContainer.value) return;
@@ -72,20 +98,12 @@ onMounted(() => {
   plane.position.y = -0.5;
   scene.add(plane);
 
-  // Create Roads Visuals (Grid)
-  const gridHelperSize = GRID_SIZE * CELL_SIZE;
-  // We can use planes for roads to make them distinct
-  const roadMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
-
-  // Actually, simplest way to make "marked roads" is to draw the roads as black strips on top of ground,
-  // or just use the ground as road and place buildings on "islands".
-  // Let's place buildings.
+  // Generate City Grid
+  const startOffset = -(GRID_SIZE * CELL_SIZE) / 2 + CELL_SIZE / 2;
+  const windowTexture = createWindowTexture();
 
   const boxGeo = new THREE.BoxGeometry(1, 1, 1);
   boxGeo.translate(0, 0.5, 0); // pivot at bottom
-
-  // Generate City Grid
-  const startOffset = -(GRID_SIZE * CELL_SIZE) / 2 + CELL_SIZE / 2;
 
   for (let x = 0; x < GRID_SIZE; x++) {
     for (let z = 0; z < GRID_SIZE; z++) {
@@ -95,51 +113,69 @@ onMounted(() => {
         const xPos = startOffset + x * CELL_SIZE;
         const zPos = startOffset + z * CELL_SIZE;
 
-        const h = 20 + Math.random() * 120;
-        const w = BLOCK_SIZE - 10 - Math.random() * 20; // slightly smaller than block
+        const h = 40 + Math.random() * 120; // Slightly taller minimum
+        const w = BLOCK_SIZE - 10 - Math.random() * 20;
         const d = BLOCK_SIZE - 10 - Math.random() * 20;
 
-        const building = new THREE.Mesh(
-            boxGeo,
-            new THREE.MeshLambertMaterial({ color: 0x111111 })
-        );
+        const buildingGroup = new THREE.Group();
+        buildingGroup.position.set(xPos, 0, zPos);
 
-        building.position.set(xPos, 0, zPos);
-        building.scale.set(w, h, d);
+        // Main Block
+        const material = new THREE.MeshLambertMaterial({
+            color: 0x222222,
+            map: windowTexture
+        });
+        const mainBlock = new THREE.Mesh(boxGeo, material);
+        mainBlock.scale.set(w, h, d);
+        buildingGroup.add(mainBlock);
 
-        // Neon Edges
+        // Edges for Main Block
         const edges = new THREE.EdgesGeometry(new THREE.BoxGeometry(w, h, d));
         const line = new THREE.LineSegments(
             edges,
             new THREE.LineBasicMaterial({ color: Math.random() > 0.5 ? 0xff00cc : 0x00ccff, transparent: true, opacity: 0.4 })
         );
-        line.position.copy(building.position);
-        line.position.y = h / 2;
+        line.position.y = h / 2; // EdgesGeometry is centered
+        buildingGroup.add(line);
 
-        scene.add(building);
-        scene.add(line);
-        buildings.push(building);
+        // Top Structure (for taller buildings)
+        if (h > 100 && Math.random() > 0.4) {
+            const h2 = h * 0.3;
+            const w2 = w * 0.6;
+            const d2 = d * 0.6;
+
+            const topBlock = new THREE.Mesh(boxGeo, material);
+            topBlock.scale.set(w2, h2, d2);
+            topBlock.position.y = h;
+            buildingGroup.add(topBlock);
+
+            const topEdges = new THREE.EdgesGeometry(new THREE.BoxGeometry(w2, h2, d2));
+            const topLine = new THREE.LineSegments(
+                topEdges,
+                new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 })
+            );
+            topLine.position.y = h + h2 / 2;
+            buildingGroup.add(topLine);
+
+            // Antenna
+            if (Math.random() > 0.5) {
+                const antennaH = h * 0.2;
+                const antenna = new THREE.Mesh(boxGeo, new THREE.MeshBasicMaterial({ color: 0xffffff }));
+                antenna.scale.set(2, antennaH, 2);
+                antenna.position.y = h + h2;
+                buildingGroup.add(antenna);
+            }
+        }
+
+        scene.add(buildingGroup);
+        buildings.push(buildingGroup);
     }
   }
 
   // Add Road Markings (Simple Lines)
-  // Horizontal Lines (Along X axis)
   const lineMaterial = new THREE.LineBasicMaterial({ color: 0x444444 });
 
   for (let i = 0; i <= GRID_SIZE; i++) {
-      // These represent the "centers" of the roads running along Z
-      // Roads run between blocks.
-      // Block centers are at startOffset + x * CELL_SIZE.
-      // Road centers are at startOffset + x * CELL_SIZE + CELL_SIZE/2 ? No.
-
-      // Let's visualize:
-      // B = Block, R = Road
-      // | B | R | B | R | B |
-
-      // Coordinate of Block 0 center: startOffset
-      // Coordinate of Block 1 center: startOffset + CELL_SIZE
-      // Coordinate of Road between 0 and 1: startOffset + CELL_SIZE/2
-
       const pos = startOffset + i * CELL_SIZE - CELL_SIZE / 2;
 
       // Road line geometry (Along Z)
@@ -211,26 +247,21 @@ onMounted(() => {
     carGroup.add(hl2);
 
     // Position on Road
-    // Pick an axis
     const axis = Math.random() > 0.5 ? 'x' : 'z';
     const dir = Math.random() > 0.5 ? 1 : -1;
 
-    // Pick a specific road index
     const roadIndex = Math.floor(Math.random() * (GRID_SIZE + 1));
     const roadCoordinate = startOffset + roadIndex * CELL_SIZE - CELL_SIZE / 2;
 
-    // Add some random offset along the road, and a lane offset
     const laneOffset = (Math.random() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
 
     let x = 0, z = 0;
 
     if (axis === 'x') {
-        // Moving along X, so Z is fixed to a road
         z = roadCoordinate + laneOffset;
         x = (Math.random() - 0.5) * CITY_SIZE;
         carGroup.rotation.y = dir === 1 ? Math.PI / 2 : -Math.PI / 2;
     } else {
-        // Moving along Z, so X is fixed to a road
         x = roadCoordinate + laneOffset;
         z = (Math.random() - 0.5) * CITY_SIZE;
         carGroup.rotation.y = dir === 1 ? 0 : Math.PI;
@@ -242,7 +273,7 @@ onMounted(() => {
       speed: 1 + Math.random() * 2,
       dir: dir,
       axis: axis,
-      laneOffset: laneOffset // Keep this if we want to change lanes later (not implementing now)
+      laneOffset: laneOffset
     };
 
     scene.add(carGroup);
@@ -255,14 +286,12 @@ onMounted(() => {
   const starPositions = new Float32Array(starCount * 3);
   const starColors = new Float32Array(starCount * 3);
 
-  const color1 = new THREE.Color(0xff00cc); // Neon pink
-  const color2 = new THREE.Color(0x00ccff); // Neon cyan
-  const color3 = new THREE.Color(0xffffff); // White
+  const color1 = new THREE.Color(0xff00cc);
+  const color2 = new THREE.Color(0x00ccff);
+  const color3 = new THREE.Color(0xffffff);
 
   for (let i = 0; i < starCount; i++) {
-    // Spread stars in a dome/box above the city
     const x = (Math.random() - 0.5) * 4000;
-    // Lower the stars slightly and bring them closer
     const y = 200 + Math.random() * 800;
     const z = (Math.random() - 0.5) * 4000;
 

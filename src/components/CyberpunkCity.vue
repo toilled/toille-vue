@@ -34,7 +34,7 @@ onMounted(() => {
   // Scene setup
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x050510);
-  scene.fog = new THREE.FogExp2(0x050510, 0.002);
+  scene.fog = new THREE.FogExp2(0x050510, 0.001); // Reduced fog density
 
   // Camera setup
   camera = new THREE.PerspectiveCamera(
@@ -43,7 +43,7 @@ onMounted(() => {
     1,
     3000
   );
-  camera.position.set(0, 300, 600);
+  camera.position.set(0, 250, 600); // Lowered camera slightly
   camera.lookAt(0, 0, 0);
 
   // Renderer setup
@@ -261,9 +261,10 @@ onMounted(() => {
 
   for (let i = 0; i < starCount; i++) {
     // Spread stars in a dome/box above the city
-    const x = (Math.random() - 0.5) * 3000;
-    const y = 400 + Math.random() * 1000; // Above the camera roughly
-    const z = (Math.random() - 0.5) * 3000;
+    const x = (Math.random() - 0.5) * 4000;
+    // Lower the stars slightly and bring them closer
+    const y = 200 + Math.random() * 800;
+    const z = (Math.random() - 0.5) * 4000;
 
     starPositions[i * 3] = x;
     starPositions[i * 3 + 1] = y;

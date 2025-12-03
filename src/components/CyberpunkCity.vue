@@ -14,7 +14,8 @@ let renderer: THREE.WebGLRenderer;
 let animationId: number;
 
 const buildings: THREE.Object3D[] = [];
-const cars: THREE.Mesh[] = [];
+// Fix: cars are Group objects
+const cars: THREE.Group[] = [];
 
 // Configuration
 const CITY_SIZE = 2000;
@@ -52,6 +53,66 @@ function createWindowTexture() {
     texture.wrapT = THREE.RepeatWrapping;
     texture.magFilter = THREE.NearestFilter;
     return texture;
+}
+
+// Generate Billboard Textures
+function createBillboardTextures() {
+    const textures: THREE.CanvasTexture[] = [];
+    for (let i = 0; i < 5; i++) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 128;
+        canvas.height = 64;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            // Dark background
+            ctx.fillStyle = '#100010';
+            ctx.fillRect(0, 0, 128, 64);
+
+            // Neon border
+            const colors = ['#ff00cc', '#00ffcc', '#ffff00', '#ff0000', '#00ff00'];
+            const color = colors[i % colors.length];
+
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 4;
+            ctx.strokeRect(4, 4, 120, 56);
+
+            // "Text" / Content
+            ctx.fillStyle = color;
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 10;
+
+            if (i === 0) {
+                // Lines
+                 ctx.fillRect(15, 15, 80, 5);
+                 ctx.fillRect(15, 30, 60, 5);
+                 ctx.fillRect(15, 45, 90, 5);
+            } else if (i === 1) {
+                // Circles
+                ctx.beginPath();
+                ctx.arc(32, 32, 20, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(32, 32, 10, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = color;
+                ctx.fillRect(64, 20, 40, 24);
+            } else {
+                // Random blocks
+                for(let k=0; k<5; k++) {
+                    ctx.fillRect(
+                        10 + Math.random() * 100,
+                        10 + Math.random() * 40,
+                        10 + Math.random() * 20,
+                        5 + Math.random() * 10
+                    );
+                }
+            }
+        }
+        const texture = new THREE.CanvasTexture(canvas);
+        textures.push(texture);
+    }
+    return textures;
 }
 
 onMounted(() => {
@@ -101,6 +162,7 @@ onMounted(() => {
   // Generate City Grid
   const startOffset = -(GRID_SIZE * CELL_SIZE) / 2 + CELL_SIZE / 2;
   const windowTexture = createWindowTexture();
+  const billboardTextures = createBillboardTextures();
 
   const boxGeo = new THREE.BoxGeometry(1, 1, 1);
   boxGeo.translate(0, 0.5, 0); // pivot at bottom
@@ -165,6 +227,42 @@ onMounted(() => {
                 antenna.position.y = h + h2;
                 buildingGroup.add(antenna);
             }
+        }
+
+        // Billboards
+        if (h > 60 && Math.random() > 0.7) {
+            const texIndex = Math.floor(Math.random() * billboardTextures.length);
+            const bbTex = billboardTextures[texIndex];
+
+            const bbW = 20 + Math.random() * 15;
+            const bbH = 10 + Math.random() * 10;
+            const bbGeo = new THREE.PlaneGeometry(bbW, bbH);
+            const bbMat = new THREE.MeshBasicMaterial({
+                map: bbTex,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.9
+            });
+            const billboard = new THREE.Mesh(bbGeo, bbMat);
+
+            // Position on a random face
+            // 0: +Z, 1: -Z, 2: +X, 3: -X
+            const face = Math.floor(Math.random() * 4);
+            const offset = 1;
+
+            if (face === 0) { // +Z
+                billboard.position.set(0, h * (0.5 + Math.random() * 0.3), d/2 + offset);
+            } else if (face === 1) { // -Z
+                billboard.position.set(0, h * (0.5 + Math.random() * 0.3), -d/2 - offset);
+                billboard.rotation.y = Math.PI;
+            } else if (face === 2) { // +X
+                billboard.position.set(w/2 + offset, h * (0.5 + Math.random() * 0.3), 0);
+                billboard.rotation.y = Math.PI / 2;
+            } else { // -X
+                billboard.position.set(-w/2 - offset, h * (0.5 + Math.random() * 0.3), 0);
+                billboard.rotation.y = -Math.PI / 2;
+            }
+            buildingGroup.add(billboard);
         }
 
         scene.add(buildingGroup);
@@ -277,7 +375,7 @@ onMounted(() => {
     };
 
     scene.add(carGroup);
-    cars.push(carGroup as unknown as THREE.Mesh);
+    cars.push(carGroup);
   }
 
   // Starfield

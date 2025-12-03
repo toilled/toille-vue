@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import pages from "../configs/pages.json";
-import App from "../App.vue";
+
 
 const mockApp = {
   use: vi.fn(),

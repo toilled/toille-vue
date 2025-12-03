@@ -1,11 +1,11 @@
 import { ref } from 'vue';
 
 export function useNoughtsAndCrosses() {
-  const board = ref(Array(9).fill(''));
+  const board = ref<string[]>(Array(9).fill(''));
   const currentPlayer = ref('X');
-  const winner = ref(null);
+  const winner = ref<string | null>(null);
 
-  const makeMove = (index) => {
+  const makeMove = (index: number) => {
     if (board.value[index] || winner.value) return;
 
     board.value[index] = currentPlayer.value;
@@ -29,7 +29,7 @@ export function useNoughtsAndCrosses() {
       if (board.value[i] === '') {
         const newBoard = [...board.value];
         newBoard[i] = 'O';
-        let score = minimax(newBoard, 0, false);
+        const score = minimax(newBoard, 0, false);
         if (score > bestScore) {
           bestScore = score;
           move = i;
@@ -47,7 +47,7 @@ export function useNoughtsAndCrosses() {
     currentPlayer.value = 'X';
   };
 
-  const minimax = (board, depth, isMaximizing) => {
+  const minimax = (board: string[], depth: number, isMaximizing: boolean) => {
     if (checkWinner(board, 'O')) return 10 - depth;
     if (checkWinner(board, 'X')) return depth - 10;
     if (board.every(cell => cell)) return 0;
@@ -58,7 +58,7 @@ export function useNoughtsAndCrosses() {
         if (board[i] === '') {
           const newBoard = [...board];
           newBoard[i] = 'O';
-          let score = minimax(newBoard, depth + 1, false);
+          const score = minimax(newBoard, depth + 1, false);
           bestScore = Math.max(score, bestScore);
         }
       }
@@ -69,7 +69,7 @@ export function useNoughtsAndCrosses() {
         if (board[i] === '') {
           const newBoard = [...board];
           newBoard[i] = 'X';
-          let score = minimax(newBoard, depth + 1, true);
+          const score = minimax(newBoard, depth + 1, true);
           bestScore = Math.min(score, bestScore);
         }
       }
@@ -77,7 +77,7 @@ export function useNoughtsAndCrosses() {
     }
   };
 
-  const checkWinner = (board, player) => {
+  const checkWinner = (board: string[], player: string) => {
     const winConditions = [
       [0, 1, 2], [3, 4, 5], [6, 7, 8],
       [0, 3, 6], [1, 4, 7], [2, 5, 8],

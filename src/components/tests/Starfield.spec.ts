@@ -8,7 +8,7 @@ describe("Starfield.vue", () => {
   let requestAnimationFrameMock;
   let performanceNowMock;
   let mathRandomMock;
-  let mockContext: any;
+  let mockContext: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -31,13 +31,13 @@ describe("Starfield.vue", () => {
           drawImage: vi.fn(),
           translate: vi.fn(),
         };
-        return mockContext as any;
+        return mockContext as any; // eslint-disable-line @typescript-eslint/no-explicit-any
       });
 
     // Mock requestAnimationFrame to control the animation loop
     requestAnimationFrameMock = vi
       .spyOn(window, "requestAnimationFrame")
-      .mockImplementation((cb) => {
+      .mockImplementation(() => {
         // We only want to execute the callback once to avoid an infinite loop
         // in the test environment.
         return 0;

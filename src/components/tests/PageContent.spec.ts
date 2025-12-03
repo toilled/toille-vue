@@ -6,7 +6,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import pages from "../../configs/pages.json";
 import flushPromises from "flush-promises";
 
-const createTestRouter = (path: string) => {
+const createTestRouter = () => {
   return createRouter({
     history: createWebHistory(),
     routes: [
@@ -19,7 +19,7 @@ const createTestRouter = (path: string) => {
 
 describe("PageContent.vue", () => {
   it("renders the content of the first page by default", async () => {
-    const router = createTestRouter("/");
+    const router = createTestRouter();
     router.push("/");
     await router.isReady();
     const wrapper = mount(PageContent, {
@@ -36,7 +36,7 @@ describe("PageContent.vue", () => {
 
   it("renders the content of a specific page", async () => {
     const pageName = pages[1].link.slice(1);
-    const router = createTestRouter(`/${pageName}`);
+    const router = createTestRouter();
     router.push({ name: "page", params: { name: pageName } });
     await router.isReady();
     const wrapper = mount(PageContent, {
@@ -53,7 +53,7 @@ describe("PageContent.vue", () => {
 
   it("renders a 404 message for a non-existent page", async () => {
     const pageName = "non-existent-page";
-    const router = createTestRouter(`/${pageName}`);
+    const router = createTestRouter();
     router.push({ name: "page", params: { name: pageName } });
     await router.isReady();
     const wrapper = mount(PageContent, {
@@ -69,7 +69,7 @@ describe("PageContent.vue", () => {
   });
 
   it("renders a 404 message for a catch-all route", async () => {
-    const router = createTestRouter("/some/random/path");
+    const router = createTestRouter();
     router.push("/some/random/path");
     await router.isReady();
     const wrapper = mount(PageContent, {

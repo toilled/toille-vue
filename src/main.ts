@@ -4,7 +4,6 @@ import "@picocss/pico";
 import "./index.css";
 import App from "./App.vue";
 import PageContent from "./components/PageContent.vue";
-import pages from "./configs/pages.json";
 
 /**
  * @file main.ts

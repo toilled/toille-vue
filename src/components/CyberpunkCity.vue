@@ -3,7 +3,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref } from "vue";
+import { onMounted, onBeforeUnmount, ref, watch } from "vue";
+import { useRoute } from "vue-router";
 import * as THREE from "three";
 
 const canvasContainer = ref<HTMLDivElement | null>(null);
@@ -16,6 +17,11 @@ let animationId: number;
 const buildings: THREE.Object3D[] = [];
 // Fix: cars are Group objects
 const cars: THREE.Group[] = [];
+
+let drones: THREE.Points;
+let droneTargetPositions: Float32Array;
+
+const route = useRoute();
 
 // Configuration
 const CITY_SIZE = 2000;
@@ -113,6 +119,43 @@ function createBillboardTextures() {
         textures.push(texture);
     }
     return textures;
+}
+
+function createDroneTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 32;
+    canvas.height = 32;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+        ctx.clearRect(0,0,32,32);
+
+        // Drone body (Quadcopter silhouette)
+        ctx.strokeStyle = '#888888';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(4, 4);
+        ctx.lineTo(28, 28);
+        ctx.moveTo(28, 4);
+        ctx.lineTo(4, 28);
+        ctx.stroke();
+
+        // Rotors
+        ctx.fillStyle = '#444444';
+        ctx.beginPath(); ctx.arc(4, 4, 3, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(28, 4, 3, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(4, 28, 3, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(28, 28, 3, 0, Math.PI*2); ctx.fill();
+
+        // Central Light (White, to be tinted by vertex color)
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = '#ffffff';
+        ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.arc(16, 16, 5, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    const texture = new THREE.CanvasTexture(canvas);
+    return texture;
 }
 
 onMounted(() => {
@@ -378,51 +421,99 @@ onMounted(() => {
     cars.push(carGroup);
   }
 
-  // Starfield
-  const starGeo = new THREE.BufferGeometry();
-  const starCount = 2000;
-  const starPositions = new Float32Array(starCount * 3);
-  const starColors = new Float32Array(starCount * 3);
+  // Drone Swarm (formerly Starfield)
+  const droneGeo = new THREE.BufferGeometry();
+  const droneCount = 1000;
+  const dronePositions = new Float32Array(droneCount * 3);
+  const droneColorsArray = new Float32Array(droneCount * 3);
+  droneTargetPositions = new Float32Array(droneCount * 3);
 
-  const color1 = new THREE.Color(0xff00cc);
-  const color2 = new THREE.Color(0x00ccff);
-  const color3 = new THREE.Color(0xffffff);
+  const dColor1 = new THREE.Color(0xff0000); // Red
+  const dColor2 = new THREE.Color(0x00ffcc); // Cyan
+  const dColor3 = new THREE.Color(0x00ff00); // Green
+  const dColor4 = new THREE.Color(0xffffff); // White
 
-  for (let i = 0; i < starCount; i++) {
-    const x = (Math.random() - 0.5) * 4000;
-    const y = 200 + Math.random() * 800;
-    const z = (Math.random() - 0.5) * 4000;
+  // Initial generation
+  generateDroneTargets(route.path);
 
-    starPositions[i * 3] = x;
-    starPositions[i * 3 + 1] = y;
-    starPositions[i * 3 + 2] = z;
-
-    const c = Math.random();
-    let finalColor = color3;
-    if (c < 0.33) finalColor = color1;
-    else if (c < 0.66) finalColor = color2;
-
-    starColors[i * 3] = finalColor.r;
-    starColors[i * 3 + 1] = finalColor.g;
-    starColors[i * 3 + 2] = finalColor.b;
+  // Set initial positions to target positions
+  for (let i = 0; i < droneCount * 3; i++) {
+      dronePositions[i] = droneTargetPositions[i];
   }
 
-  starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-  starGeo.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
+  for (let i = 0; i < droneCount; i++) {
+    const c = Math.random();
+    let finalColor = dColor4;
+    if (c < 0.25) finalColor = dColor1;
+    else if (c < 0.5) finalColor = dColor2;
+    else if (c < 0.75) finalColor = dColor3;
 
-  const starMaterial = new THREE.PointsMaterial({
-    size: 2.5,
+    droneColorsArray[i * 3] = finalColor.r;
+    droneColorsArray[i * 3 + 1] = finalColor.g;
+    droneColorsArray[i * 3 + 2] = finalColor.b;
+  }
+
+  droneGeo.setAttribute('position', new THREE.BufferAttribute(dronePositions, 3));
+  droneGeo.setAttribute('color', new THREE.BufferAttribute(droneColorsArray, 3));
+
+  const droneMaterial = new THREE.PointsMaterial({
+    size: 15, // Larger to see the texture
+    map: createDroneTexture(),
     vertexColors: true,
     transparent: true,
-    opacity: 0.8,
+    opacity: 0.9,
+    sizeAttenuation: true,
+    depthWrite: false, // Better for transparency
+    blending: THREE.AdditiveBlending
   });
 
-  const stars = new THREE.Points(starGeo, starMaterial);
-  scene.add(stars);
+  drones = new THREE.Points(droneGeo, droneMaterial);
+  scene.add(drones);
 
   window.addEventListener("resize", onResize);
   animate();
 });
+
+// Seeded random number generator
+function mulberry32(a: number) {
+    return function() {
+      var t = a += 0x6D2B79F5;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    }
+}
+
+// Generate targets based on route
+function generateDroneTargets(path: string) {
+    // Create a seed from the path string
+    let seed = 0;
+    for (let i = 0; i < path.length; i++) {
+        seed = (seed << 5) - seed + path.charCodeAt(i);
+        seed |= 0;
+    }
+    // Ensure positive seed
+    seed = Math.abs(seed) + 1;
+
+    const rand = mulberry32(seed);
+
+    for (let i = 0; i < droneTargetPositions.length / 3; i++) {
+        const x = (rand() - 0.5) * 4000;
+        const y = 300 + rand() * 800;
+        const z = (rand() - 0.5) * 4000;
+
+        droneTargetPositions[i*3] = x;
+        droneTargetPositions[i*3+1] = y;
+        droneTargetPositions[i*3+2] = z;
+    }
+}
+
+watch(
+  () => route.path,
+  (newPath) => {
+    generateDroneTargets(newPath);
+  }
+);
 
 function onResize() {
   if (!renderer || !camera) return;
@@ -449,6 +540,36 @@ function animate() {
       if (car.position.z < -bound) car.position.z = bound;
     }
   });
+
+  // Move drones
+  if (drones && droneTargetPositions) {
+      const positions = drones.geometry.attributes.position.array;
+      const easing = 0.02;
+
+      for(let i = 0; i < positions.length / 3; i++) {
+          // Move towards target
+          // positions[i*3] += (droneTargetPositions[i*3] - positions[i*3]) * easing;
+          // positions[i*3+1] += (droneTargetPositions[i*3+1] - positions[i*3+1]) * easing;
+          // positions[i*3+2] += (droneTargetPositions[i*3+2] - positions[i*3+2]) * easing;
+
+          // Let's implement oscillation around the target
+          const oscTime = Date.now() * 0.001;
+          const offset = i;
+
+          const oscX = Math.sin(oscTime + offset) * 20;
+          const oscY = Math.cos(oscTime * 0.5 + offset) * 10;
+          const oscZ = Math.sin(oscTime * 0.8 + offset) * 20;
+
+          const targetX = droneTargetPositions[i*3] + oscX;
+          const targetY = droneTargetPositions[i*3+1] + oscY;
+          const targetZ = droneTargetPositions[i*3+2] + oscZ;
+
+          positions[i*3] += (targetX - positions[i*3]) * easing;
+          positions[i*3+1] += (targetY - positions[i*3+1]) * easing;
+          positions[i*3+2] += (targetZ - positions[i*3+2]) * easing;
+      }
+      drones.geometry.attributes.position.needsUpdate = true;
+  }
 
   // Camera movement (orbit)
   camera.position.x = Math.sin(time * 0.1) * 800;

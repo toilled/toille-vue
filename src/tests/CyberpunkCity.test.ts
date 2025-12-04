@@ -3,6 +3,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import CyberpunkCity from '../components/CyberpunkCity.vue'
 import * as THREE from 'three'
 
+// Mock useRoute
+vi.mock('vue-router', () => ({
+  useRoute: vi.fn(() => ({
+    path: '/'
+  }))
+}))
+
 // Mock Three.js
 vi.mock('three', () => {
   const THREE = {
@@ -54,7 +61,15 @@ vi.mock('three', () => {
       scale: { set: vi.fn() }
     })),
     Points: vi.fn(() => ({
-        position: { set: vi.fn() }
+        position: { set: vi.fn() },
+        geometry: {
+            attributes: {
+                position: {
+                    array: new Float32Array(3000), // Mock size
+                    needsUpdate: false
+                }
+            }
+        }
     })),
     Float32BufferAttribute: vi.fn(),
     BufferAttribute: vi.fn(),
@@ -72,7 +87,8 @@ vi.mock('three', () => {
     DirectionalLight: vi.fn(() => ({
         position: { set: vi.fn() }
     })),
-    Vector3: vi.fn()
+    Vector3: vi.fn(),
+    AdditiveBlending: 2000
   }
   return THREE
 })

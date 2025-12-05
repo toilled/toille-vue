@@ -21,7 +21,8 @@ vi.mock('three', () => {
     PerspectiveCamera: vi.fn(() => ({
       position: { set: vi.fn(), y: 0 },
       rotation: { set: vi.fn() },
-      lookAt: vi.fn()
+      lookAt: vi.fn(),
+      updateProjectionMatrix: vi.fn()
     })),
     WebGLRenderer: vi.fn(() => ({
       setSize: vi.fn(),
@@ -46,7 +47,8 @@ vi.mock('three', () => {
     PointsMaterial: vi.fn(),
     LineBasicMaterial: vi.fn(),
     LineSegments: vi.fn(() => ({
-        position: { set: vi.fn(), copy: vi.fn() }
+        position: { set: vi.fn(), copy: vi.fn() },
+        scale: { set: vi.fn() }
     })),
     Line: vi.fn(),
     Group: vi.fn(() => ({

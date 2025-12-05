@@ -49,16 +49,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted, computed, watch, defineAsyncComponent } from "vue";
 import { useRoute } from "vue-router";
 import Title from "./components/Title.vue";
 import Menu from "./components/Menu.vue";
 import Checker from "./components/Checker.vue";
 import Activity from "./components/Activity.vue";
 import Suggestion from "./components/Suggestion.vue";
-import CyberpunkCity from "./components/CyberpunkCity.vue";
 import TypingText from "./components/TypingText.vue";
 import pages from "./configs/pages.json";
+
+const CyberpunkCity = defineAsyncComponent(() =>
+  import("./components/CyberpunkCity.vue")
+);
 import titles from "./configs/titles.json";
 import { Page } from "./interfaces/Page";
 

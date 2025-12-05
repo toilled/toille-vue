@@ -210,6 +210,26 @@ onMounted(() => {
   const boxGeo = new THREE.BoxGeometry(1, 1, 1);
   boxGeo.translate(0, 0.5, 0); // pivot at bottom
 
+  const edgesGeo = new THREE.EdgesGeometry(boxGeo);
+
+  // Reusable Materials
+  const buildingMaterial = new THREE.MeshLambertMaterial({
+      color: 0x222222,
+      map: windowTexture
+  });
+
+  const edgeMat1 = new THREE.LineBasicMaterial({ color: 0xff00cc, transparent: true, opacity: 0.4 });
+  const edgeMat2 = new THREE.LineBasicMaterial({ color: 0x00ccff, transparent: true, opacity: 0.4 });
+  const topEdgeMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
+  const antennaMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+  const billboardMaterials = billboardTextures.map(tex => new THREE.MeshBasicMaterial({
+      map: tex,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.9
+  }));
+
   for (let x = 0; x < GRID_SIZE; x++) {
     for (let z = 0; z < GRID_SIZE; z++) {
         // Skip some blocks for variety
@@ -226,21 +246,16 @@ onMounted(() => {
         buildingGroup.position.set(xPos, 0, zPos);
 
         // Main Block
-        const material = new THREE.MeshLambertMaterial({
-            color: 0x222222,
-            map: windowTexture
-        });
-        const mainBlock = new THREE.Mesh(boxGeo, material);
+        const mainBlock = new THREE.Mesh(boxGeo, buildingMaterial);
         mainBlock.scale.set(w, h, d);
         buildingGroup.add(mainBlock);
 
         // Edges for Main Block
-        const edges = new THREE.EdgesGeometry(new THREE.BoxGeometry(w, h, d));
         const line = new THREE.LineSegments(
-            edges,
-            new THREE.LineBasicMaterial({ color: Math.random() > 0.5 ? 0xff00cc : 0x00ccff, transparent: true, opacity: 0.4 })
+            edgesGeo,
+            Math.random() > 0.5 ? edgeMat1 : edgeMat2
         );
-        line.position.y = h / 2; // EdgesGeometry is centered
+        line.scale.set(w, h, d);
         buildingGroup.add(line);
 
         // Top Structure (for taller buildings)
@@ -249,23 +264,23 @@ onMounted(() => {
             const w2 = w * 0.6;
             const d2 = d * 0.6;
 
-            const topBlock = new THREE.Mesh(boxGeo, material);
+            const topBlock = new THREE.Mesh(boxGeo, buildingMaterial);
             topBlock.scale.set(w2, h2, d2);
             topBlock.position.y = h;
             buildingGroup.add(topBlock);
 
-            const topEdges = new THREE.EdgesGeometry(new THREE.BoxGeometry(w2, h2, d2));
             const topLine = new THREE.LineSegments(
-                topEdges,
-                new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 })
+                edgesGeo,
+                topEdgeMat
             );
-            topLine.position.y = h + h2 / 2;
+            topLine.scale.set(w2, h2, d2);
+            topLine.position.y = h;
             buildingGroup.add(topLine);
 
             // Antenna
             if (Math.random() > 0.5) {
                 const antennaH = h * 0.2;
-                const antenna = new THREE.Mesh(boxGeo, new THREE.MeshBasicMaterial({ color: 0xffffff }));
+                const antenna = new THREE.Mesh(boxGeo, antennaMat);
                 antenna.scale.set(2, antennaH, 2);
                 antenna.position.y = h + h2;
                 buildingGroup.add(antenna);
@@ -274,18 +289,13 @@ onMounted(() => {
 
         // Billboards
         if (h > 60 && Math.random() > 0.7) {
-            const texIndex = Math.floor(Math.random() * billboardTextures.length);
-            const bbTex = billboardTextures[texIndex];
+            const texIndex = Math.floor(Math.random() * billboardMaterials.length);
+            const bbMat = billboardMaterials[texIndex];
 
             const bbW = 20 + Math.random() * 15;
             const bbH = 10 + Math.random() * 10;
             const bbGeo = new THREE.PlaneGeometry(bbW, bbH);
-            const bbMat = new THREE.MeshBasicMaterial({
-                map: bbTex,
-                side: THREE.DoubleSide,
-                transparent: true,
-                opacity: 0.9
-            });
+
             const billboard = new THREE.Mesh(bbGeo, bbMat);
 
             // Position on a random face
@@ -342,48 +352,53 @@ onMounted(() => {
   const tailLightGeo = new THREE.BoxGeometry(0.5, 0.5, 0.1);
   const headLightGeo = new THREE.BoxGeometry(0.5, 0.5, 0.1);
 
+  // Reusable Car Materials
+  const carBodyMat1 = new THREE.MeshLambertMaterial({ color: 0x222222 });
+  const carBodyMat2 = new THREE.MeshLambertMaterial({ color: 0x050505 });
+  const carBodyMat3 = new THREE.MeshLambertMaterial({ color: 0x111111 });
+
+  const underglowGeo = new THREE.PlaneGeometry(5, 9);
+  const underglowMat1 = new THREE.MeshBasicMaterial({ color: 0xff00cc, opacity: 0.5, transparent: true, side: THREE.DoubleSide });
+  const underglowMat2 = new THREE.MeshBasicMaterial({ color: 0x00ccff, opacity: 0.5, transparent: true, side: THREE.DoubleSide });
+
+  const tailLightMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+  const headLightMat = new THREE.MeshBasicMaterial({ color: 0xffffaa });
+
   for (let i = 0; i < CAR_COUNT; i++) {
     const isSpecial = Math.random() > 0.8;
-    const bodyColor = isSpecial ? 0x222222 : (Math.random() > 0.5 ? 0x050505 : 0x111111);
+    const bodyMat = isSpecial ? carBodyMat1 : (Math.random() > 0.5 ? carBodyMat2 : carBodyMat3);
 
     // Car Group
     const carGroup = new THREE.Group();
 
     // Car Body
-    const carBody = new THREE.Mesh(
-      carGeo,
-      new THREE.MeshLambertMaterial({ color: bodyColor })
-    );
+    const carBody = new THREE.Mesh(carGeo, bodyMat);
     carGroup.add(carBody);
 
     // Underglow (Neon)
     if (Math.random() > 0.3) {
-      const underglowGeo = new THREE.PlaneGeometry(5, 9);
-      const underglowColor = Math.random() > 0.5 ? 0xff00cc : 0x00ccff;
-      const underglow = new THREE.Mesh(
-        underglowGeo,
-        new THREE.MeshBasicMaterial({ color: underglowColor, opacity: 0.5, transparent: true, side: THREE.DoubleSide })
-      );
+      const underglowMat = Math.random() > 0.5 ? underglowMat1 : underglowMat2;
+      const underglow = new THREE.Mesh(underglowGeo, underglowMat);
       underglow.rotation.x = Math.PI / 2;
       underglow.position.y = -0.9;
       carGroup.add(underglow);
     }
 
     // Tail lights
-    const tl1 = new THREE.Mesh(tailLightGeo, new THREE.MeshBasicMaterial({ color: 0xff0000 }));
+    const tl1 = new THREE.Mesh(tailLightGeo, tailLightMat);
     tl1.position.set(1.5, 0, 4);
     carGroup.add(tl1);
 
-    const tl2 = new THREE.Mesh(tailLightGeo, new THREE.MeshBasicMaterial({ color: 0xff0000 }));
+    const tl2 = new THREE.Mesh(tailLightGeo, tailLightMat);
     tl2.position.set(-1.5, 0, 4);
     carGroup.add(tl2);
 
     // Head lights
-    const hl1 = new THREE.Mesh(headLightGeo, new THREE.MeshBasicMaterial({ color: 0xffffaa }));
+    const hl1 = new THREE.Mesh(headLightGeo, headLightMat);
     hl1.position.set(1.5, 0, -4);
     carGroup.add(hl1);
 
-    const hl2 = new THREE.Mesh(headLightGeo, new THREE.MeshBasicMaterial({ color: 0xffffaa }));
+    const hl2 = new THREE.Mesh(headLightGeo, headLightMat);
     hl2.position.set(-1.5, 0, -4);
     carGroup.add(hl2);
 

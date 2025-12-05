@@ -21,6 +21,13 @@ const cars: THREE.Group[] = [];
 let drones: THREE.Points;
 let droneTargetPositions: Float32Array;
 
+// Sparks system
+let sparks: THREE.Points;
+const sparkCount = 200;
+const sparkPositions = new Float32Array(sparkCount * 3);
+const sparkVelocities = new Float32Array(sparkCount * 3);
+const sparkLifetimes = new Float32Array(sparkCount); // 0 = dead, 1 = full life
+
 const route = useRoute();
 
 // Configuration
@@ -32,8 +39,53 @@ const CELL_SIZE = BLOCK_SIZE + ROAD_WIDTH;
 const GRID_SIZE = Math.floor(CITY_SIZE / CELL_SIZE);
 // We will generate a grid of buildings.
 // Grid range: -GRID_SIZE/2 to GRID_SIZE/2
+const startOffset = -(GRID_SIZE * CELL_SIZE) / 2 + CELL_SIZE / 2;
 
 const CAR_COUNT = 150;
+
+// Function to reset/spawn a car
+function resetCar(carGroup: THREE.Group) {
+    const axis = Math.random() > 0.5 ? 'x' : 'z';
+    const dir = Math.random() > 0.5 ? 1 : -1;
+
+    const roadIndex = Math.floor(Math.random() * (GRID_SIZE + 1));
+    const roadCoordinate = startOffset + roadIndex * CELL_SIZE - CELL_SIZE / 2;
+
+    const laneOffset = (Math.random() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
+
+    let x = 0, z = 0;
+
+    if (axis === 'x') {
+        z = roadCoordinate + laneOffset;
+        x = (Math.random() - 0.5) * CITY_SIZE;
+        carGroup.rotation.y = dir === 1 ? Math.PI / 2 : -Math.PI / 2;
+    } else {
+        x = roadCoordinate + laneOffset;
+        z = (Math.random() - 0.5) * CITY_SIZE;
+        carGroup.rotation.y = dir === 1 ? 0 : Math.PI;
+    }
+
+    carGroup.position.set(x, 1, z);
+
+    carGroup.userData.speed = 1 + Math.random() * 2;
+    carGroup.userData.dir = dir;
+    carGroup.userData.axis = axis;
+    carGroup.userData.laneOffset = laneOffset;
+    carGroup.userData.collided = false;
+    carGroup.userData.fading = false;
+    carGroup.userData.opacity = 1.0;
+    carGroup.visible = true;
+
+    // Reset opacity of children
+    carGroup.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+            const mat = child.material;
+            if (!Array.isArray(mat) && child.userData.originalOpacity !== undefined) {
+                mat.opacity = child.userData.originalOpacity;
+            }
+        }
+    });
+}
 
 // Reusable Texture for Windows
 function createWindowTexture() {
@@ -158,6 +210,33 @@ function createDroneTexture() {
     return texture;
 }
 
+function spawnSparks(position: THREE.Vector3) {
+    if (!sparks) return;
+    const posAttribute = sparks.geometry.attributes.position;
+
+    // Spawn a burst of sparks
+    let spawned = 0;
+    const burstSize = 10;
+
+    for (let i = 0; i < sparkCount; i++) {
+        if (sparkLifetimes[i] <= 0) {
+            sparkLifetimes[i] = 1.0;
+
+            // Set position
+            posAttribute.setXYZ(i, position.x, position.y, position.z);
+
+            // Random velocity
+            sparkVelocities[i*3] = (Math.random() - 0.5) * 5;     // vx
+            sparkVelocities[i*3+1] = Math.random() * 5 + 2;     // vy (upwards)
+            sparkVelocities[i*3+2] = (Math.random() - 0.5) * 5;   // vz
+
+            spawned++;
+            if (spawned >= burstSize) break;
+        }
+    }
+    posAttribute.needsUpdate = true;
+}
+
 onMounted(() => {
   if (!canvasContainer.value) return;
 
@@ -203,7 +282,7 @@ onMounted(() => {
   scene.add(plane);
 
   // Generate City Grid
-  const startOffset = -(GRID_SIZE * CELL_SIZE) / 2 + CELL_SIZE / 2;
+  // const startOffset = -(GRID_SIZE * CELL_SIZE) / 2 + CELL_SIZE / 2; // Moved to top
   const windowTexture = createWindowTexture();
   const billboardTextures = createBillboardTextures();
 
@@ -366,71 +445,56 @@ onMounted(() => {
 
   for (let i = 0; i < CAR_COUNT; i++) {
     const isSpecial = Math.random() > 0.8;
-    const bodyMat = isSpecial ? carBodyMat1 : (Math.random() > 0.5 ? carBodyMat2 : carBodyMat3);
+    const bodyMat = (isSpecial ? carBodyMat1 : (Math.random() > 0.5 ? carBodyMat2 : carBodyMat3)).clone();
+    bodyMat.transparent = true;
 
     // Car Group
     const carGroup = new THREE.Group();
 
     // Car Body
     const carBody = new THREE.Mesh(carGeo, bodyMat);
+    carBody.userData.originalOpacity = 1.0;
     carGroup.add(carBody);
 
     // Underglow (Neon)
     if (Math.random() > 0.3) {
-      const underglowMat = Math.random() > 0.5 ? underglowMat1 : underglowMat2;
+      const underglowMat = (Math.random() > 0.5 ? underglowMat1 : underglowMat2).clone();
       const underglow = new THREE.Mesh(underglowGeo, underglowMat);
+      underglow.userData.originalOpacity = 0.5;
       underglow.rotation.x = Math.PI / 2;
       underglow.position.y = -0.9;
       carGroup.add(underglow);
     }
 
     // Tail lights
-    const tl1 = new THREE.Mesh(tailLightGeo, tailLightMat);
+    const tlMat = tailLightMat.clone();
+    tlMat.transparent = true;
+    const tl1 = new THREE.Mesh(tailLightGeo, tlMat);
+    tl1.userData.originalOpacity = 1.0;
     tl1.position.set(1.5, 0, 4);
     carGroup.add(tl1);
 
-    const tl2 = new THREE.Mesh(tailLightGeo, tailLightMat);
+    const tl2 = new THREE.Mesh(tailLightGeo, tlMat);
+    tl2.userData.originalOpacity = 1.0;
     tl2.position.set(-1.5, 0, 4);
     carGroup.add(tl2);
 
     // Head lights
-    const hl1 = new THREE.Mesh(headLightGeo, headLightMat);
+    const hlMat = headLightMat.clone();
+    hlMat.transparent = true;
+    const hl1 = new THREE.Mesh(headLightGeo, hlMat);
+    hl1.userData.originalOpacity = 1.0;
     hl1.position.set(1.5, 0, -4);
     carGroup.add(hl1);
 
-    const hl2 = new THREE.Mesh(headLightGeo, headLightMat);
+    const hl2 = new THREE.Mesh(headLightGeo, hlMat);
+    hl2.userData.originalOpacity = 1.0;
     hl2.position.set(-1.5, 0, -4);
     carGroup.add(hl2);
 
-    // Position on Road
-    const axis = Math.random() > 0.5 ? 'x' : 'z';
-    const dir = Math.random() > 0.5 ? 1 : -1;
-
-    const roadIndex = Math.floor(Math.random() * (GRID_SIZE + 1));
-    const roadCoordinate = startOffset + roadIndex * CELL_SIZE - CELL_SIZE / 2;
-
-    const laneOffset = (Math.random() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
-
-    let x = 0, z = 0;
-
-    if (axis === 'x') {
-        z = roadCoordinate + laneOffset;
-        x = (Math.random() - 0.5) * CITY_SIZE;
-        carGroup.rotation.y = dir === 1 ? Math.PI / 2 : -Math.PI / 2;
-    } else {
-        x = roadCoordinate + laneOffset;
-        z = (Math.random() - 0.5) * CITY_SIZE;
-        carGroup.rotation.y = dir === 1 ? 0 : Math.PI;
-    }
-
-    carGroup.position.set(x, 1, z);
-
-    carGroup.userData = {
-      speed: 1 + Math.random() * 2,
-      dir: dir,
-      axis: axis,
-      laneOffset: laneOffset
-    };
+    // Use resetCar to set initial position and state
+    carGroup.userData = {}; // init object
+    resetCar(carGroup);
 
     scene.add(carGroup);
     cars.push(carGroup);
@@ -484,6 +548,22 @@ onMounted(() => {
 
   drones = new THREE.Points(droneGeo, droneMaterial);
   scene.add(drones);
+
+  // Initialize Sparks
+  const sparkGeo = new THREE.BufferGeometry();
+  sparkGeo.setAttribute('position', new THREE.BufferAttribute(sparkPositions, 3));
+
+  const sparkMat = new THREE.PointsMaterial({
+      color: 0xffaa00,
+      size: 1,
+      transparent: true,
+      opacity: 1,
+      blending: THREE.AdditiveBlending,
+      sizeAttenuation: true
+  });
+
+  sparks = new THREE.Points(sparkGeo, sparkMat);
+  scene.add(sparks);
 
   window.addEventListener("resize", onResize);
   animate();
@@ -543,18 +623,139 @@ function animate() {
   const time = Date.now() * 0.0005;
   const bound = (GRID_SIZE * CELL_SIZE) / 2 + CELL_SIZE;
 
-  // Move cars
-  cars.forEach(car => {
-    if (car.userData.axis === 'x') {
-      car.position.x += car.userData.speed * car.userData.dir;
-      if (car.position.x > bound) car.position.x = -bound;
-      if (car.position.x < -bound) car.position.x = bound;
-    } else {
-      car.position.z += car.userData.speed * car.userData.dir;
-      if (car.position.z > bound) car.position.z = -bound;
-      if (car.position.z < -bound) car.position.z = bound;
-    }
-  });
+  // Move cars & Handle Collisions
+
+  for (let i = 0; i < cars.length; i++) {
+      const car = cars[i];
+
+      // Movement
+      if (!car.userData.fading) {
+          if (car.userData.axis === 'x') {
+            car.position.x += car.userData.speed * car.userData.dir;
+            if (car.position.x > bound) car.position.x = -bound;
+            if (car.position.x < -bound) car.position.x = bound;
+          } else {
+            car.position.z += car.userData.speed * car.userData.dir;
+            if (car.position.z > bound) car.position.z = -bound;
+            if (car.position.z < -bound) car.position.z = bound;
+          }
+      } else {
+          // Fading out logic
+          // Move slightly slower while fading? Or just drift
+           if (car.userData.axis === 'x') {
+            car.position.x += (car.userData.speed * 0.5) * car.userData.dir;
+          } else {
+            car.position.z += (car.userData.speed * 0.5) * car.userData.dir;
+          }
+
+          car.userData.opacity -= 0.02;
+          if (car.userData.opacity <= 0) {
+              resetCar(car);
+          } else {
+              // Apply opacity
+              car.traverse((child) => {
+                  if (child instanceof THREE.Mesh) {
+                      const mat = child.material;
+                       if (!Array.isArray(mat)) {
+                           // Scale current opacity relative to original
+                           const original = child.userData.originalOpacity || 1.0;
+                           mat.opacity = original * car.userData.opacity;
+                       }
+                  }
+              });
+          }
+      }
+  }
+
+  // Check Collisions (naive O(N^2) but N=150 is fine)
+  // Only check non-fading cars
+  // Reduced collision rate by decreasing collision distance threshold slightly
+  // and adding a random chance check
+  const actualCollisionDist = 6;
+
+  for (let i = 0; i < cars.length; i++) {
+      const carA = cars[i];
+      if (carA.userData.fading) continue;
+
+      for (let j = i + 1; j < cars.length; j++) {
+          const carB = cars[j];
+          if (carB.userData.fading) continue;
+
+          const dx = carA.position.x - carB.position.x;
+          const dz = carA.position.z - carB.position.z;
+          const distSq = dx*dx + dz*dz;
+
+          if (distSq < actualCollisionDist * actualCollisionDist) {
+              // Additional check to reduce collision rate
+              if (Math.random() > 0.5) continue;
+
+              // Collision!
+              carA.userData.fading = true;
+              carB.userData.fading = true;
+
+              // Bounce (reverse direction)
+              carA.userData.dir *= -1;
+              carB.userData.dir *= -1;
+
+              // Slight visual bounce effect?
+              // Maybe rotate them a bit to look like a crash
+              carA.rotation.y += (Math.random() - 0.5);
+              carB.rotation.y += (Math.random() - 0.5);
+
+              // Spawn sparks at midpoint
+              const midX = (carA.position.x + carB.position.x) / 2;
+              const midZ = (carA.position.z + carB.position.z) / 2;
+              spawnSparks(new THREE.Vector3(midX, 2, midZ));
+          }
+      }
+  }
+
+  // Update Sparks
+  if (sparks) {
+      const positions = sparks.geometry.attributes.position.array;
+      let needsUpdate = false;
+
+      for(let i=0; i<sparkCount; i++) {
+          if (sparkLifetimes[i] > 0) {
+              // Gravity and movement
+              sparkVelocities[i*3+1] -= 0.1; // gravity
+
+              positions[i*3] += sparkVelocities[i*3];
+              positions[i*3+1] += sparkVelocities[i*3+1];
+              positions[i*3+2] += sparkVelocities[i*3+2];
+
+              // Ground collision
+              if (positions[i*3+1] < 0) {
+                  positions[i*3+1] = 0;
+                  sparkVelocities[i*3+1] *= -0.5; // bounce
+              }
+
+              // Building Collision (approximate)
+              // Buildings are centered at startOffset + k * CELL_SIZE
+              // BLOCK_SIZE is 150. Building width ~130-140. Using 70 as half-width.
+              const ix = Math.round((positions[i*3] - startOffset) / CELL_SIZE);
+              const iz = Math.round((positions[i*3+2] - startOffset) / CELL_SIZE);
+              const cX = startOffset + ix * CELL_SIZE;
+              const cZ = startOffset + iz * CELL_SIZE;
+
+              if (Math.abs(positions[i*3] - cX) < 70 && Math.abs(positions[i*3+2] - cZ) < 70) {
+                  // Hit building
+                  sparkLifetimes[i] = 0;
+              }
+
+              sparkLifetimes[i] -= 0.02; // decay
+              if (sparkLifetimes[i] < 0) {
+                  sparkLifetimes[i] = 0;
+                  // Hide below ground
+                   positions[i*3+1] = -100;
+              }
+              needsUpdate = true;
+          }
+      }
+      if (needsUpdate) {
+          sparks.geometry.attributes.position.needsUpdate = true;
+      }
+  }
 
   // Move drones
   if (drones && droneTargetPositions) {

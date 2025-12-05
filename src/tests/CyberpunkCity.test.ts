@@ -42,8 +42,16 @@ vi.mock('three', () => {
         setAttribute: vi.fn(),
         setFromPoints: vi.fn()
     })),
-    MeshBasicMaterial: vi.fn(),
-    MeshLambertMaterial: vi.fn(),
+    MeshBasicMaterial: vi.fn(() => ({
+      clone: vi.fn(() => ({
+        clone: vi.fn()
+      }))
+    })),
+    MeshLambertMaterial: vi.fn(() => ({
+      clone: vi.fn(() => ({
+        clone: vi.fn()
+      }))
+    })),
     PointsMaterial: vi.fn(),
     LineBasicMaterial: vi.fn(),
     LineSegments: vi.fn(() => ({
@@ -54,13 +62,16 @@ vi.mock('three', () => {
     Group: vi.fn(() => ({
         add: vi.fn(),
         position: { set: vi.fn(), z: 0 },
-        rotation: { y: 0 }
+        rotation: { y: 0 },
+        traverse: vi.fn(),
+        userData: {}
     })),
     DoubleSide: 2,
     Mesh: vi.fn(() => ({
       position: { set: vi.fn(), x: 0, z: 0 },
       rotation: { x: 0 },
-      scale: { set: vi.fn() }
+      scale: { set: vi.fn() },
+      userData: {}
     })),
     Points: vi.fn(() => ({
         position: { set: vi.fn() },

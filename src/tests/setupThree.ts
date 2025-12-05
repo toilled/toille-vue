@@ -15,3 +15,21 @@ vi.mock('three', async () => {
     })),
   };
 });
+
+// Polyfill requestAnimationFrame and cancelAnimationFrame
+vi.stubGlobal('requestAnimationFrame', vi.fn((cb) => setTimeout(cb, 16)))
+vi.stubGlobal('cancelAnimationFrame', vi.fn((id) => clearTimeout(id)))
+
+// Polyfill ResizeObserver
+vi.stubGlobal('ResizeObserver', class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+})
+
+// Polyfill fetch
+vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({
+  json: () => Promise.resolve({}),
+  text: () => Promise.resolve(''),
+  ok: true
+})))

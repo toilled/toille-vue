@@ -21,6 +21,13 @@ const cars: THREE.Group[] = [];
 let drones: THREE.Points;
 let droneTargetPositions: Float32Array;
 
+// Sparks system
+let sparks: THREE.Points;
+const sparkCount = 200;
+const sparkPositions = new Float32Array(sparkCount * 3);
+const sparkVelocities = new Float32Array(sparkCount * 3);
+const sparkLifetimes = new Float32Array(sparkCount); // 0 = dead, 1 = full life
+
 const route = useRoute();
 
 // Configuration
@@ -201,6 +208,33 @@ function createDroneTexture() {
     }
     const texture = new THREE.CanvasTexture(canvas);
     return texture;
+}
+
+function spawnSparks(position: THREE.Vector3) {
+    if (!sparks) return;
+    const posAttribute = sparks.geometry.attributes.position;
+
+    // Spawn a burst of sparks
+    let spawned = 0;
+    const burstSize = 10;
+
+    for (let i = 0; i < sparkCount; i++) {
+        if (sparkLifetimes[i] <= 0) {
+            sparkLifetimes[i] = 1.0;
+
+            // Set position
+            posAttribute.setXYZ(i, position.x, position.y, position.z);
+
+            // Random velocity
+            sparkVelocities[i*3] = (Math.random() - 0.5) * 5;     // vx
+            sparkVelocities[i*3+1] = Math.random() * 5 + 2;     // vy (upwards)
+            sparkVelocities[i*3+2] = (Math.random() - 0.5) * 5;   // vz
+
+            spawned++;
+            if (spawned >= burstSize) break;
+        }
+    }
+    posAttribute.needsUpdate = true;
 }
 
 onMounted(() => {
@@ -515,6 +549,22 @@ onMounted(() => {
   drones = new THREE.Points(droneGeo, droneMaterial);
   scene.add(drones);
 
+  // Initialize Sparks
+  const sparkGeo = new THREE.BufferGeometry();
+  sparkGeo.setAttribute('position', new THREE.BufferAttribute(sparkPositions, 3));
+
+  const sparkMat = new THREE.PointsMaterial({
+      color: 0xffaa00,
+      size: 2,
+      transparent: true,
+      opacity: 1,
+      blending: THREE.AdditiveBlending,
+      sizeAttenuation: true
+  });
+
+  sparks = new THREE.Points(sparkGeo, sparkMat);
+  scene.add(sparks);
+
   window.addEventListener("resize", onResize);
   animate();
 });
@@ -574,7 +624,6 @@ function animate() {
   const bound = (GRID_SIZE * CELL_SIZE) / 2 + CELL_SIZE;
 
   // Move cars & Handle Collisions
-  const collisionDistance = 10;
 
   for (let i = 0; i < cars.length; i++) {
       const car = cars[i];
@@ -620,6 +669,10 @@ function animate() {
 
   // Check Collisions (naive O(N^2) but N=150 is fine)
   // Only check non-fading cars
+  // Reduced collision rate by decreasing collision distance threshold slightly
+  // and adding a random chance check
+  const actualCollisionDist = 6;
+
   for (let i = 0; i < cars.length; i++) {
       const carA = cars[i];
       if (carA.userData.fading) continue;
@@ -632,7 +685,10 @@ function animate() {
           const dz = carA.position.z - carB.position.z;
           const distSq = dx*dx + dz*dz;
 
-          if (distSq < collisionDistance * collisionDistance) {
+          if (distSq < actualCollisionDist * actualCollisionDist) {
+              // Additional check to reduce collision rate
+              if (Math.random() > 0.5) continue;
+
               // Collision!
               carA.userData.fading = true;
               carB.userData.fading = true;
@@ -645,7 +701,46 @@ function animate() {
               // Maybe rotate them a bit to look like a crash
               carA.rotation.y += (Math.random() - 0.5);
               carB.rotation.y += (Math.random() - 0.5);
+
+              // Spawn sparks at midpoint
+              const midX = (carA.position.x + carB.position.x) / 2;
+              const midZ = (carA.position.z + carB.position.z) / 2;
+              spawnSparks(new THREE.Vector3(midX, 2, midZ));
           }
+      }
+  }
+
+  // Update Sparks
+  if (sparks) {
+      const positions = sparks.geometry.attributes.position.array;
+      let needsUpdate = false;
+
+      for(let i=0; i<sparkCount; i++) {
+          if (sparkLifetimes[i] > 0) {
+              // Gravity and movement
+              sparkVelocities[i*3+1] -= 0.1; // gravity
+
+              positions[i*3] += sparkVelocities[i*3];
+              positions[i*3+1] += sparkVelocities[i*3+1];
+              positions[i*3+2] += sparkVelocities[i*3+2];
+
+              // Ground collision
+              if (positions[i*3+1] < 0) {
+                  positions[i*3+1] = 0;
+                  sparkVelocities[i*3+1] *= -0.5; // bounce
+              }
+
+              sparkLifetimes[i] -= 0.02; // decay
+              if (sparkLifetimes[i] < 0) {
+                  sparkLifetimes[i] = 0;
+                  // Hide below ground
+                   positions[i*3+1] = -100;
+              }
+              needsUpdate = true;
+          }
+      }
+      if (needsUpdate) {
+          sparks.geometry.attributes.position.needsUpdate = true;
       }
   }
 

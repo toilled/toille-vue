@@ -555,7 +555,7 @@ onMounted(() => {
 
   const sparkMat = new THREE.PointsMaterial({
       color: 0xffaa00,
-      size: 2,
+      size: 1,
       transparent: true,
       opacity: 1,
       blending: THREE.AdditiveBlending,
@@ -728,6 +728,19 @@ function animate() {
               if (positions[i*3+1] < 0) {
                   positions[i*3+1] = 0;
                   sparkVelocities[i*3+1] *= -0.5; // bounce
+              }
+
+              // Building Collision (approximate)
+              // Buildings are centered at startOffset + k * CELL_SIZE
+              // BLOCK_SIZE is 150. Building width ~130-140. Using 70 as half-width.
+              const ix = Math.round((positions[i*3] - startOffset) / CELL_SIZE);
+              const iz = Math.round((positions[i*3+2] - startOffset) / CELL_SIZE);
+              const cX = startOffset + ix * CELL_SIZE;
+              const cZ = startOffset + iz * CELL_SIZE;
+
+              if (Math.abs(positions[i*3] - cX) < 70 && Math.abs(positions[i*3+2] - cZ) < 70) {
+                  // Hit building
+                  sparkLifetimes[i] = 0;
               }
 
               sparkLifetimes[i] -= 0.02; // decay

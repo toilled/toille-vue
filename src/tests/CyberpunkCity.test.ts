@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import CyberpunkCity from '../components/CyberpunkCity.vue'
 import * as THREE from 'three'
 
@@ -101,16 +101,11 @@ describe('CyberpunkCity.vue', () => {
   beforeEach(() => {
     // Reset mocks
     vi.clearAllMocks()
+  })
 
-    // Mock requestAnimationFrame
-    vi.stubGlobal('requestAnimationFrame', vi.fn((fn: any) => setTimeout(fn, 16)))
-    vi.stubGlobal('cancelAnimationFrame', vi.fn((id: any) => clearTimeout(id)))
-
-    // Mock ResizeObserver
-    global.ResizeObserver = class ResizeObserver {
-      observe() {}
-      unobserve() {}
-      disconnect() {}
+  afterEach(() => {
+    if (wrapper) {
+      wrapper.unmount()
     }
   })
 

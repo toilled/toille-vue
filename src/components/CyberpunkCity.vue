@@ -597,10 +597,7 @@ onMounted(() => {
   animate();
 });
 
-onBeforeUnmount(() => {
-    window.removeEventListener("resize", onResize);
-    window.removeEventListener("click", onClick);
-});
+
 
 // Seeded random number generator
 function mulberry32(a: number) {
@@ -876,6 +873,7 @@ function animate() {
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", onResize);
+  window.removeEventListener("click", onClick);
   cancelAnimationFrame(animationId);
   if (renderer) {
     renderer.dispose();

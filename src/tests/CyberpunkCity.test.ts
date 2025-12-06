@@ -39,8 +39,8 @@ vi.mock('three', () => {
     EdgesGeometry: vi.fn(),
     PlaneGeometry: vi.fn(),
     BufferGeometry: vi.fn(() => ({
-        setAttribute: vi.fn(),
-        setFromPoints: vi.fn()
+      setAttribute: vi.fn(),
+      setFromPoints: vi.fn()
     })),
     MeshBasicMaterial: vi.fn(() => ({
       clone: vi.fn(() => ({
@@ -55,16 +55,16 @@ vi.mock('three', () => {
     PointsMaterial: vi.fn(),
     LineBasicMaterial: vi.fn(),
     LineSegments: vi.fn(() => ({
-        position: { set: vi.fn(), copy: vi.fn() },
-        scale: { set: vi.fn() }
+      position: { set: vi.fn(), copy: vi.fn() },
+      scale: { set: vi.fn() }
     })),
     Line: vi.fn(),
     Group: vi.fn(() => ({
-        add: vi.fn(),
-        position: { set: vi.fn(), z: 0 },
-        rotation: { y: 0 },
-        traverse: vi.fn(),
-        userData: {}
+      add: vi.fn(),
+      position: { set: vi.fn(), z: 0 },
+      rotation: { y: 0 },
+      traverse: vi.fn(),
+      userData: {}
     })),
     DoubleSide: 2,
     Mesh: vi.fn(() => ({
@@ -74,15 +74,15 @@ vi.mock('three', () => {
       userData: {}
     })),
     Points: vi.fn(() => ({
-        position: { set: vi.fn() },
-        geometry: {
-            attributes: {
-                position: {
-                    array: new Float32Array(3000), // Mock size
-                    needsUpdate: false
-                }
-            }
+      position: { set: vi.fn() },
+      geometry: {
+        attributes: {
+          position: {
+            array: new Float32Array(3000), // Mock size
+            needsUpdate: false
+          }
         }
+      }
     })),
     Float32BufferAttribute: vi.fn(),
     BufferAttribute: vi.fn(),
@@ -90,17 +90,23 @@ vi.mock('three', () => {
     RepeatWrapping: 1000,
     NearestFilter: 1001,
     MathUtils: {
-        randFloatSpread: vi.fn(() => 100),
-        randFloat: vi.fn(() => 100)
+      randFloatSpread: vi.fn(() => 100),
+      randFloat: vi.fn(() => 100)
     },
     AmbientLight: vi.fn(),
     PointLight: vi.fn(() => ({
-        position: { set: vi.fn() }
+      position: { set: vi.fn() }
     })),
     DirectionalLight: vi.fn(() => ({
-        position: { set: vi.fn() }
+      position: { set: vi.fn() }
     })),
     Vector3: vi.fn(),
+    Vector2: vi.fn(),
+    Raycaster: vi.fn(() => ({
+      setFromCamera: vi.fn(),
+      intersectObject: vi.fn(() => []),
+      params: { Points: { threshold: 1 } }
+    })),
     AdditiveBlending: 2000
   }
   return THREE

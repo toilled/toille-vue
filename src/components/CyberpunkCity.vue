@@ -20,6 +20,7 @@ const cars: THREE.Group[] = [];
 
 let drones: THREE.Points;
 let droneTargetPositions: Float32Array;
+let droneBasePositions: Float32Array;
 
 // Sparks system
 let sparks: THREE.Points;
@@ -506,6 +507,15 @@ onMounted(() => {
   const dronePositions = new Float32Array(droneCount * 3);
   const droneColorsArray = new Float32Array(droneCount * 3);
   droneTargetPositions = new Float32Array(droneCount * 3);
+  droneBasePositions = new Float32Array(droneCount * 3);
+
+  // Initialize Base Positions
+  const baseRand = mulberry32(1337);
+  for (let i = 0; i < droneCount; i++) {
+      droneBasePositions[i*3] = (baseRand() - 0.5) * 4000;
+      droneBasePositions[i*3+1] = 300 + baseRand() * 800;
+      droneBasePositions[i*3+2] = (baseRand() - 0.5) * 4000;
+  }
 
   const dColor1 = new THREE.Color(0xff0000); // Red
   const dColor2 = new THREE.Color(0x00ffcc); // Cyan
@@ -593,13 +603,21 @@ function generateDroneTargets(path: string) {
     const rand = mulberry32(seed);
 
     for (let i = 0; i < droneTargetPositions.length / 3; i++) {
-        const x = (rand() - 0.5) * 4000;
-        const y = 300 + rand() * 800;
-        const z = (rand() - 0.5) * 4000;
+        // Generate a small offset instead of a new full position
+        const xOffset = (rand() - 0.5) * 500;
+        const yOffset = (rand() - 0.5) * 200;
+        const zOffset = (rand() - 0.5) * 500;
 
-        droneTargetPositions[i*3] = x;
-        droneTargetPositions[i*3+1] = y;
-        droneTargetPositions[i*3+2] = z;
+        if (droneBasePositions) {
+            droneTargetPositions[i*3] = droneBasePositions[i*3] + xOffset;
+            droneTargetPositions[i*3+1] = droneBasePositions[i*3+1] + yOffset;
+            droneTargetPositions[i*3+2] = droneBasePositions[i*3+2] + zOffset;
+        } else {
+             // Fallback if base not ready (should not happen with current flow)
+            droneTargetPositions[i*3] = xOffset * 8; // approx 4000
+            droneTargetPositions[i*3+1] = 300 + (yOffset + 100) * 4;
+            droneTargetPositions[i*3+2] = zOffset * 8;
+        }
     }
 }
 

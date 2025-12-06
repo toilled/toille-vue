@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { AdditiveBlending, AmbientLight, BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, Color, DirectionalLight, DoubleSide, EdgesGeometry, FogExp2, Group, Line, LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, MeshLambertMaterial, NearestFilter, Object3D, PerspectiveCamera, PlaneGeometry, Points, PointsMaterial, Raycaster, RepeatWrapping, Scene, Vector2, Vector3, WebGLRenderer } from "three";
+import { AdditiveBlending, AmbientLight, BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, Color, DirectionalLight, DoubleSide, EdgesGeometry, FogExp2, Group, InterleavedBufferAttribute, Line, LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, MeshLambertMaterial, NearestFilter, Object3D, PerspectiveCamera, PlaneGeometry, Points, PointsMaterial, Raycaster, RepeatWrapping, Scene, Vector2, Vector3, WebGLRenderer } from "three";
 
 const canvasContainer = ref<HTMLDivElement | null>(null);
 
@@ -243,7 +243,7 @@ function spawnSparks(position: Vector3) {
     posAttribute.needsUpdate = true;
 }
 
-function activateSpark(i: number, position: THREE.Vector3, posAttribute: THREE.BufferAttribute | THREE.InterleavedBufferAttribute) {
+function activateSpark(i: number, position: Vector3, posAttribute: BufferAttribute | InterleavedBufferAttribute) {
     sparkLifetimes[i] = 1.0;
 
     // Set position
@@ -680,7 +680,7 @@ function onClick(event: MouseEvent) {
             const z = posAttribute.getZ(index);
 
             // Spawn explosion
-            spawnSparks(new THREE.Vector3(x, y, z));
+            spawnSparks(new Vector3(x, y, z));
 
             // Hide drone (move far away)
             posAttribute.setXYZ(index, 0, -99999, 0);

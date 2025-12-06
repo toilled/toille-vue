@@ -21,10 +21,14 @@ const cars: THREE.Group[] = [];
 let drones: THREE.Points;
 let droneTargetPositions: Float32Array;
 let droneBasePositions: Float32Array;
+const deadDrones = new Set<number>();
+
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
 
 // Sparks system
 let sparks: THREE.Points;
-const sparkCount = 200;
+const sparkCount = 2000;
 const sparkPositions = new Float32Array(sparkCount * 3);
 const sparkVelocities = new Float32Array(sparkCount * 3);
 const sparkLifetimes = new Float32Array(sparkCount); // 0 = dead, 1 = full life
@@ -217,25 +221,38 @@ function spawnSparks(position: THREE.Vector3) {
 
     // Spawn a burst of sparks
     let spawned = 0;
-    const burstSize = 10;
+    const burstSize = 30; // Increased burst size
 
+    // First pass: try to find dead sparks
     for (let i = 0; i < sparkCount; i++) {
         if (sparkLifetimes[i] <= 0) {
-            sparkLifetimes[i] = 1.0;
-
-            // Set position
-            posAttribute.setXYZ(i, position.x, position.y, position.z);
-
-            // Random velocity
-            sparkVelocities[i*3] = (Math.random() - 0.5) * 5;     // vx
-            sparkVelocities[i*3+1] = Math.random() * 5 + 2;     // vy (upwards)
-            sparkVelocities[i*3+2] = (Math.random() - 0.5) * 5;   // vz
-
+            activateSpark(i, position, posAttribute);
             spawned++;
             if (spawned >= burstSize) break;
         }
     }
+
+    // Second pass: if not enough spawned, recycle random sparks
+    if (spawned < burstSize) {
+        for (let i = 0; i < burstSize - spawned; i++) {
+             const randIndex = Math.floor(Math.random() * sparkCount);
+             activateSpark(randIndex, position, posAttribute);
+        }
+    }
+    
     posAttribute.needsUpdate = true;
+}
+
+function activateSpark(i: number, position: THREE.Vector3, posAttribute: THREE.BufferAttribute | THREE.InterleavedBufferAttribute) {
+    sparkLifetimes[i] = 1.0;
+
+    // Set position
+    posAttribute.setXYZ(i, position.x, position.y, position.z);
+
+    // Random velocity
+    sparkVelocities[i*3] = (Math.random() - 0.5) * 5;     // vx
+    sparkVelocities[i*3+1] = Math.random() * 5 + 2;     // vy (upwards)
+    sparkVelocities[i*3+2] = (Math.random() - 0.5) * 5;   // vz
 }
 
 onMounted(() => {
@@ -576,7 +593,13 @@ onMounted(() => {
   scene.add(sparks);
 
   window.addEventListener("resize", onResize);
+  window.addEventListener("click", onClick);
   animate();
+});
+
+onBeforeUnmount(() => {
+    window.removeEventListener("resize", onResize);
+    window.removeEventListener("click", onClick);
 });
 
 // Seeded random number generator
@@ -633,6 +656,42 @@ function onResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function onClick(event: MouseEvent) {
+    if (!drones || !camera) return;
+
+    pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+    pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    raycaster.setFromCamera(pointer, camera);
+    raycaster.params.Points.threshold = 20; // Increased threshold
+
+    const intersects = raycaster.intersectObject(drones);
+
+    if (intersects.length > 0) {
+        // Sort by distance (default behavior of intersectObject usually, but good to be sure)
+        // intersects.sort((a, b) => a.distance - b.distance); 
+        
+        const intersect = intersects[0];
+        const index = intersect.index;
+
+        if (index !== undefined && !deadDrones.has(index)) {
+            const posAttribute = drones.geometry.attributes.position;
+            const x = posAttribute.getX(index);
+            const y = posAttribute.getY(index);
+            const z = posAttribute.getZ(index);
+
+            // Spawn explosion
+            spawnSparks(new THREE.Vector3(x, y, z));
+
+            // Hide drone (move far away)
+            posAttribute.setXYZ(index, 0, -99999, 0);
+            posAttribute.needsUpdate = true;
+            
+            deadDrones.add(index);
+        }
+    }
 }
 
 function animate() {
@@ -781,6 +840,8 @@ function animate() {
       const easing = 0.02;
 
       for(let i = 0; i < positions.length / 3; i++) {
+          if (deadDrones.has(i)) continue;
+
           // Move towards target
           // positions[i*3] += (droneTargetPositions[i*3] - positions[i*3]) * easing;
           // positions[i*3+1] += (droneTargetPositions[i*3+1] - positions[i*3+1]) * easing;

@@ -1,6 +1,6 @@
 <template>
   <li class="menu-item">
-    <router-link :to="page.link">{{ page.name }}</router-link>
+    <router-link :to="page.link" @mousedown.prevent>{{ page.name }}</router-link>
   </li>
 </template>
 

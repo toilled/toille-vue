@@ -5,29 +5,29 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import * as THREE from "three";
+import { AdditiveBlending, AmbientLight, BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, Color, DirectionalLight, DoubleSide, EdgesGeometry, FogExp2, Group, InterleavedBufferAttribute, Line, LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, MeshLambertMaterial, NearestFilter, Object3D, PerspectiveCamera, PlaneGeometry, Points, PointsMaterial, Raycaster, RepeatWrapping, Scene, Vector2, Vector3, WebGLRenderer } from "three";
 
 const canvasContainer = ref<HTMLDivElement | null>(null);
 
-let scene: THREE.Scene;
-let camera: THREE.PerspectiveCamera;
-let renderer: THREE.WebGLRenderer;
+let scene: Scene;
+let camera: PerspectiveCamera;
+let renderer: WebGLRenderer;
 let animationId: number;
 
-const buildings: THREE.Object3D[] = [];
+const buildings: Object3D[] = [];
 // Fix: cars are Group objects
-const cars: THREE.Group[] = [];
+const cars: Group[] = [];
 
-let drones: THREE.Points;
+let drones: Points;
 let droneTargetPositions: Float32Array;
 let droneBasePositions: Float32Array;
 const deadDrones = new Set<number>();
 
-const raycaster = new THREE.Raycaster();
-const pointer = new THREE.Vector2();
+const raycaster = new Raycaster();
+const pointer = new Vector2();
 
 // Sparks system
-let sparks: THREE.Points;
+let sparks: Points;
 const sparkCount = 2000;
 const sparkPositions = new Float32Array(sparkCount * 3);
 const sparkVelocities = new Float32Array(sparkCount * 3);
@@ -49,7 +49,7 @@ const startOffset = -(GRID_SIZE * CELL_SIZE) / 2 + CELL_SIZE / 2;
 const CAR_COUNT = 150;
 
 // Function to reset/spawn a car
-function resetCar(carGroup: THREE.Group) {
+function resetCar(carGroup: Group) {
     const axis = Math.random() > 0.5 ? 'x' : 'z';
     const dir = Math.random() > 0.5 ? 1 : -1;
 
@@ -83,7 +83,7 @@ function resetCar(carGroup: THREE.Group) {
 
     // Reset opacity of children
     carGroup.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
+        if (child instanceof Mesh) {
             const mat = child.material;
             if (!Array.isArray(mat) && child.userData.originalOpacity !== undefined) {
                 mat.opacity = child.userData.originalOpacity;
@@ -111,16 +111,16 @@ function createWindowTexture() {
             }
         }
     }
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.magFilter = THREE.NearestFilter;
+    const texture = new CanvasTexture(canvas);
+    texture.wrapS = RepeatWrapping;
+    texture.wrapT = RepeatWrapping;
+    texture.magFilter = NearestFilter;
     return texture;
 }
 
 // Generate Billboard Textures
 function createBillboardTextures() {
-    const textures: THREE.CanvasTexture[] = [];
+    const textures: CanvasTexture[] = [];
     for (let i = 0; i < 5; i++) {
         const canvas = document.createElement('canvas');
         canvas.width = 128;
@@ -172,7 +172,7 @@ function createBillboardTextures() {
                 }
             }
         }
-        const texture = new THREE.CanvasTexture(canvas);
+        const texture = new CanvasTexture(canvas);
         textures.push(texture);
     }
     return textures;
@@ -211,11 +211,11 @@ function createDroneTexture() {
         ctx.arc(16, 16, 5, 0, Math.PI * 2);
         ctx.fill();
     }
-    const texture = new THREE.CanvasTexture(canvas);
+    const texture = new CanvasTexture(canvas);
     return texture;
 }
 
-function spawnSparks(position: THREE.Vector3) {
+function spawnSparks(position: Vector3) {
     if (!sparks) return;
     const posAttribute = sparks.geometry.attributes.position;
 
@@ -243,7 +243,7 @@ function spawnSparks(position: THREE.Vector3) {
     posAttribute.needsUpdate = true;
 }
 
-function activateSpark(i: number, position: THREE.Vector3, posAttribute: THREE.BufferAttribute | THREE.InterleavedBufferAttribute) {
+function activateSpark(i: number, position: Vector3, posAttribute: BufferAttribute | InterleavedBufferAttribute) {
     sparkLifetimes[i] = 1.0;
 
     // Set position
@@ -259,12 +259,12 @@ onMounted(() => {
   if (!canvasContainer.value) return;
 
   // Scene setup
-  scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x050510);
-  scene.fog = new THREE.FogExp2(0x050510, 0.001); // Reduced fog density
+  scene = new Scene();
+  scene.background = new Color(0x050510);
+  scene.fog = new FogExp2(0x050510, 0.001); // Reduced fog density
 
   // Camera setup
-  camera = new THREE.PerspectiveCamera(
+  camera = new PerspectiveCamera(
     60,
     window.innerWidth / window.innerHeight,
     1,
@@ -274,27 +274,27 @@ onMounted(() => {
   camera.lookAt(0, 0, 0);
 
   // Renderer setup
-  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  renderer = new WebGLRenderer({ antialias: true, alpha: false });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   canvasContainer.value.appendChild(renderer.domElement);
 
   // Lighting
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+  const ambientLight = new AmbientLight(0xffffff, 0.2);
   scene.add(ambientLight);
 
-  const dirLight = new THREE.DirectionalLight(0xff00cc, 0.5);
+  const dirLight = new DirectionalLight(0xff00cc, 0.5);
   dirLight.position.set(100, 200, 100);
   scene.add(dirLight);
 
-  const dirLight2 = new THREE.DirectionalLight(0x00ccff, 0.5);
+  const dirLight2 = new DirectionalLight(0x00ccff, 0.5);
   dirLight2.position.set(-100, 200, -100);
   scene.add(dirLight2);
 
   // Ground Plane
-  const planeGeometry = new THREE.PlaneGeometry(CITY_SIZE * 2, CITY_SIZE * 2);
-  const planeMaterial = new THREE.MeshBasicMaterial({ color: 0x0a0a15 });
-  const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+  const planeGeometry = new PlaneGeometry(CITY_SIZE * 2, CITY_SIZE * 2);
+  const planeMaterial = new MeshBasicMaterial({ color: 0x0a0a15 });
+  const plane = new Mesh(planeGeometry, planeMaterial);
   plane.rotation.x = -Math.PI / 2;
   plane.position.y = -0.5;
   scene.add(plane);
@@ -304,25 +304,25 @@ onMounted(() => {
   const windowTexture = createWindowTexture();
   const billboardTextures = createBillboardTextures();
 
-  const boxGeo = new THREE.BoxGeometry(1, 1, 1);
+  const boxGeo = new BoxGeometry(1, 1, 1);
   boxGeo.translate(0, 0.5, 0); // pivot at bottom
 
-  const edgesGeo = new THREE.EdgesGeometry(boxGeo);
+  const edgesGeo = new EdgesGeometry(boxGeo);
 
   // Reusable Materials
-  const buildingMaterial = new THREE.MeshLambertMaterial({
+  const buildingMaterial = new MeshLambertMaterial({
       color: 0x222222,
       map: windowTexture
   });
 
-  const edgeMat1 = new THREE.LineBasicMaterial({ color: 0xff00cc, transparent: true, opacity: 0.4 });
-  const edgeMat2 = new THREE.LineBasicMaterial({ color: 0x00ccff, transparent: true, opacity: 0.4 });
-  const topEdgeMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
-  const antennaMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const edgeMat1 = new LineBasicMaterial({ color: 0xff00cc, transparent: true, opacity: 0.4 });
+  const edgeMat2 = new LineBasicMaterial({ color: 0x00ccff, transparent: true, opacity: 0.4 });
+  const topEdgeMat = new LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
+  const antennaMat = new MeshBasicMaterial({ color: 0xffffff });
 
-  const billboardMaterials = billboardTextures.map(tex => new THREE.MeshBasicMaterial({
+  const billboardMaterials = billboardTextures.map(tex => new MeshBasicMaterial({
       map: tex,
-      side: THREE.DoubleSide,
+      side: DoubleSide,
       transparent: true,
       opacity: 0.9
   }));
@@ -339,16 +339,16 @@ onMounted(() => {
         const w = BLOCK_SIZE - 10 - Math.random() * 20;
         const d = BLOCK_SIZE - 10 - Math.random() * 20;
 
-        const buildingGroup = new THREE.Group();
+        const buildingGroup = new Group();
         buildingGroup.position.set(xPos, 0, zPos);
 
         // Main Block
-        const mainBlock = new THREE.Mesh(boxGeo, buildingMaterial);
+        const mainBlock = new Mesh(boxGeo, buildingMaterial);
         mainBlock.scale.set(w, h, d);
         buildingGroup.add(mainBlock);
 
         // Edges for Main Block
-        const line = new THREE.LineSegments(
+        const line = new LineSegments(
             edgesGeo,
             Math.random() > 0.5 ? edgeMat1 : edgeMat2
         );
@@ -361,12 +361,12 @@ onMounted(() => {
             const w2 = w * 0.6;
             const d2 = d * 0.6;
 
-            const topBlock = new THREE.Mesh(boxGeo, buildingMaterial);
+            const topBlock = new Mesh(boxGeo, buildingMaterial);
             topBlock.scale.set(w2, h2, d2);
             topBlock.position.y = h;
             buildingGroup.add(topBlock);
 
-            const topLine = new THREE.LineSegments(
+            const topLine = new LineSegments(
                 edgesGeo,
                 topEdgeMat
             );
@@ -377,7 +377,7 @@ onMounted(() => {
             // Antenna
             if (Math.random() > 0.5) {
                 const antennaH = h * 0.2;
-                const antenna = new THREE.Mesh(boxGeo, antennaMat);
+                const antenna = new Mesh(boxGeo, antennaMat);
                 antenna.scale.set(2, antennaH, 2);
                 antenna.position.y = h + h2;
                 buildingGroup.add(antenna);
@@ -391,9 +391,9 @@ onMounted(() => {
 
             const bbW = 20 + Math.random() * 15;
             const bbH = 10 + Math.random() * 10;
-            const bbGeo = new THREE.PlaneGeometry(bbW, bbH);
+            const bbGeo = new PlaneGeometry(bbW, bbH);
 
-            const billboard = new THREE.Mesh(bbGeo, bbMat);
+            const billboard = new Mesh(bbGeo, bbMat);
 
             // Position on a random face
             // 0: +Z, 1: -Z, 2: +X, 3: -X
@@ -421,45 +421,45 @@ onMounted(() => {
   }
 
   // Add Road Markings (Simple Lines)
-  const lineMaterial = new THREE.LineBasicMaterial({ color: 0x444444 });
+  const lineMaterial = new LineBasicMaterial({ color: 0x444444 });
 
   for (let i = 0; i <= GRID_SIZE; i++) {
       const pos = startOffset + i * CELL_SIZE - CELL_SIZE / 2;
 
       // Road line geometry (Along Z)
       const points = [];
-      points.push(new THREE.Vector3(pos, 0.1, -CITY_SIZE));
-      points.push(new THREE.Vector3(pos, 0.1, CITY_SIZE));
-      const geometry = new THREE.BufferGeometry().setFromPoints(points);
-      const line = new THREE.Line(geometry, lineMaterial);
+      points.push(new Vector3(pos, 0.1, -CITY_SIZE));
+      points.push(new Vector3(pos, 0.1, CITY_SIZE));
+      const geometry = new BufferGeometry().setFromPoints(points);
+      const line = new Line(geometry, lineMaterial);
       scene.add(line);
 
       // Road line geometry (Along X)
       const points2 = [];
-      points2.push(new THREE.Vector3(-CITY_SIZE, 0.1, pos));
-      points2.push(new THREE.Vector3(CITY_SIZE, 0.1, pos));
-      const geometry2 = new THREE.BufferGeometry().setFromPoints(points2);
-      const line2 = new THREE.Line(geometry2, lineMaterial);
+      points2.push(new Vector3(-CITY_SIZE, 0.1, pos));
+      points2.push(new Vector3(CITY_SIZE, 0.1, pos));
+      const geometry2 = new BufferGeometry().setFromPoints(points2);
+      const line2 = new Line(geometry2, lineMaterial);
       scene.add(line2);
   }
 
 
   // Cars
-  const carGeo = new THREE.BoxGeometry(4, 2, 8);
-  const tailLightGeo = new THREE.BoxGeometry(0.5, 0.5, 0.1);
-  const headLightGeo = new THREE.BoxGeometry(0.5, 0.5, 0.1);
+  const carGeo = new BoxGeometry(4, 2, 8);
+  const tailLightGeo = new BoxGeometry(0.5, 0.5, 0.1);
+  const headLightGeo = new BoxGeometry(0.5, 0.5, 0.1);
 
   // Reusable Car Materials
-  const carBodyMat1 = new THREE.MeshLambertMaterial({ color: 0x222222 });
-  const carBodyMat2 = new THREE.MeshLambertMaterial({ color: 0x050505 });
-  const carBodyMat3 = new THREE.MeshLambertMaterial({ color: 0x111111 });
+  const carBodyMat1 = new MeshLambertMaterial({ color: 0x222222 });
+  const carBodyMat2 = new MeshLambertMaterial({ color: 0x050505 });
+  const carBodyMat3 = new MeshLambertMaterial({ color: 0x111111 });
 
-  const underglowGeo = new THREE.PlaneGeometry(5, 9);
-  const underglowMat1 = new THREE.MeshBasicMaterial({ color: 0xff00cc, opacity: 0.5, transparent: true, side: THREE.DoubleSide });
-  const underglowMat2 = new THREE.MeshBasicMaterial({ color: 0x00ccff, opacity: 0.5, transparent: true, side: THREE.DoubleSide });
+  const underglowGeo = new PlaneGeometry(5, 9);
+  const underglowMat1 = new MeshBasicMaterial({ color: 0xff00cc, opacity: 0.5, transparent: true, side: DoubleSide });
+  const underglowMat2 = new MeshBasicMaterial({ color: 0x00ccff, opacity: 0.5, transparent: true, side: DoubleSide });
 
-  const tailLightMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-  const headLightMat = new THREE.MeshBasicMaterial({ color: 0xffffaa });
+  const tailLightMat = new MeshBasicMaterial({ color: 0xff0000 });
+  const headLightMat = new MeshBasicMaterial({ color: 0xffffaa });
 
   for (let i = 0; i < CAR_COUNT; i++) {
     const isSpecial = Math.random() > 0.8;
@@ -467,17 +467,17 @@ onMounted(() => {
     bodyMat.transparent = true;
 
     // Car Group
-    const carGroup = new THREE.Group();
+    const carGroup = new Group();
 
     // Car Body
-    const carBody = new THREE.Mesh(carGeo, bodyMat);
+    const carBody = new Mesh(carGeo, bodyMat);
     carBody.userData.originalOpacity = 1.0;
     carGroup.add(carBody);
 
     // Underglow (Neon)
     if (Math.random() > 0.3) {
       const underglowMat = (Math.random() > 0.5 ? underglowMat1 : underglowMat2).clone();
-      const underglow = new THREE.Mesh(underglowGeo, underglowMat);
+      const underglow = new Mesh(underglowGeo, underglowMat);
       underglow.userData.originalOpacity = 0.5;
       underglow.rotation.x = Math.PI / 2;
       underglow.position.y = -0.9;
@@ -487,12 +487,12 @@ onMounted(() => {
     // Tail lights
     const tlMat = tailLightMat.clone();
     tlMat.transparent = true;
-    const tl1 = new THREE.Mesh(tailLightGeo, tlMat);
+    const tl1 = new Mesh(tailLightGeo, tlMat);
     tl1.userData.originalOpacity = 1.0;
     tl1.position.set(1.5, 0, 4);
     carGroup.add(tl1);
 
-    const tl2 = new THREE.Mesh(tailLightGeo, tlMat);
+    const tl2 = new Mesh(tailLightGeo, tlMat);
     tl2.userData.originalOpacity = 1.0;
     tl2.position.set(-1.5, 0, 4);
     carGroup.add(tl2);
@@ -500,12 +500,12 @@ onMounted(() => {
     // Head lights
     const hlMat = headLightMat.clone();
     hlMat.transparent = true;
-    const hl1 = new THREE.Mesh(headLightGeo, hlMat);
+    const hl1 = new Mesh(headLightGeo, hlMat);
     hl1.userData.originalOpacity = 1.0;
     hl1.position.set(1.5, 0, -4);
     carGroup.add(hl1);
 
-    const hl2 = new THREE.Mesh(headLightGeo, hlMat);
+    const hl2 = new Mesh(headLightGeo, hlMat);
     hl2.userData.originalOpacity = 1.0;
     hl2.position.set(-1.5, 0, -4);
     carGroup.add(hl2);
@@ -519,7 +519,7 @@ onMounted(() => {
   }
 
   // Drone Swarm (formerly Starfield)
-  const droneGeo = new THREE.BufferGeometry();
+  const droneGeo = new BufferGeometry();
   const droneCount = 1000;
   const dronePositions = new Float32Array(droneCount * 3);
   const droneColorsArray = new Float32Array(droneCount * 3);
@@ -534,10 +534,10 @@ onMounted(() => {
       droneBasePositions[i*3+2] = (baseRand() - 0.5) * 4000;
   }
 
-  const dColor1 = new THREE.Color(0xff0000); // Red
-  const dColor2 = new THREE.Color(0x00ffcc); // Cyan
-  const dColor3 = new THREE.Color(0x00ff00); // Green
-  const dColor4 = new THREE.Color(0xffffff); // White
+  const dColor1 = new Color(0xff0000); // Red
+  const dColor2 = new Color(0x00ffcc); // Cyan
+  const dColor3 = new Color(0x00ff00); // Green
+  const dColor4 = new Color(0xffffff); // White
 
   // Initial generation
   generateDroneTargets(route.path);
@@ -559,10 +559,10 @@ onMounted(() => {
     droneColorsArray[i * 3 + 2] = finalColor.b;
   }
 
-  droneGeo.setAttribute('position', new THREE.BufferAttribute(dronePositions, 3));
-  droneGeo.setAttribute('color', new THREE.BufferAttribute(droneColorsArray, 3));
+  droneGeo.setAttribute('position', new BufferAttribute(dronePositions, 3));
+  droneGeo.setAttribute('color', new BufferAttribute(droneColorsArray, 3));
 
-  const droneMaterial = new THREE.PointsMaterial({
+  const droneMaterial = new PointsMaterial({
     size: 15, // Larger to see the texture
     map: createDroneTexture(),
     vertexColors: true,
@@ -570,26 +570,26 @@ onMounted(() => {
     opacity: 0.9,
     sizeAttenuation: true,
     depthWrite: false, // Better for transparency
-    blending: THREE.AdditiveBlending
+    blending: AdditiveBlending
   });
 
-  drones = new THREE.Points(droneGeo, droneMaterial);
+  drones = new Points(droneGeo, droneMaterial);
   scene.add(drones);
 
   // Initialize Sparks
-  const sparkGeo = new THREE.BufferGeometry();
-  sparkGeo.setAttribute('position', new THREE.BufferAttribute(sparkPositions, 3));
+  const sparkGeo = new BufferGeometry();
+  sparkGeo.setAttribute('position', new BufferAttribute(sparkPositions, 3));
 
-  const sparkMat = new THREE.PointsMaterial({
+  const sparkMat = new PointsMaterial({
       color: 0xffaa00,
       size: 1,
       transparent: true,
       opacity: 1,
-      blending: THREE.AdditiveBlending,
+      blending: AdditiveBlending,
       sizeAttenuation: true
   });
 
-  sparks = new THREE.Points(sparkGeo, sparkMat);
+  sparks = new Points(sparkGeo, sparkMat);
   scene.add(sparks);
 
   window.addEventListener("resize", onResize);
@@ -680,7 +680,7 @@ function onClick(event: MouseEvent) {
             const z = posAttribute.getZ(index);
 
             // Spawn explosion
-            spawnSparks(new THREE.Vector3(x, y, z));
+            spawnSparks(new Vector3(x, y, z));
 
             // Hide drone (move far away)
             posAttribute.setXYZ(index, 0, -99999, 0);
@@ -728,7 +728,7 @@ function animate() {
           } else {
               // Apply opacity
               car.traverse((child) => {
-                  if (child instanceof THREE.Mesh) {
+                  if (child instanceof Mesh) {
                       const mat = child.material;
                        if (!Array.isArray(mat)) {
                            // Scale current opacity relative to original
@@ -779,7 +779,7 @@ function animate() {
               // Spawn sparks at midpoint
               const midX = (carA.position.x + carB.position.x) / 2;
               const midZ = (carA.position.z + carB.position.z) / 2;
-              spawnSparks(new THREE.Vector3(midX, 2, midZ));
+              spawnSparks(new Vector3(midX, 2, midZ));
           }
       }
   }

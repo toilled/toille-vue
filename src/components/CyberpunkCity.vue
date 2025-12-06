@@ -13,6 +13,7 @@ let scene: Scene;
 let camera: PerspectiveCamera;
 let renderer: WebGLRenderer;
 let animationId: number;
+let isActive = false;
 
 const buildings: Object3D[] = [];
 // Fix: cars are Group objects
@@ -594,6 +595,7 @@ onMounted(() => {
 
   window.addEventListener("resize", onResize);
   window.addEventListener("click", onClick);
+  isActive = true;
   animate();
 });
 
@@ -692,6 +694,7 @@ function onClick(event: MouseEvent) {
 }
 
 function animate() {
+  if (!isActive) return;
   animationId = requestAnimationFrame(animate);
 
   const time = Date.now() * 0.0005;
@@ -872,6 +875,7 @@ function animate() {
 }
 
 onBeforeUnmount(() => {
+  isActive = false;
   window.removeEventListener("resize", onResize);
   window.removeEventListener("click", onClick);
   cancelAnimationFrame(animationId);

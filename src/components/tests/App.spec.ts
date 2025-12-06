@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { mount } from "@vue/test-utils";
 import App from "../../App.vue";
 import { createRouter, createMemoryHistory } from "vue-router";
@@ -30,11 +30,20 @@ vi.mock("../../configs/titles.json", () => ({
 }));
 
 describe("App.vue", () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let wrapper: any;
+
+  afterEach(() => {
+    if (wrapper) {
+      wrapper.unmount();
+    }
+  });
+
   it("renders the main components", async () => {
     const router = createTestRouter();
     router.push("/");
     await router.isReady();
-    const wrapper = mount(App, {
+    wrapper = mount(App, {
       global: {
         plugins: [router],
         stubs: {
@@ -53,7 +62,7 @@ describe("App.vue", () => {
     const router = createTestRouter();
     router.push("/");
     await router.isReady();
-    const wrapper = mount(App, {
+    wrapper = mount(App, {
       global: {
         plugins: [router],
         stubs: {
@@ -75,7 +84,7 @@ describe("App.vue", () => {
     const router = createTestRouter();
     router.push("/");
     await router.isReady();
-    const wrapper = mount(App, {
+    wrapper = mount(App, {
       global: {
         plugins: [router],
         stubs: {
@@ -98,7 +107,7 @@ describe("App.vue", () => {
     router.push("/");
     await router.isReady();
     vi.useFakeTimers();
-    const wrapper = mount(App, {
+    wrapper = mount(App, {
       global: {
         plugins: [router],
         stubs: {
@@ -121,7 +130,7 @@ describe("App.vue", () => {
     router.push("/");
     await router.isReady();
     vi.useFakeTimers();
-    const wrapper = mount(App, {
+    wrapper = mount(App, {
       global: {
         plugins: [router],
         stubs: {
@@ -145,7 +154,7 @@ describe("App.vue", () => {
     const router = createTestRouter();
     router.push("/");
     await router.isReady();
-    mount(App, {
+    wrapper = mount(App, {
       global: {
         plugins: [router],
         stubs: {

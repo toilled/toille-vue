@@ -49,8 +49,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch, defineAsyncComponent } from "vue";
-import { useRoute } from "vue-router";
+import { ref, onMounted, onUnmounted, computed, watch, defineAsyncComponent } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import Title from "./components/Title.vue";
 import Menu from "./components/Menu.vue";
 import Checker from "./components/Checker.vue";
@@ -75,7 +75,22 @@ const activity = ref(false);
 const joke = ref(false);
 const showHint = ref(false);
 const route = useRoute();
+const router = useRouter();
 const transitionName = ref("cards");
+
+function handleKeydown(e: KeyboardEvent) {
+  if (e.key === "ArrowRight") {
+    const currentIndex = visiblePages.value.findIndex((page: Page) => page.link === route.path);
+    if (currentIndex !== -1 && currentIndex < visiblePages.value.length - 1) {
+      router.push(visiblePages.value[currentIndex + 1].link);
+    }
+  } else if (e.key === "ArrowLeft") {
+    const currentIndex = visiblePages.value.findIndex((page: Page) => page.link === route.path);
+    if (currentIndex > 0) {
+      router.push(visiblePages.value[currentIndex - 1].link);
+    }
+  }
+}
 
 function onBeforeLeave(el: Element) {
   if (containerRef.value) {
@@ -140,6 +155,12 @@ onMounted(() => {
       document.body.classList.add('can-hover');
     }
   });
+
+  window.addEventListener("keydown", handleKeydown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("keydown", handleKeydown);
 });
 
 watch(

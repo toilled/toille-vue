@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils'
+import { mount, VueWrapper } from '@vue/test-utils'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import CyberpunkCity from '../components/CyberpunkCity.vue'
 import * as THREE from 'three'
@@ -113,7 +113,7 @@ vi.mock('three', () => {
 })
 
 describe('CyberpunkCity.vue', () => {
-  let wrapper: any
+  let wrapper: VueWrapper
 
   beforeEach(() => {
     // Reset mocks

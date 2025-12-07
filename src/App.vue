@@ -3,8 +3,6 @@
     <Title
       :title="titles.title"
       :subtitle="titles.subtitle"
-      :activity="activity"
-      :joke="joke"
       @activity="toggleActivity"
       @joke="toggleJoke"
     />
@@ -36,11 +34,11 @@
     <Checker v-if="checker" />
   </Transition>
   <Transition name="fade">
-    <Activity v-show="activity" />
+    <Activity v-if="activity" />
   </Transition>
   <Transition name="fade">
     <Suggestion
-      v-show="joke"
+      v-if="joke"
       url="https://icanhazdadjoke.com/"
       valueName="joke"
       title="Have a laugh!"
@@ -53,17 +51,17 @@ import { ref, onMounted, onUnmounted, computed, watch, defineAsyncComponent } fr
 import { useRoute, useRouter } from "vue-router";
 import Title from "./components/Title.vue";
 import Menu from "./components/Menu.vue";
-import Checker from "./components/Checker.vue";
-import Activity from "./components/Activity.vue";
-import Suggestion from "./components/Suggestion.vue";
-import TypingText from "./components/TypingText.vue";
 import pages from "./configs/pages.json";
+import titles from "./configs/titles.json";
+import { Page } from "./interfaces/Page";
 
+const Checker = defineAsyncComponent(() => import("./components/Checker.vue"));
+const Activity = defineAsyncComponent(() => import("./components/Activity.vue"));
+const Suggestion = defineAsyncComponent(() => import("./components/Suggestion.vue"));
+const TypingText = defineAsyncComponent(() => import("./components/TypingText.vue"));
 const CyberpunkCity = defineAsyncComponent(() =>
   import("./components/CyberpunkCity.vue")
 );
-import titles from "./configs/titles.json";
-import { Page } from "./interfaces/Page";
 
 const visiblePages = computed(() => {
   return pages.filter((page: Page) => !page.hidden);

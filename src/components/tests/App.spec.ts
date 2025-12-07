@@ -29,6 +29,15 @@ vi.mock("../../configs/titles.json", () => ({
   },
 }));
 
+// Mock the async component to ensure it has a name and renders predictably
+vi.mock("../Checker.vue", () => ({
+  __esModule: true,
+  default: {
+    name: "Checker",
+    template: "<div>Alcohol Checker</div>",
+  },
+}));
+
 describe("App.vue", () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let wrapper: any;
@@ -67,6 +76,7 @@ describe("App.vue", () => {
         plugins: [router],
         stubs: {
           "Starfield": true,
+          "Checker": true,
         },
       },
     });
@@ -119,8 +129,20 @@ describe("App.vue", () => {
     vi.advanceTimersByTime(2000);
     await flushPromises();
     const footer = wrapper.find("footer");
+
+    // Verify footer exists and click it
+    expect(footer.exists()).toBe(true);
     await footer.trigger("click");
+
     await flushPromises();
+    vi.advanceTimersByTime(100);
+    await flushPromises();
+
+    // Check if state changed
+    expect(wrapper.vm.checker).toBe(true);
+
+    // Check if component exists (stubbed)
+    // console.log(wrapper.html());
     expect(wrapper.findComponent({ name: "Checker" }).exists()).toBe(true);
     vi.useRealTimers();
   });

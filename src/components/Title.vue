@@ -34,14 +34,10 @@ import { ref } from "vue";
  * @props {Object}
  * @property {string} title - The main title text.
  * @property {string} subtitle - The subtitle text.
- * @property {boolean} activity - A boolean prop (not directly used in script, but likely for parent logic).
- * @property {boolean} joke - A boolean prop (not directly used in script, but likely for parent logic).
  */
 defineProps<{
   title: string;
   subtitle: string;
-  activity: boolean;
-  joke: boolean;
 }>();
 
 /**

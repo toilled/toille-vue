@@ -1,5 +1,5 @@
-import { createApp } from "vue";
-import { createRouter, createWebHistory } from "vue-router";
+import { createSSRApp } from "vue";
+import { createRouter, createWebHistory, createMemoryHistory } from "vue-router";
 import App from "./App.vue";
 import PageContent from "./components/PageContent.vue";
 
@@ -31,19 +31,17 @@ const routes = [
 ];
 
 /**
- * @const {import('vue-router').Router} router
- * @description The Vue Router instance, configured with web history and the defined routes.
+ * @description Creates the app instance and router.
+ * Exports app and router for use in client and server entry points.
  */
-const router = createRouter({
-  history: createWebHistory(),
-  routes,
-});
+export function createApp() {
+  const router = createRouter({
+    history: import.meta.env.SSR ? createMemoryHistory() : createWebHistory(),
+    routes,
+  });
 
-/**
- * @const {import('vue').App} app
- * @description The root Vue application instance.
- */
-const app = createApp(App);
+  const app = createSSRApp(App);
+  app.use(router);
 
-app.use(router);
-app.mount("#app");
+  return { app, router };
+}

@@ -11,18 +11,11 @@
     <Menu :pages="visiblePages" />
   </nav>
   <div class="router-view-container" ref="containerRef">
-    <router-view v-slot="{ Component, route }">
-      <Transition
-        :name="transitionName"
-        @before-leave="onBeforeLeave"
-        @enter="onEnter"
-        @after-enter="onAfterEnter"
-      >
-        <component :is="Component" :key="route.path" />
-      </Transition>
-    </router-view>
+    <NuxtPage />
   </div>
-  <CyberpunkCity />
+  <ClientOnly>
+    <CyberpunkCity />
+  </ClientOnly>
   <Transition name="fade">
     <footer
       v-if="noFootersShowing && showHint"
@@ -49,19 +42,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, watch, defineAsyncComponent } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import Title from "./components/Title.vue";
-import Menu from "./components/Menu.vue";
-import Checker from "./components/Checker.vue";
-import Activity from "./components/Activity.vue";
-import Suggestion from "./components/Suggestion.vue";
-import TypingText from "./components/TypingText.vue";
+import { ref, onMounted, onUnmounted, computed, watch } from "vue";
 import pages from "./configs/pages.json";
 
-const CyberpunkCity = defineAsyncComponent(() =>
-  import("./components/CyberpunkCity.vue")
-);
+// Components for script usage if needed, but Nuxt auto-imports template components.
 import titles from "./configs/titles.json";
 import { Page } from "./interfaces/Page";
 
@@ -142,7 +126,6 @@ onMounted(() => {
     showHint.value = false;
   }, 5000);
 
-  // Input detection for sticky hover fix
   let lastTouchTime = 0;
 
   document.body.addEventListener('touchstart', () => {
@@ -167,8 +150,8 @@ watch(
   () => route.path,
   (newPath, oldPath) => {
     if (oldPath) {
-      const oldPageIndex = getPageIndex(oldPath.slice(1));
-      const newPageIndex = getPageIndex(newPath.slice(1));
+      const oldPageIndex = getPageIndex(oldPath.slice(1) === '' ? '/' : oldPath.slice(1));
+      const newPageIndex = getPageIndex(newPath.slice(1) === '' ? '/' : newPath.slice(1));
 
       transitionName.value = newPageIndex > oldPageIndex ? 'cards' : 'cards-reverse';
     }
@@ -202,7 +185,9 @@ watch(
       }
     }
 
-    document.title = "Elliot > " + pageTitle;
+    useHead({
+        title: "Elliot > " + pageTitle
+    });
   },
   { immediate: true },
 );

@@ -57,7 +57,6 @@ import Checker from "./components/Checker.vue";
 import Activity from "./components/Activity.vue";
 import Suggestion from "./components/Suggestion.vue";
 import TypingText from "./components/TypingText.vue";
-import pages from "./configs/pages.json";
 
 const CyberpunkCity = defineAsyncComponent(() =>
   import("./components/CyberpunkCity.vue")
@@ -65,8 +64,10 @@ const CyberpunkCity = defineAsyncComponent(() =>
 import titles from "./configs/titles.json";
 import { Page } from "./interfaces/Page";
 
+const pages = ref<Page[]>([]);
+
 const visiblePages = computed(() => {
-  return pages.filter((page: Page) => !page.hidden);
+  return pages.value.filter((page: Page) => !page.hidden);
 });
 
 const containerRef = ref<HTMLElement | null>(null);
@@ -114,11 +115,11 @@ function onAfterEnter() {
 
 function getPageIndex(routeName: any) {
   if (routeName === "/") {
-    return pages.findIndex((page) => page.link === "/");
+    return pages.value.findIndex((page) => page.link === "/");
   }
 
-  const index = pages.findIndex((page) => page.link.slice(1) === routeName);
-  return index === -1 ? Object.keys(pages).length : index;
+  const index = pages.value.findIndex((page) => page.link.slice(1) === routeName);
+  return index === -1 ? Object.keys(pages.value).length : index;
 }
 
 const noFootersShowing = computed(() => {
@@ -133,7 +134,17 @@ function toggleJoke() {
   joke.value = !joke.value;
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // Fetch pages
+  try {
+    const res = await fetch('/api/page?all=true');
+    if (res.ok) {
+      pages.value = await res.json();
+    }
+  } catch (e) {
+    console.error("Failed to fetch pages", e);
+  }
+
   setTimeout(() => {
     showHint.value = true;
   }, 2000);
@@ -166,6 +177,20 @@ onUnmounted(() => {
 watch(
   () => route.path,
   (newPath, oldPath) => {
+    if (pages.value.length === 0) {
+        // If pages are not loaded yet, wait for them
+        const unwatch = watch(pages, () => {
+             updateTitleAndTransition(newPath, oldPath);
+             unwatch();
+        });
+        return;
+    }
+    updateTitleAndTransition(newPath, oldPath);
+  },
+  { immediate: true },
+);
+
+function updateTitleAndTransition(newPath: string, oldPath: string | undefined) {
     if (oldPath) {
       const oldPageIndex = getPageIndex(oldPath.slice(1));
       const newPageIndex = getPageIndex(newPath.slice(1));
@@ -192,9 +217,9 @@ watch(
       if (routeName) {
         let currentPage;
         if (routeName === 'home') {
-          currentPage = pages.find((page) => page.link === '/');
+          currentPage = pages.value.find((page) => page.link === '/');
         } else {
-          currentPage = pages.find((page) => page.link.slice(1) === routeName);
+          currentPage = pages.value.find((page) => page.link.slice(1) === routeName);
         }
         pageTitle = currentPage ? currentPage.title : '404';
       } else {
@@ -203,9 +228,7 @@ watch(
     }
 
     document.title = "Elliot > " + pageTitle;
-  },
-  { immediate: true },
-);
+}
 </script>
 
 <style>

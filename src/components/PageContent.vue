@@ -1,49 +1,53 @@
 <template>
   <main>
-    <section>
+    <section v-if="loading">
+      <header>
+        <h2 class="title">Loading...</h2>
+      </header>
+    </section>
+    <section v-else>
       <header>
         <h2 class="title" @mousedown="handleMouseDown">
           <template v-if="page">
             {{ page.title }}
-          <Transition name="fade">
-            <span
-              v-if="showHint"
-              style="
-                font-weight: 100;
-                font-style: italic;
-                font-size: 0.6em;
-                vertical-align: middle;
-              "
-            >
-              - Nothing here
-            </span>
-          </Transition>
-        </template>
-        <template v-else> 404 - Page not found </template>
-      </h2>
-    </header>
-    <template v-if="page">
-      <Paragraph
-        v-for="(paragraph, index) in page.body"
-        :key="index"
-        :paragraph="paragraph"
-        :last="index + 1 === page.body.length"
-      />
-    </template>
-    <template v-else>
-      <Paragraph
-        :paragraph="`The page <strong>${route.params.name}</strong> does not exist!`"
-        :last="true"
-      />
-    </template>
-  </section>
+            <Transition name="fade">
+              <span
+                v-if="showHint"
+                style="
+                  font-weight: 100;
+                  font-style: italic;
+                  font-size: 0.6em;
+                  vertical-align: middle;
+                "
+              >
+                - Nothing here
+              </span>
+            </Transition>
+          </template>
+          <template v-else> 404 - Page not found </template>
+        </h2>
+      </header>
+      <template v-if="page">
+        <Paragraph
+          v-for="(paragraph, index) in page.body"
+          :key="index"
+          :paragraph="paragraph"
+          :last="index + 1 === page.body.length"
+        />
+      </template>
+      <template v-else>
+        <Paragraph
+          :paragraph="`The page <strong>${route.params.name || route.path}</strong> does not exist!`"
+          :last="true"
+        />
+      </template>
+    </section>
   </main>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import pages from "../configs/pages.json";
 import Paragraph from "./Paragraph.vue";
 
 /**
@@ -64,22 +68,39 @@ const showHint = ref(false);
  */
 const route = useRoute();
 
-/**
- * @type {import('vue').ComputedRef<Page | null | undefined>}
- * @description A computed property that finds the page object from `pages.json` that matches the current route's `name` parameter.
- * Returns the page object, `null` for a 404, or the first page as a default.
- */
-const page = computed(() => {
-  if (route.params.name) {
-    return (
-      pages.find((p) => p.link.slice(1) === route.params.name)
-    );
-  }
+const page = ref<any>(null);
+const loading = ref(true);
+
+const fetchContent = async () => {
+  // If it's a 404 route (pathMatch), clear page and return.
   if (route.params.pathMatch) {
-    return null;
+    page.value = null;
+    loading.value = false;
+    return;
   }
-  return pages[0];
-});
+
+  loading.value = true;
+  let url = "/api/page";
+  if (route.params.name) {
+    url += `?name=${route.params.name}`;
+  }
+
+  try {
+    const res = await fetch(url);
+    if (res.ok) {
+      page.value = await res.json();
+    } else {
+      page.value = null;
+    }
+  } catch (e) {
+    console.error("Failed to fetch page", e);
+    page.value = null;
+  } finally {
+    loading.value = false;
+  }
+};
+
+watch(() => route.fullPath, fetchContent, { immediate: true });
 
 /**
  * @description Handles the mouse down event on the title, showing a hint for a short duration.
@@ -90,5 +111,4 @@ function handleMouseDown() {
     showHint.value = false;
   }, 500);
 }
-
 </script>

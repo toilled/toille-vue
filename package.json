@@ -9,20 +9,25 @@
     "preview": "nuxi preview",
     "postinstall": "nuxi prepare",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "test": "vitest"
   },
   "license": "MIT",
   "devDependencies": {
     "@eslint/js": "^9.21.0",
     "@playwright/test": "^1.56.1",
     "@types/three": "^0.181.0",
+    "@vitejs/plugin-vue": "^6.0.2",
+    "@vue/test-utils": "^2.4.6",
     "eslint": "^9.21.0",
     "flush-promises": "^1.0.2",
     "globals": "^15.15.0",
+    "happy-dom": "^20.0.11",
     "prettier": "3.5.3",
     "terser": "^5.44.1",
     "typescript": "^5.8.2",
-    "typescript-eslint": "^8.26.0"
+    "typescript-eslint": "^8.26.0",
+    "vitest": "^4.0.15"
   },
   "dependencies": {
     "@picocss/pico": "^2",

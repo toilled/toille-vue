@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { mount } from "@vue/test-utils";
-import App from "../../App.vue";
+import App from "../../app.vue"; // Correct case
 import { createRouter, createMemoryHistory } from "vue-router";
 import flushPromises from "flush-promises";
 
@@ -29,6 +29,9 @@ vi.mock("../../configs/titles.json", () => ({
   },
 }));
 
+// Nuxt uses useHead, but we are in a unit test environment where it's not auto-imported
+vi.stubGlobal('useHead', vi.fn());
+
 describe("App.vue", () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let wrapper: any;
@@ -47,15 +50,17 @@ describe("App.vue", () => {
       global: {
         plugins: [router],
         stubs: {
-          "router-view": true,
-          "Starfield": true,
+          "NuxtPage": true,
+          "ClientOnly": { template: "<div><slot /></div>" },
+          "CyberpunkCity": true,
+          "Transition": false // Stubbing transition can help with async issues, or keep false
         },
       },
     });
     await flushPromises();
     expect(wrapper.findComponent({ name: "Title" }).exists()).toBe(true);
     expect(wrapper.findComponent({ name: "Menu" }).exists()).toBe(true);
-    expect(wrapper.find("router-view-stub").exists()).toBe(true);
+    expect(wrapper.find("nuxt-page-stub").exists()).toBe(true);
   });
 
   it("toggles the Activity component", async () => {
@@ -66,7 +71,9 @@ describe("App.vue", () => {
       global: {
         plugins: [router],
         stubs: {
-          "Starfield": true,
+          "NuxtPage": true,
+          "ClientOnly": true,
+          "CyberpunkCity": true,
         },
       },
     });
@@ -88,7 +95,9 @@ describe("App.vue", () => {
       global: {
         plugins: [router],
         stubs: {
-          "Starfield": true,
+          "NuxtPage": true,
+          "ClientOnly": true,
+          "CyberpunkCity": true,
         },
       },
     });
@@ -111,7 +120,9 @@ describe("App.vue", () => {
       global: {
         plugins: [router],
         stubs: {
-          "Starfield": true,
+          "NuxtPage": true,
+          "ClientOnly": true,
+          "CyberpunkCity": true,
         },
       },
     });
@@ -134,7 +145,9 @@ describe("App.vue", () => {
       global: {
         plugins: [router],
         stubs: {
-          "Starfield": true,
+          "NuxtPage": true,
+          "ClientOnly": true,
+          "CyberpunkCity": true,
           "TypingText": true,
         },
       },
@@ -158,20 +171,24 @@ describe("App.vue", () => {
       global: {
         plugins: [router],
         stubs: {
-          "router-view": true,
-          "Starfield": true,
+          "NuxtPage": true,
+          "ClientOnly": true,
+          "CyberpunkCity": true,
         },
       },
     });
     await flushPromises();
-    expect(document.title).toBe("Elliot > Home");
+
+    // In Nuxt migration, we switched to useHead for title management
+    // We stubbed useHead above. We can check if it was called.
+    expect(useHead).toHaveBeenCalledWith({ title: "Elliot > Home" });
 
     await router.push("/about");
     await flushPromises();
-    expect(document.title).toBe("Elliot > About Me");
+    expect(useHead).toHaveBeenCalledWith({ title: "Elliot > About Me" });
 
     await router.push("/non-existent-page");
     await flushPromises();
-    expect(document.title).toBe("Elliot > 404");
+    expect(useHead).toHaveBeenCalledWith({ title: "Elliot > 404" });
   });
 });

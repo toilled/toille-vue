@@ -7,6 +7,15 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const { request } = context;
   const url = new URL(request.url);
   const name = url.searchParams.get('name');
+  const all = url.searchParams.get('all');
+
+  if (all) {
+    return new Response(JSON.stringify(pages), {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  }
 
   let page;
 

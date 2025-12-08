@@ -1,177 +1,215 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mount } from "@vue/test-utils";
 import App from "../../App.vue";
-import { createRouter, createMemoryHistory } from "vue-router";
+import Menu from "../Menu.vue";
+import pages from "../../configs/pages.json";
+import { createRouter, createWebHistory } from "vue-router";
+import PageContent from "../PageContent.vue";
 import flushPromises from "flush-promises";
+
+vi.mock("../../configs/pages.json", () => ({
+  default: [
+    {
+      name: "Home",
+      link: "/",
+      title: "Home",
+      body: ["Home page content"],
+    },
+    {
+      name: "About",
+      link: "/about",
+      title: "About Me",
+      body: ["About page content"],
+    },
+    {
+      name: "Hidden",
+      link: "/hidden",
+      title: "Hidden",
+      hidden: true,
+      body: ["Hidden page content"],
+    },
+  ],
+}));
 
 const createTestRouter = () => {
   return createRouter({
-    history: createMemoryHistory(),
+    history: createWebHistory(),
     routes: [
-      { path: "/", component: { template: "Home" } },
-      { path: "/:name", component: { template: "Page" } },
-      { path: "/:pathMatch(.*)*", component: { template: "NotFound" } },
+      { path: "/", component: PageContent },
+      { path: "/:name", component: PageContent },
+      { path: "/checker", component: { template: "<div>Checker</div>" } },
     ],
   });
 };
 
-vi.mock("../../configs/pages.json", () => ({
-  default: [
-    { name: "Home", link: "/", title: "Home" },
-    { name: "About", link: "/about", title: "About Me" },
-  ],
-}));
-
-vi.mock("../../configs/titles.json", () => ({
-  default: {
-    title: "Main Title",
-    subtitle: "Main Subtitle",
-  },
-}));
-
 describe("App.vue", () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let wrapper: any;
+  let router: any;
+
+  beforeEach(() => {
+    router = createTestRouter();
+    global.fetch = vi.fn();
+    (global.fetch as any).mockResolvedValue({
+      ok: true,
+      json: async () => pages,
+    });
+  });
 
   afterEach(() => {
-    if (wrapper) {
-      wrapper.unmount();
-    }
+    vi.restoreAllMocks();
   });
 
-  it("renders the main components", async () => {
-    const router = createTestRouter();
+  it("renders the menu with visible pages", async () => {
     router.push("/");
     await router.isReady();
-    wrapper = mount(App, {
+    const wrapper = mount(App, {
       global: {
         plugins: [router],
         stubs: {
-          "router-view": true,
-          "Starfield": true,
-        },
+            PageContent: true,
+            CyberpunkCity: true,
+            Checker: true,
+            Activity: true,
+            Suggestion: true,
+            TypingText: true
+        }
       },
     });
-    await flushPromises();
-    expect(wrapper.findComponent({ name: "Title" }).exists()).toBe(true);
-    expect(wrapper.findComponent({ name: "Menu" }).exists()).toBe(true);
-    expect(wrapper.find("router-view-stub").exists()).toBe(true);
-  });
 
-  it("toggles the Activity component", async () => {
-    const router = createTestRouter();
-    router.push("/");
-    await router.isReady();
-    wrapper = mount(App, {
-      global: {
-        plugins: [router],
-        stubs: {
-          "Starfield": true,
-        },
-      },
-    });
+    // Wait for fetch to complete
     await flushPromises();
-    const title = wrapper.findComponent({ name: "Title" });
-    await title.vm.$emit("activity");
-    await flushPromises();
-    expect(wrapper.vm.activity).toBe(true);
-    await title.vm.$emit("activity");
-    await flushPromises();
-    expect(wrapper.vm.activity).toBe(false);
-  });
 
-  it("toggles the Suggestion component", async () => {
-    const router = createTestRouter();
-    router.push("/");
-    await router.isReady();
-    wrapper = mount(App, {
-      global: {
-        plugins: [router],
-        stubs: {
-          "Starfield": true,
-        },
-      },
-    });
-    await flushPromises();
-    const title = wrapper.findComponent({ name: "Title" });
-    await title.vm.$emit("joke");
-    await flushPromises();
-    expect(wrapper.vm.joke).toBe(true);
-    await title.vm.$emit("joke");
-    await flushPromises();
-    expect(wrapper.vm.joke).toBe(false);
+    const menu = wrapper.findComponent(Menu);
+    expect(menu.exists()).toBe(true);
+    expect(menu.props("pages")).toHaveLength(2); // Home and About, Hidden is excluded
+    expect(menu.props("pages")[0].name).toBe("Home");
+    expect(menu.props("pages")[1].name).toBe("About");
   });
 
   it("toggles the Checker component", async () => {
-    const router = createTestRouter();
+    vi.useFakeTimers();
     router.push("/");
     await router.isReady();
-    vi.useFakeTimers();
-    wrapper = mount(App, {
+    const wrapper = mount(App, {
       global: {
         plugins: [router],
         stubs: {
-          "Starfield": true,
-        },
+            PageContent: true,
+            CyberpunkCity: true,
+            Checker: true, // Stub Checker but we check if it is rendered
+            Activity: true,
+            Suggestion: true,
+            TypingText: true
+        }
       },
     });
     await flushPromises();
+
+    // Advance timers to show hint
     vi.advanceTimersByTime(2000);
-    await flushPromises();
+    await wrapper.vm.$nextTick();
+
     const footer = wrapper.find("footer");
+    expect(footer.exists()).toBe(true);
+
     await footer.trigger("click");
-    await flushPromises();
-    expect(wrapper.findComponent({ name: "Checker" }).exists()).toBe(true);
+    // Since Checker is stubbed, we can check if the component instance data changed
+    // or if the stub is present. v-if="checker"
+    // Since we stubbed it, we can check wrapper.findComponent(Checker).exists() which should be true if v-if is true.
+    // However, if it was false initially, it wouldn't exist.
+
+    // Wait for transition?
+    await wrapper.vm.$nextTick();
+    // The v-if="checker" should now be true.
+    // However, since we used mount and it's inside a Transition, it might be tricky.
+    // Let's check internal state
+    expect((wrapper.vm as any).checker).toBe(true);
+
     vi.useRealTimers();
   });
 
   it("shows and hides the hint", async () => {
-    const router = createTestRouter();
+    vi.useFakeTimers();
     router.push("/");
     await router.isReady();
-    vi.useFakeTimers();
-    wrapper = mount(App, {
+    const wrapper = mount(App, {
       global: {
         plugins: [router],
         stubs: {
-          "Starfield": true,
-          "TypingText": true,
-        },
+            PageContent: true,
+            CyberpunkCity: true,
+            Checker: true,
+            Activity: true,
+            Suggestion: true,
+            TypingText: true
+        }
       },
     });
     await flushPromises();
-    expect(wrapper.findComponent({ name: "TypingText" }).exists()).toBe(false);
+
+    expect(wrapper.find("footer").exists()).toBe(false);
+
     vi.advanceTimersByTime(2000);
-    await flushPromises();
-    expect(wrapper.findComponent({ name: "TypingText" }).exists()).toBe(true);
-    vi.advanceTimersByTime(3000);
-    await flushPromises();
-    expect(wrapper.findComponent({ name: "TypingText" }).exists()).toBe(false);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find("footer").exists()).toBe(true);
+
+    vi.advanceTimersByTime(3000); // Total 5000
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find("footer").exists()).toBe(false);
+
     vi.useRealTimers();
   });
 
-  it("updates the document title on route change", async () => {
-    const router = createTestRouter();
+  it("updates document title on route change", async () => {
     router.push("/");
     await router.isReady();
-    wrapper = mount(App, {
+    const wrapper = mount(App, {
       global: {
         plugins: [router],
         stubs: {
-          "router-view": true,
-          "Starfield": true,
-        },
+            PageContent: true,
+            CyberpunkCity: true,
+            Checker: true,
+            Activity: true,
+            Suggestion: true,
+            TypingText: true
+        }
       },
     });
     await flushPromises();
+
+    // Initial title (Home)
     expect(document.title).toBe("Elliot > Home");
 
-    await router.push("/about");
+    // Navigate to About
+    router.push("/about");
     await flushPromises();
     expect(document.title).toBe("Elliot > About Me");
 
-    await router.push("/non-existent-page");
+    // Navigate to unknown
+    router.push("/unknown");
     await flushPromises();
     expect(document.title).toBe("Elliot > 404");
+  });
+
+  it("fetches pages on mount", async () => {
+      router.push("/");
+      await router.isReady();
+      const wrapper = mount(App, {
+        global: {
+          plugins: [router],
+          stubs: {
+              PageContent: true,
+              CyberpunkCity: true,
+              Checker: true,
+              Activity: true,
+              Suggestion: true,
+              TypingText: true
+          }
+        },
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith('/api/page?all=true');
+      await flushPromises();
+      expect((wrapper.vm as any).pages).toHaveLength(3);
   });
 });

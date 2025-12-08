@@ -5,7 +5,9 @@
   "scripts": {
     "start": "vite",
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "vite build --outDir dist",
+    "build:server": "vite build -c vite.config.server.ts && mv functions/entry-server.js functions/[[path]].js",
     "serve": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

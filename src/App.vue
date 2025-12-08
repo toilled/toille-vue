@@ -22,7 +22,7 @@
       </Transition>
     </router-view>
   </div>
-  <CyberpunkCity />
+  <CyberpunkCity v-if="isClient" />
   <Transition name="fade">
     <footer
       v-if="noFootersShowing && showHint"
@@ -63,6 +63,12 @@ const CyberpunkCity = defineAsyncComponent(() =>
   import("./components/CyberpunkCity.vue")
 );
 import titles from "./configs/titles.json";
+
+const isClient = ref(false);
+
+onMounted(() => {
+  isClient.value = true;
+});
 import { Page } from "./interfaces/Page";
 
 const visiblePages = computed(() => {

@@ -593,10 +593,12 @@ onMounted(() => {
       transparent: true,
       opacity: 1,
       blending: AdditiveBlending,
-      sizeAttenuation: true
+      sizeAttenuation: true,
+      depthWrite: false
   });
 
   sparks = new Points(sparkGeo, sparkMat);
+  sparks.frustumCulled = false; // Prevent culling when sparks fly outside initial bounds
   scene.add(sparks);
 
   window.addEventListener("resize", onResize);

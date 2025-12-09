@@ -686,6 +686,20 @@ function startTargetPractice() {
 function exitGameMode() {
   isGameMode.value = false;
   score.value = 0;
+
+  // Restore dead drones
+  deadDrones.clear();
+
+  // Reset positions to targets to avoid them streaking across screen
+  if (drones && droneTargetPositions) {
+      const positions = drones.geometry.attributes.position.array;
+      for (let i = 0; i < droneCount; i++) {
+          positions[i*3] = droneTargetPositions[i*3];
+          positions[i*3+1] = droneTargetPositions[i*3+1];
+          positions[i*3+2] = droneTargetPositions[i*3+2];
+      }
+      drones.geometry.attributes.position.needsUpdate = true;
+  }
 }
 
 function onResize() {

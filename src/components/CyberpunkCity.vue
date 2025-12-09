@@ -814,9 +814,9 @@ function animate() {
               carB.rotation.y += (Math.random() - 0.5);
 
               // Spawn sparks at midpoint
-              const midX = (carA.position.x + carB.position.x) / 2;
-              const midZ = (carA.position.z + carB.position.z) / 2;
-              spawnSparks(new Vector3(midX, 2, midZ));
+              // const midX = (carA.position.x + carB.position.x) / 2;
+              // const midZ = (carA.position.z + carB.position.z) / 2;
+              // spawnSparks(new Vector3(midX, 2, midZ));
           }
       }
   }

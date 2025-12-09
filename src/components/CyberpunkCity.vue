@@ -1,5 +1,6 @@
 <template>
   <div ref="canvasContainer" id="cyberpunk-city"></div>
+  <div id="score-counter">SCORE: {{ score }}</div>
 </template>
 
 <script setup lang="ts">
@@ -23,6 +24,11 @@ let drones: Points;
 let droneTargetPositions: Float32Array;
 let droneBasePositions: Float32Array;
 const deadDrones = new Set<number>();
+const score = ref(0);
+const isGameMode = ref(false);
+const emit = defineEmits(['game-start']);
+let droneVelocities: Float32Array;
+const currentLookAt = new Vector3(0, 0, 0);
 
 const raycaster = new Raycaster();
 const pointer = new Vector2();
@@ -583,7 +589,7 @@ onMounted(() => {
 
   const sparkMat = new PointsMaterial({
       color: 0xffaa00,
-      size: 1,
+      size: 3,
       transparent: true,
       opacity: 1,
       blending: AdditiveBlending,
@@ -613,6 +619,7 @@ function mulberry32(a: number) {
 
 // Generate targets based on route
 function generateDroneTargets(path: string) {
+    if (isGameMode.value) return;
     // Create a seed from the path string
     let seed = 0;
     for (let i = 0; i < path.length; i++) {
@@ -646,9 +653,32 @@ function generateDroneTargets(path: string) {
 watch(
   () => route.path,
   (newPath) => {
-    generateDroneTargets(newPath);
+    if (!isGameMode.value) {
+      generateDroneTargets(newPath);
+    }
   }
 );
+
+watch(score, (val) => {
+  if (val >= 500 && !isGameMode.value) {
+    startTargetPractice();
+  }
+});
+
+function startTargetPractice() {
+  isGameMode.value = true;
+  emit('game-start');
+
+  // Initialize random velocities for drones
+  const droneCount = 1000; // Must match init count
+  droneVelocities = new Float32Array(droneCount * 3);
+
+  for(let i=0; i<droneCount; i++) {
+     droneVelocities[i*3] = (Math.random() - 0.5) * 8; // vx
+     droneVelocities[i*3+1] = (Math.random() - 0.5) * 4; // vy
+     droneVelocities[i*3+2] = (Math.random() - 0.5) * 8; // vz
+  }
+}
 
 function onResize() {
   if (!renderer || !camera) return;
@@ -681,6 +711,7 @@ function onClick(event: MouseEvent) {
             const y = posAttribute.getY(index);
             const z = posAttribute.getZ(index);
 
+            console.log("Hit drone at", x, y, z);
             // Spawn explosion
             spawnSparks(new Vector3(x, y, z));
 
@@ -689,6 +720,9 @@ function onClick(event: MouseEvent) {
             posAttribute.needsUpdate = true;
             
             deadDrones.add(index);
+
+            playPewSound();
+            score.value += 100;
         }
     }
 }
@@ -835,33 +869,51 @@ function animate() {
   }
 
   // Move drones
-  if (drones && droneTargetPositions) {
+  if (drones) {
       const positions = drones.geometry.attributes.position.array;
-      const easing = 0.02;
 
-      for(let i = 0; i < positions.length / 3; i++) {
-          if (deadDrones.has(i)) continue;
+      if (isGameMode.value && droneVelocities) {
+         // Game Mode: Physics based movement
+         for(let i = 0; i < positions.length / 3; i++) {
+             if (deadDrones.has(i)) continue;
 
-          // Move towards target
-          // positions[i*3] += (droneTargetPositions[i*3] - positions[i*3]) * easing;
-          // positions[i*3+1] += (droneTargetPositions[i*3+1] - positions[i*3+1]) * easing;
-          // positions[i*3+2] += (droneTargetPositions[i*3+2] - positions[i*3+2]) * easing;
+             positions[i*3] += droneVelocities[i*3];
+             positions[i*3+1] += droneVelocities[i*3+1];
+             positions[i*3+2] += droneVelocities[i*3+2];
 
-          // Let's implement oscillation around the target
-          const oscTime = Date.now() * 0.001;
-          const offset = i;
+             // Bounds check (wrap around)
+             const range = 2000;
+             if (positions[i*3] > range) positions[i*3] = -range;
+             if (positions[i*3] < -range) positions[i*3] = range;
 
-          const oscX = Math.sin(oscTime + offset) * 20;
-          const oscY = Math.cos(oscTime * 0.5 + offset) * 10;
-          const oscZ = Math.sin(oscTime * 0.8 + offset) * 20;
+             if (positions[i*3+1] > 1000) positions[i*3+1] = 0;
+             if (positions[i*3+1] < 0) positions[i*3+1] = 1000;
 
-          const targetX = droneTargetPositions[i*3] + oscX;
-          const targetY = droneTargetPositions[i*3+1] + oscY;
-          const targetZ = droneTargetPositions[i*3+2] + oscZ;
+             if (positions[i*3+2] > range) positions[i*3+2] = -range;
+             if (positions[i*3+2] < -range) positions[i*3+2] = range;
+         }
+      } else if (droneTargetPositions) {
+          // Standard Mode: Oscillation around target
+          const easing = 0.02;
 
-          positions[i*3] += (targetX - positions[i*3]) * easing;
-          positions[i*3+1] += (targetY - positions[i*3+1]) * easing;
-          positions[i*3+2] += (targetZ - positions[i*3+2]) * easing;
+          for(let i = 0; i < positions.length / 3; i++) {
+              if (deadDrones.has(i)) continue;
+
+              const oscTime = Date.now() * 0.001;
+              const offset = i;
+
+              const oscX = Math.sin(oscTime + offset) * 20;
+              const oscY = Math.cos(oscTime * 0.5 + offset) * 10;
+              const oscZ = Math.sin(oscTime * 0.8 + offset) * 20;
+
+              const targetX = droneTargetPositions[i*3] + oscX;
+              const targetY = droneTargetPositions[i*3+1] + oscY;
+              const targetZ = droneTargetPositions[i*3+2] + oscZ;
+
+              positions[i*3] += (targetX - positions[i*3]) * easing;
+              positions[i*3+1] += (targetY - positions[i*3+1]) * easing;
+              positions[i*3+2] += (targetZ - positions[i*3+2]) * easing;
+          }
       }
       drones.geometry.attributes.position.needsUpdate = true;
   }
@@ -869,9 +921,43 @@ function animate() {
   // Camera movement (orbit)
   camera.position.x = Math.sin(time * 0.1) * 800;
   camera.position.z = Math.cos(time * 0.1) * 800;
-  camera.lookAt(0, 0, 0);
+
+  const targetLookAt = isGameMode.value ? new Vector3(0, 500, 0) : new Vector3(0, 0, 0);
+  currentLookAt.lerp(targetLookAt, 0.02);
+  camera.lookAt(currentLookAt);
 
   renderer.render(scene, camera);
+}
+
+let audioCtx: AudioContext | null = null;
+
+function playPewSound() {
+    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContext) return;
+
+    if (!audioCtx) {
+        audioCtx = new AudioContext();
+    }
+
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator.type = 'sawtooth';
+    oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+    oscillator.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.2); // Drop to A2
+
+    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.2);
 }
 
 onBeforeUnmount(() => {
@@ -881,6 +967,10 @@ onBeforeUnmount(() => {
   cancelAnimationFrame(animationId);
   if (renderer) {
     renderer.dispose();
+  }
+  if (audioCtx) {
+      audioCtx.close();
+      audioCtx = null;
   }
 });
 </script>
@@ -893,5 +983,18 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   z-index: -1;
+}
+
+#score-counter {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  color: #00ffcc;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 24px;
+  font-weight: bold;
+  z-index: 10;
+  text-shadow: 0 0 10px #00ffcc;
+  pointer-events: none;
 }
 </style>

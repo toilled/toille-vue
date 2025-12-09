@@ -1,37 +1,39 @@
 <template>
-  <nav>
-    <Title
-      :title="titles.title"
-      :subtitle="titles.subtitle"
-      :activity="activity"
-      :joke="joke"
-      @activity="toggleActivity"
-      @joke="toggleJoke"
-    />
-    <Menu :pages="visiblePages" />
-  </nav>
-  <div class="router-view-container" ref="containerRef">
-    <router-view v-slot="{ Component, route }">
-      <Transition
-        :name="transitionName"
-        @before-leave="onBeforeLeave"
-        @enter="onEnter"
-        @after-enter="onAfterEnter"
+  <div id="content-wrapper" :class="{ 'fade-out': gameMode }">
+    <nav>
+      <Title
+        :title="titles.title"
+        :subtitle="titles.subtitle"
+        :activity="activity"
+        :joke="joke"
+        @activity="toggleActivity"
+        @joke="toggleJoke"
+      />
+      <Menu :pages="visiblePages" />
+    </nav>
+    <div class="router-view-container" ref="containerRef">
+      <router-view v-slot="{ Component, route }">
+        <Transition
+          :name="transitionName"
+          @before-leave="onBeforeLeave"
+          @enter="onEnter"
+          @after-enter="onAfterEnter"
+        >
+          <component :is="Component" :key="route.path" />
+        </Transition>
+      </router-view>
+    </div>
+    <Transition name="fade">
+      <footer
+        v-if="noFootersShowing && showHint"
+        @click="checker = !checker"
+        class="content-container"
       >
-        <component :is="Component" :key="route.path" />
-      </Transition>
-    </router-view>
+        <TypingText text="The titles might be clickable..." />
+      </footer>
+    </Transition>
   </div>
-  <CyberpunkCity />
-  <Transition name="fade">
-    <footer
-      v-if="noFootersShowing && showHint"
-      @click="checker = !checker"
-      class="content-container"
-    >
-      <TypingText text="The titles might be clickable..." />
-    </footer>
-  </Transition>
+  <CyberpunkCity @game-start="gameMode = true" />
   <Transition name="fade">
     <Checker v-if="checker" />
   </Transition>
@@ -77,6 +79,7 @@ const showHint = ref(false);
 const route = useRoute();
 const router = useRouter();
 const transitionName = ref("cards");
+const gameMode = ref(false);
 
 function handleKeydown(e: KeyboardEvent) {
   if (e.key === "ArrowRight") {
@@ -217,5 +220,11 @@ watch(
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.fade-out {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 2s ease;
 }
 </style>

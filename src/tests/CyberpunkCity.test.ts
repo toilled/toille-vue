@@ -100,7 +100,12 @@ vi.mock('three', () => {
     DirectionalLight: vi.fn(() => ({
       position: { set: vi.fn() }
     })),
-    Vector3: vi.fn(),
+    Vector3: vi.fn(() => ({
+      x: 0,
+      y: 0,
+      z: 0,
+      lerp: vi.fn()
+    })),
     Vector2: vi.fn(),
     Raycaster: vi.fn(() => ({
       setFromCamera: vi.fn(),

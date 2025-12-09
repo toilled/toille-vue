@@ -33,16 +33,17 @@
       </footer>
     </Transition>
   </div>
-  <CyberpunkCity @game-start="gameMode = true" />
+  <CyberpunkCity @game-start="gameMode = true" @game-end="gameMode = false" />
   <Transition name="fade">
-    <Checker v-if="checker" />
+    <Checker v-if="checker" :class="{ 'fade-out': gameMode }" />
   </Transition>
   <Transition name="fade">
-    <Activity v-show="activity" />
+    <Activity v-show="activity" :class="{ 'fade-out': gameMode }" />
   </Transition>
   <Transition name="fade">
     <Suggestion
       v-show="joke"
+      :class="{ 'fade-out': gameMode }"
       url="https://icanhazdadjoke.com/"
       valueName="joke"
       title="Have a laugh!"

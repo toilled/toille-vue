@@ -1,6 +1,7 @@
 <template>
   <div ref="canvasContainer" id="cyberpunk-city"></div>
   <div id="score-counter">SCORE: {{ score }}</div>
+  <button v-if="isGameMode" id="return-button" @click="exitGameMode">RETURN</button>
 </template>
 
 <script setup lang="ts">
@@ -26,7 +27,7 @@ let droneBasePositions: Float32Array;
 const deadDrones = new Set<number>();
 const score = ref(0);
 const isGameMode = ref(false);
-const emit = defineEmits(['game-start']);
+const emit = defineEmits(['game-start', 'game-end']);
 let droneVelocities: Float32Array;
 const currentLookAt = new Vector3(0, 0, 0);
 
@@ -682,6 +683,26 @@ function startTargetPractice() {
   }
 }
 
+function exitGameMode() {
+  isGameMode.value = false;
+  score.value = 0;
+  emit('game-end');
+
+  // Restore dead drones
+  deadDrones.clear();
+
+  // Reset positions to targets to avoid them streaking across screen
+  if (drones && droneTargetPositions) {
+      const positions = drones.geometry.attributes.position.array;
+      for (let i = 0; i < droneCount; i++) {
+          positions[i*3] = droneTargetPositions[i*3];
+          positions[i*3+1] = droneTargetPositions[i*3+1];
+          positions[i*3+2] = droneTargetPositions[i*3+2];
+      }
+      drones.geometry.attributes.position.needsUpdate = true;
+  }
+}
+
 function onResize() {
   if (!renderer || !camera) return;
   camera.aspect = window.innerWidth / window.innerHeight;
@@ -998,5 +1019,28 @@ onBeforeUnmount(() => {
   z-index: 10;
   text-shadow: 0 0 10px #00ffcc;
   pointer-events: none;
+}
+
+#return-button {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #ff00cc;
+  border: 1px solid #ff00cc;
+  padding: 10px 20px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 10;
+  text-shadow: 0 0 5px #ff00cc;
+  box-shadow: 0 0 10px #ff00cc;
+}
+
+#return-button:hover {
+  background: rgba(255, 0, 204, 0.2);
+  color: #ffffff;
+  text-shadow: 0 0 10px #ffffff;
 }
 </style>

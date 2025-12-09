@@ -9,7 +9,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   return new Response(JSON.stringify(data), {
     headers: {
       "Content-Type": "application/json",
-      "Cache-Control": "public, max-age=60"
+      "Cache-Control": "no-store"
     },
   });
 };

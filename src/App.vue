@@ -33,7 +33,7 @@
       </footer>
     </Transition>
   </div>
-  <CyberpunkCity @game-start="gameMode = true" />
+  <CyberpunkCity @game-start="gameMode = true" @game-end="gameMode = false" />
   <Transition name="fade">
     <Checker v-if="checker" />
   </Transition>

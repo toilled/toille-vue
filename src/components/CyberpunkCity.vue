@@ -27,7 +27,7 @@ let droneBasePositions: Float32Array;
 const deadDrones = new Set<number>();
 const score = ref(0);
 const isGameMode = ref(false);
-const emit = defineEmits(['game-start']);
+const emit = defineEmits(['game-start', 'game-end']);
 let droneVelocities: Float32Array;
 const currentLookAt = new Vector3(0, 0, 0);
 
@@ -686,6 +686,7 @@ function startTargetPractice() {
 function exitGameMode() {
   isGameMode.value = false;
   score.value = 0;
+  emit('game-end');
 
   // Restore dead drones
   deadDrones.clear();

@@ -36,12 +36,12 @@
     <Checker v-if="checker" />
   </Transition>
   <Transition name="fade">
-    <Activity v-show="activity" />
+    <Activity v-if="activity" />
   </Transition>
   <Transition name="fade">
     <Suggestion
-      v-show="joke"
-      url="https://icanhazdadjoke.com/"
+      v-if="joke"
+      url="/api/joke"
       valueName="joke"
       title="Have a laugh!"
     />

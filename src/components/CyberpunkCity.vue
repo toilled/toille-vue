@@ -585,7 +585,7 @@ onMounted(() => {
 
   const sparkMat = new PointsMaterial({
       color: 0xffaa00,
-      size: 1,
+      size: 3,
       transparent: true,
       opacity: 1,
       blending: AdditiveBlending,
@@ -683,6 +683,7 @@ function onClick(event: MouseEvent) {
             const y = posAttribute.getY(index);
             const z = posAttribute.getZ(index);
 
+            console.log("Hit drone at", x, y, z);
             // Spawn explosion
             spawnSparks(new Vector3(x, y, z));
 
@@ -917,6 +918,10 @@ onBeforeUnmount(() => {
   cancelAnimationFrame(animationId);
   if (renderer) {
     renderer.dispose();
+  }
+  if (audioCtx) {
+      audioCtx.close();
+      audioCtx = null;
   }
 });
 </script>

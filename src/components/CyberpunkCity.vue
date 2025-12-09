@@ -28,6 +28,7 @@ const score = ref(0);
 const isGameMode = ref(false);
 const emit = defineEmits(['game-start']);
 let droneVelocities: Float32Array;
+const currentLookAt = new Vector3(0, 0, 0);
 
 const raycaster = new Raycaster();
 const pointer = new Vector2();
@@ -921,24 +922,9 @@ function animate() {
   camera.position.x = Math.sin(time * 0.1) * 800;
   camera.position.z = Math.cos(time * 0.1) * 800;
 
-  if (isGameMode.value) {
-      // Pan up to look at sky
-      // Interpolate current look target to (0, 500, 0)
-      // Since lookAt resets the rotation, we just call lookAt with the new target
-      // To smooth it, we'd need to store the target.
-      // Simple easing:
-      const targetY = 500;
-      // We can't easily read back "lookAt" target from camera quaternion without storing it.
-      // But we know standard lookAt is (0,0,0).
-      // We can introduce a variable for lookTargetY.
-      // For now, let's just make it look up immediately or use a time-based transition?
-      // "pan the camera up lightly" -> maybe just slightly up?
-
-      // Let's use a static lookAt for now, or maybe vary it slightly
-      camera.lookAt(0, 500, 0);
-  } else {
-      camera.lookAt(0, 0, 0);
-  }
+  const targetLookAt = isGameMode.value ? new Vector3(0, 500, 0) : new Vector3(0, 0, 0);
+  currentLookAt.lerp(targetLookAt, 0.02);
+  camera.lookAt(currentLookAt);
 
   renderer.render(scene, camera);
 }

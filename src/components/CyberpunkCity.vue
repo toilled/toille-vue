@@ -1,5 +1,6 @@
 <template>
   <div ref="canvasContainer" id="cyberpunk-city"></div>
+  <div id="score-counter">SCORE: {{ score }}</div>
 </template>
 
 <script setup lang="ts">
@@ -23,6 +24,7 @@ let drones: Points;
 let droneTargetPositions: Float32Array;
 let droneBasePositions: Float32Array;
 const deadDrones = new Set<number>();
+const score = ref(0);
 
 const raycaster = new Raycaster();
 const pointer = new Vector2();
@@ -689,6 +691,9 @@ function onClick(event: MouseEvent) {
             posAttribute.needsUpdate = true;
             
             deadDrones.add(index);
+
+            playPewSound();
+            score.value += 100;
         }
     }
 }
@@ -874,6 +879,37 @@ function animate() {
   renderer.render(scene, camera);
 }
 
+let audioCtx: AudioContext | null = null;
+
+function playPewSound() {
+    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContext) return;
+
+    if (!audioCtx) {
+        audioCtx = new AudioContext();
+    }
+
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator.type = 'sawtooth';
+    oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+    oscillator.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.2); // Drop to A2
+
+    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.2);
+}
+
 onBeforeUnmount(() => {
   isActive = false;
   window.removeEventListener("resize", onResize);
@@ -893,5 +929,18 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   z-index: -1;
+}
+
+#score-counter {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  color: #00ffcc;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 24px;
+  font-weight: bold;
+  z-index: 10;
+  text-shadow: 0 0 10px #00ffcc;
+  pointer-events: none;
 }
 </style>

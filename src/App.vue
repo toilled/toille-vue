@@ -147,7 +147,7 @@ let splashTimeout: ReturnType<typeof setTimeout>;
 onMounted(() => {
   splashTimeout = setTimeout(() => {
     showSplash.value = false;
-  }, 2000);
+  }, 1000);
 
   setTimeout(() => {
     showHint.value = true;

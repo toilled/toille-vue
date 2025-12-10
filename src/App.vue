@@ -49,7 +49,7 @@
       title="Have a laugh!"
     />
   </Transition>
-  <Transition name="fade">
+  <Transition name="glitch-fade">
     <SplashScreen v-if="showSplash" />
   </Transition>
 </template>
@@ -239,5 +239,68 @@ watch(
   opacity: 0;
   pointer-events: none;
   transition: opacity 2s ease;
+}
+
+/* Glitch Fade Transition for Splash Screen */
+.glitch-fade-leave-active {
+  animation: glitch-fade-out 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+@keyframes glitch-fade-out {
+  0% {
+    opacity: 1;
+    transform: translate(0);
+    clip-path: inset(0 0 0 0);
+  }
+  10% {
+    opacity: 1;
+    transform: translate(-2px, 2px);
+    clip-path: inset(10% 0 80% 0);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(2px, -2px);
+    clip-path: inset(80% 0 10% 0);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(-2px, 2px);
+    clip-path: inset(10% 0 80% 0);
+  }
+  40% {
+    opacity: 1;
+    transform: translate(2px, -2px);
+    clip-path: inset(80% 0 10% 0);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-2px, 2px);
+    clip-path: inset(10% 0 80% 0);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(2px, -2px);
+    clip-path: inset(80% 0 10% 0);
+  }
+  70% {
+    opacity: 1;
+    transform: translate(-2px, 2px);
+    clip-path: inset(10% 0 80% 0);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(2px, -2px);
+    clip-path: inset(80% 0 10% 0);
+  }
+  90% {
+    opacity: 1;
+    transform: translate(-2px, 2px);
+    clip-path: inset(10% 0 80% 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(0);
+    clip-path: inset(0 0 0 0);
+  }
 }
 </style>

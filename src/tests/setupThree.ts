@@ -72,3 +72,65 @@ vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({
   text: () => Promise.resolve(''),
   ok: true
 })))
+
+// Polyfill AudioContext
+vi.stubGlobal('AudioContext', class AudioContext {
+  state = 'suspended';
+  currentTime = 0;
+  createOscillator() {
+    return {
+      type: 'sine',
+      frequency: {
+        setValueAtTime: vi.fn(),
+        exponentialRampToValueAtTime: vi.fn(),
+      },
+      connect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+    };
+  }
+  createGain() {
+    return {
+      gain: {
+        setValueAtTime: vi.fn(),
+        exponentialRampToValueAtTime: vi.fn(),
+      },
+      connect: vi.fn(),
+    };
+  }
+  createBiquadFilter() {
+    return {
+      type: 'lowpass',
+      frequency: {
+        setValueAtTime: vi.fn(),
+        exponentialRampToValueAtTime: vi.fn(),
+        value: 0
+      },
+      connect: vi.fn(),
+    };
+  }
+  createBuffer(channels: number, length: number, sampleRate: number) {
+     return {
+         getChannelData: vi.fn(() => new Float32Array(length))
+     }
+  }
+  createBufferSource() {
+      return {
+          buffer: null,
+          connect: vi.fn(),
+          start: vi.fn(),
+          stop: vi.fn()
+      }
+  }
+  resume() {
+    this.state = 'running';
+    return Promise.resolve();
+  }
+  suspend() {
+    this.state = 'suspended';
+    return Promise.resolve();
+  }
+  destination = {};
+  sampleRate = 44100;
+})
+vi.stubGlobal('webkitAudioContext', (globalThis as any).AudioContext);

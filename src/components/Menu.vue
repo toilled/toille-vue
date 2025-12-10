@@ -22,6 +22,7 @@
 import { ref } from "vue";
 import MenuItem from "./MenuItem.vue";
 import { Page } from "../interfaces/Page";
+import { CyberpunkAudio } from "../utils/CyberpunkAudio";
 
 /**
  * @file Menu.vue
@@ -37,12 +38,11 @@ defineProps<{
 }>();
 
 const soundOn = ref(false);
-let audio: HTMLAudioElement | null = null;
+let audio: CyberpunkAudio | null = null;
 
 const toggleSound = () => {
   if (!audio) {
-    audio = new Audio("/ambient-space-sound.mp3");
-    audio.loop = true;
+    audio = new CyberpunkAudio();
   }
 
   soundOn.value = !soundOn.value;

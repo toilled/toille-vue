@@ -31,17 +31,58 @@ export class CyberpunkAudio {
     // Generate a 128-step bass pattern based on the seed (8 bars)
     // Root note E1 = 41.20 Hz
     const root = 41.20;
-    const notes = [root, root * 2, root * 1.5]; // I, VIII, V
-    this.bassPattern = [];
+    // Cyberpunk/Darkwave scale intervals relative to root (E1)
+    // Minor pentatonic: Root(1), m3(1.2), 4(1.33), 5(1.5), b7(1.78), Octave(2)
+    const scale = [
+      root,       // I
+      root * 1.2, // m3 (approx for E -> G)
+      root * 1.5, // V
+      root * 1.78,// b7 (approx for E -> D)
+      root * 2    // VIII
+    ];
 
+    this.bassPattern = new Array(128).fill(0);
+
+    // Create a rhythmic motif (2 bars = 32 steps)
+    // We will generate a motif and then repeat it with variations
+    const motifLength = 32;
     for (let i = 0; i < 128; i++) {
-        if (i % 2 === 0) { // On beats
-             const r = this.random();
-             if (r > 0.7) this.bassPattern.push(notes[2]); // V
-             else if (r > 0.4) this.bassPattern.push(notes[1]); // VIII
-             else this.bassPattern.push(notes[0]); // I
-        } else {
-            this.bassPattern.push(0); // Rest or sustain logic could go here, but simplistic for now
+        // Quantize to 8th notes (every 2 steps) for a driving feel
+        if (i % 2 === 0) {
+            // Determine position in the 2-bar motif
+            const motifPos = i % motifLength;
+
+            // Strong beat probability (beats 1 and 3)
+            const isStrongBeat = (motifPos % 16 === 0);
+            // Off-beat syncopation probability
+            const isOffBeat = (motifPos % 4 === 2);
+
+            let noteProbability = 0.5;
+            if (isStrongBeat) noteProbability = 0.9;
+            else if (isOffBeat) noteProbability = 0.7;
+
+            // Variation every 4 bars (64 steps)
+            const isVariationSection = (i >= 64);
+            if (isVariationSection && i % 4 === 0) {
+               noteProbability += 0.2; // Busy it up in the second half
+            }
+
+            if (this.random() < noteProbability) {
+                // Select pitch
+                const r = this.random();
+                let note;
+                if (isStrongBeat) {
+                   // Anchor to root or octave on strong beats
+                   note = r > 0.7 ? scale[4] : scale[0];
+                } else {
+                   // More freedom on other beats
+                   if (r > 0.8) note = scale[3]; // b7
+                   else if (r > 0.6) note = scale[2]; // V
+                   else if (r > 0.4) note = scale[1]; // m3
+                   else note = scale[0]; // I
+                }
+                this.bassPattern[i] = note;
+            }
         }
     }
   }

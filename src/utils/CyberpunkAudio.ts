@@ -7,16 +7,71 @@ export class CyberpunkAudio {
   private scheduleAheadTime: number = 0.1; // s
   private timerID: number | null = null;
   private current16thNote: number = 0;
+  private bassPattern: number[] = [];
+  private seed: number;
+
+  // Reusable buffers
+  private snareBuffer: AudioBuffer | null = null;
+  private hiHatBuffer: AudioBuffer | null = null;
 
   constructor() {
-    // Defer context creation until user interaction (play) or explicitly called
+    this.seed = Date.now();
+    this.generateBassPattern();
+  }
+
+  // Seeded random number generator (Mulberry32)
+  private random() {
+    let t = (this.seed += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+
+  private generateBassPattern() {
+    // Generate a 16-step bass pattern based on the seed
+    // Root note E1 = 41.20 Hz
+    const root = 41.20;
+    const notes = [root, root * 2, root * 1.5]; // I, VIII, V
+    this.bassPattern = [];
+
+    for (let i = 0; i < 16; i++) {
+        if (i % 2 === 0) { // On beats
+             const r = this.random();
+             if (r > 0.7) this.bassPattern.push(notes[2]); // V
+             else if (r > 0.4) this.bassPattern.push(notes[1]); // VIII
+             else this.bassPattern.push(notes[0]); // I
+        } else {
+            this.bassPattern.push(0); // Rest or sustain logic could go here, but simplistic for now
+        }
+    }
   }
 
   private initContext() {
      if (!this.ctx) {
         const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
         this.ctx = new AudioContext();
+        this.createNoiseBuffers();
      }
+  }
+
+  private createNoiseBuffers() {
+      if (!this.ctx) return;
+
+      // Snare Buffer
+      const snareSize = this.ctx.sampleRate * 0.1; // 100ms
+      this.snareBuffer = this.ctx.createBuffer(1, snareSize, this.ctx.sampleRate);
+      const snareData = this.snareBuffer.getChannelData(0);
+      for (let i = 0; i < snareSize; i++) {
+          snareData[i] = Math.random() * 2 - 1;
+      }
+
+      // HiHat Buffer
+      const hatSize = this.ctx.sampleRate * 0.05; // 50ms
+      this.hiHatBuffer = this.ctx.createBuffer(1, hatSize, this.ctx.sampleRate);
+      const hatData = this.hiHatBuffer.getChannelData(0);
+      for (let i = 0; i < hatSize; i++) {
+          hatData[i] = Math.random() * 2 - 1;
+      }
   }
 
   play() {
@@ -41,7 +96,6 @@ export class CyberpunkAudio {
         window.clearTimeout(this.timerID);
         this.timerID = null;
     }
-    // Optionally suspend context to save CPU, but usually just stopping the scheduler is enough for a toggle
     if (this.ctx && this.ctx.state === 'running') {
         this.ctx.suspend();
     }
@@ -69,9 +123,12 @@ export class CyberpunkAudio {
   private scheduleNote(beatNumber: number, time: number) {
       if (!this.ctx) return;
 
-      // Synth Bass: Sawtooth, low pass filter envelope
+      // Synth Bass: generated pattern
       if (beatNumber % 2 === 0) {
-         this.playBass(time, beatNumber);
+         // Since we generated 16 steps, use beatNumber directly
+         // Note: we only filled even indices in pattern generation, but let's just lookup
+         const freq = this.bassPattern[beatNumber];
+         if (freq > 0) this.playBass(time, freq);
       }
 
       // Kick: 4 on the floor
@@ -88,19 +145,13 @@ export class CyberpunkAudio {
       this.playHiHat(time, beatNumber % 2 === 0);
   }
 
-  private playBass(time: number, beatNumber: number) {
+  private playBass(time: number, freq: number) {
       if (!this.ctx) return;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       const filter = this.ctx.createBiquadFilter();
 
       osc.type = 'sawtooth';
-      // F#1 = ~46Hz, A1=55Hz, C2=65Hz
-      // Let's go with a classic E or F key. E1=41.2Hz.
-      // 16 step sequence
-      const notes = [41.20, 41.20, 82.41, 41.20, 41.20, 41.20, 82.41, 41.20]; // E1, E1, E2, E1...
-      const freq = notes[(beatNumber / 2) % 8];
-
       osc.frequency.setValueAtTime(freq, time);
 
       filter.type = 'lowpass';
@@ -127,7 +178,7 @@ export class CyberpunkAudio {
       osc.frequency.setValueAtTime(150, time);
       osc.frequency.exponentialRampToValueAtTime(40, time + 0.1);
 
-      gain.gain.setValueAtTime(0.8, time);
+      gain.gain.setValueAtTime(0.7, time); // Reduced from 0.8
       gain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
 
       osc.connect(gain);
@@ -138,17 +189,10 @@ export class CyberpunkAudio {
   }
 
   private playSnare(time: number) {
-      if (!this.ctx) return;
-      // White noise buffer
-      const bufferSize = this.ctx.sampleRate * 0.1; // 100ms
-      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-          data[i] = Math.random() * 2 - 1;
-      }
+      if (!this.ctx || !this.snareBuffer) return;
 
       const noise = this.ctx.createBufferSource();
-      noise.buffer = buffer;
+      noise.buffer = this.snareBuffer;
 
       const noiseFilter = this.ctx.createBiquadFilter();
       noiseFilter.type = 'highpass';
@@ -179,17 +223,10 @@ export class CyberpunkAudio {
   }
 
   private playHiHat(time: number, accent: boolean) {
-      if (!this.ctx) return;
-       // White noise buffer
-      const bufferSize = this.ctx.sampleRate * 0.05;
-      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-          data[i] = Math.random() * 2 - 1;
-      }
+      if (!this.ctx || !this.hiHatBuffer) return;
 
       const noise = this.ctx.createBufferSource();
-      noise.buffer = buffer;
+      noise.buffer = this.hiHatBuffer;
 
       const filter = this.ctx.createBiquadFilter();
       filter.type = 'highpass';

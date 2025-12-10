@@ -142,10 +142,12 @@ function toggleJoke() {
   joke.value = !joke.value;
 }
 
+let splashTimeout: ReturnType<typeof setTimeout>;
+
 onMounted(() => {
-  setTimeout(() => {
+  splashTimeout = setTimeout(() => {
     showSplash.value = false;
-  }, 3000);
+  }, 2000);
 
   setTimeout(() => {
     showHint.value = true;
@@ -173,6 +175,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  clearTimeout(splashTimeout);
   window.removeEventListener("keydown", handleKeydown);
 });
 

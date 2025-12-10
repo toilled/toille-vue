@@ -34,6 +34,13 @@
   animation: glitch-skew 1s infinite linear alternate-reverse;
 }
 
+@media (max-width: 768px) {
+  .glitch {
+    font-size: 5.5vw;
+    letter-spacing: 0.2em;
+  }
+}
+
 .glitch::before {
   content: attr(data-text);
   position: absolute;

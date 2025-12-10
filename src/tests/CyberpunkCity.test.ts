@@ -137,15 +137,24 @@ describe('CyberpunkCity.vue', () => {
     expect(wrapper.find('div').exists()).toBe(true)
   })
 
-  it('initializes Three.js scene on mount', () => {
+  it('initializes Three.js scene on mount', async () => {
+    vi.useFakeTimers()
     wrapper = mount(CyberpunkCity)
+
+    // Fast-forward past the loading delay
+    await vi.advanceTimersByTimeAsync(2000)
+
     expect(THREE.Scene).toHaveBeenCalled()
     expect(THREE.PerspectiveCamera).toHaveBeenCalled()
     expect(THREE.WebGLRenderer).toHaveBeenCalled()
+    vi.useRealTimers()
   })
 
-  it('cleans up on unmount', () => {
+  it('cleans up on unmount', async () => {
+    vi.useFakeTimers()
     wrapper = mount(CyberpunkCity)
+    await vi.advanceTimersByTimeAsync(2000)
+    vi.useRealTimers()
     wrapper.unmount()
     // Verification of cleanup would depend on implementation details,
     // but ensuring no errors on unmount is a good basic check.

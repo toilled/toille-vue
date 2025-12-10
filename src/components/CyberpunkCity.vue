@@ -1,5 +1,8 @@
 <template>
   <div ref="canvasContainer" id="cyberpunk-city"></div>
+  <div v-if="isLoading" id="loading-screen">
+    LOADING SYSTEM...
+  </div>
   <div id="score-counter">SCORE: {{ score }}</div>
   <button v-if="isGameMode" id="return-button" @click="exitGameMode">RETURN</button>
 </template>
@@ -27,6 +30,7 @@ let droneBasePositions: Float32Array;
 const deadDrones = new Set<number>();
 const score = ref(0);
 const isGameMode = ref(false);
+const isLoading = ref(true);
 const emit = defineEmits(['game-start', 'game-end']);
 let droneVelocities: Float32Array;
 const currentLookAt = new Vector3(0, 0, 0);
@@ -263,7 +267,10 @@ function activateSpark(i: number, position: Vector3, posAttribute: BufferAttribu
     sparkVelocities[i*3+2] = (Math.random() - 0.5) * 5;   // vz
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // Allow loading screen to render
+  await new Promise(resolve => setTimeout(resolve, 100));
+
   if (!canvasContainer.value) return;
 
   // Scene setup
@@ -623,6 +630,9 @@ function mulberry32(a: number) {
 // Generate targets based on route
 function generateDroneTargets(path: string) {
     if (isGameMode.value) return;
+    // Check if initialization has happened
+    if (!droneTargetPositions) return;
+
     // Create a seed from the path string
     let seed = 0;
     for (let i = 0; i < path.length; i++) {
@@ -950,6 +960,10 @@ function animate() {
   camera.lookAt(currentLookAt);
 
   renderer.render(scene, camera);
+
+  if (isLoading.value) {
+    isLoading.value = false;
+  }
 }
 
 let audioCtx: AudioContext | null = null;
@@ -1042,5 +1056,23 @@ onBeforeUnmount(() => {
   background: rgba(255, 0, 204, 0.2);
   color: #ffffff;
   text-shadow: 0 0 10px #ffffff;
+}
+
+#loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #000000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #00ffcc;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 24px;
+  font-weight: bold;
+  z-index: 100;
+  text-shadow: 0 0 10px #00ffcc;
 }
 </style>

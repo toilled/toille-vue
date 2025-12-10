@@ -28,13 +28,13 @@ export class CyberpunkAudio {
   }
 
   private generateBassPattern() {
-    // Generate a 16-step bass pattern based on the seed
+    // Generate a 128-step bass pattern based on the seed (8 bars)
     // Root note E1 = 41.20 Hz
     const root = 41.20;
     const notes = [root, root * 2, root * 1.5]; // I, VIII, V
     this.bassPattern = [];
 
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < 128; i++) {
         if (i % 2 === 0) { // On beats
              const r = this.random();
              if (r > 0.7) this.bassPattern.push(notes[2]); // V
@@ -115,7 +115,7 @@ export class CyberpunkAudio {
     const secondsPerBeat = 60.0 / this.tempo;
     this.nextNoteTime += 0.25 * secondsPerBeat; // 16th note
     this.current16thNote++;
-    if (this.current16thNote === 16) {
+    if (this.current16thNote === 128) {
       this.current16thNote = 0;
     }
   }

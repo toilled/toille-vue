@@ -49,6 +49,9 @@
       title="Have a laugh!"
     />
   </Transition>
+  <Transition name="fade">
+    <SplashScreen v-if="showSplash" />
+  </Transition>
 </template>
 
 <script setup lang="ts">
@@ -60,6 +63,7 @@ import Checker from "./components/Checker.vue";
 import Activity from "./components/Activity.vue";
 import Suggestion from "./components/Suggestion.vue";
 import TypingText from "./components/TypingText.vue";
+import SplashScreen from "./components/SplashScreen.vue";
 import pages from "./configs/pages.json";
 
 const CyberpunkCity = defineAsyncComponent(() =>
@@ -77,6 +81,7 @@ const checker = ref(false);
 const activity = ref(false);
 const joke = ref(false);
 const showHint = ref(false);
+const showSplash = ref(true);
 const route = useRoute();
 const router = useRouter();
 const transitionName = ref("cards");
@@ -138,6 +143,10 @@ function toggleJoke() {
 }
 
 onMounted(() => {
+  setTimeout(() => {
+    showSplash.value = false;
+  }, 3000);
+
   setTimeout(() => {
     showHint.value = true;
   }, 2000);

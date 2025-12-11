@@ -117,7 +117,8 @@ function resetCar(carGroup: Group) {
 
     carGroup.position.set(x, 1, z);
 
-    carGroup.userData.speed = 1 + Math.random() * 2;
+    // Slower speed for easier clicking: 0.5 to 1.5
+    carGroup.userData.speed = 0.5 + Math.random() * 1.0;
     carGroup.userData.dir = dir;
     carGroup.userData.axis = axis;
     carGroup.userData.laneOffset = laneOffset;

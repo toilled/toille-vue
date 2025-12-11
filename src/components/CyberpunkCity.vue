@@ -18,7 +18,6 @@ let animationId: number;
 let isActive = false;
 
 const buildings: Object3D[] = [];
-// Fix: cars are Group objects
 const cars: Group[] = [];
 
 let drones: Points;

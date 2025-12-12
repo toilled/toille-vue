@@ -1,7 +1,7 @@
 <template>
   <div ref="canvasContainer" id="cyberpunk-city"></div>
   <div v-if="score > 0" id="score-counter">SCORE: {{ score }}</div>
-  <button v-if="isGameMode || isDrivingMode" id="return-button" @click="exitGameMode">RETURN</button>
+  <button v-if="isGameMode || isDrivingMode || isExplorationMode" id="return-button" @click="exitGameMode">RETURN</button>
 
   <div v-if="isDrivingMode" id="driving-controls">
     <div class="control-group left">
@@ -29,12 +29,31 @@
         >GAS</button>
     </div>
   </div>
+
+  <div v-if="isExplorationMode && isMobile" id="exploration-controls">
+      <div class="control-group left">
+          <div class="dpad">
+              <button class="dpad-btn up" @touchstart.prevent="controls.forward = true" @touchend.prevent="controls.forward = false">W</button>
+              <button class="dpad-btn left" @touchstart.prevent="controls.left = true" @touchend.prevent="controls.left = false">A</button>
+              <button class="dpad-btn right" @touchstart.prevent="controls.right = true" @touchend.prevent="controls.right = false">D</button>
+              <button class="dpad-btn down" @touchstart.prevent="controls.backward = true" @touchend.prevent="controls.backward = false">S</button>
+          </div>
+      </div>
+       <div class="control-group right">
+          <div class="dpad">
+              <button class="dpad-btn up" @touchstart.prevent="lookControls.up = true" @touchend.prevent="lookControls.up = false">↑</button>
+              <button class="dpad-btn left" @touchstart.prevent="lookControls.left = true" @touchend.prevent="lookControls.left = false">←</button>
+              <button class="dpad-btn right" @touchstart.prevent="lookControls.right = true" @touchend.prevent="lookControls.right = false">→</button>
+              <button class="dpad-btn down" @touchstart.prevent="lookControls.down = true" @touchend.prevent="lookControls.down = false">↓</button>
+          </div>
+      </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref, watch } from "vue";
+import { onMounted, onBeforeUnmount, ref, watch, computed } from "vue";
 import { useRoute } from "vue-router";
-import { AdditiveBlending, AmbientLight, BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, Color, DirectionalLight, DoubleSide, EdgesGeometry, FogExp2, Group, InterleavedBufferAttribute, Line, LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, MeshLambertMaterial, NearestFilter, Object3D, PerspectiveCamera, PlaneGeometry, Points, PointsMaterial, Raycaster, RepeatWrapping, Scene, Vector2, Vector3, WebGLRenderer } from "three";
+import { AdditiveBlending, AmbientLight, BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, Color, DirectionalLight, DoubleSide, EdgesGeometry, FogExp2, Group, InterleavedBufferAttribute, Line, LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, MeshLambertMaterial, NearestFilter, Object3D, PerspectiveCamera, PlaneGeometry, Points, PointsMaterial, Raycaster, RepeatWrapping, Scene, Vector2, Vector3, WebGLRenderer, Euler, Quaternion } from "three";
 
 const canvasContainer = ref<HTMLDivElement | null>(null);
 
@@ -55,7 +74,15 @@ const deadDrones = new Set<number>();
 const score = ref(0);
 const isGameMode = ref(false);
 const isDrivingMode = ref(false);
+const isExplorationMode = ref(false);
+const isTransitioning = ref(false);
 const activeCar = ref<Group | null>(null);
+
+const isMobile = ref(false);
+
+const updateIsMobile = () => {
+    isMobile.value = window.innerWidth <= 768;
+};
 
 // Controls State
 const controls = ref({
@@ -64,6 +91,15 @@ const controls = ref({
   forward: false,
   backward: false
 });
+
+const lookControls = ref({
+    left: false,
+    right: false,
+    up: false,
+    down: false
+});
+
+const playerRotation = new Euler(0, 0, 0, 'YXZ');
 
 // Car Audio System
 class CarAudio {
@@ -235,6 +271,7 @@ function resetCar(carGroup: Group) {
     carGroup.userData.laneOffset = laneOffset;
     carGroup.userData.collided = false;
     carGroup.userData.fading = false;
+    carGroup.userData.isPlayerHit = false;
     carGroup.userData.opacity = 1.0;
     carGroup.userData.isPlayerControlled = false;
     carGroup.userData.currentSpeed = 0;
@@ -417,6 +454,8 @@ function activateSpark(i: number, position: Vector3, posAttribute: BufferAttribu
 
 onMounted(() => {
   if (!canvasContainer.value) return;
+
+  updateIsMobile();
 
   // Scene setup
   scene = new Scene();
@@ -775,53 +814,57 @@ onMounted(() => {
   window.addEventListener("click", onClick);
   window.addEventListener("keydown", onKeyDown);
   window.addEventListener("keyup", onKeyUp);
+  window.addEventListener("mousemove", onMouseMove);
+  // Pointer lock change
+  document.addEventListener('pointerlockchange', onPointerLockChange);
+
   isActive = true;
   animate();
 });
 
 function onKeyDown(event: KeyboardEvent) {
-    if (!isDrivingMode.value) return;
-
-    switch(event.key.toLowerCase()) {
-        case 'w':
-        case 'arrowup':
-            controls.value.forward = true;
-            break;
-        case 's':
-        case 'arrowdown':
-            controls.value.backward = true;
-            break;
-        case 'a':
-        case 'arrowleft':
-            controls.value.left = true;
-            break;
-        case 'd':
-        case 'arrowright':
-            controls.value.right = true;
-            break;
+    if (isDrivingMode.value || isExplorationMode.value) {
+        switch(event.key.toLowerCase()) {
+            case 'w':
+            case 'arrowup':
+                controls.value.forward = true;
+                break;
+            case 's':
+            case 'arrowdown':
+                controls.value.backward = true;
+                break;
+            case 'a':
+            case 'arrowleft':
+                controls.value.left = true;
+                break;
+            case 'd':
+            case 'arrowright':
+                controls.value.right = true;
+                break;
+        }
     }
 }
 
 function onKeyUp(event: KeyboardEvent) {
-    if (!isDrivingMode.value) return;
-
-    switch(event.key.toLowerCase()) {
-        case 'w':
-        case 'arrowup':
-            controls.value.forward = false;
-            break;
-        case 's':
-        case 'arrowdown':
-            controls.value.backward = false;
-            break;
-        case 'a':
-        case 'arrowleft':
-            controls.value.left = false;
-            break;
-        case 'd':
-        case 'arrowright':
-            controls.value.right = false;
-            break;
+    if (isDrivingMode.value || isExplorationMode.value) {
+        switch(event.key.toLowerCase()) {
+            case 'w':
+            case 'arrowup':
+                controls.value.forward = false;
+                break;
+            case 's':
+            case 'arrowdown':
+                controls.value.backward = false;
+                break;
+            case 'a':
+            case 'arrowleft':
+                controls.value.left = false;
+                break;
+            case 'd':
+            case 'arrowright':
+                controls.value.right = false;
+                break;
+        }
     }
 }
 
@@ -898,11 +941,33 @@ function startTargetPractice() {
   }
 }
 
+function startExplorationMode() {
+    isGameMode.value = true;
+    isExplorationMode.value = true;
+    isTransitioning.value = true;
+    emit('game-start');
+
+    // Reset player rotation
+    playerRotation.set(0, 0, 0);
+
+    // Request pointer lock for desktop
+    if (!isMobile.value && canvasContainer.value) {
+        document.body.requestPointerLock();
+    }
+}
+
+defineExpose({ startExplorationMode });
+
 function exitGameMode() {
   controls.value.forward = false;
   controls.value.backward = false;
   controls.value.left = false;
   controls.value.right = false;
+
+  lookControls.value.up = false;
+  lookControls.value.down = false;
+  lookControls.value.left = false;
+  lookControls.value.right = false;
 
   if (isDrivingMode.value) {
       isDrivingMode.value = false;
@@ -913,6 +978,13 @@ function exitGameMode() {
           activeCar.value = null;
       }
       return;
+  }
+
+  if (isExplorationMode.value) {
+      isExplorationMode.value = false;
+      if (document.pointerLockElement) {
+          document.exitPointerLock();
+      }
   }
 
   isGameMode.value = false;
@@ -940,10 +1012,24 @@ function onResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  updateIsMobile();
+}
+
+function onPointerLockChange() {
+    // If pointer lock is lost and we are in desktop exploration mode, maybe pause?
+    // Or just let it be.
 }
 
 function onClick(event: MouseEvent) {
     if (!camera) return;
+
+    if (isExplorationMode.value && !isMobile.value) {
+        // Re-request pointer lock if clicked during exploration
+        if (document.pointerLockElement !== document.body) {
+            document.body.requestPointerLock();
+        }
+        return;
+    }
 
     pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
     pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -982,7 +1068,7 @@ function onClick(event: MouseEvent) {
     }
 
 
-    if (drones) {
+    if (drones && !isExplorationMode.value) {
         raycaster.params.Points.threshold = 20; // Increased threshold
         const intersects = raycaster.intersectObject(drones);
 
@@ -1016,11 +1102,128 @@ function onClick(event: MouseEvent) {
     }
 }
 
+function onMouseMove(event: MouseEvent) {
+    if (isExplorationMode.value && !isMobile.value && document.pointerLockElement === document.body) {
+        const sensitivity = 0.002;
+        playerRotation.y -= event.movementX * sensitivity;
+        playerRotation.x -= event.movementY * sensitivity;
+
+        // Clamp pitch
+        playerRotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, playerRotation.x));
+
+        camera.rotation.copy(playerRotation);
+    }
+}
+
 function animate() {
   if (!isActive) return;
   animationId = requestAnimationFrame(animate);
 
   const time = Date.now() * 0.0005;
+  const deltaTime = 0.016; // approximate
+
+  // Handle Exploration Mode
+  if (isExplorationMode.value) {
+      if (isTransitioning.value) {
+          const targetPos = new Vector3(0, 1.8, 0);
+          const targetQ = new Quaternion().setFromEuler(playerRotation);
+
+          camera.position.lerp(targetPos, 0.05);
+          camera.quaternion.slerp(targetQ, 0.05);
+
+          if (camera.position.distanceTo(targetPos) < 1) {
+              isTransitioning.value = false;
+              camera.position.copy(targetPos);
+              camera.rotation.copy(playerRotation);
+          }
+      } else {
+          const speed = 2.0; // walking speed
+
+          const direction = new Vector3();
+          const frontVector = new Vector3(
+              0,
+              0,
+              Number(controls.value.backward) - Number(controls.value.forward)
+          );
+          const sideVector = new Vector3(
+              Number(controls.value.left) - Number(controls.value.right),
+              0,
+              0
+          );
+
+          // Handle look buttons on mobile
+          if (isMobile.value) {
+              const rotateSpeed = 0.03;
+              if (lookControls.value.left) playerRotation.y += rotateSpeed;
+              if (lookControls.value.right) playerRotation.y -= rotateSpeed;
+              if (lookControls.value.up) playerRotation.x += rotateSpeed;
+              if (lookControls.value.down) playerRotation.x -= rotateSpeed;
+
+              // Clamp pitch
+              playerRotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, playerRotation.x));
+              camera.rotation.copy(playerRotation);
+          }
+
+          direction
+            .subVectors(frontVector, sideVector)
+            .normalize()
+            .multiplyScalar(speed)
+            .applyEuler(new Euler(0, camera.rotation.y, 0));
+
+          const nextX = camera.position.x + direction.x;
+          const nextZ = camera.position.z + direction.z;
+
+          // Collision Check with Grid
+          const ix = Math.round((nextX - startOffset) / CELL_SIZE);
+          const iz = Math.round((nextZ - startOffset) / CELL_SIZE);
+          let collided = false;
+
+          if (occupiedGrids.has(`${ix},${iz}`)) {
+                const cX = startOffset + ix * CELL_SIZE;
+                const cZ = startOffset + iz * CELL_SIZE;
+                // Building Hitbox: 70 unit radius (approx)
+                if (Math.abs(nextX - cX) < 70 && Math.abs(nextZ - cZ) < 70) {
+                    collided = true;
+                }
+          }
+
+          if (!collided) {
+              camera.position.x = nextX;
+              camera.position.z = nextZ;
+          }
+
+          // Bounds check
+          if (camera.position.x > BOUNDS) camera.position.x = -BOUNDS;
+          if (camera.position.x < -BOUNDS) camera.position.x = BOUNDS;
+          if (camera.position.z > BOUNDS) camera.position.z = -BOUNDS;
+          if (camera.position.z < -BOUNDS) camera.position.z = BOUNDS;
+
+          // Bobbing
+          if (controls.value.forward || controls.value.backward || controls.value.left || controls.value.right) {
+              camera.position.y = 1.8 + Math.sin(Date.now() * 0.01) * 0.1;
+          } else {
+              camera.position.y = 1.8;
+          }
+
+          // Check collisions with cars
+          const hitDistSq = 15 * 15;
+          for (let i = 0; i < cars.length; i++) {
+              const car = cars[i];
+              const distSq = camera.position.distanceToSquared(car.position);
+
+              if (distSq < hitDistSq) {
+                  if (!car.userData.isPlayerHit) {
+                      car.userData.isPlayerHit = true;
+                      carAudio.playCrash();
+                  }
+              } else {
+                  if (car.userData.isPlayerHit) {
+                      car.userData.isPlayerHit = false;
+                  }
+              }
+          }
+      }
+  }
 
   // Move cars & Handle Collisions
 
@@ -1105,14 +1308,16 @@ function animate() {
 
       } else if (!car.userData.fading) {
           // AI Movement
-          if (car.userData.axis === 'x') {
-            car.position.x += car.userData.speed * car.userData.dir;
-            if (car.position.x > BOUNDS) car.position.x = -BOUNDS;
-            if (car.position.x < -BOUNDS) car.position.x = BOUNDS;
-          } else {
-            car.position.z += car.userData.speed * car.userData.dir;
-            if (car.position.z > BOUNDS) car.position.z = -BOUNDS;
-            if (car.position.z < -BOUNDS) car.position.z = BOUNDS;
+          if (!car.userData.isPlayerHit) {
+              if (car.userData.axis === 'x') {
+                car.position.x += car.userData.speed * car.userData.dir;
+                if (car.position.x > BOUNDS) car.position.x = -BOUNDS;
+                if (car.position.x < -BOUNDS) car.position.x = BOUNDS;
+              } else {
+                car.position.z += car.userData.speed * car.userData.dir;
+                if (car.position.z > BOUNDS) car.position.z = -BOUNDS;
+                if (car.position.z < -BOUNDS) car.position.z = BOUNDS;
+              }
           }
       } else {
           // Fading out logic
@@ -1324,7 +1529,7 @@ function animate() {
       camera.position.y += (targetY - camera.position.y) * 0.1;
 
       camera.lookAt(car.position.x, car.position.y, car.position.z);
-  } else {
+  } else if (!isExplorationMode.value) {
       // Standard Orbit
       camera.position.x = Math.sin(time * 0.1) * 800;
       camera.position.z = Math.cos(time * 0.1) * 800;
@@ -1378,6 +1583,8 @@ onBeforeUnmount(() => {
   window.removeEventListener("click", onClick);
   window.removeEventListener("keydown", onKeyDown);
   window.removeEventListener("keyup", onKeyUp);
+  window.removeEventListener("mousemove", onMouseMove);
+  document.removeEventListener('pointerlockchange', onPointerLockChange);
   cancelAnimationFrame(animationId);
   if (renderer) {
     renderer.dispose();
@@ -1439,7 +1646,7 @@ onBeforeUnmount(() => {
   text-shadow: 0 0 10px #ffffff;
 }
 
-#driving-controls {
+#driving-controls, #exploration-controls {
   position: fixed;
   bottom: 80px;
   left: 0;
@@ -1479,4 +1686,35 @@ onBeforeUnmount(() => {
     background: rgba(0, 255, 204, 0.5);
     color: #fff;
 }
+
+.dpad {
+    position: relative;
+    width: 100px;
+    height: 100px;
+}
+
+.dpad-btn {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background: rgba(0, 255, 204, 0.2);
+    border: 1px solid #00ffcc;
+    color: #00ffcc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+}
+.dpad-btn:active {
+    background: rgba(0, 255, 204, 0.5);
+    color: #fff;
+}
+
+.dpad-btn.up { top: 0; left: 35px; }
+.dpad-btn.down { bottom: 0; left: 35px; }
+.dpad-btn.left { top: 35px; left: 0; }
+.dpad-btn.right { top: 35px; right: 0; }
+
 </style>

@@ -19,8 +19,8 @@ vi.mock('three', () => {
       background: null
     })),
     PerspectiveCamera: vi.fn(() => ({
-      position: { set: vi.fn(), y: 0 },
-      rotation: { set: vi.fn() },
+      position: { set: vi.fn(), y: 0, copy: vi.fn() },
+      rotation: { set: vi.fn(), copy: vi.fn(), y: 0 },
       lookAt: vi.fn(),
       updateProjectionMatrix: vi.fn()
     })),
@@ -112,7 +112,11 @@ vi.mock('three', () => {
       intersectObject: vi.fn(() => []),
       params: { Points: { threshold: 1 } }
     })),
-    AdditiveBlending: 2000
+    AdditiveBlending: 2000,
+    Euler: vi.fn(() => ({
+        set: vi.fn(),
+        copy: vi.fn()
+    }))
   }
   return THREE
 })

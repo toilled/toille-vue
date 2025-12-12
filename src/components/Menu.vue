@@ -1,19 +1,24 @@
 <template>
   <ul>
     <MenuItem v-for="page in pages" :key="page.link" :page="page" />
-    <li @click="toggleSound" class="sound-icon-container">
-      <img
-        v-if="soundOn"
-        src="/sound-icon.svg"
-        alt="Toggle sound"
-        class="sound-icon"
-      />
-      <img
-        v-else
-        src="/mute-icon.svg"
-        alt="Toggle sound"
-        class="sound-icon"
-      />
+    <li class="icons-container">
+      <div @click="$emit('explore')" class="icon-wrapper" title="Explore City">
+        <img src="/person-icon.svg" alt="Explore City" class="icon" />
+      </div>
+      <div @click="toggleSound" class="icon-wrapper" title="Toggle Sound">
+        <img
+          v-if="soundOn"
+          src="/sound-icon.svg"
+          alt="Toggle sound"
+          class="icon"
+        />
+        <img
+          v-else
+          src="/mute-icon.svg"
+          alt="Toggle sound"
+          class="icon"
+        />
+      </div>
     </li>
   </ul>
 </template>
@@ -35,6 +40,10 @@ import { CyberpunkAudio } from "../utils/CyberpunkAudio";
  */
 defineProps<{
   pages: Page[];
+}>();
+
+const emit = defineEmits<{
+  (e: "explore"): void;
 }>();
 
 const soundOn = ref(false);
@@ -59,20 +68,25 @@ ul {
   position: relative;
 }
 
-.sound-icon-container {
-  cursor: pointer;
-  padding: 10px;
+.icons-container {
   position: absolute;
   right: 0;
   top: 0;
+  display: flex;
+  gap: 10px;
+  padding: 10px;
 }
 
-.sound-icon {
+.icon-wrapper {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon {
   width: 24px;
   height: 24px;
   filter: invert(1);
-}
-
-.sound-on {
 }
 </style>

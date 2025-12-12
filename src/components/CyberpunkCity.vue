@@ -270,6 +270,7 @@ function resetCar(carGroup: Group) {
     carGroup.userData.laneOffset = laneOffset;
     carGroup.userData.collided = false;
     carGroup.userData.fading = false;
+    carGroup.userData.isPlayerHit = false;
     carGroup.userData.opacity = 1.0;
     carGroup.userData.isPlayerControlled = false;
     carGroup.userData.currentSpeed = 0;
@@ -1190,6 +1191,24 @@ function animate() {
       } else {
           camera.position.y = 1.8;
       }
+
+      // Check collisions with cars
+      const hitDistSq = 15 * 15;
+      for (let i = 0; i < cars.length; i++) {
+          const car = cars[i];
+          const distSq = camera.position.distanceToSquared(car.position);
+
+          if (distSq < hitDistSq) {
+               if (!car.userData.isPlayerHit) {
+                   car.userData.isPlayerHit = true;
+                   carAudio.playCrash();
+               }
+          } else {
+               if (car.userData.isPlayerHit) {
+                   car.userData.isPlayerHit = false;
+               }
+          }
+      }
   }
 
   // Move cars & Handle Collisions
@@ -1275,14 +1294,16 @@ function animate() {
 
       } else if (!car.userData.fading) {
           // AI Movement
-          if (car.userData.axis === 'x') {
-            car.position.x += car.userData.speed * car.userData.dir;
-            if (car.position.x > BOUNDS) car.position.x = -BOUNDS;
-            if (car.position.x < -BOUNDS) car.position.x = BOUNDS;
-          } else {
-            car.position.z += car.userData.speed * car.userData.dir;
-            if (car.position.z > BOUNDS) car.position.z = -BOUNDS;
-            if (car.position.z < -BOUNDS) car.position.z = BOUNDS;
+          if (!car.userData.isPlayerHit) {
+              if (car.userData.axis === 'x') {
+                car.position.x += car.userData.speed * car.userData.dir;
+                if (car.position.x > BOUNDS) car.position.x = -BOUNDS;
+                if (car.position.x < -BOUNDS) car.position.x = BOUNDS;
+              } else {
+                car.position.z += car.userData.speed * car.userData.dir;
+                if (car.position.z > BOUNDS) car.position.z = -BOUNDS;
+                if (car.position.z < -BOUNDS) car.position.z = BOUNDS;
+              }
           }
       } else {
           // Fading out logic

@@ -789,6 +789,7 @@ function onClick(event: MouseEvent) {
             if (target instanceof Group && target.userData.speed !== undefined) {
                 // Found a car
                 isDrivingMode.value = true;
+                emit('game-start');
                 activeCar.value = target;
                 target.userData.isPlayerControlled = true;
                 target.userData.currentSpeed = target.userData.speed;

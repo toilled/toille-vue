@@ -1,6 +1,6 @@
 <template>
   <div ref="canvasContainer" id="cyberpunk-city"></div>
-  <div id="score-counter">SCORE: {{ score }}</div>
+  <div v-if="score > 0" id="score-counter">SCORE: {{ score }}</div>
   <button v-if="isGameMode || isDrivingMode" id="return-button" @click="exitGameMode">RETURN</button>
 
   <div v-if="isDrivingMode" id="driving-controls">

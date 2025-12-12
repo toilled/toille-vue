@@ -645,11 +645,57 @@ onMounted(() => {
 
   window.addEventListener("resize", onResize);
   window.addEventListener("click", onClick);
+  window.addEventListener("keydown", onKeyDown);
+  window.addEventListener("keyup", onKeyUp);
   isActive = true;
   animate();
 });
 
+function onKeyDown(event: KeyboardEvent) {
+    if (!isDrivingMode.value) return;
 
+    switch(event.key.toLowerCase()) {
+        case 'w':
+        case 'arrowup':
+            controls.value.forward = true;
+            break;
+        case 's':
+        case 'arrowdown':
+            controls.value.backward = true;
+            break;
+        case 'a':
+        case 'arrowleft':
+            controls.value.left = true;
+            break;
+        case 'd':
+        case 'arrowright':
+            controls.value.right = true;
+            break;
+    }
+}
+
+function onKeyUp(event: KeyboardEvent) {
+    if (!isDrivingMode.value) return;
+
+    switch(event.key.toLowerCase()) {
+        case 'w':
+        case 'arrowup':
+            controls.value.forward = false;
+            break;
+        case 's':
+        case 'arrowdown':
+            controls.value.backward = false;
+            break;
+        case 'a':
+        case 'arrowleft':
+            controls.value.left = false;
+            break;
+        case 'd':
+        case 'arrowright':
+            controls.value.right = false;
+            break;
+    }
+}
 
 // Seeded random number generator
 function mulberry32(a: number) {
@@ -725,6 +771,11 @@ function startTargetPractice() {
 }
 
 function exitGameMode() {
+  controls.value.forward = false;
+  controls.value.backward = false;
+  controls.value.left = false;
+  controls.value.right = false;
+
   if (isDrivingMode.value) {
       isDrivingMode.value = false;
       emit('game-end');
@@ -1189,6 +1240,8 @@ onBeforeUnmount(() => {
   isActive = false;
   window.removeEventListener("resize", onResize);
   window.removeEventListener("click", onClick);
+  window.removeEventListener("keydown", onKeyDown);
+  window.removeEventListener("keyup", onKeyUp);
   cancelAnimationFrame(animationId);
   if (renderer) {
     renderer.dispose();

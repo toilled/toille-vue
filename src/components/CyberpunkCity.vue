@@ -65,6 +65,115 @@ const controls = ref({
   backward: false
 });
 
+// Car Audio System
+class CarAudio {
+    ctx: AudioContext | null = null;
+    engineOsc: OscillatorNode | null = null;
+    engineGain: GainNode | null = null;
+    lfo: OscillatorNode | null = null;
+    lfoGain: GainNode | null = null;
+    isPlaying = false;
+
+    init() {
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioContext) return;
+        this.ctx = new AudioContext();
+    }
+
+    start() {
+        if (!this.ctx) this.init();
+        if (!this.ctx) return;
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+        if (this.isPlaying) return;
+
+        // Engine rumble (Sawtooth with LFO for "purr")
+        this.engineOsc = this.ctx.createOscillator();
+        this.engineOsc.type = 'sawtooth';
+        this.engineOsc.frequency.value = 60; // Idle RPM
+
+        this.engineGain = this.ctx.createGain();
+        this.engineGain.gain.value = 0.1;
+
+        // LFO for modulation (the "chug-chug")
+        this.lfo = this.ctx.createOscillator();
+        this.lfo.type = 'sine';
+        this.lfo.frequency.value = 10;
+
+        this.lfoGain = this.ctx.createGain();
+        this.lfoGain.gain.value = 20; // Modulation depth
+
+        this.lfo.connect(this.lfoGain);
+        this.lfoGain.connect(this.engineOsc.frequency);
+
+        // Filter to dampen the harsh sawtooth
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 400;
+
+        this.engineOsc.connect(filter);
+        filter.connect(this.engineGain);
+        this.engineGain.connect(this.ctx.destination);
+
+        this.engineOsc.start();
+        this.lfo.start();
+        this.isPlaying = true;
+    }
+
+    update(speed: number) {
+        if (!this.ctx || !this.engineOsc || !this.lfo || !this.engineGain) return;
+
+        // Pitch mapping
+        // Speed 0 -> 60Hz
+        // Speed 4 -> ~200Hz
+        const absSpeed = Math.abs(speed);
+        const targetFreq = 60 + (absSpeed * 40);
+        const targetLfoRate = 10 + (absSpeed * 5);
+
+        // Smooth transitions
+        const time = this.ctx.currentTime;
+        this.engineOsc.frequency.setTargetAtTime(targetFreq, time, 0.1);
+        this.lfo.frequency.setTargetAtTime(targetLfoRate, time, 0.1);
+
+        // Volume (idle is quieter)
+        // const targetVol = 0.1 + (absSpeed * 0.05);
+        // this.engineGain.gain.setTargetAtTime(targetVol, time, 0.1);
+    }
+
+    stop() {
+        if (!this.isPlaying) return;
+        if (this.engineOsc) this.engineOsc.stop();
+        if (this.lfo) this.lfo.stop();
+        this.engineOsc = null;
+        this.lfo = null;
+        this.isPlaying = false;
+    }
+
+    playCrash() {
+        if (!this.ctx) this.init();
+        if (!this.ctx) return;
+
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        // Noise buffer would be better, but we use erratic oscillators for "crunch"
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(100, t);
+        osc.frequency.exponentialRampToValueAtTime(10, t + 0.3);
+
+        gain.gain.setValueAtTime(0.5, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(t);
+        osc.stop(t + 0.3);
+    }
+}
+
+const carAudio = new CarAudio();
+
 const emit = defineEmits(['game-start', 'game-end']);
 let droneVelocities: Float32Array;
 const currentLookAt = new Vector3(0, 0, 0);
@@ -783,6 +892,7 @@ function exitGameMode() {
   if (isDrivingMode.value) {
       isDrivingMode.value = false;
       emit('game-end');
+      carAudio.stop(); // Stop engine sound
       if (activeCar.value) {
           activeCar.value.userData.isPlayerControlled = false;
           activeCar.value = null;
@@ -846,6 +956,7 @@ function onClick(event: MouseEvent) {
                 // Found a car
                 isDrivingMode.value = true;
                 emit('game-start');
+                carAudio.start(); // Start engine sound
                 activeCar.value = target;
                 target.userData.isPlayerControlled = true;
                 target.userData.currentSpeed = target.userData.speed;
@@ -925,6 +1036,9 @@ function animate() {
 
           car.userData.currentSpeed = speed;
 
+          // Update Audio
+          carAudio.update(speed);
+
           // Steering (only if moving)
           if (Math.abs(speed) > 0.1) {
               const dir = speed > 0 ? 1 : -1;
@@ -963,6 +1077,7 @@ function animate() {
              if (Math.abs(car.position.x - cX) < 55 && Math.abs(car.position.z - cZ) < 55) {
                 // Collision - Bounce
                 car.userData.currentSpeed *= -0.5;
+                carAudio.playCrash();
                 // Push out slightly
                 const dx = car.position.x - cX;
                 const dz = car.position.z - cZ;
@@ -1043,6 +1158,7 @@ function animate() {
                    const ai = carA.userData.isPlayerControlled ? carB : carA;
 
                    player.userData.currentSpeed *= -0.5;
+                   carAudio.playCrash();
                    // Push apart
                    player.position.x += (player.position.x - ai.position.x) * 0.5;
                    player.position.z += (player.position.z - ai.position.z) * 0.5;
@@ -1254,6 +1370,10 @@ onBeforeUnmount(() => {
   if (audioCtx) {
       audioCtx.close();
       audioCtx = null;
+  }
+  carAudio.stop();
+  if (carAudio.ctx) {
+      carAudio.ctx.close();
   }
 });
 </script>

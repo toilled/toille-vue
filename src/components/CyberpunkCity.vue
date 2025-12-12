@@ -623,6 +623,16 @@ onMounted(() => {
   const tailLightMat = new MeshBasicMaterial({ color: 0xff0000 });
   const headLightMat = new MeshBasicMaterial({ color: 0xffffaa });
 
+  // Hitbox for easier selection
+  const hitboxGeo = new BoxGeometry(20, 20, 30);
+  const hitboxMat = new MeshBasicMaterial({
+      color: 0xff0000, // Color doesn't matter (invisible)
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      visible: true
+  });
+
   for (let i = 0; i < CAR_COUNT; i++) {
     const isSpecial = Math.random() > 0.8;
     const bodyMat = (isSpecial ? carBodyMat1 : (Math.random() > 0.5 ? carBodyMat2 : carBodyMat3)).clone();
@@ -671,6 +681,11 @@ onMounted(() => {
     hl2.userData.originalOpacity = 1.0;
     hl2.position.set(-1.5, 0, -4);
     carGroup.add(hl2);
+
+    // Invisible Hitbox
+    const hitbox = new Mesh(hitboxGeo, hitboxMat);
+    hitbox.userData.originalOpacity = 0;
+    carGroup.add(hitbox);
 
     // Use resetCar to set initial position and state
     carGroup.userData = {}; // init object
@@ -1118,7 +1133,7 @@ function animate() {
                       const mat = child.material;
                        if (!Array.isArray(mat)) {
                            // Scale current opacity relative to original
-                           const original = child.userData.originalOpacity || 1.0;
+                           const original = child.userData.originalOpacity !== undefined ? child.userData.originalOpacity : 1.0;
                            mat.opacity = original * car.userData.opacity;
                        }
                   }

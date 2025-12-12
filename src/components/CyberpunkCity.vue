@@ -499,11 +499,19 @@ onMounted(() => {
 
   // Cars
   const carGeo = new BoxGeometry(4, 2, 8);
+  const hitBoxGeo = new BoxGeometry(12, 10, 20); // Larger invisible box for easier clicking
   const tailLightGeo = new BoxGeometry(0.5, 0.5, 0.1);
   const headLightGeo = new BoxGeometry(0.5, 0.5, 0.1);
 
   // Reusable Car Materials
   const carBodyMat1 = new MeshLambertMaterial({ color: 0x222222 });
+  const hitBoxMat = new MeshBasicMaterial({
+      color: 0xff0000,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      visible: true
+  });
   const carBodyMat2 = new MeshLambertMaterial({ color: 0x050505 });
   const carBodyMat3 = new MeshLambertMaterial({ color: 0x111111 });
 
@@ -521,6 +529,11 @@ onMounted(() => {
 
     // Car Group
     const carGroup = new Group();
+
+    // Hit Box
+    const hitBox = new Mesh(hitBoxGeo, hitBoxMat);
+    // Ensure hitbox is ignored by other traversal logic if necessary, but opacity 0 handles visual
+    carGroup.add(hitBox);
 
     // Car Body
     const carBody = new Mesh(carGeo, bodyMat);

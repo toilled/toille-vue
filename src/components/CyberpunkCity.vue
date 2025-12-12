@@ -727,6 +727,7 @@ function startTargetPractice() {
 function exitGameMode() {
   if (isDrivingMode.value) {
       isDrivingMode.value = false;
+      emit('game-end');
       if (activeCar.value) {
           activeCar.value.userData.isPlayerControlled = false;
           activeCar.value = null;

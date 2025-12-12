@@ -45,6 +45,7 @@ let animationId: number;
 let isActive = false;
 
 const buildings: Object3D[] = [];
+const occupiedGrids = new Set<string>();
 const cars: Group[] = [];
 
 let drones: Points;
@@ -380,6 +381,8 @@ onMounted(() => {
     for (let z = 0; z < GRID_SIZE; z++) {
         // Skip some blocks for variety
         if (Math.random() > 0.8) continue;
+
+        occupiedGrids.add(`${x},${z}`);
 
         const xPos = startOffset + x * CELL_SIZE;
         const zPos = startOffset + z * CELL_SIZE;
@@ -951,22 +954,24 @@ function animate() {
           // Uses grid logic similar to sparks
           const ix = Math.round((car.position.x - startOffset) / CELL_SIZE);
           const iz = Math.round((car.position.z - startOffset) / CELL_SIZE);
-          const cX = startOffset + ix * CELL_SIZE;
-          const cZ = startOffset + iz * CELL_SIZE;
 
-          // Approx building half-width + car half-width
-          if (Math.abs(car.position.x - cX) < 55 && Math.abs(car.position.z - cZ) < 55) {
-               // Collision - Bounce
-               car.userData.currentSpeed *= -0.5;
-               // Push out slightly
-               const dx = car.position.x - cX;
-               const dz = car.position.z - cZ;
-               car.position.x += Math.sign(dx) * 2;
-               car.position.z += Math.sign(dz) * 2;
+          if (occupiedGrids.has(`${ix},${iz}`)) {
+             const cX = startOffset + ix * CELL_SIZE;
+             const cZ = startOffset + iz * CELL_SIZE;
 
-               spawnSparks(car.position);
+             // Approx building half-width + car half-width
+             if (Math.abs(car.position.x - cX) < 55 && Math.abs(car.position.z - cZ) < 55) {
+                // Collision - Bounce
+                car.userData.currentSpeed *= -0.5;
+                // Push out slightly
+                const dx = car.position.x - cX;
+                const dz = car.position.z - cZ;
+                car.position.x += Math.sign(dx) * 2;
+                car.position.z += Math.sign(dz) * 2;
+
+                spawnSparks(car.position);
+             }
           }
-
 
       } else if (!car.userData.fading) {
           // AI Movement

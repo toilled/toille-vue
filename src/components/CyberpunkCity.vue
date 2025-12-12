@@ -91,6 +91,7 @@ const GRID_SIZE = Math.floor(CITY_SIZE / CELL_SIZE);
 // We will generate a grid of buildings.
 // Grid range: -GRID_SIZE/2 to GRID_SIZE/2
 const startOffset = -(GRID_SIZE * CELL_SIZE) / 2 + CELL_SIZE / 2;
+const BOUNDS = (GRID_SIZE * CELL_SIZE) / 2 + CELL_SIZE;
 
 const CAR_COUNT = 150;
 
@@ -894,7 +895,6 @@ function animate() {
   animationId = requestAnimationFrame(animate);
 
   const time = Date.now() * 0.0005;
-  const bound = (GRID_SIZE * CELL_SIZE) / 2 + CELL_SIZE;
 
   // Move cars & Handle Collisions
 
@@ -941,13 +941,13 @@ function animate() {
           car.position.z += Math.cos(car.rotation.y) * speed;
 
           // Simple Bounds Check
-          if (car.position.x > bound || car.position.x < -bound || car.position.z > bound || car.position.z < -bound) {
+          if (car.position.x > BOUNDS || car.position.x < -BOUNDS || car.position.z > BOUNDS || car.position.z < -BOUNDS) {
              // Wrap around? Or stop?
              // Let's wrap around for endless driving
-             if (car.position.x > bound) car.position.x = -bound;
-             if (car.position.x < -bound) car.position.x = bound;
-             if (car.position.z > bound) car.position.z = -bound;
-             if (car.position.z < -bound) car.position.z = bound;
+             if (car.position.x > BOUNDS) car.position.x = -BOUNDS;
+             if (car.position.x < -BOUNDS) car.position.x = BOUNDS;
+             if (car.position.z > BOUNDS) car.position.z = -BOUNDS;
+             if (car.position.z < -BOUNDS) car.position.z = BOUNDS;
           }
 
           // Building Collision (Simple Box Check)
@@ -977,12 +977,12 @@ function animate() {
           // AI Movement
           if (car.userData.axis === 'x') {
             car.position.x += car.userData.speed * car.userData.dir;
-            if (car.position.x > bound) car.position.x = -bound;
-            if (car.position.x < -bound) car.position.x = bound;
+            if (car.position.x > BOUNDS) car.position.x = -BOUNDS;
+            if (car.position.x < -BOUNDS) car.position.x = BOUNDS;
           } else {
             car.position.z += car.userData.speed * car.userData.dir;
-            if (car.position.z > bound) car.position.z = -bound;
-            if (car.position.z < -bound) car.position.z = bound;
+            if (car.position.z > BOUNDS) car.position.z = -BOUNDS;
+            if (car.position.z < -BOUNDS) car.position.z = BOUNDS;
           }
       } else {
           // Fading out logic
@@ -1152,11 +1152,11 @@ function animate() {
       } else if (droneTargetPositions) {
           // Standard Mode: Oscillation around target
           const easing = 0.02;
+          const oscTime = Date.now() * 0.001;
 
           for(let i = 0; i < positions.length / 3; i++) {
               if (deadDrones.has(i)) continue;
 
-              const oscTime = Date.now() * 0.001;
               const offset = i;
 
               const oscX = Math.sin(oscTime + offset) * 20;

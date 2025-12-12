@@ -1,7 +1,34 @@
 <template>
   <div ref="canvasContainer" id="cyberpunk-city"></div>
   <div id="score-counter">SCORE: {{ score }}</div>
-  <button v-if="isGameMode" id="return-button" @click="exitGameMode">RETURN</button>
+  <button v-if="isGameMode || isDrivingMode" id="return-button" @click="exitGameMode">RETURN</button>
+
+  <div v-if="isDrivingMode" id="driving-controls">
+    <div class="control-group left">
+        <button
+          class="control-btn"
+          @mousedown="controls.left = true" @mouseup="controls.left = false" @mouseleave="controls.left = false"
+          @touchstart.prevent="controls.left = true" @touchend.prevent="controls.left = false"
+        >←</button>
+        <button
+          class="control-btn"
+          @mousedown="controls.right = true" @mouseup="controls.right = false" @mouseleave="controls.right = false"
+          @touchstart.prevent="controls.right = true" @touchend.prevent="controls.right = false"
+        >→</button>
+    </div>
+    <div class="control-group right">
+        <button
+          class="control-btn"
+          @mousedown="controls.backward = true" @mouseup="controls.backward = false" @mouseleave="controls.backward = false"
+          @touchstart.prevent="controls.backward = true" @touchend.prevent="controls.backward = false"
+        >BRK</button>
+        <button
+          class="control-btn"
+          @mousedown="controls.forward = true" @mouseup="controls.forward = false" @mouseleave="controls.forward = false"
+          @touchstart.prevent="controls.forward = true" @touchend.prevent="controls.forward = false"
+        >GAS</button>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -18,6 +45,7 @@ let animationId: number;
 let isActive = false;
 
 const buildings: Object3D[] = [];
+const occupiedGrids = new Set<string>();
 const cars: Group[] = [];
 
 let drones: Points;
@@ -26,6 +54,17 @@ let droneBasePositions: Float32Array;
 const deadDrones = new Set<number>();
 const score = ref(0);
 const isGameMode = ref(false);
+const isDrivingMode = ref(false);
+const activeCar = ref<Group | null>(null);
+
+// Controls State
+const controls = ref({
+  left: false,
+  right: false,
+  forward: false,
+  backward: false
+});
+
 const emit = defineEmits(['game-start', 'game-end']);
 let droneVelocities: Float32Array;
 const currentLookAt = new Vector3(0, 0, 0);
@@ -79,13 +118,17 @@ function resetCar(carGroup: Group) {
 
     carGroup.position.set(x, 1, z);
 
-    carGroup.userData.speed = 1 + Math.random() * 2;
+    // Slower speed for easier clicking: 0.5 to 1.5
+    carGroup.userData.speed = 0.5 + Math.random() * 1.0;
     carGroup.userData.dir = dir;
     carGroup.userData.axis = axis;
     carGroup.userData.laneOffset = laneOffset;
     carGroup.userData.collided = false;
     carGroup.userData.fading = false;
     carGroup.userData.opacity = 1.0;
+    carGroup.userData.isPlayerControlled = false;
+    carGroup.userData.currentSpeed = 0;
+
     carGroup.visible = true;
 
     // Reset opacity of children
@@ -338,6 +381,8 @@ onMounted(() => {
     for (let z = 0; z < GRID_SIZE; z++) {
         // Skip some blocks for variety
         if (Math.random() > 0.8) continue;
+
+        occupiedGrids.add(`${x},${z}`);
 
         const xPos = startOffset + x * CELL_SIZE;
         const zPos = startOffset + z * CELL_SIZE;
@@ -603,11 +648,57 @@ onMounted(() => {
 
   window.addEventListener("resize", onResize);
   window.addEventListener("click", onClick);
+  window.addEventListener("keydown", onKeyDown);
+  window.addEventListener("keyup", onKeyUp);
   isActive = true;
   animate();
 });
 
+function onKeyDown(event: KeyboardEvent) {
+    if (!isDrivingMode.value) return;
 
+    switch(event.key.toLowerCase()) {
+        case 'w':
+        case 'arrowup':
+            controls.value.forward = true;
+            break;
+        case 's':
+        case 'arrowdown':
+            controls.value.backward = true;
+            break;
+        case 'a':
+        case 'arrowleft':
+            controls.value.left = true;
+            break;
+        case 'd':
+        case 'arrowright':
+            controls.value.right = true;
+            break;
+    }
+}
+
+function onKeyUp(event: KeyboardEvent) {
+    if (!isDrivingMode.value) return;
+
+    switch(event.key.toLowerCase()) {
+        case 'w':
+        case 'arrowup':
+            controls.value.forward = false;
+            break;
+        case 's':
+        case 'arrowdown':
+            controls.value.backward = false;
+            break;
+        case 'a':
+        case 'arrowleft':
+            controls.value.left = false;
+            break;
+        case 'd':
+        case 'arrowright':
+            controls.value.right = false;
+            break;
+    }
+}
 
 // Seeded random number generator
 function mulberry32(a: number) {
@@ -683,6 +774,21 @@ function startTargetPractice() {
 }
 
 function exitGameMode() {
+  controls.value.forward = false;
+  controls.value.backward = false;
+  controls.value.left = false;
+  controls.value.right = false;
+
+  if (isDrivingMode.value) {
+      isDrivingMode.value = false;
+      emit('game-end');
+      if (activeCar.value) {
+          activeCar.value.userData.isPlayerControlled = false;
+          activeCar.value = null;
+      }
+      return;
+  }
+
   isGameMode.value = false;
   score.value = 0;
   emit('game-end');
@@ -693,7 +799,8 @@ function exitGameMode() {
   // Reset positions to targets to avoid them streaking across screen
   if (drones && droneTargetPositions) {
       const positions = drones.geometry.attributes.position.array;
-      for (let i = 0; i < droneCount; i++) {
+      const count = positions.length / 3;
+      for (let i = 0; i < count; i++) {
           positions[i*3] = droneTargetPositions[i*3];
           positions[i*3+1] = droneTargetPositions[i*3+1];
           positions[i*3+2] = droneTargetPositions[i*3+2];
@@ -710,41 +817,74 @@ function onResize() {
 }
 
 function onClick(event: MouseEvent) {
-    if (!drones || !camera) return;
+    if (!camera) return;
 
     pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
     pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     raycaster.setFromCamera(pointer, camera);
-    raycaster.params.Points.threshold = 20; // Increased threshold
 
-    const intersects = raycaster.intersectObject(drones);
+    // If not in a game mode, check for cars
+    if (!isGameMode.value && !isDrivingMode.value) {
+        // Traverse cars to get meshes
+        const carMeshes: Object3D[] = [];
+        cars.forEach(c => c.traverse(child => {
+            if (child instanceof Mesh) carMeshes.push(child);
+        }));
 
-    if (intersects.length > 0) {
-        // Sort by distance (default behavior of intersectObject usually, but good to be sure)
-        // intersects.sort((a, b) => a.distance - b.distance); 
-        
-        const intersect = intersects[0];
-        const index = intersect.index;
+        const carIntersects = raycaster.intersectObjects(carMeshes);
+        if (carIntersects.length > 0) {
+            const hit = carIntersects[0].object;
+            // Traverse up to find Group
+            let target = hit;
+            while (target.parent && target.parent.type !== 'Scene') {
+                target = target.parent;
+            }
 
-        if (index !== undefined && !deadDrones.has(index)) {
-            const posAttribute = drones.geometry.attributes.position;
-            const x = posAttribute.getX(index);
-            const y = posAttribute.getY(index);
-            const z = posAttribute.getZ(index);
+            if (target instanceof Group && target.userData.speed !== undefined) {
+                // Found a car
+                isDrivingMode.value = true;
+                emit('game-start');
+                activeCar.value = target;
+                target.userData.isPlayerControlled = true;
+                target.userData.currentSpeed = target.userData.speed;
+                // Preserve current rotation as base
+                return;
+            }
+        }
+    }
 
-            console.log("Hit drone at", x, y, z);
-            // Spawn explosion
-            spawnSparks(new Vector3(x, y, z));
 
-            // Hide drone (move far away)
-            posAttribute.setXYZ(index, 0, -99999, 0);
-            posAttribute.needsUpdate = true;
+    if (drones) {
+        raycaster.params.Points.threshold = 20; // Increased threshold
+        const intersects = raycaster.intersectObject(drones);
+
+        if (intersects.length > 0) {
+            // Sort by distance (default behavior of intersectObject usually, but good to be sure)
+            // intersects.sort((a, b) => a.distance - b.distance);
             
-            deadDrones.add(index);
+            const intersect = intersects[0];
+            const index = intersect.index;
 
-            playPewSound();
-            score.value += 100;
+            if (index !== undefined && !deadDrones.has(index)) {
+                const posAttribute = drones.geometry.attributes.position;
+                const x = posAttribute.getX(index);
+                const y = posAttribute.getY(index);
+                const z = posAttribute.getZ(index);
+
+                console.log("Hit drone at", x, y, z);
+                // Spawn explosion
+                spawnSparks(new Vector3(x, y, z));
+
+                // Hide drone (move far away)
+                posAttribute.setXYZ(index, 0, -99999, 0);
+                posAttribute.needsUpdate = true;
+
+                deadDrones.add(index);
+
+                playPewSound();
+                score.value += 100;
+            }
         }
     }
 }
@@ -761,8 +901,80 @@ function animate() {
   for (let i = 0; i < cars.length; i++) {
       const car = cars[i];
 
-      // Movement
-      if (!car.userData.fading) {
+      // Player Control Logic
+      if (car.userData.isPlayerControlled) {
+          let speed = car.userData.currentSpeed || 0;
+          const maxSpeed = 4;
+          const acceleration = 0.1;
+          const friction = 0.98;
+          const turnSpeed = 0.05;
+
+          // Gas / Brake
+          if (controls.value.forward) {
+              speed += acceleration;
+          } else if (controls.value.backward) {
+              speed -= acceleration;
+          }
+
+          // Friction
+          speed *= friction;
+
+          // Max Speed Cap
+          if (speed > maxSpeed) speed = maxSpeed;
+          if (speed < -maxSpeed/2) speed = -maxSpeed/2;
+
+          car.userData.currentSpeed = speed;
+
+          // Steering (only if moving)
+          if (Math.abs(speed) > 0.1) {
+              const dir = speed > 0 ? 1 : -1;
+              if (controls.value.left) {
+                  car.rotation.y += turnSpeed * dir;
+              }
+              if (controls.value.right) {
+                  car.rotation.y -= turnSpeed * dir;
+              }
+          }
+
+          // Apply Velocity
+          car.position.x += Math.sin(car.rotation.y) * speed;
+          car.position.z += Math.cos(car.rotation.y) * speed;
+
+          // Simple Bounds Check
+          if (car.position.x > bound || car.position.x < -bound || car.position.z > bound || car.position.z < -bound) {
+             // Wrap around? Or stop?
+             // Let's wrap around for endless driving
+             if (car.position.x > bound) car.position.x = -bound;
+             if (car.position.x < -bound) car.position.x = bound;
+             if (car.position.z > bound) car.position.z = -bound;
+             if (car.position.z < -bound) car.position.z = bound;
+          }
+
+          // Building Collision (Simple Box Check)
+          // Uses grid logic similar to sparks
+          const ix = Math.round((car.position.x - startOffset) / CELL_SIZE);
+          const iz = Math.round((car.position.z - startOffset) / CELL_SIZE);
+
+          if (occupiedGrids.has(`${ix},${iz}`)) {
+             const cX = startOffset + ix * CELL_SIZE;
+             const cZ = startOffset + iz * CELL_SIZE;
+
+             // Approx building half-width + car half-width
+             if (Math.abs(car.position.x - cX) < 55 && Math.abs(car.position.z - cZ) < 55) {
+                // Collision - Bounce
+                car.userData.currentSpeed *= -0.5;
+                // Push out slightly
+                const dx = car.position.x - cX;
+                const dz = car.position.z - cZ;
+                car.position.x += Math.sign(dx) * 2;
+                car.position.z += Math.sign(dz) * 2;
+
+                spawnSparks(car.position);
+             }
+          }
+
+      } else if (!car.userData.fading) {
+          // AI Movement
           if (car.userData.axis === 'x') {
             car.position.x += car.userData.speed * car.userData.dir;
             if (car.position.x > bound) car.position.x = -bound;
@@ -814,12 +1026,35 @@ function animate() {
           const carB = cars[j];
           if (carB.userData.fading) continue;
 
+          // If one is player controlled, we handle collision differently?
+          // For now, treat same as AI collision (explode/fade both)
+          // But maybe give player immunity or just bounce?
+
           const dx = carA.position.x - carB.position.x;
           const dz = carA.position.z - carB.position.z;
           const distSq = dx*dx + dz*dz;
 
           if (distSq < actualCollisionDist * actualCollisionDist) {
-              // Additional check to reduce collision rate
+
+              // If player is involved
+              if (carA.userData.isPlayerControlled || carB.userData.isPlayerControlled) {
+                  // Bounce player, destroy AI?
+                   const player = carA.userData.isPlayerControlled ? carA : carB;
+                   const ai = carA.userData.isPlayerControlled ? carB : carA;
+
+                   player.userData.currentSpeed *= -0.5;
+                   // Push apart
+                   player.position.x += (player.position.x - ai.position.x) * 0.5;
+                   player.position.z += (player.position.z - ai.position.z) * 0.5;
+
+                   ai.userData.fading = true; // Destroy AI car
+                   ai.userData.dir *= -1;
+                   ai.rotation.y += (Math.random() - 0.5);
+                   spawnSparks(player.position);
+                   continue;
+              }
+
+              // Additional check to reduce collision rate for AI
               if (Math.random() > 0.5) continue;
 
               // Collision!
@@ -940,13 +1175,37 @@ function animate() {
       drones.geometry.attributes.position.needsUpdate = true;
   }
 
-  // Camera movement (orbit)
-  camera.position.x = Math.sin(time * 0.1) * 800;
-  camera.position.z = Math.cos(time * 0.1) * 800;
+  // Camera movement
+  if (isDrivingMode.value && activeCar.value) {
+      // Follow the car
+      const car = activeCar.value;
+      const angle = car.rotation.y;
+      const dist = 40;
+      const height = 20;
 
-  const targetLookAt = isGameMode.value ? new Vector3(0, 500, 0) : new Vector3(0, 0, 0);
-  currentLookAt.lerp(targetLookAt, 0.02);
-  camera.lookAt(currentLookAt);
+      const targetX = car.position.x - Math.sin(angle) * dist;
+      const targetZ = car.position.z - Math.cos(angle) * dist;
+      const targetY = car.position.y + height;
+
+      // Smooth follow
+      camera.position.x += (targetX - camera.position.x) * 0.1;
+      camera.position.z += (targetZ - camera.position.z) * 0.1;
+      camera.position.y += (targetY - camera.position.y) * 0.1;
+
+      camera.lookAt(car.position.x, car.position.y, car.position.z);
+  } else {
+      // Standard Orbit
+      camera.position.x = Math.sin(time * 0.1) * 800;
+      camera.position.z = Math.cos(time * 0.1) * 800;
+      // Recalculate Y if we were in driving mode
+      if (Math.abs(camera.position.y - 250) > 1) {
+          camera.position.y += (250 - camera.position.y) * 0.05;
+      }
+
+      const targetLookAt = isGameMode.value ? new Vector3(0, 500, 0) : new Vector3(0, 0, 0);
+      currentLookAt.lerp(targetLookAt, 0.02);
+      camera.lookAt(currentLookAt);
+  }
 
   renderer.render(scene, camera);
 }
@@ -986,6 +1245,8 @@ onBeforeUnmount(() => {
   isActive = false;
   window.removeEventListener("resize", onResize);
   window.removeEventListener("click", onClick);
+  window.removeEventListener("keydown", onKeyDown);
+  window.removeEventListener("keyup", onKeyUp);
   cancelAnimationFrame(animationId);
   if (renderer) {
     renderer.dispose();
@@ -1041,5 +1302,46 @@ onBeforeUnmount(() => {
   background: rgba(255, 0, 204, 0.2);
   color: #ffffff;
   text-shadow: 0 0 10px #ffffff;
+}
+
+#driving-controls {
+  position: fixed;
+  bottom: 80px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+  box-sizing: border-box;
+  z-index: 20;
+  pointer-events: none; /* Allow clicks to pass through empty space */
+}
+
+.control-group {
+    display: flex;
+    gap: 20px;
+    pointer-events: auto;
+}
+
+.control-btn {
+    width: 60px;
+    height: 60px;
+    background: rgba(0, 255, 204, 0.2);
+    border: 2px solid #00ffcc;
+    border-radius: 50%;
+    color: #00ffcc;
+    font-size: 20px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+.control-btn:active {
+    background: rgba(0, 255, 204, 0.5);
+    color: #fff;
 }
 </style>

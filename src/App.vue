@@ -9,7 +9,7 @@
         @activity="toggleActivity"
         @joke="toggleJoke"
       />
-      <Menu :pages="visiblePages" />
+      <Menu :pages="visiblePages" @explore="startExploration" />
     </nav>
     <div class="router-view-container" ref="containerRef">
       <router-view v-slot="{ Component, route }">
@@ -33,7 +33,7 @@
       </footer>
     </Transition>
   </div>
-  <CyberpunkCity @game-start="gameMode = true" @game-end="gameMode = false" />
+  <CyberpunkCity ref="cyberpunkCityRef" @game-start="gameMode = true" @game-end="gameMode = false" />
   <Transition name="fade">
     <Checker v-if="checker" :class="{ 'fade-out': gameMode }" />
   </Transition>
@@ -87,7 +87,17 @@ const router = useRouter();
 const transitionName = ref("cards");
 const gameMode = ref(false);
 
+const cyberpunkCityRef = ref<any>(null);
+
+function startExploration() {
+  if (cyberpunkCityRef.value && cyberpunkCityRef.value.startExplorationMode) {
+    cyberpunkCityRef.value.startExplorationMode();
+  }
+}
+
 function handleKeydown(e: KeyboardEvent) {
+  if (gameMode.value) return;
+
   if (e.key === "ArrowRight") {
     const currentIndex = visiblePages.value.findIndex((page: Page) => page.link === route.path);
     if (currentIndex !== -1 && currentIndex < visiblePages.value.length - 1) {

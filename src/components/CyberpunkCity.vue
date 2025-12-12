@@ -53,7 +53,7 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref, watch, computed } from "vue";
 import { useRoute } from "vue-router";
-import { AdditiveBlending, AmbientLight, BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, Color, DirectionalLight, DoubleSide, EdgesGeometry, FogExp2, Group, InterleavedBufferAttribute, Line, LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, MeshLambertMaterial, NearestFilter, Object3D, PerspectiveCamera, PlaneGeometry, Points, PointsMaterial, Raycaster, RepeatWrapping, Scene, Vector2, Vector3, WebGLRenderer, Euler } from "three";
+import { AdditiveBlending, AmbientLight, BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, Color, DirectionalLight, DoubleSide, EdgesGeometry, FogExp2, Group, InterleavedBufferAttribute, Line, LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, MeshLambertMaterial, NearestFilter, Object3D, PerspectiveCamera, PlaneGeometry, Points, PointsMaterial, Raycaster, RepeatWrapping, Scene, Vector2, Vector3, WebGLRenderer, Euler, Quaternion } from "three";
 
 const canvasContainer = ref<HTMLDivElement | null>(null);
 
@@ -75,6 +75,7 @@ const score = ref(0);
 const isGameMode = ref(false);
 const isDrivingMode = ref(false);
 const isExplorationMode = ref(false);
+const isTransitioning = ref(false);
 const activeCar = ref<Group | null>(null);
 
 const isMobile = ref(false);
@@ -943,12 +944,11 @@ function startTargetPractice() {
 function startExplorationMode() {
     isGameMode.value = true;
     isExplorationMode.value = true;
+    isTransitioning.value = true;
     emit('game-start');
 
-    // Set initial position
-    camera.position.set(0, 1.8, 0); // Eye level
+    // Reset player rotation
     playerRotation.set(0, 0, 0);
-    camera.rotation.copy(playerRotation);
 
     // Request pointer lock for desktop
     if (!isMobile.value && canvasContainer.value) {
@@ -1124,89 +1124,103 @@ function animate() {
 
   // Handle Exploration Mode
   if (isExplorationMode.value) {
-      const speed = 2.0; // walking speed
+      if (isTransitioning.value) {
+          const targetPos = new Vector3(0, 1.8, 0);
+          const targetQ = new Quaternion().setFromEuler(playerRotation);
 
-      const direction = new Vector3();
-      const frontVector = new Vector3(
-          0,
-          0,
-          Number(controls.value.backward) - Number(controls.value.forward)
-      );
-      const sideVector = new Vector3(
-          Number(controls.value.left) - Number(controls.value.right),
-          0,
-          0
-      );
+          camera.position.lerp(targetPos, 0.05);
+          camera.quaternion.slerp(targetQ, 0.05);
 
-      // Handle look buttons on mobile
-      if (isMobile.value) {
-          const rotateSpeed = 0.03;
-          if (lookControls.value.left) playerRotation.y += rotateSpeed;
-          if (lookControls.value.right) playerRotation.y -= rotateSpeed;
-          if (lookControls.value.up) playerRotation.x += rotateSpeed;
-          if (lookControls.value.down) playerRotation.x -= rotateSpeed;
-
-          // Clamp pitch
-          playerRotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, playerRotation.x));
-          camera.rotation.copy(playerRotation);
-      }
-
-      direction
-        .subVectors(frontVector, sideVector)
-        .normalize()
-        .multiplyScalar(speed)
-        .applyEuler(new Euler(0, camera.rotation.y, 0));
-
-      const nextX = camera.position.x + direction.x;
-      const nextZ = camera.position.z + direction.z;
-
-      // Collision Check with Grid
-      const ix = Math.round((nextX - startOffset) / CELL_SIZE);
-      const iz = Math.round((nextZ - startOffset) / CELL_SIZE);
-      let collided = false;
-
-      if (occupiedGrids.has(`${ix},${iz}`)) {
-             const cX = startOffset + ix * CELL_SIZE;
-             const cZ = startOffset + iz * CELL_SIZE;
-             // Building Hitbox: 70 unit radius (approx)
-             if (Math.abs(nextX - cX) < 70 && Math.abs(nextZ - cZ) < 70) {
-                 collided = true;
-             }
-      }
-
-      if (!collided) {
-          camera.position.x = nextX;
-          camera.position.z = nextZ;
-      }
-
-      // Bounds check
-      if (camera.position.x > BOUNDS) camera.position.x = -BOUNDS;
-      if (camera.position.x < -BOUNDS) camera.position.x = BOUNDS;
-      if (camera.position.z > BOUNDS) camera.position.z = -BOUNDS;
-      if (camera.position.z < -BOUNDS) camera.position.z = BOUNDS;
-
-      // Bobbing
-      if (controls.value.forward || controls.value.backward || controls.value.left || controls.value.right) {
-          camera.position.y = 1.8 + Math.sin(Date.now() * 0.01) * 0.1;
+          if (camera.position.distanceTo(targetPos) < 1) {
+              isTransitioning.value = false;
+              camera.position.copy(targetPos);
+              camera.rotation.copy(playerRotation);
+          }
       } else {
-          camera.position.y = 1.8;
-      }
+          const speed = 2.0; // walking speed
 
-      // Check collisions with cars
-      const hitDistSq = 15 * 15;
-      for (let i = 0; i < cars.length; i++) {
-          const car = cars[i];
-          const distSq = camera.position.distanceToSquared(car.position);
+          const direction = new Vector3();
+          const frontVector = new Vector3(
+              0,
+              0,
+              Number(controls.value.backward) - Number(controls.value.forward)
+          );
+          const sideVector = new Vector3(
+              Number(controls.value.left) - Number(controls.value.right),
+              0,
+              0
+          );
 
-          if (distSq < hitDistSq) {
-               if (!car.userData.isPlayerHit) {
-                   car.userData.isPlayerHit = true;
-                   carAudio.playCrash();
-               }
+          // Handle look buttons on mobile
+          if (isMobile.value) {
+              const rotateSpeed = 0.03;
+              if (lookControls.value.left) playerRotation.y += rotateSpeed;
+              if (lookControls.value.right) playerRotation.y -= rotateSpeed;
+              if (lookControls.value.up) playerRotation.x += rotateSpeed;
+              if (lookControls.value.down) playerRotation.x -= rotateSpeed;
+
+              // Clamp pitch
+              playerRotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, playerRotation.x));
+              camera.rotation.copy(playerRotation);
+          }
+
+          direction
+            .subVectors(frontVector, sideVector)
+            .normalize()
+            .multiplyScalar(speed)
+            .applyEuler(new Euler(0, camera.rotation.y, 0));
+
+          const nextX = camera.position.x + direction.x;
+          const nextZ = camera.position.z + direction.z;
+
+          // Collision Check with Grid
+          const ix = Math.round((nextX - startOffset) / CELL_SIZE);
+          const iz = Math.round((nextZ - startOffset) / CELL_SIZE);
+          let collided = false;
+
+          if (occupiedGrids.has(`${ix},${iz}`)) {
+                const cX = startOffset + ix * CELL_SIZE;
+                const cZ = startOffset + iz * CELL_SIZE;
+                // Building Hitbox: 70 unit radius (approx)
+                if (Math.abs(nextX - cX) < 70 && Math.abs(nextZ - cZ) < 70) {
+                    collided = true;
+                }
+          }
+
+          if (!collided) {
+              camera.position.x = nextX;
+              camera.position.z = nextZ;
+          }
+
+          // Bounds check
+          if (camera.position.x > BOUNDS) camera.position.x = -BOUNDS;
+          if (camera.position.x < -BOUNDS) camera.position.x = BOUNDS;
+          if (camera.position.z > BOUNDS) camera.position.z = -BOUNDS;
+          if (camera.position.z < -BOUNDS) camera.position.z = BOUNDS;
+
+          // Bobbing
+          if (controls.value.forward || controls.value.backward || controls.value.left || controls.value.right) {
+              camera.position.y = 1.8 + Math.sin(Date.now() * 0.01) * 0.1;
           } else {
-               if (car.userData.isPlayerHit) {
-                   car.userData.isPlayerHit = false;
-               }
+              camera.position.y = 1.8;
+          }
+
+          // Check collisions with cars
+          const hitDistSq = 15 * 15;
+          for (let i = 0; i < cars.length; i++) {
+              const car = cars[i];
+              const distSq = camera.position.distanceToSquared(car.position);
+
+              if (distSq < hitDistSq) {
+                  if (!car.userData.isPlayerHit) {
+                      car.userData.isPlayerHit = true;
+                      carAudio.playCrash();
+                  }
+              } else {
+                  if (car.userData.isPlayerHit) {
+                      car.userData.isPlayerHit = false;
+                  }
+              }
           }
       }
   }

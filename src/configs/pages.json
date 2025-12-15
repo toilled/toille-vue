@@ -36,7 +36,7 @@
     "hidden": true,
     "body": [
       "This page is a little secret! It's not included in the main navigation menu, but it's here for you to explore. On this page, you'll find links to a few extra things I've built. These are small projects and games that I've created for fun. Feel free to check them out and see what you think!",
-      "<ul><li><a href=\"/checker\">Checker</li><li><a href=\"/game\">Game</li><li><a href=\"/noughts-and-crosses\">Noughts and Crosses</li></ul>"
+      "<ul><li><a href=\"/checker\">Checker</li><li><a href=\"/game\">Game</li><li><a href=\"/noughts-and-crosses\">Noughts and Crosses</li><li><a href=\"/ask\">Ask Me</li></ul>"
     ]
   }
 ]

@@ -27,6 +27,7 @@ const routes = [
     path: "/noughts-and-crosses",
     component: () => import("./components/NoughtsAndCrosses.vue"),
   },
+  { path: "/ask", component: () => import("./components/Ask.vue") },
   { path: "/:pathMatch(.*)*", component: PageContent },
 ];
 

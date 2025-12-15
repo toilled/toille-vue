@@ -57,7 +57,7 @@ describe('Ask.vue', () => {
     expect(lastMessage.classes()).toContain('bot');
     expect(lastMessage.text()).not.toBe('Typing...');
     expect(lastMessage.text()).toContain('My name is Elliot.');
-    expect(lastMessage.text()).toContain('Also, one reason I\'d be good for you is that');
+    expect(lastMessage.text()).not.toContain('Also, one reason I\'d be good for you is that');
   });
 
   it('disables input while typing', async () => {

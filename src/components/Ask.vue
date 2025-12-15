@@ -39,16 +39,6 @@ const messages = ref<{text: string, sender: 'user' | 'bot'}[]>([]);
 const isTyping = ref(false);
 const chatWindow = ref<HTMLElement | null>(null);
 
-const reasons = [
-  "I have a strong attention to detail which ensures high-quality code.",
-  "I am adaptable and quick to learn new technologies and frameworks.",
-  "I have over 14 years of experience in software development.",
-  "I am proficient in both backend (PHP) and frontend (JavaScript) development.",
-  "I am passionate about continuous improvement and problem-solving.",
-  "I have experience working with complex frameworks like Laravel and VueJS.",
-  "I am a team player who enjoys collaborating to achieve shared goals."
-];
-
 const knowledgeBase = [
   { keywords: ['skill', 'tech', 'stack', 'language', 'framework', 'php', 'javascript', 'vue', 'react'], answer: "I work primarily with PHP (Laravel, Symfony) and JavaScript (VueJS, React, SolidJS). I also know Git and MySQL." },
   { keywords: ['experience', 'work', 'job', 'history', 'years', 'background'], answer: "I have 14 years of experience in software and web development. I recently joined RM as a Software Engineer." },
@@ -96,8 +86,7 @@ function generateResponse(question: string): string {
         }
     }
 
-    const randomReason = reasons[Math.floor(Math.random() * reasons.length)];
-    return `${answer} Also, one reason I'd be good for you is that ${randomReason}`;
+    return answer;
 }
 
 function scrollToBottom() {

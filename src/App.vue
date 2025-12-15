@@ -207,6 +207,8 @@ watch(
       pageTitle = 'Catch the Button!';
     } else if (newPath === '/checker') {
       pageTitle = 'Checker';
+    } else if (newPath === '/ask') {
+      pageTitle = 'Ask Me';
     } else {
       let routeName;
       if (route.params.name) {

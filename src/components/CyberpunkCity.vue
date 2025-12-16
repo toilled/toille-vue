@@ -700,12 +700,12 @@ onMounted(() => {
     tlMat.transparent = true;
     const tl1 = new Mesh(tailLightGeo, tlMat);
     tl1.userData.originalOpacity = 1.0;
-    tl1.position.set(1.5, 0, 4);
+    tl1.position.set(1.5, 0, -4);
     carGroup.add(tl1);
 
     const tl2 = new Mesh(tailLightGeo, tlMat);
     tl2.userData.originalOpacity = 1.0;
-    tl2.position.set(-1.5, 0, 4);
+    tl2.position.set(-1.5, 0, -4);
     carGroup.add(tl2);
 
     // Head lights
@@ -713,12 +713,12 @@ onMounted(() => {
     hlMat.transparent = true;
     const hl1 = new Mesh(headLightGeo, hlMat);
     hl1.userData.originalOpacity = 1.0;
-    hl1.position.set(1.5, 0, -4);
+    hl1.position.set(1.5, 0, 4);
     carGroup.add(hl1);
 
     const hl2 = new Mesh(headLightGeo, hlMat);
     hl2.userData.originalOpacity = 1.0;
-    hl2.position.set(-1.5, 0, -4);
+    hl2.position.set(-1.5, 0, 4);
     carGroup.add(hl2);
 
     // Invisible Hitbox

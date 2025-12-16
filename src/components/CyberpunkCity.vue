@@ -278,7 +278,7 @@ function addLightsToCar(car: Group) {
     // Taillights
     const tlColor = 0xff0000;
     const tlIntensity = 150; // Reduced intensity
-    const tlDist = 100;
+    const tlDist = 50;
     const tlAngle = Math.PI / 2.5;
 
     const tl1 = new SpotLight(tlColor, tlIntensity, tlDist, tlAngle, 0.5, 1);

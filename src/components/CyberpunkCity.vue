@@ -244,9 +244,9 @@ const CAR_COUNT = 150;
 function addLightsToCar(car: Group) {
     // Headlights
     const hlColor = 0xffffaa;
-    const hlIntensity = 2000; // Drastically increased intensity
+    const hlIntensity = 2000;
     const hlDist = 800;
-    const hlAngle = Math.PI / 3; // Wide angle
+    const hlAngle = Math.PI / 4.5; // Narrower angle to prevent reaching too high
     const hlPenumbra = 0.2;
 
     const hl1 = new SpotLight(hlColor, hlIntensity, hlDist, hlAngle, hlPenumbra, 1);
@@ -277,7 +277,7 @@ function addLightsToCar(car: Group) {
 
     // Taillights
     const tlColor = 0xff0000;
-    const tlIntensity = 500; // Increased intensity
+    const tlIntensity = 150; // Reduced intensity
     const tlDist = 300;
     const tlAngle = Math.PI / 2.5;
 

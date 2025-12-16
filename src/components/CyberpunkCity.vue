@@ -1531,11 +1531,14 @@ function animate() {
       camera.lookAt(car.position.x, car.position.y, car.position.z);
   } else if (!isExplorationMode.value) {
       // Standard Orbit
-      camera.position.x = Math.sin(time * 0.1) * 800;
-      camera.position.z = Math.cos(time * 0.1) * 800;
+      const orbitRadius = isMobile.value ? 1400 : 800;
+      camera.position.x = Math.sin(time * 0.1) * orbitRadius;
+      camera.position.z = Math.cos(time * 0.1) * orbitRadius;
+
       // Recalculate Y if we were in driving mode
-      if (Math.abs(camera.position.y - 250) > 1) {
-          camera.position.y += (250 - camera.position.y) * 0.05;
+      const targetY = isMobile.value ? 350 : 250;
+      if (Math.abs(camera.position.y - targetY) > 1) {
+          camera.position.y += (targetY - camera.position.y) * 0.05;
       }
 
       const targetLookAt = isGameMode.value ? new Vector3(0, 500, 0) : new Vector3(0, 0, 0);

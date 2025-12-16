@@ -42,8 +42,17 @@ HTMLCanvasElement.prototype.getContext = vi.fn((contextId: string) => {
 // Mock Three.js to avoid WebGL context issues in JSDOM
 vi.mock('three', async () => {
   const actual = await vi.importActual('three');
+  // Explicitly extract constructors we need to ensure they are available in the mock
+  // This addresses the "No export defined" error for specific geometries
+  const { CylinderGeometry, ConeGeometry, BoxGeometry, PlaneGeometry, BufferGeometry } = actual as any;
+
   return {
     ...actual as Record<string, unknown>,
+    CylinderGeometry,
+    ConeGeometry,
+    BoxGeometry,
+    PlaneGeometry,
+    BufferGeometry,
     WebGLRenderer: vi.fn().mockImplementation(() => ({
       setSize: vi.fn(),
       setPixelRatio: vi.fn(),

@@ -53,7 +53,7 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref, watch, computed } from "vue";
 import { useRoute } from "vue-router";
-import { AdditiveBlending, AmbientLight, BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, Color, DirectionalLight, DoubleSide, EdgesGeometry, FogExp2, Group, InterleavedBufferAttribute, Line, LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, MeshLambertMaterial, NearestFilter, Object3D, PerspectiveCamera, PlaneGeometry, Points, PointsMaterial, Raycaster, RepeatWrapping, Scene, Vector2, Vector3, WebGLRenderer, Euler, Quaternion } from "three";
+import { AdditiveBlending, AmbientLight, BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, Color, DirectionalLight, DoubleSide, EdgesGeometry, FogExp2, Group, InterleavedBufferAttribute, Line, LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, MeshLambertMaterial, MeshStandardMaterial, NearestFilter, Object3D, PerspectiveCamera, PlaneGeometry, Points, PointsMaterial, Raycaster, RepeatWrapping, Scene, SpotLight, Vector2, Vector3, WebGLRenderer, Euler, Quaternion } from "three";
 
 const canvasContainer = ref<HTMLDivElement | null>(null);
 
@@ -241,7 +241,98 @@ const BOUNDS = (GRID_SIZE * CELL_SIZE) / 2 + CELL_SIZE;
 const CAR_COUNT = 150;
 
 // Function to reset/spawn a car
+function addLightsToCar(car: Group) {
+    // Headlights
+    const hlColor = 0xffffaa;
+    const hlIntensity = 2000;
+    const hlDist = 800;
+    const hlAngle = Math.PI / 4.5; // Narrower angle to prevent reaching too high
+    const hlPenumbra = 0.2;
+
+    const hl1 = new SpotLight(hlColor, hlIntensity, hlDist, hlAngle, hlPenumbra, 1);
+    hl1.position.set(1.5, 2, 4);
+    hl1.castShadow = false;
+
+    // Target for headlight 1 (angled down to hit ground closer)
+    const hl1Target = new Object3D();
+    hl1Target.position.set(1.5, -10, 40);
+    car.add(hl1Target);
+    hl1.target = hl1Target;
+
+    hl1.userData.isCarLight = true;
+    car.add(hl1);
+
+    const hl2 = new SpotLight(hlColor, hlIntensity, hlDist, hlAngle, hlPenumbra, 1);
+    hl2.position.set(-1.5, 2, 4);
+    hl2.castShadow = false;
+
+    // Target for headlight 2
+    const hl2Target = new Object3D();
+    hl2Target.position.set(-1.5, -10, 40);
+    car.add(hl2Target);
+    hl2.target = hl2Target;
+
+    hl2.userData.isCarLight = true;
+    car.add(hl2);
+
+    // Taillights
+    const tlColor = 0xff0000;
+    const tlIntensity = 150; // Reduced intensity
+    const tlDist = 50;
+    const tlAngle = Math.PI / 2.5;
+
+    const tl1 = new SpotLight(tlColor, tlIntensity, tlDist, tlAngle, 0.5, 1);
+    tl1.position.set(1.5, 2, -4);
+
+    const tl1Target = new Object3D();
+    tl1Target.position.set(1.5, -5, -20);
+    car.add(tl1Target);
+    tl1.target = tl1Target;
+
+    tl1.userData.isCarLight = true;
+    car.add(tl1);
+
+    const tl2 = new SpotLight(tlColor, tlIntensity, tlDist, tlAngle, 0.5, 1);
+    tl2.position.set(-1.5, 2, -4);
+
+    const tl2Target = new Object3D();
+    tl2Target.position.set(-1.5, -5, -20);
+    car.add(tl2Target);
+    tl2.target = tl2Target;
+
+    tl2.userData.isCarLight = true;
+    car.add(tl2);
+}
+
+function removeLightsFromCar(car: Group) {
+    const lightsToRemove: Object3D[] = [];
+    const targetsToRemove: Object3D[] = [];
+
+    car.traverse((child) => {
+        if (child.userData.isCarLight) {
+            lightsToRemove.push(child);
+            if (child instanceof SpotLight) {
+                targetsToRemove.push(child.target);
+            }
+        }
+    });
+
+    lightsToRemove.forEach(l => {
+        car.remove(l);
+        if (l instanceof SpotLight) {
+            l.dispose();
+        }
+    });
+
+    targetsToRemove.forEach(t => car.remove(t));
+}
+
 function resetCar(carGroup: Group) {
+    const wasActive = activeCar.value && carGroup.uuid === activeCar.value.uuid;
+
+    // Ensure lights are removed if recycled
+    removeLightsFromCar(carGroup);
+
     const axis = Math.random() > 0.5 ? 'x' : 'z';
     const dir = Math.random() > 0.5 ? 1 : -1;
 
@@ -287,6 +378,10 @@ function resetCar(carGroup: Group) {
             }
         }
     });
+
+    if (wasActive) {
+        addLightsToCar(carGroup);
+    }
 }
 
 // Reusable Texture for Windows
@@ -492,7 +587,12 @@ onMounted(() => {
 
   // Ground Plane
   const planeGeometry = new PlaneGeometry(CITY_SIZE * 2, CITY_SIZE * 2);
-  const planeMaterial = new MeshBasicMaterial({ color: 0x0a0a15 });
+  // Using MeshStandardMaterial to allow light casting from car headlights
+  const planeMaterial = new MeshStandardMaterial({
+      color: 0x0a0a15,
+      roughness: 0.8,
+      metalness: 0.2
+  });
   const plane = new Mesh(planeGeometry, planeMaterial);
   plane.rotation.x = -Math.PI / 2;
   plane.position.y = -0.5;
@@ -919,6 +1019,11 @@ watch(
     }
   }
 );
+
+watch(activeCar, (newCar, oldCar) => {
+    if (oldCar) removeLightsFromCar(oldCar);
+    if (newCar) addLightsToCar(newCar);
+});
 
 watch(score, (val) => {
   if (val >= 500 && !isGameMode.value) {
@@ -1588,6 +1693,7 @@ onBeforeUnmount(() => {
   window.removeEventListener("keyup", onKeyUp);
   window.removeEventListener("mousemove", onMouseMove);
   document.removeEventListener('pointerlockchange', onPointerLockChange);
+
   cancelAnimationFrame(animationId);
   if (renderer) {
     renderer.dispose();

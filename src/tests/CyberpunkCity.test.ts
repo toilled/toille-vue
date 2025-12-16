@@ -52,6 +52,11 @@ vi.mock('three', () => {
         clone: vi.fn()
       }))
     })),
+    MeshStandardMaterial: vi.fn(() => ({
+      clone: vi.fn(() => ({
+        clone: vi.fn()
+      }))
+    })),
     PointsMaterial: vi.fn(),
     LineBasicMaterial: vi.fn(),
     LineSegments: vi.fn(() => ({
@@ -99,6 +104,20 @@ vi.mock('three', () => {
     })),
     DirectionalLight: vi.fn(() => ({
       position: { set: vi.fn() }
+    })),
+    SpotLight: vi.fn(() => ({
+      position: { set: vi.fn() },
+      target: { position: { set: vi.fn() } },
+      userData: {},
+      add: vi.fn()
+    })),
+    Object3D: vi.fn(() => ({
+      position: { set: vi.fn() },
+      add: vi.fn()
+    })),
+    Quaternion: vi.fn(() => ({
+      setFromEuler: vi.fn(),
+      slerp: vi.fn()
     })),
     Vector3: vi.fn(() => ({
       x: 0,

@@ -52,6 +52,18 @@ vi.mock('three', async () => {
       dispose: vi.fn(),
       shadowMap: { enabled: false, type: 0 },
     })),
+    MeshStandardMaterial: class {
+      clone() { return this; }
+    },
+    SpotLight: class {
+      position = { set: vi.fn(), copy: vi.fn() };
+      target = { position: { set: vi.fn() } };
+      userData = {};
+      castShadow = false;
+      add() {}
+      remove() {}
+      dispose() {}
+    },
   };
 });
 

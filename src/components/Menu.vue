@@ -11,12 +11,14 @@
           src="/sound-icon.svg"
           alt="Toggle sound"
           class="icon"
+          data-testid="sound-on-icon"
         />
         <img
           v-else
           src="/mute-icon.svg"
           alt="Toggle sound"
           class="icon"
+          data-testid="sound-off-icon"
         />
       </div>
     </li>
@@ -24,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import MenuItem from "./MenuItem.vue";
 import { Page } from "../interfaces/Page";
 import { CyberpunkAudio } from "../utils/CyberpunkAudio";
@@ -55,12 +57,40 @@ const toggleSound = () => {
   }
 
   soundOn.value = !soundOn.value;
+  localStorage.setItem('cyberpunk_sound_enabled', String(soundOn.value));
+
   if (soundOn.value) {
     audio.play();
   } else {
     audio.pause();
   }
 };
+
+onMounted(() => {
+  const storedSound = localStorage.getItem('cyberpunk_sound_enabled');
+  if (storedSound === 'true') {
+    soundOn.value = true;
+    if (!audio) {
+      audio = new CyberpunkAudio();
+    }
+    audio.play();
+
+    // Browser Autoplay Policy fix:
+    // If context starts suspended (no user gesture yet), we need to resume it on first interaction.
+    // audio.play() calls ctx.resume(), but it might fail or return a pending promise.
+    // We attach a one-time listener to ensure resumption.
+    const resumeAudio = () => {
+      if (audio) {
+        audio.play(); // This triggers ctx.resume()
+      }
+      document.removeEventListener('click', resumeAudio);
+      document.removeEventListener('keydown', resumeAudio);
+    };
+
+    document.addEventListener('click', resumeAudio);
+    document.addEventListener('keydown', resumeAudio);
+  }
+});
 </script>
 
 <style scoped>

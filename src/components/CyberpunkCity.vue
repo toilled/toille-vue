@@ -869,28 +869,6 @@ onMounted(() => {
     }
   }
 
-  // Add Road Markings (Simple Lines) - Kept as reinforcement
-  const lineMaterial = new LineBasicMaterial({ color: 0x444444 });
-
-  for (let i = 0; i <= GRID_SIZE; i++) {
-      const pos = startOffset + i * CELL_SIZE - CELL_SIZE / 2;
-
-      // Road line geometry (Along Z)
-      const points = [];
-      points.push(new Vector3(pos, 0.1, -CITY_SIZE));
-      points.push(new Vector3(pos, 0.1, CITY_SIZE));
-      const geometry = new BufferGeometry().setFromPoints(points);
-      const line = new Line(geometry, lineMaterial);
-      scene.add(line);
-
-      // Road line geometry (Along X)
-      const points2 = [];
-      points2.push(new Vector3(-CITY_SIZE, 0.1, pos));
-      points2.push(new Vector3(CITY_SIZE, 0.1, pos));
-      const geometry2 = new BufferGeometry().setFromPoints(points2);
-      const line2 = new Line(geometry2, lineMaterial);
-      scene.add(line2);
-  }
 
 
   // Cars

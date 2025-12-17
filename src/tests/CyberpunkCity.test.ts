@@ -19,8 +19,9 @@ vi.mock('three', () => {
       background: null
     })),
     PerspectiveCamera: vi.fn(() => ({
-      position: { set: vi.fn(), y: 0, copy: vi.fn() },
+      position: { set: vi.fn(), y: 0, copy: vi.fn(), distanceTo: vi.fn(), lerp: vi.fn() },
       rotation: { set: vi.fn(), copy: vi.fn(), y: 0 },
+      quaternion: { slerp: vi.fn() },
       lookAt: vi.fn(),
       updateProjectionMatrix: vi.fn()
     })),
@@ -36,6 +37,8 @@ vi.mock('three', () => {
     BoxGeometry: vi.fn(() => ({
       translate: vi.fn()
     })),
+    CylinderGeometry: vi.fn(),
+    ConeGeometry: vi.fn(),
     EdgesGeometry: vi.fn(),
     PlaneGeometry: vi.fn(),
     BufferGeometry: vi.fn(() => ({
@@ -66,17 +69,20 @@ vi.mock('three', () => {
     Line: vi.fn(),
     Group: vi.fn(() => ({
       add: vi.fn(),
-      position: { set: vi.fn(), z: 0 },
+      position: { set: vi.fn(), z: 0, copy: vi.fn() },
       rotation: { y: 0 },
       traverse: vi.fn(),
-      userData: {}
+      userData: {},
+      lookAt: vi.fn()
     })),
     DoubleSide: 2,
     Mesh: vi.fn(() => ({
-      position: { set: vi.fn(), x: 0, z: 0 },
+      position: { set: vi.fn(), x: 0, z: 0, distanceToSquared: vi.fn() },
       rotation: { x: 0 },
       scale: { set: vi.fn() },
-      userData: {}
+      userData: {},
+      add: vi.fn(),
+      lookAt: vi.fn()
     })),
     Points: vi.fn(() => ({
       position: { set: vi.fn() },
@@ -91,7 +97,15 @@ vi.mock('three', () => {
     })),
     Float32BufferAttribute: vi.fn(),
     BufferAttribute: vi.fn(),
-    CanvasTexture: vi.fn(),
+    CanvasTexture: vi.fn(() => ({
+      wrapS: 0,
+      wrapT: 0,
+      magFilter: 0,
+      anisotropy: 0,
+      repeat: {
+        set: vi.fn()
+      }
+    })),
     RepeatWrapping: 1000,
     NearestFilter: 1001,
     MathUtils: {
@@ -123,11 +137,16 @@ vi.mock('three', () => {
       x: 0,
       y: 0,
       z: 0,
-      lerp: vi.fn()
+      lerp: vi.fn(),
+      subVectors: vi.fn(),
+      normalize: vi.fn(),
+      multiplyScalar: vi.fn(),
+      applyEuler: vi.fn()
     })),
     Vector2: vi.fn(),
     Raycaster: vi.fn(() => ({
       setFromCamera: vi.fn(),
+      intersectObjects: vi.fn(() => []),
       intersectObject: vi.fn(() => []),
       params: { Points: { threshold: 1 } }
     })),

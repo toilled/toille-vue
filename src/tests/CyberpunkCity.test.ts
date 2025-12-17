@@ -97,7 +97,15 @@ vi.mock('three', () => {
     })),
     Float32BufferAttribute: vi.fn(),
     BufferAttribute: vi.fn(),
-    CanvasTexture: vi.fn(),
+    CanvasTexture: vi.fn(() => ({
+      wrapS: 0,
+      wrapT: 0,
+      magFilter: 0,
+      anisotropy: 0,
+      repeat: {
+        set: vi.fn()
+      }
+    })),
     RepeatWrapping: 1000,
     NearestFilter: 1001,
     MathUtils: {

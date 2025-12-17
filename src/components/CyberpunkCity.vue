@@ -1176,13 +1176,11 @@ function exitGameMode() {
 
   if (isDrivingMode.value) {
       isDrivingMode.value = false;
-      emit('game-end');
       carAudio.stop(); // Stop engine sound
       if (activeCar.value) {
           activeCar.value.userData.isPlayerControlled = false;
           activeCar.value = null;
       }
-      return;
   }
 
   if (isExplorationMode.value) {

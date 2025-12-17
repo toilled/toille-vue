@@ -98,6 +98,13 @@ function startExploration() {
 function handleKeydown(e: KeyboardEvent) {
   if (gameMode.value) return;
 
+  if (e.key === "Escape") {
+    const gameRoutes = ['/game', '/noughts-and-crosses', '/checker', '/ask'];
+    if (gameRoutes.includes(route.path)) {
+      router.push('/hidden');
+    }
+  }
+
   if (e.key === "ArrowRight") {
     const currentIndex = visiblePages.value.findIndex((page: Page) => page.link === route.path);
     if (currentIndex !== -1 && currentIndex < visiblePages.value.length - 1) {

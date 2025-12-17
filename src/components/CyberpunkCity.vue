@@ -541,7 +541,7 @@ function createNavArrow() {
 
     // Cone pointing at target
     const cone = new Mesh(
-        new ConeGeometry(8, 30, 16), // Bigger
+        new ConeGeometry(2, 7.5, 16), // Quarter size
         new MeshBasicMaterial({ color: 0xffff00, depthTest: false, depthWrite: false, transparent: true, opacity: 0.9 })
     );
     // Cone points +Y. We want it to point +Z (forward)
@@ -568,8 +568,11 @@ function spawnCheckpoint() {
     const axis = Math.random() > 0.5 ? 'x' : 'z';
     const roadCoordinate = startOffset + (axis === 'x' ? roadIndexX : roadIndexZ) * CELL_SIZE - CELL_SIZE / 2;
 
-    // Coordinate along the road
-    const otherCoord = (Math.random() - 0.5) * CITY_SIZE * 1.8; // Within bounds
+    // Coordinate along the road.
+    // Constrain to slightly less than city bounds to ensure it's reachable and not in void.
+    // BOUNDS is where cars wrap, so let's use slightly less.
+    const limit = (GRID_SIZE * CELL_SIZE) / 2;
+    const otherCoord = (Math.random() - 0.5) * 2 * limit * 0.9;
 
     let x = 0, z = 0;
     if (axis === 'x') {

@@ -1,6 +1,8 @@
 <template>
   <div ref="canvasContainer" id="cyberpunk-city"></div>
   <div v-if="score > 0" id="score-counter">SCORE: {{ score }}</div>
+  <div v-if="isDrivingMode" id="timer-counter">TIME: {{ Math.ceil(timeLeft) }}</div>
+  <div v-if="isDrivingMode" id="dist-counter">DIST: {{ Math.ceil(distToTarget) }}m</div>
   <button v-if="isGameMode || isDrivingMode || isExplorationMode" id="return-button" @click="exitGameMode">RETURN</button>
 
   <div v-if="isDrivingMode" id="driving-controls">
@@ -53,7 +55,7 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref, watch, computed } from "vue";
 import { useRoute } from "vue-router";
-import { AdditiveBlending, AmbientLight, BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, Color, DirectionalLight, DoubleSide, EdgesGeometry, FogExp2, Group, InterleavedBufferAttribute, Line, LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, MeshLambertMaterial, MeshStandardMaterial, NearestFilter, Object3D, PerspectiveCamera, PlaneGeometry, Points, PointsMaterial, Raycaster, RepeatWrapping, Scene, SpotLight, Vector2, Vector3, WebGLRenderer, Euler, Quaternion } from "three";
+import { AdditiveBlending, AmbientLight, BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, Color, DirectionalLight, DoubleSide, EdgesGeometry, FogExp2, Group, InterleavedBufferAttribute, Line, LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, MeshLambertMaterial, MeshStandardMaterial, NearestFilter, Object3D, PerspectiveCamera, PlaneGeometry, Points, PointsMaterial, Raycaster, RepeatWrapping, Scene, SpotLight, Vector2, Vector3, WebGLRenderer, Euler, Quaternion, CylinderGeometry, ConeGeometry } from "three";
 
 const canvasContainer = ref<HTMLDivElement | null>(null);
 
@@ -77,6 +79,11 @@ const isDrivingMode = ref(false);
 const isExplorationMode = ref(false);
 const isTransitioning = ref(false);
 const activeCar = ref<Group | null>(null);
+let checkpointMesh: Mesh;
+let navArrow: Group;
+const timeLeft = ref(0);
+const lastTime = ref(0);
+const distToTarget = ref(0);
 
 const isMobile = ref(false);
 
@@ -507,6 +514,76 @@ function createDroneTexture() {
     return texture;
 }
 
+function createCheckpoint() {
+    // A glowing neon pillar/ring
+    const geo = new CylinderGeometry(25, 25, 1000, 32, 1, true); // Taller and wider
+    const mat = new MeshBasicMaterial({
+        color: 0x00ff00,
+        transparent: true,
+        opacity: 0.6, // More opaque
+        side: DoubleSide,
+        depthWrite: false,
+        blending: AdditiveBlending
+    });
+    checkpointMesh = new Mesh(geo, mat);
+    checkpointMesh.visible = false;
+    scene.add(checkpointMesh);
+
+    // Inner brighter core
+    const coreGeo = new CylinderGeometry(5, 5, 1000, 16);
+    const coreMat = new MeshBasicMaterial({ color: 0xffffff });
+    const core = new Mesh(coreGeo, coreMat);
+    checkpointMesh.add(core);
+}
+
+function createNavArrow() {
+    navArrow = new Group();
+
+    // Cone pointing at target
+    const cone = new Mesh(
+        new ConeGeometry(8, 30, 16), // Bigger
+        new MeshBasicMaterial({ color: 0xffff00, depthTest: false, depthWrite: false, transparent: true, opacity: 0.9 })
+    );
+    // Cone points +Y. We want it to point +Z (forward)
+    cone.rotation.x = Math.PI / 2;
+
+    navArrow.add(cone);
+
+    // Make sure it renders on top
+    cone.renderOrder = 999;
+
+    navArrow.visible = false;
+    scene.add(navArrow);
+}
+
+function spawnCheckpoint() {
+    // Pick random road coordinate
+    const roadIndexX = Math.floor(Math.random() * (GRID_SIZE + 1));
+    const roadIndexZ = Math.floor(Math.random() * (GRID_SIZE + 1));
+
+    // We want the checkpoint to be on an intersection or road
+    // Let's pick an intersection for simplicity, or just one axis road
+
+    // Pick random axis
+    const axis = Math.random() > 0.5 ? 'x' : 'z';
+    const roadCoordinate = startOffset + (axis === 'x' ? roadIndexX : roadIndexZ) * CELL_SIZE - CELL_SIZE / 2;
+
+    // Coordinate along the road
+    const otherCoord = (Math.random() - 0.5) * CITY_SIZE * 1.8; // Within bounds
+
+    let x = 0, z = 0;
+    if (axis === 'x') {
+        z = roadCoordinate; // Road runs along X at this Z
+        x = otherCoord;
+    } else {
+        x = roadCoordinate; // Road runs along Z at this X
+        z = otherCoord;
+    }
+
+    checkpointMesh.position.set(x, 0, z);
+    checkpointMesh.visible = true;
+}
+
 function spawnSparks(position: Vector3) {
     if (!sparks) return;
     const posAttribute = sparks.geometry.attributes.position;
@@ -910,6 +987,9 @@ onMounted(() => {
   sparks.frustumCulled = false; // Prevent culling when sparks fly outside initial bounds
   scene.add(sparks);
 
+  createCheckpoint();
+  createNavArrow();
+
   window.addEventListener("resize", onResize);
   window.addEventListener("click", onClick);
   window.addEventListener("keydown", onKeyDown);
@@ -920,6 +1000,23 @@ onMounted(() => {
 
   isActive = true;
   animate();
+
+  // @ts-ignore
+  window.__TEST_INTERFACE__ = {
+    startDriving: () => {
+      if (cars.length > 0) {
+          isDrivingMode.value = true;
+          // Emit game-start so App.vue fades out the overlay
+          emit('game-start');
+          activeCar.value = cars[0];
+          cars[0].userData.isPlayerControlled = true;
+          cars[0].userData.currentSpeed = 0;
+          timeLeft.value = 30;
+          lastTime.value = Date.now();
+          spawnCheckpoint();
+      }
+    }
+  };
 });
 
 function onKeyDown(event: KeyboardEvent) {
@@ -1166,6 +1263,13 @@ function onClick(event: MouseEvent) {
                 activeCar.value = target;
                 target.userData.isPlayerControlled = true;
                 target.userData.currentSpeed = target.userData.speed;
+
+                // Initialize Racing Mode
+                timeLeft.value = 30;
+                lastTime.value = Date.now();
+                score.value = 0; // Reset score for new run
+                spawnCheckpoint();
+
                 // Preserve current rotation as base
                 return;
             }
@@ -1224,8 +1328,52 @@ function animate() {
   if (!isActive) return;
   animationId = requestAnimationFrame(animate);
 
-  const time = Date.now() * 0.0005;
+  const now = Date.now();
+  const time = now * 0.0005;
   const deltaTime = 0.016; // approximate
+
+  // Racing Logic
+  if (isDrivingMode.value && activeCar.value) {
+      // Timer
+      const dt = (now - lastTime.value) / 1000;
+      lastTime.value = now;
+      timeLeft.value -= dt;
+
+      if (timeLeft.value <= 0) {
+          timeLeft.value = 0;
+          exitGameMode(); // Time's up
+      } else {
+          // Checkpoint Collision
+          // Flatten distance check (ignore Y)
+          const cx = activeCar.value.position.x;
+          const cz = activeCar.value.position.z;
+          const tx = checkpointMesh.position.x;
+          const tz = checkpointMesh.position.z;
+
+          const distSq = (cx - tx) ** 2 + (cz - tz) ** 2;
+          const dist = Math.sqrt(distSq);
+          distToTarget.value = dist;
+
+          if (distSq < 20 * 20) { // 20 units radius
+             // Checkpoint reached
+             score.value += 500;
+             timeLeft.value += 15; // Bonus time
+             playPewSound(); // Reuse sound
+             spawnCheckpoint();
+          }
+
+          // Update Nav Arrow
+          navArrow.visible = true;
+          navArrow.position.copy(activeCar.value.position);
+          navArrow.position.y += 15; // Hover above car
+          navArrow.lookAt(checkpointMesh.position.x, navArrow.position.y, checkpointMesh.position.z);
+      }
+  } else {
+      if (navArrow) navArrow.visible = false;
+      if (checkpointMesh) checkpointMesh.visible = false;
+      // Keep lastTime updated so we don't have a huge jump when starting
+      lastTime.value = now;
+  }
 
   // Handle Exploration Mode
   if (isExplorationMode.value) {
@@ -1729,6 +1877,34 @@ onBeforeUnmount(() => {
   font-weight: bold;
   z-index: 10;
   text-shadow: 0 0 10px #00ffcc;
+  pointer-events: none;
+}
+
+#timer-counter {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #ff00cc;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 32px;
+  font-weight: bold;
+  z-index: 10;
+  text-shadow: 0 0 10px #ff00cc;
+  pointer-events: none;
+}
+
+#dist-counter {
+  position: fixed;
+  top: 60px; /* Below timer */
+  left: 50%;
+  transform: translateX(-50%);
+  color: #ffff00;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 24px;
+  font-weight: bold;
+  z-index: 10;
+  text-shadow: 0 0 10px #ffff00;
   pointer-events: none;
 }
 

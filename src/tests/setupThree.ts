@@ -57,106 +57,137 @@ vi.mock('three', async () => {
     CylinderGeometry: class {
       parameters: any;
       constructor(radiusTop?: number, radiusBottom?: number, height?: number, radialSegments?: number, heightSegments?: number, openEnded?: boolean, thetaStart?: number, thetaLength?: number) {
-          this.parameters = { radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength };
+        this.parameters = { radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength };
       }
     },
     ConeGeometry: class {
       parameters: any;
       constructor(radius?: number, height?: number, radialSegments?: number, heightSegments?: number, openEnded?: boolean, thetaStart?: number, thetaLength?: number) {
-         this.parameters = { radius, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength };
+        this.parameters = { radius, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength };
       }
     },
     BoxGeometry: class {
-        translate() {}
-        getIndex() { return null; } // For EdgesGeometry
-        getAttribute() { return { count: 0, itemSize: 3, array: [] }; } // For EdgesGeometry
-        clone() { return this; }
-        parameters = {};
+      translate() { }
+      getIndex() { return null; } // For EdgesGeometry
+      getAttribute() { return { count: 0, itemSize: 3, array: [] }; } // For EdgesGeometry
+      clone() { return this; }
+      parameters = {};
     },
     PlaneGeometry: class {
-        parameters: any;
-        constructor(width?: number, height?: number) {
-            this.parameters = { width, height };
-        }
+      parameters: any;
+      constructor(width?: number, height?: number) {
+        this.parameters = { width, height };
+      }
     },
     BufferGeometry: class {
-        attributes = { position: { array: [], needsUpdate: false, count: 0, itemSize: 3, getX: vi.fn(), getY: vi.fn(), getZ: vi.fn(), setXYZ: vi.fn() } };
-        setAttribute() {}
-        setFromPoints() {}
-        getIndex() { return null; }
-        getAttribute() { return this.attributes.position; }
-        computeBoundingSphere() {}
+      attributes = { position: { array: [], needsUpdate: false, count: 0, itemSize: 3, getX: vi.fn(), getY: vi.fn(), getZ: vi.fn(), setXYZ: vi.fn() } };
+      setAttribute() { }
+      setFromPoints() { }
+      getIndex() { return null; }
+      getAttribute() { return this.attributes.position; }
+      computeBoundingSphere() { }
     },
     EdgesGeometry: class {
-        constructor(geometry?: any) {}
-        scale = { set: vi.fn() };
+      constructor(geometry?: any) { }
+      scale = { set: vi.fn() };
     },
     // We need to mock Mesh to avoid internal checks on geometry that our mocks fail
     Mesh: class {
-        position = { x: 0, y: 0, z: 0, set: vi.fn(), copy: vi.fn(), lerp: vi.fn(), distanceTo: vi.fn(), distanceToSquared: vi.fn() };
-        rotation = { x: 0, y: 0, z: 0, copy: vi.fn() };
-        scale = { set: vi.fn() };
-        material: any;
-        geometry: any;
-        userData: any = {};
-        visible = true;
-        renderOrder = 0;
+      position = { x: 0, y: 0, z: 0, set: vi.fn(), copy: vi.fn(), lerp: vi.fn(), distanceTo: vi.fn(), distanceToSquared: vi.fn() };
+      rotation = { x: 0, y: 0, z: 0, copy: vi.fn() };
+      scale = { set: vi.fn() };
+      material: any;
+      geometry: any;
+      userData: any = {};
+      visible = true;
+      renderOrder = 0;
+      isObject3D = true;
 
-        constructor(geometry?: any, material?: any) {
-            this.geometry = geometry;
-            this.material = material;
-            // Add basic Group/Object3D methods
-            (this as any).add = vi.fn();
-            (this as any).remove = vi.fn();
-            (this as any).traverse = vi.fn((cb: any) => cb(this));
-            (this as any).lookAt = vi.fn();
-        }
-        add() {}
-        remove() {}
-        traverse(cb: any) { cb(this); }
-        lookAt() {}
+      constructor(geometry?: any, material?: any) {
+        this.geometry = geometry;
+        this.material = material;
+        // Add basic Group/Object3D methods
+        (this as any).add = vi.fn();
+        (this as any).remove = vi.fn();
+        (this as any).removeFromParent = vi.fn();
+        (this as any).traverse = vi.fn((cb: any) => cb(this));
+        (this as any).lookAt = vi.fn();
+        (this as any).dispatchEvent = vi.fn();
+        (this as any).addEventListener = vi.fn();
+        (this as any).removeEventListener = vi.fn();
+      }
+      add() { }
+      remove() { }
+      removeFromParent() { }
+      traverse(cb: any) { cb(this); }
+      lookAt() { }
+      dispatchEvent() { }
+      addEventListener() { }
+      removeEventListener() { }
     },
     // Also mock other classes that might depend on real three.js logic
     Group: class {
-        position = { x: 0, y: 0, z: 0, set: vi.fn(), copy: vi.fn() };
-        rotation = { x: 0, y: 0, z: 0, copy: vi.fn() };
-        userData: any = {};
-        visible = true;
-        children: any[] = [];
-        add(obj: any) { this.children.push(obj); }
-        remove(obj: any) { this.children = this.children.filter(c => c !== obj); }
-        traverse(cb: any) {
-            cb(this);
-            this.children.forEach(c => c.traverse && c.traverse(cb));
-        }
+      position = { x: 0, y: 0, z: 0, set: vi.fn(), copy: vi.fn() };
+      rotation = { x: 0, y: 0, z: 0, copy: vi.fn() };
+      userData: any = {};
+      visible = true;
+      isObject3D = true;
+      children: any[] = [];
+      add(obj: any) { this.children.push(obj); }
+      remove(obj: any) { this.children = this.children.filter(c => c !== obj); }
+      removeFromParent() { }
+      traverse(cb: any) {
+        cb(this);
+        this.children.forEach(c => c.traverse && c.traverse(cb));
+      }
+      dispatchEvent() { }
+      addEventListener() { }
+      removeEventListener() { }
     },
     MeshStandardMaterial: class {
       clone() { return this; }
     },
     MeshLambertMaterial: class {
-        clone() { return this; }
+      clone() { return this; }
     },
     MeshBasicMaterial: class {
-        clone() { return this; }
+      clone() { return this; }
     },
-    LineBasicMaterial: class {},
+    LineBasicMaterial: class { },
     LineSegments: class {
-         scale = { set: vi.fn() };
-         position = { y: 0 };
+      scale = { set: vi.fn() };
+      position = { y: 0 };
+      isObject3D = true;
+      add() { }
+      removeFromParent() { }
+      dispatchEvent() { }
+      addEventListener() { }
+      removeEventListener() { }
     },
-    PointsMaterial: class {},
+    PointsMaterial: class { },
     Points: class {
-        geometry = { attributes: { position: { array: [], needsUpdate: false, getX: vi.fn(), getY: vi.fn(), getZ: vi.fn(), setXYZ: vi.fn() } } };
-        frustumCulled = true;
+      geometry = { attributes: { position: { array: [], needsUpdate: false, getX: vi.fn(), getY: vi.fn(), getZ: vi.fn(), setXYZ: vi.fn() } } };
+      frustumCulled = true;
+      isObject3D = true;
+      add() { }
+      removeFromParent() { }
+      dispatchEvent() { }
+      addEventListener() { }
+      removeEventListener() { }
     },
     SpotLight: class {
       position = { set: vi.fn(), copy: vi.fn() };
       target = { position: { set: vi.fn() } };
       userData = {};
       castShadow = false;
-      add() {}
-      remove() {}
-      dispose() {}
+      isObject3D = true;
+      add() { }
+      remove() { }
+      removeFromParent() { }
+      dispose() { }
+      dispatchEvent() { }
+      addEventListener() { }
+      removeEventListener() { }
     },
   };
 });
@@ -216,17 +247,17 @@ vi.stubGlobal('AudioContext', class AudioContext {
     };
   }
   createBuffer(channels: number, length: number, sampleRate: number) {
-     return {
-         getChannelData: vi.fn(() => new Float32Array(length))
-     }
+    return {
+      getChannelData: vi.fn(() => new Float32Array(length))
+    }
   }
   createBufferSource() {
-      return {
-          buffer: null,
-          connect: vi.fn(),
-          start: vi.fn(),
-          stop: vi.fn()
-      }
+    return {
+      buffer: null,
+      connect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn()
+    }
   }
   resume() {
     this.state = 'running';

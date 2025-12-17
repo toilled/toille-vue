@@ -1069,6 +1069,11 @@ onMounted(() => {
 });
 
 function onKeyDown(event: KeyboardEvent) {
+    if (event.key === "Escape") {
+        exitGameMode();
+        return;
+    }
+
     if (isDrivingMode.value || isExplorationMode.value) {
         switch(event.key.toLowerCase()) {
             case 'w':

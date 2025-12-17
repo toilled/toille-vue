@@ -417,6 +417,64 @@ function createWindowTexture() {
     return texture;
 }
 
+function createGroundTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+        ctx.fillStyle = '#0a0a15'; // Base ground color
+        ctx.fillRect(0, 0, 512, 512);
+
+        // Road color (darker)
+        ctx.fillStyle = '#050505';
+
+        // Calculate relative road width on texture
+        // CELL_SIZE = BLOCK_SIZE + ROAD_WIDTH
+        // We want the road to be at the edges of the cell? Or center?
+        // Let's assume texture represents ONE cell.
+        // Center: Block. Edges: Road.
+
+        const roadRatio = ROAD_WIDTH / CELL_SIZE; // approx 40/190 = 0.21
+        const roadPx = 512 * roadRatio;
+        const halfRoad = roadPx / 2;
+
+        // Draw Cross Roads
+        ctx.fillRect(0, 256 - halfRoad, 512, roadPx); // Horizontal
+        ctx.fillRect(256 - halfRoad, 0, roadPx, 512); // Vertical
+
+        // Road Lines (Dashed)
+        ctx.strokeStyle = '#333333';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([10, 10]);
+
+        // Horizontal Line
+        ctx.beginPath();
+        ctx.moveTo(0, 256);
+        ctx.lineTo(512, 256);
+        ctx.stroke();
+
+        // Vertical Line
+        ctx.beginPath();
+        ctx.moveTo(256, 0);
+        ctx.lineTo(256, 512);
+        ctx.stroke();
+
+        // Stop lines / Intersection details?
+        // Add subtle noise?
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+        for(let i=0; i<100; i++) {
+            ctx.fillRect(Math.random()*512, Math.random()*512, 2, 2);
+        }
+    }
+    const texture = new CanvasTexture(canvas);
+    texture.wrapS = RepeatWrapping;
+    texture.wrapT = RepeatWrapping;
+    texture.magFilter = NearestFilter;
+    texture.anisotropy = 16;
+    return texture;
+}
+
 // Generate Billboard Textures
 function createBillboardTextures() {
     const textures: CanvasTexture[] = [];
@@ -666,10 +724,20 @@ onMounted(() => {
   scene.add(dirLight2);
 
   // Ground Plane
+  const groundTexture = createGroundTexture();
   const planeGeometry = new PlaneGeometry(CITY_SIZE * 2, CITY_SIZE * 2);
+
+  // Calculate repetitions based on city size vs cell size
+  // CITY_SIZE * 2 covers -2000 to 2000 range approx (4000 total)
+  // CELL_SIZE is 190.
+  // We want texture to repeat every CELL_SIZE units.
+  const repeatCount = (CITY_SIZE * 2) / CELL_SIZE;
+  groundTexture.repeat.set(repeatCount, repeatCount);
+
   // Using MeshStandardMaterial to allow light casting from car headlights
   const planeMaterial = new MeshStandardMaterial({
-      color: 0x0a0a15,
+      color: 0xffffff, // White to show texture colors
+      map: groundTexture,
       roughness: 0.8,
       metalness: 0.2
   });
@@ -801,7 +869,7 @@ onMounted(() => {
     }
   }
 
-  // Add Road Markings (Simple Lines)
+  // Add Road Markings (Simple Lines) - Kept as reinforcement
   const lineMaterial = new LineBasicMaterial({ color: 0x444444 });
 
   for (let i = 0; i <= GRID_SIZE; i++) {

@@ -28,6 +28,7 @@ HTMLCanvasElement.prototype.getContext = vi.fn((contextId: string) => {
       rect: vi.fn(),
       clip: vi.fn(),
       strokeRect: vi.fn(),
+      setLineDash: vi.fn(), // Added setLineDash
       // Add setters as properties
       fillStyle: '',
       strokeStyle: '',

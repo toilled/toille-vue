@@ -19,6 +19,7 @@
           class="icon"
         />
       </div>
+      <WeatherIcon class="icon" />
     </li>
   </ul>
 </template>
@@ -26,6 +27,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import MenuItem from "./MenuItem.vue";
+import WeatherIcon from "./WeatherIcon.vue";
 import { Page } from "../interfaces/Page";
 import { CyberpunkAudio } from "../utils/CyberpunkAudio";
 

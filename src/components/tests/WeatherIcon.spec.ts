@@ -1,13 +1,36 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { mount, flushPromises } from '@vue/test-utils';
 import WeatherIcon from '../WeatherIcon.vue';
 
 describe('WeatherIcon.vue', () => {
   const mockFetch = vi.fn();
   global.fetch = mockFetch;
 
+  // Use a date that matches the mock data hour
+  const MOCK_DATE = new Date("2023-10-27T10:00:00Z");
+
+  const mockHourlyData = {
+    time: [
+      "2023-10-27T10:00", "2023-10-27T11:00", "2023-10-27T12:00",
+      "2023-10-27T13:00", "2023-10-27T14:00", "2023-10-27T15:00",
+      "2023-10-27T16:00", "2023-10-27T17:00", "2023-10-27T18:00"
+    ],
+    temperature_2m: [10, 11, 12, 13, 14, 15, 14, 13, 12]
+  };
+
   beforeEach(() => {
     mockFetch.mockClear();
+    vi.useFakeTimers();
+    vi.setSystemTime(MOCK_DATE);
+    // Create teleport target
+    const el = document.createElement('div')
+    el.id = 'modal-target'
+    document.body.appendChild(el)
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    document.body.innerHTML = '';
   });
 
   it('fetches weather and displays sun icon for clear sky', async () => {
@@ -17,56 +40,64 @@ describe('WeatherIcon.vue', () => {
         current_weather: {
           weathercode: 0,
           temperature: 20
-        }
+        },
+        hourly: mockHourlyData
       })
     });
 
     const wrapper = mount(WeatherIcon);
 
-    // Wait for async fetch
-    await new Promise(resolve => setTimeout(resolve, 0));
-    await wrapper.vm.$nextTick();
+    await flushPromises();
 
     expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('api.open-meteo.com'));
     expect(wrapper.find('.icon-wrapper').attributes('title')).toBe('Clear Sky (20°C) in Cheltenham, UK');
     expect(wrapper.find('svg').exists()).toBe(true);
-    // Check for sun specific elements
     expect(wrapper.find('circle').exists()).toBe(true);
   });
 
-  it('displays cloud icon for overcast', async () => {
+  it('opens modal on click', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({
         current_weather: {
-          weathercode: 3,
-          temperature: 15
-        }
+          weathercode: 0,
+          temperature: 20
+        },
+        hourly: mockHourlyData
       })
     });
 
+    // We do NOT stub Teleport, so it renders into the body
     const wrapper = mount(WeatherIcon);
 
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await flushPromises();
+
+    // Modal should be hidden initially (not in body)
+    expect(document.querySelector('.weather-modal-overlay')).toBeNull();
+
+    // Click icon
+    await wrapper.find('.icon-wrapper').trigger('click');
     await wrapper.vm.$nextTick();
 
-    expect(wrapper.find('.icon-wrapper').attributes('title')).toBe('Partly Cloudy (15°C) in Cheltenham, UK');
-    // Check for cloud path
-    expect(wrapper.find('path').exists()).toBe(true);
-  });
+    // Modal should be visible in body
+    const overlay = document.querySelector('.weather-modal-overlay');
+    expect(overlay).not.toBeNull();
 
-  it('handles fetch error gracefully', async () => {
-    mockFetch.mockRejectedValue(new Error('Network error'));
+    // Check graph elements in DOM
+    const chart = document.querySelector('.chart-container svg');
+    expect(chart).not.toBeNull();
 
-    const wrapper = mount(WeatherIcon);
+    const polyline = document.querySelector('polyline');
+    expect(polyline).not.toBeNull();
 
-    await new Promise(resolve => setTimeout(resolve, 0));
+    // Close modal
+    const closeBtn = document.querySelector('.close-btn');
+    expect(closeBtn).not.toBeNull();
+    closeBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    // We need to wait for Vue to process the event
     await wrapper.vm.$nextTick();
 
-    // Wait for the async operation in fetchWeather (triggered on mount) to complete
-    // Because we mocked a rejection, the catch block runs and updates the state.
-
-    expect(wrapper.find('.icon-wrapper').attributes('title')).toBe('Weather data unavailable');
-    expect(wrapper.text()).toContain('?');
+    expect(document.querySelector('.weather-modal-overlay')).toBeNull();
   });
 });

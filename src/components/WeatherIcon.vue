@@ -1,5 +1,5 @@
 <template>
-  <div class="icon-wrapper" :title="description">
+  <div class="icon-wrapper" :title="description" @click="toggleModal">
     <!-- Sun / Clear -->
     <svg
       v-if="iconType === 'sun'"
@@ -69,19 +69,86 @@
     >
       <text x="50%" y="75%" text-anchor="middle" font-size="20" font-weight="bold" fill="black">?</text>
     </svg>
+
+    <!-- Modal -->
+    <Teleport to="body">
+      <div v-if="showModal" class="weather-modal-overlay" @click.self="showModal = false">
+        <article class="weather-modal">
+          <header class="modal-header">
+            <h3>Weather Forecast</h3>
+            <button class="close-btn" @click="showModal = false" aria-label="Close">&times;</button>
+          </header>
+          <div class="chart-container">
+            <svg viewBox="0 0 300 150" class="weather-chart">
+              <!-- Grid lines -->
+              <line x1="0" y1="135" x2="300" y2="135" stroke="#444" stroke-width="1" />
+
+              <!-- Graph Line -->
+              <polyline
+                :points="graphPoints"
+                fill="none"
+                stroke="#00ff9d"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+
+              <!-- Data Points -->
+              <g v-for="(point, index) in computedPoints" :key="index">
+                <circle
+                  :cx="point.x"
+                  :cy="point.y"
+                  r="4"
+                  fill="#111"
+                  stroke="#00ff9d"
+                  stroke-width="2"
+                  class="data-point"
+                />
+                <!-- Labels -->
+                 <text
+                  :x="point.x"
+                  y="148"
+                  text-anchor="middle"
+                  fill="#ccc"
+                  font-size="10"
+                >{{ point.time }}</text>
+                 <text
+                  :x="point.x"
+                  :y="point.y - 10"
+                  text-anchor="middle"
+                  fill="#fff"
+                  font-size="12"
+                  font-weight="bold"
+                >{{ point.temp }}°</text>
+              </g>
+            </svg>
+          </div>
+          <footer class="modal-footer">
+            <small>Next 6 hours in Cheltenham</small>
+          </footer>
+        </article>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 
 const iconType = ref<string>('');
 const description = ref<string>('Loading weather...');
+const showModal = ref(false);
+
+interface HourlyData {
+  time: string;
+  temp: number;
+}
+const hourlyForecast = ref<HourlyData[]>([]);
 
 const fetchWeather = async () => {
   try {
     const res = await fetch(
-      'https://api.open-meteo.com/v1/forecast?latitude=51.9001&longitude=-2.0877&current_weather=true'
+      'https://api.open-meteo.com/v1/forecast?latitude=51.9001&longitude=-2.0877&current_weather=true&hourly=temperature_2m&timezone=Europe%2FLondon'
     );
     if (!res.ok) throw new Error('Failed to fetch weather');
 
@@ -90,11 +157,48 @@ const fetchWeather = async () => {
     const temp = data.current_weather.temperature;
 
     updateIcon(code, temp);
+    processHourlyData(data.hourly);
   } catch (error) {
     console.error('Weather fetch error:', error);
     description.value = 'Weather data unavailable';
     iconType.value = '';
   }
+};
+
+const processHourlyData = (hourly: any) => {
+  const now = new Date();
+  const currentHourStr = now.toISOString().slice(0, 13); // Match YYYY-MM-DDTHH format
+
+  // Open Meteo returns time in ISO format (e.g., 2023-10-27T10:00)
+  // Find index of current hour or next hour
+  let startIndex = hourly.time.findIndex((t: string) => t.startsWith(currentHourStr));
+
+  if (startIndex === -1) {
+    // Fallback if not found (e.g. timezone diff), just take nearest based on time comparison
+    const nowTime = now.getTime();
+    let minDiff = Infinity;
+    startIndex = 0;
+    for(let i=0; i<hourly.time.length; i++) {
+        const t = new Date(hourly.time[i]).getTime();
+        const diff = Math.abs(t - nowTime);
+        if(diff < minDiff) {
+            minDiff = diff;
+            startIndex = i;
+        }
+    }
+  }
+
+  // Take next 6 hours (including current)
+  const next6 = [];
+  for (let i = startIndex; i < startIndex + 6; i++) {
+    if (hourly.time[i]) {
+      next6.push({
+        time: hourly.time[i].slice(11, 16), // Extract HH:MM
+        temp: hourly.temperature_2m[i]
+      });
+    }
+  }
+  hourlyForecast.value = next6;
 };
 
 const updateIcon = (code: number, temp: number) => {
@@ -126,20 +230,132 @@ const updateIcon = (code: number, temp: number) => {
   description.value = `${weatherDesc} (${temp}°C) in Cheltenham, UK`;
 };
 
+const toggleModal = () => {
+  if (hourlyForecast.value.length > 0) {
+    showModal.value = true;
+  }
+};
+
+const computedPoints = computed(() => {
+  if (hourlyForecast.value.length === 0) return [];
+  const temps = hourlyForecast.value.map(d => d.temp);
+  const min = Math.min(...temps);
+  const max = Math.max(...temps);
+  // Add some padding to range to avoid lines touching edges
+  const padding = 2; // degrees
+  const range = (max - min) + (padding * 2) || 1;
+  const bottomVal = min - padding;
+
+  const width = 300;
+  const height = 130; // Use 130 height for graph area, leaving bottom for labels
+  const stepX = width / (hourlyForecast.value.length - 1 || 1);
+
+  return hourlyForecast.value.map((d, i) => {
+    return {
+      x: i * stepX,
+      y: height - ((d.temp - bottomVal) / range) * height,
+      temp: d.temp,
+      time: d.time
+    };
+  });
+});
+
+const graphPoints = computed(() => {
+  return computedPoints.value.map(p => `${p.x},${p.y}`).join(' ');
+});
+
 onMounted(() => {
   fetchWeather();
 });
 </script>
 
 <style scoped>
-/* Styles inherited from parent usually, but we ensure basic layout */
 .icon-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 .icon {
   width: 24px;
   height: 24px;
+}
+
+/* Modal Styles */
+.weather-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(5px);
+}
+
+.weather-modal {
+  background: #111;
+  color: #eee;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  border: 1px solid #333;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #00ff9d;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  color: #fff;
+}
+
+.chart-container {
+  width: 100%;
+  /* height: 200px; */
+}
+
+.weather-chart {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.modal-footer {
+  margin-top: 1rem;
+  text-align: center;
+  color: #666;
+}
+
+.data-point {
+  transition: r 0.2s ease;
+}
+
+.data-point:hover {
+  r: 6;
+  cursor: crosshair;
 }
 </style>

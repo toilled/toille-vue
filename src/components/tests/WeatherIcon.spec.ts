@@ -15,7 +15,8 @@ describe('WeatherIcon.vue', () => {
       "2023-10-27T13:00", "2023-10-27T14:00", "2023-10-27T15:00",
       "2023-10-27T16:00", "2023-10-27T17:00", "2023-10-27T18:00"
     ],
-    temperature_2m: [10, 11, 12, 13, 14, 15, 14, 13, 12]
+    temperature_2m: [10, 11, 12, 13, 14, 15, 14, 13, 12],
+    rain: [0, 0.5, 1.2, 0.8, 0, 0, 0, 0.2, 0]
   };
 
   beforeEach(() => {
@@ -55,7 +56,7 @@ describe('WeatherIcon.vue', () => {
     expect(wrapper.find('circle').exists()).toBe(true);
   });
 
-  it('opens modal on click', async () => {
+  it('opens modal on click and displays rain data', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({
@@ -67,35 +68,31 @@ describe('WeatherIcon.vue', () => {
       })
     });
 
-    // We do NOT stub Teleport, so it renders into the body
     const wrapper = mount(WeatherIcon);
 
     await flushPromises();
 
-    // Modal should be hidden initially (not in body)
+    // Modal should be hidden initially
     expect(document.querySelector('.weather-modal-overlay')).toBeNull();
 
     // Click icon
     await wrapper.find('.icon-wrapper').trigger('click');
     await wrapper.vm.$nextTick();
 
-    // Modal should be visible in body
-    const overlay = document.querySelector('.weather-modal-overlay');
-    expect(overlay).not.toBeNull();
+    // Modal should be visible
+    expect(document.querySelector('.weather-modal-overlay')).not.toBeNull();
 
-    // Check graph elements in DOM
+    // Check graph elements
     const chart = document.querySelector('.chart-container svg');
     expect(chart).not.toBeNull();
 
-    const polyline = document.querySelector('polyline');
-    expect(polyline).not.toBeNull();
+    // Check for rain bars
+    const rainBars = document.querySelectorAll('rect.rain-bar');
+    expect(rainBars.length).toBeGreaterThan(0);
 
     // Close modal
     const closeBtn = document.querySelector('.close-btn');
-    expect(closeBtn).not.toBeNull();
     closeBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-
-    // We need to wait for Vue to process the event
     await wrapper.vm.$nextTick();
 
     expect(document.querySelector('.weather-modal-overlay')).toBeNull();

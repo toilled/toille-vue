@@ -83,7 +83,27 @@
               <!-- Grid lines -->
               <line x1="0" y1="135" x2="300" y2="135" stroke="#444" stroke-width="1" />
 
-              <!-- Graph Line -->
+              <!-- Rain Bars -->
+              <g v-for="(point, index) in computedPoints" :key="'rain-' + index">
+                 <rect
+                    :x="point.x - 5"
+                    :y="point.rainY"
+                    width="10"
+                    :height="point.rainHeight"
+                    fill="rgba(0, 100, 255, 0.4)"
+                    class="rain-bar"
+                 />
+                  <text
+                    v-if="point.rain > 0"
+                    :x="point.x"
+                    :y="point.rainY - 4"
+                    text-anchor="middle"
+                    fill="#3399ff"
+                    font-size="9"
+                  >{{ point.rain }}mm</text>
+              </g>
+
+              <!-- Graph Line (Temp) -->
               <polyline
                 :points="graphPoints"
                 fill="none"
@@ -93,8 +113,8 @@
                 stroke-linejoin="round"
               />
 
-              <!-- Data Points -->
-              <g v-for="(point, index) in computedPoints" :key="index">
+              <!-- Data Points (Temp) -->
+              <g v-for="(point, index) in computedPoints" :key="'temp-' + index">
                 <circle
                   :cx="point.x"
                   :cy="point.y"
@@ -125,6 +145,10 @@
           </div>
           <footer class="modal-footer">
             <small>Next 6 hours in Cheltenham</small>
+            <div class="legend">
+                <span class="legend-item"><span class="dot temp"></span>Temp</span>
+                <span class="legend-item"><span class="dot rain"></span>Rain</span>
+            </div>
           </footer>
         </article>
       </div>
@@ -142,13 +166,14 @@ const showModal = ref(false);
 interface HourlyData {
   time: string;
   temp: number;
+  rain: number;
 }
 const hourlyForecast = ref<HourlyData[]>([]);
 
 const fetchWeather = async () => {
   try {
     const res = await fetch(
-      'https://api.open-meteo.com/v1/forecast?latitude=51.9001&longitude=-2.0877&current_weather=true&hourly=temperature_2m&timezone=Europe%2FLondon'
+      'https://api.open-meteo.com/v1/forecast?latitude=51.9001&longitude=-2.0877&current_weather=true&hourly=temperature_2m,rain&timezone=Europe%2FLondon'
     );
     if (!res.ok) throw new Error('Failed to fetch weather');
 
@@ -194,7 +219,8 @@ const processHourlyData = (hourly: any) => {
     if (hourly.time[i]) {
       next6.push({
         time: hourly.time[i].slice(11, 16), // Extract HH:MM
-        temp: hourly.temperature_2m[i]
+        temp: hourly.temperature_2m[i],
+        rain: hourly.rain ? hourly.rain[i] : 0
       });
     }
   }
@@ -250,12 +276,22 @@ const computedPoints = computed(() => {
   const height = 130; // Use 130 height for graph area, leaving bottom for labels
   const stepX = width / (hourlyForecast.value.length - 1 || 1);
 
+  // Rain calculation
+  const rains = hourlyForecast.value.map(d => d.rain);
+  const maxRain = Math.max(...rains, 5); // Default scale up to 5mm if less
+
   return hourlyForecast.value.map((d, i) => {
+    // Rain bar height (scaled to 40% of graph height max)
+    const rainHeight = (d.rain / maxRain) * (height * 0.4);
+
     return {
       x: i * stepX,
       y: height - ((d.temp - bottomVal) / range) * height,
       temp: d.temp,
-      time: d.time
+      time: d.time,
+      rain: d.rain,
+      rainHeight,
+      rainY: 135 - rainHeight // Start from bottom line (135)
     };
   });
 });
@@ -357,5 +393,38 @@ onMounted(() => {
 .data-point:hover {
   r: 6;
   cursor: crosshair;
+}
+
+.rain-bar {
+    transition: height 0.3s ease;
+}
+
+.legend {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 5px;
+    font-size: 0.8rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.dot.temp {
+    background: #00ff9d;
+}
+
+.dot.rain {
+    background: #3399ff;
 }
 </style>

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { mount } from "@vue/test-utils";
 import App from "../../App.vue";
 import { createRouter, createMemoryHistory } from "vue-router";
@@ -33,10 +33,39 @@ describe("App.vue", () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let wrapper: any;
 
+  beforeEach(() => {
+    const mockWeatherData = {
+      current_weather: {
+        weathercode: 0,
+        temperature: 10,
+      },
+      hourly: {
+        time: [
+          "2023-10-27T00:00",
+          "2023-10-27T01:00",
+          "2023-10-27T02:00",
+          "2023-10-27T03:00",
+          "2023-10-27T04:00",
+          "2023-10-27T05:00",
+        ],
+        temperature_2m: [10, 11, 12, 13, 14, 15],
+        rain: [0, 0, 0, 0, 0, 0],
+      },
+    };
+
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockWeatherData),
+    });
+
+    vi.stubGlobal("fetch", mockFetch);
+  });
+
   afterEach(() => {
     if (wrapper) {
       wrapper.unmount();
     }
+    vi.unstubAllGlobals();
   });
 
   it("renders the main components", async () => {
@@ -48,7 +77,7 @@ describe("App.vue", () => {
         plugins: [router],
         stubs: {
           "router-view": true,
-          "Starfield": true,
+          Starfield: true,
         },
       },
     });
@@ -66,7 +95,7 @@ describe("App.vue", () => {
       global: {
         plugins: [router],
         stubs: {
-          "Starfield": true,
+          Starfield: true,
         },
       },
     });
@@ -88,7 +117,7 @@ describe("App.vue", () => {
       global: {
         plugins: [router],
         stubs: {
-          "Starfield": true,
+          Starfield: true,
         },
       },
     });
@@ -111,7 +140,7 @@ describe("App.vue", () => {
       global: {
         plugins: [router],
         stubs: {
-          "Starfield": true,
+          Starfield: true,
         },
       },
     });
@@ -134,8 +163,8 @@ describe("App.vue", () => {
       global: {
         plugins: [router],
         stubs: {
-          "Starfield": true,
-          "TypingText": true,
+          Starfield: true,
+          TypingText: true,
         },
       },
     });
@@ -159,7 +188,7 @@ describe("App.vue", () => {
         plugins: [router],
         stubs: {
           "router-view": true,
-          "Starfield": true,
+          Starfield: true,
         },
       },
     });

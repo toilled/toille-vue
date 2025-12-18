@@ -1,33 +1,32 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mount, flushPromises } from '@vue/test-utils';
-import CyberpunkCity from '../CyberpunkCity.vue';
-import { nextTick } from 'vue';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { mount } from "@vue/test-utils";
+import CyberpunkCity from "../CyberpunkCity.vue";
 
 // Mock dependencies
-vi.mock('vue-router', () => ({
+vi.mock("vue-router", () => ({
   useRoute: () => ({
-    path: '/'
-  })
+    path: "/",
+  }),
 }));
 
 // Mock THREE is handled by setupThree.ts which is globally configured
 
-describe('CyberpunkCity.vue', () => {
-  let wrapper: any;
+describe("CyberpunkCity.vue", () => {
+  let wrapper: ReturnType<typeof mount>;
 
   beforeEach(() => {
     wrapper = mount(CyberpunkCity, {
-        attachTo: document.body
+      attachTo: document.body,
     });
   });
 
   afterEach(() => {
-    if(wrapper) wrapper.unmount();
+    if (wrapper) wrapper.unmount();
     vi.restoreAllMocks();
   });
 
-  it('initially does not show the return button', () => {
-    const button = wrapper.find('#return-button');
+  it("initially does not show the return button", () => {
+    const button = wrapper.find("#return-button");
     expect(button.exists()).toBe(false);
   });
 

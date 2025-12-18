@@ -66,7 +66,7 @@ let animationId: number;
 let isActive = false;
 
 const buildings: Object3D[] = [];
-const occupiedGrids = new Set<string>();
+const occupiedGrids = new Map<string, { halfW: number, halfD: number }>();
 const cars: Group[] = [];
 
 let drones: Points;
@@ -779,14 +779,14 @@ onMounted(() => {
         // Skip some blocks for variety
         if (Math.random() > 0.8) continue;
 
-        occupiedGrids.add(`${x},${z}`);
-
         const xPos = startOffset + x * CELL_SIZE;
         const zPos = startOffset + z * CELL_SIZE;
 
         const h = 40 + Math.random() * 120; // Slightly taller minimum
         const w = BLOCK_SIZE - 10 - Math.random() * 20;
         const d = BLOCK_SIZE - 10 - Math.random() * 20;
+
+        occupiedGrids.set(`${x},${z}`, { halfW: w / 2, halfD: d / 2 });
 
         const buildingGroup = new Group();
         buildingGroup.position.set(xPos, 0, zPos);
@@ -1486,9 +1486,11 @@ function animate() {
           if (occupiedGrids.has(`${ix},${iz}`)) {
                 const cX = startOffset + ix * CELL_SIZE;
                 const cZ = startOffset + iz * CELL_SIZE;
-                // Building Hitbox: 70 unit radius (approx)
-                if (Math.abs(nextX - cX) < 70 && Math.abs(nextZ - cZ) < 70) {
-                    collided = true;
+                const dims = occupiedGrids.get(`${ix},${iz}`);
+                if (dims) {
+                    if (Math.abs(nextX - cX) < dims.halfW + 2 && Math.abs(nextZ - cZ) < dims.halfD + 2) {
+                        collided = true;
+                    }
                 }
           }
 
@@ -1595,9 +1597,10 @@ function animate() {
           if (occupiedGrids.has(`${ix},${iz}`)) {
              const cX = startOffset + ix * CELL_SIZE;
              const cZ = startOffset + iz * CELL_SIZE;
+             const dims = occupiedGrids.get(`${ix},${iz}`);
 
-             // Approx building half-width + car half-width
-             if (Math.abs(car.position.x - cX) < 55 && Math.abs(car.position.z - cZ) < 55) {
+             // Approx building half-width + car half-width (radius ~5)
+             if (dims && Math.abs(car.position.x - cX) < dims.halfW + 5 && Math.abs(car.position.z - cZ) < dims.halfD + 5) {
                 // Collision - Bounce
                 car.userData.currentSpeed *= -0.5;
                 carAudio.playCrash();
@@ -1741,15 +1744,18 @@ function animate() {
 
               // Building Collision (approximate)
               // Buildings are centered at startOffset + k * CELL_SIZE
-              // BLOCK_SIZE is 150. Building width ~130-140. Using 70 as half-width.
               const ix = Math.round((positions[i*3] - startOffset) / CELL_SIZE);
               const iz = Math.round((positions[i*3+2] - startOffset) / CELL_SIZE);
-              const cX = startOffset + ix * CELL_SIZE;
-              const cZ = startOffset + iz * CELL_SIZE;
 
-              if (Math.abs(positions[i*3] - cX) < 70 && Math.abs(positions[i*3+2] - cZ) < 70) {
-                  // Hit building
-                  sparkLifetimes[i] = 0;
+              if (occupiedGrids.has(`${ix},${iz}`)) {
+                  const cX = startOffset + ix * CELL_SIZE;
+                  const cZ = startOffset + iz * CELL_SIZE;
+                  const dims = occupiedGrids.get(`${ix},${iz}`);
+
+                  if (dims && Math.abs(positions[i*3] - cX) < dims.halfW && Math.abs(positions[i*3+2] - cZ) < dims.halfD) {
+                      // Hit building
+                      sparkLifetimes[i] = 0;
+                  }
               }
 
               sparkLifetimes[i] -= 0.02; // decay

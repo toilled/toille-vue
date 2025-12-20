@@ -1919,7 +1919,7 @@ function animate() {
   // Only check non-fading cars
   // Reduced collision rate by decreasing collision distance threshold slightly
   // and adding a random chance check
-  const actualCollisionDist = 6;
+  const actualCollisionDist = 9;
 
   for (let i = 0; i < cars.length; i++) {
     const carA = cars[i];

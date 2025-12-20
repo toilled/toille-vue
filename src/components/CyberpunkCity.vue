@@ -1789,10 +1789,10 @@ function animate() {
     // Player Control Logic
     if (car.userData.isPlayerControlled) {
       let speed = car.userData.currentSpeed || 0;
-      const maxSpeed = 4;
-      const acceleration = 0.1;
+      const maxSpeed = 2; // Reduced from 4
+      const acceleration = 0.05; // Reduced from 0.1
       const friction = 0.98;
-      const turnSpeed = 0.05;
+      const turnSpeed = 0.025; // Reduced from 0.05
 
       // Gas / Brake
       if (controls.value.forward) {
@@ -1919,7 +1919,7 @@ function animate() {
   // Only check non-fading cars
   // Reduced collision rate by decreasing collision distance threshold slightly
   // and adding a random chance check
-  const actualCollisionDist = 6;
+  const actualCollisionDist = 9;
 
   for (let i = 0; i < cars.length; i++) {
     const carA = cars[i];

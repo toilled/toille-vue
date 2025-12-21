@@ -28,8 +28,7 @@ HTMLCanvasElement.prototype.getContext = vi.fn((contextId: string) => {
       rect: vi.fn(),
       clip: vi.fn(),
       strokeRect: vi.fn(),
-      setLineDash: vi.fn(), // Added setLineDash
-      // Add setters as properties
+      setLineDash: vi.fn(),
       fillStyle: "",
       strokeStyle: "",
       lineWidth: 0,
@@ -40,7 +39,6 @@ HTMLCanvasElement.prototype.getContext = vi.fn((contextId: string) => {
   return null;
 });
 
-// Mock Three.js to avoid WebGL context issues in JSDOM
 vi.mock("three", async () => {
   const actual = await vi.importActual("three");
   return {
@@ -55,64 +53,19 @@ vi.mock("three", async () => {
       setAnimationLoop = vi.fn();
       constructor(parameters?: any) {}
     },
-    // Explicitly mock geometries to ensure they exist even if importActual fails or is incomplete in test env
     CylinderGeometry: class {
       parameters: any;
-      constructor(
-        radiusTop?: number,
-        radiusBottom?: number,
-        height?: number,
-        radialSegments?: number,
-        heightSegments?: number,
-        openEnded?: boolean,
-        thetaStart?: number,
-        thetaLength?: number,
-      ) {
-        this.parameters = {
-          radiusTop,
-          radiusBottom,
-          height,
-          radialSegments,
-          heightSegments,
-          openEnded,
-          thetaStart,
-          thetaLength,
-        };
-      }
+      constructor() {}
     },
     ConeGeometry: class {
       parameters: any;
-      constructor(
-        radius?: number,
-        height?: number,
-        radialSegments?: number,
-        heightSegments?: number,
-        openEnded?: boolean,
-        thetaStart?: number,
-        thetaLength?: number,
-      ) {
-        this.parameters = {
-          radius,
-          height,
-          radialSegments,
-          heightSegments,
-          openEnded,
-          thetaStart,
-          thetaLength,
-        };
-      }
+      constructor() {}
     },
     BoxGeometry: class {
       translate() {}
-      getIndex() {
-        return null;
-      } // For EdgesGeometry
-      getAttribute() {
-        return { count: 0, itemSize: 3, array: [] };
-      } // For EdgesGeometry
-      clone() {
-        return this;
-      }
+      getIndex() { return null; }
+      getAttribute() { return { count: 0, itemSize: 3, array: [] }; }
+      clone() { return this; }
       parameters = {};
     },
     PlaneGeometry: class {
@@ -136,19 +89,14 @@ vi.mock("three", async () => {
       };
       setAttribute() {}
       setFromPoints() {}
-      getIndex() {
-        return null;
-      }
-      getAttribute() {
-        return this.attributes.position;
-      }
+      getIndex() { return null; }
+      getAttribute() { return this.attributes.position; }
       computeBoundingSphere() {}
     },
     EdgesGeometry: class {
       constructor() {}
       scale = { set: vi.fn() };
     },
-    // We need to mock Mesh to avoid internal checks on geometry that our mocks fail
     Mesh: class {
       position = {
         x: 0,
@@ -174,7 +122,6 @@ vi.mock("three", async () => {
       constructor(geometry?: any, material?: any) {
         this.geometry = geometry;
         this.material = material;
-        // Add basic Group/Object3D methods
         (this as any).add = vi.fn();
         (this as any).remove = vi.fn();
         (this as any).removeFromParent = vi.fn();
@@ -187,15 +134,12 @@ vi.mock("three", async () => {
       add() {}
       remove() {}
       removeFromParent() {}
-      traverse(cb: any) {
-        cb(this);
-      }
+      traverse(cb: any) { cb(this); }
       lookAt() {}
       dispatchEvent() {}
       addEventListener() {}
       removeEventListener() {}
     },
-    // Also mock other classes that might depend on real three.js logic
     Group: class {
       position = { x: 0, y: 0, z: 0, set: vi.fn(), copy: vi.fn() };
       rotation = { x: 0, y: 0, z: 0, copy: vi.fn() };
@@ -207,6 +151,8 @@ vi.mock("three", async () => {
       raycast = vi.fn();
       add(obj: any) {
         this.children.push(obj);
+        // Add minimal lookAt support for children
+        if (obj && !obj.lookAt) obj.lookAt = vi.fn();
       }
       remove(obj: any) {
         this.children = this.children.filter((c) => c !== obj);
@@ -216,24 +162,19 @@ vi.mock("three", async () => {
         cb(this);
         this.children.forEach((c) => c.traverse && c.traverse(cb));
       }
+      lookAt = vi.fn(); // Added lookAt to Group
       dispatchEvent() {}
       addEventListener() {}
       removeEventListener() {}
     },
     MeshStandardMaterial: class {
-      clone() {
-        return this;
-      }
+      clone() { return this; }
     },
     MeshLambertMaterial: class {
-      clone() {
-        return this;
-      }
+      clone() { return this; }
     },
     MeshBasicMaterial: class {
-      clone() {
-        return this;
-      }
+      clone() { return this; }
     },
     LineBasicMaterial: class {},
     LineSegments: class {
@@ -291,99 +232,65 @@ vi.mock("three", async () => {
   };
 });
 
-// Polyfill requestAnimationFrame and cancelAnimationFrame
-vi.stubGlobal(
-  "requestAnimationFrame",
-  vi.fn((cb) => setTimeout(cb, 16)),
-);
-vi.stubGlobal(
-  "cancelAnimationFrame",
-  vi.fn((id) => clearTimeout(id)),
-);
+vi.stubGlobal("requestAnimationFrame", vi.fn((cb) => setTimeout(cb, 16)));
+vi.stubGlobal("cancelAnimationFrame", vi.fn((id) => clearTimeout(id)));
 
-// Polyfill ResizeObserver
-vi.stubGlobal(
-  "ResizeObserver",
-  class ResizeObserver {
-    observe() {}
-    unobserve() {}
-    disconnect() {}
-  },
-);
+vi.stubGlobal("ResizeObserver", class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+});
 
-// Polyfill fetch
-vi.stubGlobal(
-  "fetch",
-  vi.fn(() =>
-    Promise.resolve({
-      json: () => Promise.resolve({}),
-      text: () => Promise.resolve(""),
-      ok: true,
-    }),
-  ),
-);
+vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({
+  json: () => Promise.resolve({}),
+  text: () => Promise.resolve(""),
+  ok: true,
+})));
 
-// Polyfill AudioContext
-vi.stubGlobal(
-  "AudioContext",
-  class AudioContext {
-    state = "suspended";
-    currentTime = 0;
-    createOscillator() {
-      return {
-        type: "sine",
-        frequency: {
-          setValueAtTime: vi.fn(),
-          exponentialRampToValueAtTime: vi.fn(),
-        },
-        connect: vi.fn(),
-        start: vi.fn(),
-        stop: vi.fn(),
-      };
-    }
-    createGain() {
-      return {
-        gain: {
-          setValueAtTime: vi.fn(),
-          exponentialRampToValueAtTime: vi.fn(),
-        },
-        connect: vi.fn(),
-      };
-    }
-    createBiquadFilter() {
-      return {
-        type: "lowpass",
-        frequency: {
-          setValueAtTime: vi.fn(),
-          exponentialRampToValueAtTime: vi.fn(),
-          value: 0,
-        },
-        connect: vi.fn(),
-      };
-    }
-    createBuffer() {
-      return {
-        getChannelData: vi.fn(() => new Float32Array(0)),
-      };
-    }
-    createBufferSource() {
-      return {
-        buffer: null,
-        connect: vi.fn(),
-        start: vi.fn(),
-        stop: vi.fn(),
-      };
-    }
-    resume() {
-      this.state = "running";
-      return Promise.resolve();
-    }
-    suspend() {
-      this.state = "suspended";
-      return Promise.resolve();
-    }
-    destination = {};
-    sampleRate = 44100;
-  },
-);
+vi.stubGlobal("AudioContext", class AudioContext {
+  state = "suspended";
+  currentTime = 0;
+  createOscillator() {
+    return {
+      type: "sine",
+      frequency: { setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() },
+      connect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+    };
+  }
+  createGain() {
+    return {
+      gain: { setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() },
+      connect: vi.fn(),
+    };
+  }
+  createBiquadFilter() {
+    return {
+      type: "lowpass",
+      frequency: { setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn(), value: 0 },
+      connect: vi.fn(),
+    };
+  }
+  createBuffer() {
+    return { getChannelData: vi.fn(() => new Float32Array(0)) };
+  }
+  createBufferSource() {
+    return { buffer: null, connect: vi.fn(), start: vi.fn(), stop: vi.fn() };
+  }
+  resume() {
+    this.state = "running";
+    return Promise.resolve();
+  }
+  suspend() {
+    this.state = "suspended";
+    return Promise.resolve();
+  }
+  close() { // Added close method
+    this.state = "closed";
+    return Promise.resolve();
+  }
+  destination = {};
+  sampleRate = 44100;
+});
 vi.stubGlobal("webkitAudioContext", (globalThis as any).AudioContext);

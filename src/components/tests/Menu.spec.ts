@@ -76,4 +76,29 @@ describe("Menu.vue", () => {
     const menuItems = wrapper.findAllComponents(MenuItem);
     expect(menuItems.length).toBe(0);
   });
+
+  it("emits 'fly' event when plane icon is clicked", async () => {
+    const pages = [
+      { name: "Home", link: "/" }
+    ];
+    const wrapper = mount(Menu, {
+      props: { pages },
+      global: {
+        plugins: [router],
+      },
+    });
+
+    // Find the fly icon wrapper
+    const iconWrappers = wrapper.findAll('.icon-wrapper');
+    // Assuming the second one is the plane icon based on my change
+    // Order: Explore, Fly, Sound
+    expect(iconWrappers.length).toBeGreaterThanOrEqual(2);
+    const flyIcon = iconWrappers[1];
+
+    // Check if it has the title "Fly Tour" to be sure
+    expect(flyIcon.attributes('title')).toBe('Fly Tour');
+
+    await flyIcon.trigger('click');
+    expect(wrapper.emitted('fly')).toBeTruthy();
+  });
 });

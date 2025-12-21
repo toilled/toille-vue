@@ -9,7 +9,7 @@
         @activity="toggleActivity"
         @joke="toggleJoke"
       />
-      <Menu :pages="visiblePages" @explore="startExploration" />
+      <Menu :pages="visiblePages" @explore="startExploration" @fly="startFlyingTour" />
     </nav>
     <div class="router-view-container" ref="containerRef">
       <router-view v-slot="{ Component, route }">
@@ -92,6 +92,12 @@ const cyberpunkCityRef = ref<any>(null);
 function startExploration() {
   if (cyberpunkCityRef.value && cyberpunkCityRef.value.startExplorationMode) {
     cyberpunkCityRef.value.startExplorationMode();
+  }
+}
+
+function startFlyingTour() {
+  if (cyberpunkCityRef.value && cyberpunkCityRef.value.startFlyingTour) {
+    cyberpunkCityRef.value.startFlyingTour();
   }
 }
 

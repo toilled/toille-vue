@@ -8,7 +8,7 @@
     DIST: {{ Math.ceil(distToTarget) }}m
   </div>
   <button
-    v-if="isGameMode || isDrivingMode || isExplorationMode"
+    v-if="isGameMode || isDrivingMode || isExplorationMode || isFlyingTour"
     id="return-button"
     @click="exitGameMode"
   >
@@ -193,6 +193,7 @@ const score = ref(0);
 const isGameMode = ref(false);
 const isDrivingMode = ref(false);
 const isExplorationMode = ref(false);
+const isFlyingTour = ref(false);
 const isTransitioning = ref(false);
 const activeCar = ref<Group | null>(null);
 let checkpointMesh: Mesh;
@@ -1421,7 +1422,13 @@ function startExplorationMode() {
   }
 }
 
-defineExpose({ startExplorationMode });
+function startFlyingTour() {
+  isGameMode.value = true;
+  isFlyingTour.value = true;
+  emit("game-start");
+}
+
+defineExpose({ startExplorationMode, startFlyingTour });
 
 function exitGameMode() {
   controls.value.forward = false;
@@ -1448,6 +1455,10 @@ function exitGameMode() {
     if (document.pointerLockElement) {
       document.exitPointerLock();
     }
+  }
+
+  if (isFlyingTour.value) {
+    isFlyingTour.value = false;
   }
 
   isGameMode.value = false;
@@ -2106,6 +2117,46 @@ function animate() {
     camera.position.y += (targetY - camera.position.y) * 0.1;
 
     camera.lookAt(car.position.x, car.position.y, car.position.z);
+  } else if (isFlyingTour.value) {
+    // Flying Tour Mode
+    const tourSpeed = 0.15;
+
+    // More complex path: Figure-8ish / weaving
+    // Main circular orbit
+    const xBase = Math.sin(time * tourSpeed) * 1200;
+    const zBase = Math.cos(time * tourSpeed) * 800;
+
+    // Secondary wave for weaving
+    const xWeave = Math.sin(time * tourSpeed * 3) * 300;
+
+    camera.position.x = xBase + xWeave;
+    camera.position.z = zBase;
+
+    // Dynamic height: Dive down and up
+    // Base height 250, amplitude 150. Go between 100 and 400.
+    camera.position.y = 250 + Math.sin(time * tourSpeed * 2) * 150;
+
+    // Look ahead logic
+    // Calculate derivative (approx velocity direction)
+    const delta = 0.1;
+    const futureTime = time + delta;
+
+    const fxBase = Math.sin(futureTime * tourSpeed) * 1200;
+    const fzBase = Math.cos(futureTime * tourSpeed) * 800;
+    const fxWeave = Math.sin(futureTime * tourSpeed * 3) * 300;
+
+    const nextX = fxBase + fxWeave;
+    const nextZ = fzBase;
+    const nextY = 250 + Math.sin(futureTime * tourSpeed * 2) * 150;
+
+    camera.lookAt(nextX, nextY, nextZ);
+
+    // Banking effect (roll)
+    // Roll based on turn sharpness?
+    // Simplified: Roll towards center of turn.
+    // We can just rely on lookAt for pitch/yaw, but maybe add slight roll if we were using quaternions manually.
+    // For now, lookAt next position gives a nice "flight" feeling compared to looking at 0,0,0.
+
   } else if (!isExplorationMode.value) {
     // Standard Orbit
     const orbitRadius = isMobile.value ? 1400 : 800;

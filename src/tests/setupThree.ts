@@ -45,14 +45,16 @@ vi.mock("three", async () => {
   const actual = await vi.importActual("three");
   return {
     ...(actual as Record<string, unknown>),
-    WebGLRenderer: vi.fn().mockImplementation(() => ({
-      setSize: vi.fn(),
-      setPixelRatio: vi.fn(),
-      render: vi.fn(),
-      domElement: document.createElement("canvas"),
-      dispose: vi.fn(),
-      shadowMap: { enabled: false, type: 0 },
-    })),
+    WebGLRenderer: class {
+      domElement = document.createElement("canvas");
+      shadowMap = { enabled: false, type: 0 };
+      setSize = vi.fn();
+      setPixelRatio = vi.fn();
+      render = vi.fn();
+      dispose = vi.fn();
+      setAnimationLoop = vi.fn();
+      constructor(parameters?: any) {}
+    },
     // Explicitly mock geometries to ensure they exist even if importActual fails or is incomplete in test env
     CylinderGeometry: class {
       parameters: any;
@@ -166,6 +168,8 @@ vi.mock("three", async () => {
       visible = true;
       renderOrder = 0;
       isObject3D = true;
+      layers = { mask: 1, test: vi.fn(() => true) };
+      raycast = vi.fn();
 
       constructor(geometry?: any, material?: any) {
         this.geometry = geometry;
@@ -199,6 +203,8 @@ vi.mock("three", async () => {
       visible = true;
       isObject3D = true;
       children: any[] = [];
+      layers = { mask: 1, test: vi.fn(() => true) };
+      raycast = vi.fn();
       add(obj: any) {
         this.children.push(obj);
       }
@@ -261,6 +267,12 @@ vi.mock("three", async () => {
       dispatchEvent() {}
       addEventListener() {}
       removeEventListener() {}
+    },
+    Raycaster: class {
+      params = { Points: { threshold: 1 } };
+      setFromCamera = vi.fn();
+      intersectObject = vi.fn(() => []);
+      intersectObjects = vi.fn(() => []);
     },
     SpotLight: class {
       position = { set: vi.fn(), copy: vi.fn() };

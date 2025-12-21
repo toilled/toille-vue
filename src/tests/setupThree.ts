@@ -168,6 +168,8 @@ vi.mock("three", async () => {
       visible = true;
       renderOrder = 0;
       isObject3D = true;
+      layers = { mask: 1, test: vi.fn(() => true) };
+      raycast = vi.fn();
 
       constructor(geometry?: any, material?: any) {
         this.geometry = geometry;
@@ -201,6 +203,8 @@ vi.mock("three", async () => {
       visible = true;
       isObject3D = true;
       children: any[] = [];
+      layers = { mask: 1, test: vi.fn(() => true) };
+      raycast = vi.fn();
       add(obj: any) {
         this.children.push(obj);
       }

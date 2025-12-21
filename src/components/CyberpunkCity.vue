@@ -2119,19 +2119,43 @@ function animate() {
     camera.lookAt(car.position.x, car.position.y, car.position.z);
   } else if (isFlyingTour.value) {
     // Flying Tour Mode
-    const tourRadius = 800;
-    const tourSpeed = 0.2;
-    const tourHeight = 400;
+    const tourSpeed = 0.15;
 
-    // Circle around the city
-    camera.position.x = Math.sin(time * tourSpeed) * tourRadius;
-    camera.position.z = Math.cos(time * tourSpeed) * tourRadius;
+    // More complex path: Figure-8ish / weaving
+    // Main circular orbit
+    const xBase = Math.sin(time * tourSpeed) * 1200;
+    const zBase = Math.cos(time * tourSpeed) * 800;
 
-    // Gentle up/down movement
-    camera.position.y = tourHeight + Math.sin(time * 0.5) * 50;
+    // Secondary wave for weaving
+    const xWeave = Math.sin(time * tourSpeed * 3) * 300;
 
-    // Look at center (or slightly offset for cinematic feel)
-    camera.lookAt(0, 0, 0);
+    camera.position.x = xBase + xWeave;
+    camera.position.z = zBase;
+
+    // Dynamic height: Dive down and up
+    // Base height 250, amplitude 150. Go between 100 and 400.
+    camera.position.y = 250 + Math.sin(time * tourSpeed * 2) * 150;
+
+    // Look ahead logic
+    // Calculate derivative (approx velocity direction)
+    const delta = 0.1;
+    const futureTime = time + delta;
+
+    const fxBase = Math.sin(futureTime * tourSpeed) * 1200;
+    const fzBase = Math.cos(futureTime * tourSpeed) * 800;
+    const fxWeave = Math.sin(futureTime * tourSpeed * 3) * 300;
+
+    const nextX = fxBase + fxWeave;
+    const nextZ = fzBase;
+    const nextY = 250 + Math.sin(futureTime * tourSpeed * 2) * 150;
+
+    camera.lookAt(nextX, nextY, nextZ);
+
+    // Banking effect (roll)
+    // Roll based on turn sharpness?
+    // Simplified: Roll towards center of turn.
+    // We can just rely on lookAt for pitch/yaw, but maybe add slight roll if we were using quaternions manually.
+    // For now, lookAt next position gives a nice "flight" feeling compared to looking at 0,0,0.
 
   } else if (!isExplorationMode.value) {
     // Standard Orbit

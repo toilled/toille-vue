@@ -268,6 +268,12 @@ vi.mock("three", async () => {
       addEventListener() {}
       removeEventListener() {}
     },
+    Raycaster: class {
+      params = { Points: { threshold: 1 } };
+      setFromCamera = vi.fn();
+      intersectObject = vi.fn(() => []);
+      intersectObjects = vi.fn(() => []);
+    },
     SpotLight: class {
       position = { set: vi.fn(), copy: vi.fn() };
       target = { position: { set: vi.fn() } };

@@ -195,6 +195,7 @@ const isDrivingMode = ref(false);
 const isExplorationMode = ref(false);
 const isFlyingTour = ref(false);
 const isTransitioning = ref(false);
+const tourStartTime = ref(0);
 const activeCar = ref<Group | null>(null);
 let checkpointMesh: Mesh;
 let navArrow: Group;
@@ -1425,6 +1426,7 @@ function startExplorationMode() {
 function startFlyingTour() {
   isGameMode.value = true;
   isFlyingTour.value = true;
+  isTransitioning.value = true;
   emit("game-start");
 }
 
@@ -2118,10 +2120,36 @@ function animate() {
 
     camera.lookAt(car.position.x, car.position.y, car.position.z);
   } else if (isFlyingTour.value) {
-    // Flying Tour Mode
-    const tourSpeed = 0.1;
+    if (isTransitioning.value) {
+      // Transition to start point of tour
+      const rx = 760; // Initial X
+      const rz = 0; // Initial Z (sin(0) = 0)
+      const targetPos = new Vector3(rx, 200, rz);
 
-    // Use a superellipse (squircle) path to follow the grid of roads
+      // We also want to look ahead
+      const nextX = rx; // Approx
+      const nextZ = 0; // Approx
+      const targetLookAt = new Vector3(nextX, 200, nextZ + 100); // Look forward
+
+      camera.position.lerp(targetPos, 0.02);
+
+      // Smooth look at
+      const currentLookAtDir = new Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+      const targetLookAtDir = new Vector3().subVectors(targetLookAt, camera.position).normalize();
+
+      const newDir = new Vector3().lerpVectors(currentLookAtDir, targetLookAtDir, 0.02);
+      const lookAtTarget = new Vector3().addVectors(camera.position, newDir);
+      camera.lookAt(lookAtTarget);
+
+      if (camera.position.distanceTo(targetPos) < 10) {
+        isTransitioning.value = false;
+        tourStartTime.value = time;
+      }
+    } else {
+      // Flying Tour Mode
+      const tourSpeed = 0.1;
+
+      // Use a superellipse (squircle) path to follow the grid of roads
     // Roads are at multiples of 190 (approx). 0, +/-190, +/-380, +/-570, +/-760.
     const rx = 760;
     const rz = 570;
@@ -2129,7 +2157,7 @@ function animate() {
     // Smoothness factor. Higher = sharper corners (more rectangular).
     const n = 10;
 
-    const t = time * tourSpeed;
+    const t = (time - tourStartTime.value) * tourSpeed;
     const cosT = Math.cos(t);
     const sinT = Math.sin(t);
     const absCos = Math.abs(cosT);
@@ -2159,6 +2187,7 @@ function animate() {
     const nextY = 200 + Math.sin((time * tourSpeed * 1.5) + 0.2) * 120;
 
     camera.lookAt(nextX, nextY, nextZ);
+    }
   } else if (!isExplorationMode.value) {
     // Standard Orbit
     const orbitRadius = isMobile.value ? 1400 : 800;

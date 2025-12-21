@@ -1270,6 +1270,7 @@ onMounted(() => {
         spawnCheckpoint();
       }
     },
+    getActiveCar: () => activeCar.value,
   };
 });
 
@@ -1800,10 +1801,10 @@ function animate() {
     // Player Control Logic
     if (car.userData.isPlayerControlled) {
       let speed = car.userData.currentSpeed || 0;
-      const maxSpeed = 4;
+      const maxSpeed = 2;
       const acceleration = 0.1;
       const friction = 0.98;
-      const turnSpeed = 0.05;
+      const turnSpeed = 0.02;
 
       // Gas / Brake
       if (controls.value.forward) {

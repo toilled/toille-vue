@@ -30,13 +30,30 @@ describe("CyberpunkCity.vue", () => {
     expect(button.exists()).toBe(false);
   });
 
-  // Note: Testing the appearance of the button requires triggering 'isGameMode'.
-  // Triggering it requires 'score' >= 500.
-  // 'score' increases when onClick hits a drone.
-  // This involves Raycaster and Three.js objects which are complex to mock perfectly for a hit in jsdom.
-  // However, we can verify that the function `exitGameMode` (if we could access it) works, or trust the logic.
+  it("shows return button when startFlyingTour is called", async () => {
+    // Access the exposed method
+    const vm = wrapper.vm as any;
+    expect(vm.startFlyingTour).toBeDefined();
 
-  // Since we cannot easily trigger the game mode without extensive mocking of the raycaster and scene,
-  // we will limit this test to ensuring the component mounts and the button is absent by default.
-  // The logic added is simple: v-if="isGameMode" and @click="exitGameMode".
+    vm.startFlyingTour();
+    await wrapper.vm.$nextTick();
+
+    const button = wrapper.find("#return-button");
+    expect(button.exists()).toBe(true);
+  });
+
+  it("hides return button when return button is clicked", async () => {
+    const vm = wrapper.vm as any;
+    vm.startFlyingTour();
+    await wrapper.vm.$nextTick();
+
+    const button = wrapper.find("#return-button");
+    expect(button.exists()).toBe(true);
+
+    await button.trigger('click');
+    expect(wrapper.emitted('game-end')).toBeTruthy();
+
+    const buttonAfter = wrapper.find("#return-button");
+    expect(buttonAfter.exists()).toBe(false);
+  });
 });

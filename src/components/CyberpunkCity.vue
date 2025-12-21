@@ -8,7 +8,7 @@
     DIST: {{ Math.ceil(distToTarget) }}m
   </div>
   <button
-    v-if="isGameMode || isDrivingMode || isExplorationMode"
+    v-if="isGameMode || isDrivingMode || isExplorationMode || isFlyingTour"
     id="return-button"
     @click="exitGameMode"
   >
@@ -193,6 +193,7 @@ const score = ref(0);
 const isGameMode = ref(false);
 const isDrivingMode = ref(false);
 const isExplorationMode = ref(false);
+const isFlyingTour = ref(false);
 const isTransitioning = ref(false);
 const activeCar = ref<Group | null>(null);
 let checkpointMesh: Mesh;
@@ -1421,7 +1422,13 @@ function startExplorationMode() {
   }
 }
 
-defineExpose({ startExplorationMode });
+function startFlyingTour() {
+  isGameMode.value = true;
+  isFlyingTour.value = true;
+  emit("game-start");
+}
+
+defineExpose({ startExplorationMode, startFlyingTour });
 
 function exitGameMode() {
   controls.value.forward = false;
@@ -1448,6 +1455,10 @@ function exitGameMode() {
     if (document.pointerLockElement) {
       document.exitPointerLock();
     }
+  }
+
+  if (isFlyingTour.value) {
+    isFlyingTour.value = false;
   }
 
   isGameMode.value = false;
@@ -2106,6 +2117,22 @@ function animate() {
     camera.position.y += (targetY - camera.position.y) * 0.1;
 
     camera.lookAt(car.position.x, car.position.y, car.position.z);
+  } else if (isFlyingTour.value) {
+    // Flying Tour Mode
+    const tourRadius = 800;
+    const tourSpeed = 0.2;
+    const tourHeight = 400;
+
+    // Circle around the city
+    camera.position.x = Math.sin(time * tourSpeed) * tourRadius;
+    camera.position.z = Math.cos(time * tourSpeed) * tourRadius;
+
+    // Gentle up/down movement
+    camera.position.y = tourHeight + Math.sin(time * 0.5) * 50;
+
+    // Look at center (or slightly offset for cinematic feel)
+    camera.lookAt(0, 0, 0);
+
   } else if (!isExplorationMode.value) {
     // Standard Orbit
     const orbitRadius = isMobile.value ? 1400 : 800;

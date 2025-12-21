@@ -45,14 +45,16 @@ vi.mock("three", async () => {
   const actual = await vi.importActual("three");
   return {
     ...(actual as Record<string, unknown>),
-    WebGLRenderer: vi.fn().mockImplementation(() => ({
-      setSize: vi.fn(),
-      setPixelRatio: vi.fn(),
-      render: vi.fn(),
-      domElement: document.createElement("canvas"),
-      dispose: vi.fn(),
-      shadowMap: { enabled: false, type: 0 },
-    })),
+    WebGLRenderer: class {
+      domElement = document.createElement("canvas");
+      shadowMap = { enabled: false, type: 0 };
+      setSize = vi.fn();
+      setPixelRatio = vi.fn();
+      render = vi.fn();
+      dispose = vi.fn();
+      setAnimationLoop = vi.fn();
+      constructor(parameters?: any) {}
+    },
     // Explicitly mock geometries to ensure they exist even if importActual fails or is incomplete in test env
     CylinderGeometry: class {
       parameters: any;

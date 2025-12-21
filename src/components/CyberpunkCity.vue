@@ -195,6 +195,7 @@ const isDrivingMode = ref(false);
 const isExplorationMode = ref(false);
 const isFlyingTour = ref(false);
 const isTransitioning = ref(false);
+const isExiting = ref(false);
 const tourStartTime = ref(0);
 const activeCar = ref<Group | null>(null);
 let checkpointMesh: Mesh;
@@ -1461,8 +1462,13 @@ function exitGameMode() {
 
   if (isFlyingTour.value) {
     isFlyingTour.value = false;
+    isExiting.value = true;
+    // Sync currentLookAt to actual camera look to prevent snap
+    const forward = new Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+    currentLookAt.copy(camera.position).add(forward.multiplyScalar(100));
   }
 
+  isTransitioning.value = false;
   isGameMode.value = false;
   score.value = 0;
   emit("game-end");
@@ -2169,7 +2175,7 @@ function animate() {
     camera.position.z = (rz * sinT) / denom;
 
     // Dynamic height: Dive down and up
-    camera.position.y = 200 + Math.sin(time * tourSpeed * 1.5) * 120;
+    camera.position.y = 200 + Math.sin(t * 1.5) * 120;
 
     // Look ahead logic
     const nextT = t + 0.2;
@@ -2184,20 +2190,32 @@ function animate() {
 
     const nextX = (rx * nextCos) / nextDenom;
     const nextZ = (rz * nextSin) / nextDenom;
-    const nextY = 200 + Math.sin((time * tourSpeed * 1.5) + 0.2) * 120;
+    const nextY = 200 + Math.sin(nextT * 1.5) * 120;
 
     camera.lookAt(nextX, nextY, nextZ);
     }
   } else if (!isExplorationMode.value) {
     // Standard Orbit
     const orbitRadius = isMobile.value ? 1400 : 800;
-    camera.position.x = Math.sin(time * 0.1) * orbitRadius;
-    camera.position.z = Math.cos(time * 0.1) * orbitRadius;
+    const targetOrbitX = Math.sin(time * 0.1) * orbitRadius;
+    const targetOrbitZ = Math.cos(time * 0.1) * orbitRadius;
+    const targetOrbitY = isMobile.value ? 350 : 250;
 
-    // Recalculate Y if we were in driving mode
-    const targetY = isMobile.value ? 350 : 250;
-    if (Math.abs(camera.position.y - targetY) > 1) {
-      camera.position.y += (targetY - camera.position.y) * 0.05;
+    if (isExiting.value) {
+      const targetPos = new Vector3(targetOrbitX, targetOrbitY, targetOrbitZ);
+      camera.position.lerp(targetPos, 0.05);
+
+      if (camera.position.distanceTo(targetPos) < 10) {
+        isExiting.value = false;
+      }
+    } else {
+      camera.position.x = targetOrbitX;
+      camera.position.z = targetOrbitZ;
+
+      // Recalculate Y if we were in driving mode
+      if (Math.abs(camera.position.y - targetOrbitY) > 1) {
+        camera.position.y += (targetOrbitY - camera.position.y) * 0.05;
+      }
     }
 
     const targetLookAt = isGameMode.value

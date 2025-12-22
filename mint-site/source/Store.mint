@@ -1,3 +1,11 @@
+record Page {
+  name : String,
+  link : String,
+  title : String,
+  body : Array(String),
+  hidden : Bool
+}
+
 store Store {
   state currentPage : Page = Page("Home", "/", "Home", ["Loading..."], false)
   state pages : Array(Page) = [
@@ -37,14 +45,14 @@ store Store {
         Maybe::Nothing => Page("404", "/404", "Not Found", ["Page not found."], false)
       }
 
-    next { currentPage = nextCurrentPage }
+    next { currentPage: nextCurrentPage }
   }
 
   fun toggleActivity : Promise(Void) {
-    next { activityOpen = !activityOpen }
+    next { activityOpen: !activityOpen }
   }
 
   fun toggleJoke : Promise(Void) {
-    next { jokeOpen = !jokeOpen }
+    next { jokeOpen: !jokeOpen }
   }
 }

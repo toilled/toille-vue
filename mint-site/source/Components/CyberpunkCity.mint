@@ -41,13 +41,13 @@ component CyberpunkCity {
 
   fun updateFromJS(state : Object) {
     next {
-      score = `state.score || 0`,
-      timeLeft = `state.timeLeft || 0`,
-      distToTarget = `state.distToTarget || 0`,
-      isGameMode = `state.isGameMode || false`,
-      isDrivingMode = `state.isDrivingMode || false`,
-      isExplorationMode = `state.isExplorationMode || false`,
-      isFlyingTour = `state.isFlyingTour || false`
+      score: `state.score || 0`,
+      timeLeft: `state.timeLeft || 0`,
+      distToTarget: `state.distToTarget || 0`,
+      isGameMode: `state.isGameMode || false`,
+      isDrivingMode: `state.isDrivingMode || false`,
+      isExplorationMode: `state.isExplorationMode || false`,
+      isFlyingTour: `state.isFlyingTour || false`
     }
   }
 
@@ -55,11 +55,11 @@ component CyberpunkCity {
     // Notify parent? Mint components are isolated.
     // We can emit event to window or store in global state.
     // For now, local state handles visibility.
-    next { isGameMode = true }
+    next { isGameMode: true }
   }
 
   fun onGameEnd {
-    next { isGameMode = false }
+    next { isGameMode: false }
   }
 
   fun exitGameMode {
@@ -85,23 +85,23 @@ component CyberpunkCity {
 
       if (score > 0) {
         <div id="score-counter" style="position: fixed; bottom: 20px; right: 20px; color: #00ffcc; font-family: monospace; font-size: 24px; font-weight: bold; z-index: 10; text-shadow: 0 0 10px #00ffcc; pointer-events: none;">
-          "SCORE: " + Number.toString(score)
+          <{ "SCORE: " + Number.toString(score) }>
         </div>
       }
 
       if (isDrivingMode) {
         <div id="timer-counter" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); color: #ff00cc; font-family: monospace; font-size: 32px; font-weight: bold; z-index: 10; text-shadow: 0 0 10px #ff00cc; pointer-events: none;">
-          "TIME: " + Number.toString(Math.ceil(timeLeft))
+          <{ "TIME: " + Number.toString(Math.ceil(timeLeft)) }>
         </div>
         <div id="dist-counter" style="position: fixed; top: 60px; left: 50%; transform: translateX(-50%); color: #ffff00; font-family: monospace; font-size: 24px; font-weight: bold; z-index: 10; text-shadow: 0 0 10px #ffff00; pointer-events: none;">
-          "DIST: " + Number.toString(Math.ceil(distToTarget)) + "m"
+          <{ "DIST: " + Number.toString(Math.ceil(distToTarget)) + "m" }>
         </div>
       }
 
       if (isGameMode || isDrivingMode || isExplorationMode || isFlyingTour) {
         <button
           id="return-button"
-          onClick={(e : Html.Event) => exitGameMode()}
+          onClick={(e : Html.Event) { exitGameMode() }}
           style="position: fixed; bottom: 20px; left: 20px; background: rgba(0, 0, 0, 0.7); color: #ff00cc; border: 1px solid #ff00cc; padding: 10px 20px; font-family: monospace; font-size: 18px; font-weight: bold; cursor: pointer; z-index: 10; text-shadow: 0 0 5px #ff00cc; box-shadow: 0 0 10px #ff00cc;">
           "RETURN"
         </button>

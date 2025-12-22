@@ -14,7 +14,7 @@ component Menu {
       window.audioInstance.play();
     }
     `
-    next { soundOn = !soundOn }
+    next { soundOn: !soundOn }
   }
 
   fun startExploration : Promise(Void) {
@@ -33,13 +33,13 @@ component Menu {
         }
       }
       <li class="icons-container">
-        <div onClick={(e : Html.Event) => startExploration()} class="icon-wrapper" title="Explore City">
+        <div onClick={(e : Html.Event) { startExploration() }} class="icon-wrapper" title="Explore City">
           <img src="/person-icon.svg" alt="Explore City" class="icon" />
         </div>
-        <div onClick={(e : Html.Event) => startFlyingTour()} class="icon-wrapper" title="Fly Tour">
+        <div onClick={(e : Html.Event) { startFlyingTour() }} class="icon-wrapper" title="Fly Tour">
           <img src="/plane-icon.svg" alt="Fly Tour" class="icon" />
         </div>
-        <div onClick={(e : Html.Event) => toggleSound()} class="icon-wrapper" title="Toggle Sound">
+        <div onClick={(e : Html.Event) { toggleSound() }} class="icon-wrapper" title="Toggle Sound">
           if (soundOn) {
             <img src="/sound-icon.svg" alt="Toggle sound" class="icon" />
           } else {

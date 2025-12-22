@@ -6,14 +6,17 @@ component Title {
 
   fun handleTitleClick : Promise(Void) {
     toggleActivity()
-    next { animatingTitle = true }
-    Timer.timeout(1000, () { next { animatingTitle = false } })
+    next { animatingTitle: true }
+    // Timer.timeout expects 1 arg (duration) and returns a promise.
+    await Timer.timeout(1000)
+    next { animatingTitle: false }
   }
 
   fun handleSubtitleClick : Promise(Void) {
     toggleJoke()
-    next { animatingSubtitle = true }
-    Timer.timeout(1000, () { next { animatingSubtitle = false } })
+    next { animatingSubtitle: true }
+    await Timer.timeout(1000)
+    next { animatingSubtitle: false }
   }
 
   fun render : Html {
@@ -22,7 +25,7 @@ component Title {
         <hgroup>
           <h1
             class="title question"
-            onClick={(e : Html.Event) => handleTitleClick()}
+            onClick={(e : Html.Event) { handleTitleClick() }}
             style={
               if (animatingTitle) {
                 "animation: space-warp 1s ease-in-out;"
@@ -34,7 +37,7 @@ component Title {
           </h1>
           <h2
             class="title question"
-            onClick={(e : Html.Event) => handleSubtitleClick()}
+            onClick={(e : Html.Event) { handleSubtitleClick() }}
             style={
               if (animatingSubtitle) {
                 "animation: space-warp 1s ease-in-out;"

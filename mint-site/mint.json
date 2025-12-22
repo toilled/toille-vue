@@ -1,0 +1,19 @@
+{
+  "name": "mint-site",
+  "application": {
+    "head": "assets/head.html",
+    "title": "mint-site",
+    "icon": "assets/favicon.png"
+  },
+  "external": {
+    "stylesheets": [
+      "assets/style.css"
+    ]
+  },
+  "source-directories": [
+    "source"
+  ],
+  "test-directories": [
+    "tests"
+  ]
+}

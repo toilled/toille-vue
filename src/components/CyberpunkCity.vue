@@ -1804,7 +1804,6 @@ function animate() {
       const maxSpeed = 2;
       const acceleration = 0.1;
       const friction = 0.98;
-      const turnSpeed = 0.02;
 
       // Gas / Brake
       if (controls.value.forward) {
@@ -1828,6 +1827,8 @@ function animate() {
       // Steering (only if moving)
       if (Math.abs(speed) > 0.1) {
         const dir = speed > 0 ? 1 : -1;
+        const turnSpeed = 0.04 / (Math.abs(speed) + 0.5);
+
         if (controls.value.left) {
           car.rotation.y += turnSpeed * dir;
         }

@@ -15,7 +15,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: #000000;
+  background-color: #050505;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -52,7 +52,7 @@
   text-shadow: -2px 0 #be00fe;
   clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
   animation: glitch-anim-1 5s infinite linear alternate-reverse;
-  background-color: #000000;
+  background-color: #050505;
 }
 
 .glitch::after {
@@ -66,7 +66,7 @@
   text-shadow: -2px 0 #39ff14;
   clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
   animation: glitch-anim-2 5s infinite linear alternate-reverse;
-  background-color: #000000;
+  background-color: #050505;
 }
 
 @keyframes glitch-anim-1 {

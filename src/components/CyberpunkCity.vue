@@ -746,8 +746,8 @@ onMounted(() => {
 
   // Scene setup
   scene = new Scene();
-  scene.background = new Color(0x000000);
-  scene.fog = new FogExp2(0x000000, 0.0015); // Slightly denser black fog
+  scene.background = new Color(0x050505);
+  scene.fog = new FogExp2(0x050505, 0.0012); // Reduced fog density for visibility
 
   // Camera setup
   camera = new PerspectiveCamera(
@@ -766,14 +766,14 @@ onMounted(() => {
   canvasContainer.value.appendChild(renderer.domElement);
 
   // Lighting
-  const ambientLight = new AmbientLight(0xffffff, 0.2);
+  const ambientLight = new AmbientLight(0xffffff, 0.4); // Increased ambient light
   scene.add(ambientLight);
 
-  const dirLight = new DirectionalLight(0xbe00fe, 0.5);
+  const dirLight = new DirectionalLight(0xbe00fe, 0.8); // Increased directional intensity
   dirLight.position.set(100, 200, 100);
   scene.add(dirLight);
 
-  const dirLight2 = new DirectionalLight(0x39ff14, 0.5);
+  const dirLight2 = new DirectionalLight(0x39ff14, 0.8); // Increased directional intensity
   dirLight2.position.set(-100, 200, -100);
   scene.add(dirLight2);
 

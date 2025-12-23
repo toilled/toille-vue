@@ -1376,7 +1376,7 @@ function generateDroneTargets(path: string) {
 watch(
   () => route.path,
   (newPath) => {
-    if (!isGameMode.value) {
+    if (!isGameMode.value && !isDrivingMode.value) {
       generateDroneTargets(newPath);
     }
   },
@@ -1388,7 +1388,7 @@ watch(activeCar, (newCar, oldCar) => {
 });
 
 watch(score, (val) => {
-  if (val >= 500 && !isGameMode.value) {
+  if (val >= 500 && !isGameMode.value && !isDrivingMode.value) {
     startTargetPractice();
   }
 });
@@ -1827,7 +1827,7 @@ function animate() {
       // Steering (only if moving)
       if (Math.abs(speed) > 0.1) {
         const dir = speed > 0 ? 1 : -1;
-        const turnSpeed = 0.04 / (Math.abs(speed) + 0.5);
+        const turnSpeed = 0.04 / (Math.abs(Math.sqrt(speed)) + 1);
 
         if (controls.value.left) {
           car.rotation.y += turnSpeed * dir;

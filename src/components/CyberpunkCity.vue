@@ -180,6 +180,7 @@ import { FlyingTourMode } from "../game/modes/FlyingTourMode";
 import { GameContext } from "../game/types";
 import { carAudio } from "../game/audio/CarAudio";
 import { BOUNDS, CELL_SIZE, START_OFFSET, CITY_SIZE, BLOCK_SIZE, ROAD_WIDTH, GRID_SIZE } from "../game/config";
+import { KonamiManager } from "../game/KonamiManager";
 
 const canvasContainer = ref<HTMLDivElement | null>(null);
 
@@ -210,6 +211,7 @@ const timeLeft = ref(0);
 const lastTime = ref(0);
 const distToTarget = ref(0);
 let gameModeManager: GameModeManager;
+let konamiManager: KonamiManager;
 
 const isMobile = ref(false);
 
@@ -260,8 +262,6 @@ const route = useRoute();
 
 // Configuration is imported from ../game/config
 // OLD CONSTANTS REMOVED
-
-
 const CAR_COUNT = 150;
 
 // Function to reset/spawn a car
@@ -1133,6 +1133,9 @@ onMounted(() => {
   sparks.frustumCulled = false; // Prevent culling when sparks fly outside initial bounds
   scene.add(sparks);
 
+  // Initialize Fireworks via Manager
+  konamiManager = new KonamiManager(scene);
+
   createCheckpoint();
   createNavArrow();
 
@@ -1175,6 +1178,10 @@ function onKeyDown(event: KeyboardEvent) {
     exitGameMode();
     return;
   }
+
+  // Konami Code Check
+  konamiManager.onKeyDown(event);
+
   gameModeManager.onKeyDown(event);
 }
 
@@ -1415,6 +1422,8 @@ function animate() {
   const time = now * 0.0005;
   const dt = (now - lastTime.value) / 1000;
   lastTime.value = now;
+
+  konamiManager.update(dt);
 
   // Let GameModeManager handle active mode logic
   gameModeManager.update(dt, time);
@@ -1692,6 +1701,9 @@ onBeforeUnmount(() => {
   carAudio.stop();
   if (carAudio.ctx) {
     carAudio.ctx.close();
+  }
+  if (konamiManager) {
+    konamiManager.dispose();
   }
 });
 </script>

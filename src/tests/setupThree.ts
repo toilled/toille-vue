@@ -51,21 +51,24 @@ vi.mock("three", async () => {
       render = vi.fn();
       dispose = vi.fn();
       setAnimationLoop = vi.fn();
-      constructor(parameters?: any) {}
+      constructor(parameters?: any) { }
     },
     CylinderGeometry: class {
       parameters: any;
-      constructor() {}
+      constructor() { }
+      dispose() { }
     },
     ConeGeometry: class {
       parameters: any;
-      constructor() {}
+      constructor() { }
+      dispose() { }
     },
     BoxGeometry: class {
-      translate() {}
+      translate() { }
       getIndex() { return null; }
       getAttribute() { return { count: 0, itemSize: 3, array: [] }; }
       clone() { return this; }
+      dispose() { }
       parameters = {};
     },
     PlaneGeometry: class {
@@ -73,6 +76,7 @@ vi.mock("three", async () => {
       constructor(width?: number, height?: number) {
         this.parameters = { width, height };
       }
+      dispose() { }
     },
     BufferGeometry: class {
       attributes = {
@@ -87,15 +91,17 @@ vi.mock("three", async () => {
           setXYZ: vi.fn(),
         },
       };
-      setAttribute() {}
-      setFromPoints() {}
+      setAttribute() { }
+      setFromPoints() { }
       getIndex() { return null; }
       getAttribute() { return this.attributes.position; }
-      computeBoundingSphere() {}
+      computeBoundingSphere() { }
+      dispose() { }
     },
     EdgesGeometry: class {
-      constructor() {}
+      constructor() { }
       scale = { set: vi.fn() };
+      dispose() { }
     },
     Mesh: class {
       position = {
@@ -131,14 +137,14 @@ vi.mock("three", async () => {
         (this as any).addEventListener = vi.fn();
         (this as any).removeEventListener = vi.fn();
       }
-      add() {}
-      remove() {}
-      removeFromParent() {}
+      add() { }
+      remove() { }
+      removeFromParent() { }
       traverse(cb: any) { cb(this); }
-      lookAt() {}
-      dispatchEvent() {}
-      addEventListener() {}
-      removeEventListener() {}
+      lookAt() { }
+      dispatchEvent() { }
+      addEventListener() { }
+      removeEventListener() { }
     },
     Group: class {
       position = { x: 0, y: 0, z: 0, set: vi.fn(), copy: vi.fn() };
@@ -157,37 +163,52 @@ vi.mock("three", async () => {
       remove(obj: any) {
         this.children = this.children.filter((c) => c !== obj);
       }
-      removeFromParent() {}
+      removeFromParent() { }
       traverse(cb: any) {
         cb(this);
         this.children.forEach((c) => c.traverse && c.traverse(cb));
       }
       lookAt = vi.fn(); // Added lookAt to Group
-      dispatchEvent() {}
-      addEventListener() {}
-      removeEventListener() {}
+      dispatchEvent() { }
+      addEventListener() { }
+      removeEventListener() { }
+    },
+    Scene: class {
+      add = vi.fn();
+      remove = vi.fn();
+      children = [];
+      background = null;
+      fog = null;
+      isObject3D = true;
     },
     MeshStandardMaterial: class {
       clone() { return this; }
+      dispose() { }
     },
     MeshLambertMaterial: class {
       clone() { return this; }
+      dispose() { }
     },
     MeshBasicMaterial: class {
       clone() { return this; }
+      dispose() { }
     },
-    LineBasicMaterial: class {},
+    LineBasicMaterial: class {
+      dispose() { }
+    },
     LineSegments: class {
       scale = { set: vi.fn() };
       position = { y: 0 };
       isObject3D = true;
-      add() {}
-      removeFromParent() {}
-      dispatchEvent() {}
-      addEventListener() {}
-      removeEventListener() {}
+      add() { }
+      removeFromParent() { }
+      dispatchEvent() { }
+      addEventListener() { }
+      removeEventListener() { }
     },
-    PointsMaterial: class {},
+    PointsMaterial: class {
+      dispose() { }
+    },
     Points: class {
       geometry = {
         attributes: {
@@ -199,15 +220,24 @@ vi.mock("three", async () => {
             getZ: vi.fn(),
             setXYZ: vi.fn(),
           },
+          color: { // Added color attribute support
+            array: [],
+            needsUpdate: false,
+            setXYZ: vi.fn(),
+          }
         },
+        dispose: vi.fn(), // Added dispose to geometry
+      };
+      material = {
+        dispose: vi.fn(), // Added dispose to material
       };
       frustumCulled = true;
       isObject3D = true;
-      add() {}
-      removeFromParent() {}
-      dispatchEvent() {}
-      addEventListener() {}
-      removeEventListener() {}
+      add() { }
+      removeFromParent() { }
+      dispatchEvent() { }
+      addEventListener() { }
+      removeEventListener() { }
     },
     Raycaster: class {
       params = { Points: { threshold: 1 } };
@@ -221,13 +251,13 @@ vi.mock("three", async () => {
       userData = {};
       castShadow = false;
       isObject3D = true;
-      add() {}
-      remove() {}
-      removeFromParent() {}
-      dispose() {}
-      dispatchEvent() {}
-      addEventListener() {}
-      removeEventListener() {}
+      add() { }
+      remove() { }
+      removeFromParent() { }
+      dispose() { }
+      dispatchEvent() { }
+      addEventListener() { }
+      removeEventListener() { }
     },
   };
 });
@@ -236,9 +266,9 @@ vi.stubGlobal("requestAnimationFrame", vi.fn((cb) => setTimeout(cb, 16)));
 vi.stubGlobal("cancelAnimationFrame", vi.fn((id) => clearTimeout(id)));
 
 vi.stubGlobal("ResizeObserver", class ResizeObserver {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
+  observe() { }
+  unobserve() { }
+  disconnect() { }
 });
 
 vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({

@@ -15,6 +15,7 @@ vi.mock('three', () => {
   const THREE = {
     Scene: vi.fn(() => ({
       add: vi.fn(),
+      remove: vi.fn(),
       fog: null,
       background: null
     })),
@@ -91,8 +92,17 @@ vi.mock('three', () => {
           position: {
             array: new Float32Array(3000), // Mock size
             needsUpdate: false
+          },
+          color: {
+            array: new Float32Array(3000),
+            needsUpdate: false,
+            setXYZ: vi.fn()
           }
-        }
+        },
+        dispose: vi.fn()
+      },
+      material: {
+        dispose: vi.fn()
       }
     })),
     Float32BufferAttribute: vi.fn(),
@@ -152,8 +162,8 @@ vi.mock('three', () => {
     })),
     AdditiveBlending: 2000,
     Euler: vi.fn(() => ({
-        set: vi.fn(),
-        copy: vi.fn()
+      set: vi.fn(),
+      copy: vi.fn()
     }))
   }
   return THREE

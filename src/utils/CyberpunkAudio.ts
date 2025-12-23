@@ -37,16 +37,19 @@ export class CyberpunkAudio {
 
   private generateBassPattern() {
     // Generate a 128-step bass pattern based on the seed (8 bars)
-    // Root note E1 = 41.20 Hz
-    const root = 41.2;
-    // Cyberpunk/Darkwave scale intervals relative to root (E1)
-    // Minor pentatonic: Root(1), m3(1.2), 4(1.33), 5(1.5), b7(1.78), Octave(2)
-    const scale = [
-      root, // I
-      root * 1.2, // m3 (approx for E -> G)
-      root * 1.5, // V
-      root * 1.78, // b7 (approx for E -> D)
-      root * 2, // VIII
+    // Cyber Goth / EBM bass: often minimal, repetitive, rolling.
+    // Lower root note C1 = 32.70 Hz or maybe D1 = 36.71 Hz
+    const root = 36.71; // D1
+    // Phrygian Dominant or similar "dark" intervals
+    // Revised simple minor scale
+    // I, m3, IV, V, b7
+    const simpleMinor = [
+      root,
+      root * 1.189, // F
+      root * 1.335, // G
+      root * 1.5,   // A
+      root * 1.782, // C
+      root * 2
     ];
 
     this.bassPattern = new Array(128).fill(0);
@@ -60,14 +63,16 @@ export class CyberpunkAudio {
         // Determine position in the 2-bar motif
         const motifPos = i % motifLength;
 
-        // Strong beat probability (beats 1 and 3)
-        const isStrongBeat = motifPos % 16 === 0;
-        // Off-beat syncopation probability
-        const isOffBeat = motifPos % 4 === 2;
+        // EBM/Industrial typically has a rolling 16th note bassline or strict off-beat 8ths
+        // Let's try a rolling 16th feel but we are quantizing to 8ths here (i%2==0).
+        // Let's stick to 8th notes for simplicity but make it more relentless.
 
-        let noteProbability = 0.5;
-        if (isStrongBeat) noteProbability = 0.9;
-        else if (isOffBeat) noteProbability = 0.7;
+        const isStrongBeat = motifPos % 16 === 0;
+        const isOffBeat = motifPos % 4 === 2; // The "and"
+
+        // Cyber Goth / EBM: Relentless off-beat bass is common (The "k-dum k-dum" feel)
+        // Or just straight 8ths.
+        let noteProbability = 0.8; // High probability everywhere
 
         // Variation every 4 bars (64 steps)
         const isVariationSection = i >= 64;
@@ -79,18 +84,14 @@ export class CyberpunkAudio {
           // Select pitch
           const r = this.random();
           let note;
+          // EBM bass often stays on root for long periods with octave jumps or m3/b7 accents
           if (isStrongBeat) {
-            // Anchor to root or octave on strong beats
-            note = r > 0.7 ? scale[4] : scale[0];
+             note = simpleMinor[0]; // Root
           } else {
-            // More freedom on other beats
-            if (r > 0.8)
-              note = scale[3]; // b7
-            else if (r > 0.6)
-              note = scale[2]; // V
-            else if (r > 0.4)
-              note = scale[1]; // m3
-            else note = scale[0]; // I
+            if (r > 0.8) note = simpleMinor[5]; // Octave
+            else if (r > 0.6) note = simpleMinor[4]; // b7
+            else if (r > 0.5) note = simpleMinor[1]; // m3
+            else note = simpleMinor[0]; // Root
           }
           this.bassPattern[i] = note;
         }
@@ -108,13 +109,11 @@ export class CyberpunkAudio {
       const offset = bar * 16;
 
       // -- Kick Drum --
-      // Always on beat 1 (index 0 relative to bar)
+      // Four-on-the-floor is essential for Cybergoth/Industrial Dance
       this.kickPattern[offset + 0] = 1.0;
-
-      // High probability on beat 3 (index 8)
-      if (this.random() < 0.9) {
-        this.kickPattern[offset + 8] = 1.0;
-      }
+      this.kickPattern[offset + 4] = 1.0;
+      this.kickPattern[offset + 8] = 1.0;
+      this.kickPattern[offset + 12] = 1.0;
 
       // Syncopation / Additional Kicks
       // e.g., on "and" of 3 (index 10) or "a" of 4 (index 15)
@@ -286,26 +285,56 @@ export class CyberpunkAudio {
   private playBass(time: number, freq: number) {
     if (!this.ctx) return;
     const osc = this.ctx.createOscillator();
+    const osc2 = this.ctx.createOscillator(); // Add second osc for detune/fatness
     const gain = this.ctx.createGain();
     const filter = this.ctx.createBiquadFilter();
+    const distortion = this.ctx.createWaveShaper(); // Industrial distortion
+
+    // Make a distortion curve
+    function makeDistortionCurve(amount: number) {
+      const k = typeof amount === 'number' ? amount : 50;
+      const n_samples = 44100;
+      const curve = new Float32Array(n_samples);
+      const deg = Math.PI / 180;
+      for (let i = 0; i < n_samples; ++i ) {
+        const x = i * 2 / n_samples - 1;
+        curve[i] = ( 3 + k ) * x * 20 * deg / ( Math.PI + k * Math.abs(x) );
+      }
+      return curve;
+    }
+
+    distortion.curve = makeDistortionCurve(400);
+    distortion.oversample = '4x';
 
     osc.type = "sawtooth";
     osc.frequency.setValueAtTime(freq, time);
 
-    filter.type = "lowpass";
-    filter.frequency.setValueAtTime(200, time);
-    filter.frequency.exponentialRampToValueAtTime(800, time + 0.1);
-    filter.frequency.exponentialRampToValueAtTime(200, time + 0.2);
+    osc2.type = "square";
+    osc2.frequency.setValueAtTime(freq, time);
+    osc2.detune.setValueAtTime(10, time); // Slight detune
 
-    gain.gain.setValueAtTime(0.3, time);
+    // Filter envelope (pluck)
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(100, time);
+    filter.frequency.exponentialRampToValueAtTime(2000, time + 0.05); // Faster attack
+    filter.frequency.exponentialRampToValueAtTime(100, time + 0.2);
+
+    gain.gain.setValueAtTime(0.4, time);
     gain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
 
     osc.connect(filter);
-    filter.connect(gain);
+    osc2.connect(filter);
+
+    // Connect filter to distortion then gain
+    filter.connect(distortion);
+    distortion.connect(gain);
+
     gain.connect(this.ctx.destination);
 
     osc.start(time);
     osc.stop(time + 0.25);
+    osc2.start(time);
+    osc2.stop(time + 0.25);
   }
 
   private playKick(time: number, velocity: number = 1.0) {

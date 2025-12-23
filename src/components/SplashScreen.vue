@@ -15,12 +15,12 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: #050510;
+  background-color: #000000;
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 9999;
-  color: #00ffcc;
+  color: #39ff14;
   font-family: 'Courier New', Courier, monospace;
   font-size: 3rem;
   font-weight: bold;
@@ -28,7 +28,7 @@
 
 .glitch {
   position: relative;
-  color: #00ffcc;
+  color: #39ff14;
   font-size: 4rem;
   letter-spacing: 0.5em;
   animation: glitch-skew 1s infinite linear alternate-reverse;
@@ -49,10 +49,10 @@
   width: 100%;
   height: 100%;
   left: 2px;
-  text-shadow: -2px 0 #ff00cc;
+  text-shadow: -2px 0 #be00fe;
   clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
   animation: glitch-anim-1 5s infinite linear alternate-reverse;
-  background-color: #050510;
+  background-color: #000000;
 }
 
 .glitch::after {
@@ -63,10 +63,10 @@
   width: 100%;
   height: 100%;
   left: -2px;
-  text-shadow: -2px 0 #00ccff;
+  text-shadow: -2px 0 #39ff14;
   clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
   animation: glitch-anim-2 5s infinite linear alternate-reverse;
-  background-color: #050510;
+  background-color: #000000;
 }
 
 @keyframes glitch-anim-1 {

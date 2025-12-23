@@ -172,6 +172,14 @@ import {
   CylinderGeometry,
   ConeGeometry,
 } from "three";
+import { GameModeManager } from "../game/GameModeManager";
+import { DrivingMode } from "../game/modes/DrivingMode";
+import { DroneMode } from "../game/modes/DroneMode";
+import { ExplorationMode } from "../game/modes/ExplorationMode";
+import { FlyingTourMode } from "../game/modes/FlyingTourMode";
+import { GameContext } from "../game/types";
+import { carAudio } from "../game/audio/CarAudio";
+import { BOUNDS, CELL_SIZE, START_OFFSET, CITY_SIZE, BLOCK_SIZE, ROAD_WIDTH, GRID_SIZE } from "../game/config";
 
 const canvasContainer = ref<HTMLDivElement | null>(null);
 
@@ -201,6 +209,7 @@ let navArrow: Group;
 const timeLeft = ref(0);
 const lastTime = ref(0);
 const distToTarget = ref(0);
+let gameModeManager: GameModeManager;
 
 const isMobile = ref(false);
 
@@ -231,118 +240,10 @@ const groundPosition = 1.8;
 
 const playerRotation = new Euler(0, 0, 0, "YXZ");
 
-// Car Audio System
-class CarAudio {
-  ctx: AudioContext | null = null;
-  engineOsc: OscillatorNode | null = null;
-  engineGain: GainNode | null = null;
-  lfo: OscillatorNode | null = null;
-  lfoGain: GainNode | null = null;
-  isPlaying = false;
-
-  init() {
-    const AudioContext =
-      window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContext) return;
-    this.ctx = new AudioContext();
-  }
-
-  start() {
-    if (!this.ctx) this.init();
-    if (!this.ctx) return;
-    if (this.ctx.state === "suspended") this.ctx.resume();
-    if (this.isPlaying) return;
-
-    // Engine rumble (Sawtooth with LFO for "purr")
-    this.engineOsc = this.ctx.createOscillator();
-    this.engineOsc.type = "sawtooth";
-    this.engineOsc.frequency.value = 60; // Idle RPM
-
-    this.engineGain = this.ctx.createGain();
-    this.engineGain.gain.value = 0.1;
-
-    // LFO for modulation (the "chug-chug")
-    this.lfo = this.ctx.createOscillator();
-    this.lfo.type = "sine";
-    this.lfo.frequency.value = 10;
-
-    this.lfoGain = this.ctx.createGain();
-    this.lfoGain.gain.value = 20; // Modulation depth
-
-    this.lfo.connect(this.lfoGain);
-    this.lfoGain.connect(this.engineOsc.frequency);
-
-    // Filter to dampen the harsh sawtooth
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = "lowpass";
-    filter.frequency.value = 400;
-
-    this.engineOsc.connect(filter);
-    filter.connect(this.engineGain);
-    this.engineGain.connect(this.ctx.destination);
-
-    this.engineOsc.start();
-    this.lfo.start();
-    this.isPlaying = true;
-  }
-
-  update(speed: number) {
-    if (!this.ctx || !this.engineOsc || !this.lfo || !this.engineGain) return;
-
-    // Pitch mapping
-    // Speed 0 -> 60Hz
-    // Speed 4 -> ~200Hz
-    const absSpeed = Math.abs(speed);
-    const targetFreq = 60 + absSpeed * 40;
-    const targetLfoRate = 10 + absSpeed * 5;
-
-    // Smooth transitions
-    const time = this.ctx.currentTime;
-    this.engineOsc.frequency.setTargetAtTime(targetFreq, time, 0.1);
-    this.lfo.frequency.setTargetAtTime(targetLfoRate, time, 0.1);
-
-    // Volume (idle is quieter)
-    // const targetVol = 0.1 + (absSpeed * 0.05);
-    // this.engineGain.gain.setTargetAtTime(targetVol, time, 0.1);
-  }
-
-  stop() {
-    if (!this.isPlaying) return;
-    if (this.engineOsc) this.engineOsc.stop();
-    if (this.lfo) this.lfo.stop();
-    this.engineOsc = null;
-    this.lfo = null;
-    this.isPlaying = false;
-  }
-
-  playCrash() {
-    if (!this.ctx) this.init();
-    if (!this.ctx) return;
-
-    const t = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-
-    // Noise buffer would be better, but we use erratic oscillators for "crunch"
-    osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(100, t);
-    osc.frequency.exponentialRampToValueAtTime(10, t + 0.3);
-
-    gain.gain.setValueAtTime(0.5, t);
-    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
-
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
-
-    osc.start(t);
-    osc.stop(t + 0.3);
-  }
-}
-
-const carAudio = new CarAudio();
+// Car Audio System removed (extracted to src/game/audio/CarAudio.ts)
 
 const emit = defineEmits(["game-start", "game-end"]);
-let droneVelocities: Float32Array;
+
 const currentLookAt = new Vector3(0, 0, 0);
 
 const raycaster = new Raycaster();
@@ -357,17 +258,9 @@ const sparkLifetimes = new Float32Array(sparkCount); // 0 = dead, 1 = full life
 
 const route = useRoute();
 
-// Configuration
-const CITY_SIZE = 2000;
-const BLOCK_SIZE = 150;
-const ROAD_WIDTH = 40;
-const CELL_SIZE = BLOCK_SIZE + ROAD_WIDTH;
+// Configuration is imported from ../game/config
+// OLD CONSTANTS REMOVED
 
-const GRID_SIZE = Math.floor(CITY_SIZE / CELL_SIZE);
-// We will generate a grid of buildings.
-// Grid range: -GRID_SIZE/2 to GRID_SIZE/2
-const startOffset = -(GRID_SIZE * CELL_SIZE) / 2 + CELL_SIZE / 2;
-const BOUNDS = (GRID_SIZE * CELL_SIZE) / 2 + CELL_SIZE;
 
 const CAR_COUNT = 150;
 
@@ -482,7 +375,7 @@ function resetCar(carGroup: Group) {
   const dir = Math.random() > 0.5 ? 1 : -1;
 
   const roadIndex = Math.floor(Math.random() * (GRID_SIZE + 1));
-  const roadCoordinate = startOffset + roadIndex * CELL_SIZE - CELL_SIZE / 2;
+  const roadCoordinate = START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
 
   const laneOffset = (Math.random() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
 
@@ -778,7 +671,7 @@ function spawnCheckpoint() {
   // Pick random axis
   const axis = Math.random() > 0.5 ? "x" : "z";
   const roadCoordinate =
-    startOffset +
+    START_OFFSET +
     (axis === "x" ? roadIndexX : roadIndexZ) * CELL_SIZE -
     CELL_SIZE / 2;
 
@@ -908,7 +801,6 @@ onMounted(() => {
   scene.add(plane);
 
   // Generate City Grid
-  // const startOffset = -(GRID_SIZE * CELL_SIZE) / 2 + CELL_SIZE / 2; // Moved to top
   const windowTexture = createWindowTexture();
   const billboardTextures = createBillboardTextures();
 
@@ -955,8 +847,8 @@ onMounted(() => {
       // Skip some blocks for variety
       if (Math.random() > 0.8) continue;
 
-      const xPos = startOffset + x * CELL_SIZE;
-      const zPos = startOffset + z * CELL_SIZE;
+      const xPos = START_OFFSET + x * CELL_SIZE;
+      const zPos = START_OFFSET + z * CELL_SIZE;
 
       const h = 40 + Math.random() * 120; // Slightly taller minimum
       const w = BLOCK_SIZE - 10 - Math.random() * 20;
@@ -1252,26 +1144,30 @@ onMounted(() => {
   // Pointer lock change
   document.addEventListener("pointerlockchange", onPointerLockChange);
 
+  // Initialize Game Context and Manager
+  const context: GameContext = {
+    scene,
+    camera,
+    renderer,
+    cars,
+    drones,
+    occupiedGrids,
+    score,
+    timeLeft,
+    activeCar,
+    isMobile,
+    controls,
+    lookControls,
+    spawnSparks,
+    playPewSound,
+    spawnCheckpoint,
+    checkpointMesh,
+    navArrow
+  };
+  gameModeManager = new GameModeManager(context);
+
   isActive = true;
   animate();
-
-  // @ts-ignore
-  window.__TEST_INTERFACE__ = {
-    startDriving: () => {
-      if (cars.length > 0) {
-        isDrivingMode.value = true;
-        // Emit game-start so App.vue fades out the overlay
-        emit("game-start");
-        activeCar.value = cars[0];
-        cars[0].userData.isPlayerControlled = true;
-        cars[0].userData.currentSpeed = 0;
-        timeLeft.value = 30;
-        lastTime.value = Date.now();
-        spawnCheckpoint();
-      }
-    },
-    getActiveCar: () => activeCar.value,
-  };
 });
 
 function onKeyDown(event: KeyboardEvent) {
@@ -1279,55 +1175,11 @@ function onKeyDown(event: KeyboardEvent) {
     exitGameMode();
     return;
   }
-
-  if (isExplorationMode.value && event.code === "Space" && !isJumping.value) {
-    isJumping.value = true;
-    velocityY = jumpStrength;
-  }
-
-  if (isDrivingMode.value || isExplorationMode.value) {
-    switch (event.key.toLowerCase()) {
-      case "w":
-      case "arrowup":
-        controls.value.forward = true;
-        break;
-      case "s":
-      case "arrowdown":
-        controls.value.backward = true;
-        break;
-      case "a":
-      case "arrowleft":
-        controls.value.left = true;
-        break;
-      case "d":
-      case "arrowright":
-        controls.value.right = true;
-        break;
-    }
-  }
+  gameModeManager.onKeyDown(event);
 }
 
 function onKeyUp(event: KeyboardEvent) {
-  if (isDrivingMode.value || isExplorationMode.value) {
-    switch (event.key.toLowerCase()) {
-      case "w":
-      case "arrowup":
-        controls.value.forward = false;
-        break;
-      case "s":
-      case "arrowdown":
-        controls.value.backward = false;
-        break;
-      case "a":
-      case "arrowleft":
-        controls.value.left = false;
-        break;
-      case "d":
-      case "arrowright":
-        controls.value.right = false;
-        break;
-    }
-  }
+  gameModeManager.onKeyUp(event);
 }
 
 // Seeded random number generator
@@ -1342,7 +1194,9 @@ function mulberry32(a: number) {
 
 // Generate targets based on route
 function generateDroneTargets(path: string) {
-  if (isGameMode.value) return;
+  // If we are in Drone Mode, let it handle it?
+  // Actually standard idle behavior uses this.
+  
   // Create a seed from the path string
   let seed = 0;
   for (let i = 0; i < path.length; i++) {
@@ -1365,8 +1219,8 @@ function generateDroneTargets(path: string) {
       droneTargetPositions[i * 3 + 1] = droneBasePositions[i * 3 + 1] + yOffset;
       droneTargetPositions[i * 3 + 2] = droneBasePositions[i * 3 + 2] + zOffset;
     } else {
-      // Fallback if base not ready (should not happen with current flow)
-      droneTargetPositions[i * 3] = xOffset * 8; // approx 4000
+      // Fallback
+      droneTargetPositions[i * 3] = xOffset * 8;
       droneTargetPositions[i * 3 + 1] = 300 + (yOffset + 100) * 4;
       droneTargetPositions[i * 3 + 2] = zOffset * 8;
     }
@@ -1376,6 +1230,7 @@ function generateDroneTargets(path: string) {
 watch(
   () => route.path,
   (newPath) => {
+    // Only update targets if NOT in a specific game mode that overrides drone behavior
     if (!isGameMode.value && !isDrivingMode.value) {
       generateDroneTargets(newPath);
     }
@@ -1396,66 +1251,39 @@ watch(score, (val) => {
 function startTargetPractice() {
   isGameMode.value = true;
   emit("game-start");
-
-  // Initialize random velocities for drones
-  const droneCount = 1000; // Must match init count
-  droneVelocities = new Float32Array(droneCount * 3);
-
-  for (let i = 0; i < droneCount; i++) {
-    droneVelocities[i * 3] = (Math.random() - 0.5) * 8; // vx
-    droneVelocities[i * 3 + 1] = (Math.random() - 0.5) * 4; // vy
-    droneVelocities[i * 3 + 2] = (Math.random() - 0.5) * 8; // vz
-  }
+  gameModeManager.setMode(new DroneMode());
 }
 
 function startExplorationMode() {
   isGameMode.value = true;
   isExplorationMode.value = true;
-  isTransitioning.value = true;
   emit("game-start");
-
-  // Reset player rotation
-  playerRotation.set(0, 0, 0);
-
-  // Request pointer lock for desktop
-  if (!isMobile.value && canvasContainer.value) {
-    document.body.requestPointerLock();
-  }
+  gameModeManager.setMode(new ExplorationMode());
 }
 
 function startFlyingTour() {
   isGameMode.value = true;
   isFlyingTour.value = true;
   emit("game-start");
+  gameModeManager.setMode(new FlyingTourMode());
 }
 
 defineExpose({ startExplorationMode, startFlyingTour });
 
 function exitGameMode() {
-  controls.value.forward = false;
-  controls.value.backward = false;
-  controls.value.left = false;
-  controls.value.right = false;
-
-  lookControls.value.up = false;
-  lookControls.value.down = false;
-  lookControls.value.left = false;
-  lookControls.value.right = false;
+  gameModeManager.clearMode();
 
   if (isDrivingMode.value) {
     isDrivingMode.value = false;
-    carAudio.stop(); // Stop engine sound
     if (activeCar.value) {
-      activeCar.value.userData.isPlayerControlled = false;
-      activeCar.value = null;
+       // Cleanup handled by DrivingMode.cleanup() but we also sync state here just in case
+       // or rather, rely on manager.
+       // The cleanup() of DrivingMode nulls activeCar but maybe we should ensure it.
     }
   }
 
   if (isExplorationMode.value) {
     isExplorationMode.value = false;
-    if (document.pointerLockElement) {
-      document.exitPointerLock();
-    }
   }
 
   if (isFlyingTour.value) {
@@ -1466,10 +1294,12 @@ function exitGameMode() {
   score.value = 0;
   emit("game-end");
 
-  // Restore dead drones
-  deadDrones.clear();
-
-  // Reset positions to targets to avoid them streaking across screen
+  // Restore dead drones & Reset positions to targets
+  // This logic was partly in DroneMode.cleanup but we want it for ALL modes exit probably?
+  // Actually only DroneMode messed with drones significantly (killed them).
+  // But DroneMode.cleanup() clears deadDrones set.
+  // We need to ensure positions are reset to target positions so they don't get stuck.
+  
   if (drones && droneTargetPositions) {
     const positions = drones.geometry.attributes.position.array;
     const count = positions.length / 3;
@@ -1498,67 +1328,57 @@ function onPointerLockChange() {
 function onClick(event: MouseEvent) {
   if (!camera) return;
 
-  if (isExplorationMode.value && !isMobile.value) {
-    // Re-request pointer lock if clicked during exploration
-    if (document.pointerLockElement !== document.body) {
-      document.body.requestPointerLock();
-    }
-    return;
-  }
+  // Delegate to active mode
+  gameModeManager.onClick(event);
+
+  // If we are already in a mode that consumes clicks (like Exploration requestPointerLock inside mode), we might stop.
+  // But DroneMode also uses clicks.
+  // We need to check if we are in a mode.
+  if (isGameMode.value || isDrivingMode.value) return;
 
   pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
   pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
   raycaster.setFromCamera(pointer, camera);
 
-  // If not in a game mode, check for cars
-  if (!isGameMode.value && !isDrivingMode.value) {
-    // Traverse cars to get meshes
-    const carMeshes: Object3D[] = [];
-    cars.forEach((c) =>
-      c.traverse((child) => {
-        if (child instanceof Mesh) carMeshes.push(child);
-      }),
-    );
+  // Cars Interaction (Start Driving) is "Lobby" logic
+  // Traverse cars to get meshes
+  const carMeshes: Object3D[] = [];
+  cars.forEach((c) =>
+    c.traverse((child) => {
+      if (child instanceof Mesh) carMeshes.push(child);
+    }),
+  );
 
-    const carIntersects = raycaster.intersectObjects(carMeshes);
-    if (carIntersects.length > 0) {
-      const hit = carIntersects[0].object;
-      // Traverse up to find Group
-      let target = hit;
-      while (target.parent && target.parent.type !== "Scene") {
-        target = target.parent;
-      }
+  const carIntersects = raycaster.intersectObjects(carMeshes);
+  if (carIntersects.length > 0) {
+    const hit = carIntersects[0].object;
+    // Traverse up to find Group
+    let target = hit;
+    while (target.parent && target.parent.type !== "Scene") {
+      target = target.parent;
+    }
 
-      if (target instanceof Group && target.userData.speed !== undefined) {
-        // Found a car
-        isDrivingMode.value = true;
-        emit("game-start");
-        carAudio.start(); // Start engine sound
-        activeCar.value = target;
-        target.userData.isPlayerControlled = true;
-        target.userData.currentSpeed = target.userData.speed;
-
-        // Initialize Racing Mode
-        timeLeft.value = 30;
-        lastTime.value = Date.now();
-        score.value = 0; // Reset score for new run
-        spawnCheckpoint();
-
-        // Preserve current rotation as base
-        return;
-      }
+    if (target instanceof Group && target.userData.speed !== undefined) {
+      // Found a car
+      isDrivingMode.value = true;
+      emit("game-start");
+      
+      activeCar.value = target;
+      target.userData.isPlayerControlled = true;
+      target.userData.currentSpeed = target.userData.speed;
+      
+      gameModeManager.setMode(new DrivingMode());
+      return;
     }
   }
-
+  
+  // Drone Interaction (Lobby Shooting)
   if (drones && !isExplorationMode.value) {
-    raycaster.params.Points.threshold = 20; // Increased threshold
+    raycaster.params.Points.threshold = 20; 
     const intersects = raycaster.intersectObject(drones);
 
     if (intersects.length > 0) {
-      // Sort by distance (default behavior of intersectObject usually, but good to be sure)
-      // intersects.sort((a, b) => a.distance - b.distance);
-
       const intersect = intersects[0];
       const index = intersect.index;
 
@@ -1568,11 +1388,9 @@ function onClick(event: MouseEvent) {
         const y = posAttribute.getY(index);
         const z = posAttribute.getZ(index);
 
-        console.log("Hit drone at", x, y, z);
-        // Spawn explosion
         spawnSparks(new Vector3(x, y, z));
 
-        // Hide drone (move far away)
+        // Hide drone
         posAttribute.setXYZ(index, 0, -99999, 0);
         posAttribute.needsUpdate = true;
 
@@ -1586,23 +1404,7 @@ function onClick(event: MouseEvent) {
 }
 
 function onMouseMove(event: MouseEvent) {
-  if (
-    isExplorationMode.value &&
-    !isMobile.value &&
-    document.pointerLockElement === document.body
-  ) {
-    const sensitivity = 0.002;
-    playerRotation.y -= event.movementX * sensitivity;
-    playerRotation.x -= event.movementY * sensitivity;
-
-    // Clamp pitch
-    playerRotation.x = Math.max(
-      -Math.PI / 2,
-      Math.min(Math.PI / 2, playerRotation.x),
-    );
-
-    camera.rotation.copy(playerRotation);
-  }
+  gameModeManager.onMouseMove(event);
 }
 
 function animate() {
@@ -1611,280 +1413,30 @@ function animate() {
 
   const now = Date.now();
   const time = now * 0.0005;
-  const deltaTime = 0.016; // approximate
+  const dt = (now - lastTime.value) / 1000;
+  lastTime.value = now;
 
-  // Racing Logic
-  if (isDrivingMode.value && activeCar.value) {
-    // Timer
-    const dt = (now - lastTime.value) / 1000;
-    lastTime.value = now;
-    timeLeft.value -= dt;
+  // Let GameModeManager handle active mode logic
+  gameModeManager.update(dt, time);
 
-    if (timeLeft.value <= 0) {
-      timeLeft.value = 0;
-      exitGameMode(); // Time's up
-    } else {
-      // Checkpoint Collision
-      // Flatten distance check (ignore Y)
-      const cx = activeCar.value.position.x;
-      const cz = activeCar.value.position.z;
-      const tx = checkpointMesh.position.x;
-      const tz = checkpointMesh.position.z;
-
-      const distSq = (cx - tx) ** 2 + (cz - tz) ** 2;
-      const dist = Math.sqrt(distSq);
-      distToTarget.value = dist;
-
-      if (distSq < 20 * 20) {
-        // 20 units radius
-        // Checkpoint reached
-        score.value += 500;
-        timeLeft.value += 15; // Bonus time
-        playPewSound(); // Reuse sound
-        spawnCheckpoint();
-      }
-
-      // Update Nav Arrow
-      navArrow.visible = true;
-      navArrow.position.copy(activeCar.value.position);
-      navArrow.position.y += 15; // Hover above car
-      navArrow.lookAt(
-        checkpointMesh.position.x,
-        navArrow.position.y,
-        checkpointMesh.position.z,
-      );
-    }
-  } else {
-    if (navArrow) navArrow.visible = false;
-    if (checkpointMesh) checkpointMesh.visible = false;
-    // Keep lastTime updated so we don't have a huge jump when starting
-    lastTime.value = now;
-  }
-
-  // Handle Exploration Mode
-  if (isExplorationMode.value) {
-    if (isTransitioning.value) {
-      const targetPos = new Vector3(0, 1.8, 0);
-      const targetQ = new Quaternion().setFromEuler(playerRotation);
-
-      camera.position.lerp(targetPos, 0.05);
-      camera.quaternion.slerp(targetQ, 0.05);
-
-      if (camera.position.distanceTo(targetPos) < 1) {
-        isTransitioning.value = false;
-        camera.position.copy(targetPos);
-        camera.rotation.copy(playerRotation);
-      }
-    } else {
-      const speed = 2.0; // walking speed
-
-      const direction = new Vector3();
-      const frontVector = new Vector3(
-        0,
-        0,
-        Number(controls.value.backward) - Number(controls.value.forward),
-      );
-      const sideVector = new Vector3(
-        Number(controls.value.left) - Number(controls.value.right),
-        0,
-        0,
-      );
-
-      // Handle look buttons on mobile
-      if (isMobile.value) {
-        const rotateSpeed = 0.03;
-        if (lookControls.value.left) playerRotation.y += rotateSpeed;
-        if (lookControls.value.right) playerRotation.y -= rotateSpeed;
-        if (lookControls.value.up) playerRotation.x += rotateSpeed;
-        if (lookControls.value.down) playerRotation.x -= rotateSpeed;
-
-        // Clamp pitch
-        playerRotation.x = Math.max(
-          -Math.PI / 2,
-          Math.min(Math.PI / 2, playerRotation.x),
-        );
-        camera.rotation.copy(playerRotation);
-      }
-
-      direction
-        .subVectors(frontVector, sideVector)
-        .normalize()
-        .multiplyScalar(speed)
-        .applyEuler(new Euler(0, camera.rotation.y, 0));
-
-      const nextX = camera.position.x + direction.x;
-      const nextZ = camera.position.z + direction.z;
-
-      // Collision Check with Grid
-      const ix = Math.round((nextX - startOffset) / CELL_SIZE);
-      const iz = Math.round((nextZ - startOffset) / CELL_SIZE);
-      let collided = false;
-
-      if (occupiedGrids.has(`${ix},${iz}`)) {
-        const cX = startOffset + ix * CELL_SIZE;
-        const cZ = startOffset + iz * CELL_SIZE;
-        const dims = occupiedGrids.get(`${ix},${iz}`);
-        if (dims) {
-          if (
-            Math.abs(nextX - cX) < dims.halfW + 2 &&
-            Math.abs(nextZ - cZ) < dims.halfD + 2
-          ) {
-            collided = true;
-          }
-        }
-      }
-
-      if (!collided) {
-        camera.position.x = nextX;
-        camera.position.z = nextZ;
-      }
-
-      // Bounds check
-      if (camera.position.x > BOUNDS) camera.position.x = -BOUNDS;
-      if (camera.position.x < -BOUNDS) camera.position.x = BOUNDS;
-      if (camera.position.z > BOUNDS) camera.position.z = -BOUNDS;
-      if (camera.position.z < -BOUNDS) camera.position.z = BOUNDS;
-
-      // Bobbing and Jumping
-
-      if (isJumping.value) {
-        camera.position.y += velocityY;
-
-        velocityY -= gravity;
-
-        if (camera.position.y <= groundPosition) {
-          camera.position.y = groundPosition;
-
-          isJumping.value = false;
-
-          velocityY = 0;
-        }
-      } else {
-        if (
-          controls.value.forward ||
-          controls.value.backward ||
-          controls.value.left ||
-          controls.value.right
-        ) {
-          camera.position.y =
-            groundPosition + Math.sin(Date.now() * 0.01) * 0.1;
-        } else {
-          camera.position.y = groundPosition;
-        }
-      }
-
-      // Check collisions with cars
-      const hitDistSq = 15 * 15;
-      for (let i = 0; i < cars.length; i++) {
-        const car = cars[i];
-        const distSq = camera.position.distanceToSquared(car.position);
-
-        if (distSq < hitDistSq) {
-          if (!car.userData.isPlayerHit) {
-            car.userData.isPlayerHit = true;
-            carAudio.playCrash();
-          }
-        } else {
-          if (car.userData.isPlayerHit) {
-            car.userData.isPlayerHit = false;
-          }
-        }
-      }
-    }
-  }
-
+  // Global Logic (e.g. World Simulation) logic that runs regardless of mode (or if not handled by mode)
+  
   // Move cars & Handle Collisions
-
+  // Note: DrivingMode handles the PLAYER car. We should skip it here if it's Player Controlled.
+  
   for (let i = 0; i < cars.length; i++) {
     const car = cars[i];
 
-    // Player Control Logic
     if (car.userData.isPlayerControlled) {
-      let speed = car.userData.currentSpeed || 0;
-      const maxSpeed = 2;
-      const acceleration = 0.1;
-      const friction = 0.98;
+       // Skip physics update for player car here, let DrivingMode handle it
+       // But we still need checking for collision with OTHER cars?
+       // DrivingMode checks collision with environment.
+       // We might need to handle car-car collision here or in DrivingMode.
+       // Current implementation of checks is below (N^2 check).
+       continue;
+    }
 
-      // Gas / Brake
-      if (controls.value.forward) {
-        speed += acceleration;
-      } else if (controls.value.backward) {
-        speed -= acceleration;
-      }
-
-      // Friction
-      speed *= friction;
-
-      // Max Speed Cap
-      if (speed > maxSpeed) speed = maxSpeed;
-      if (speed < -maxSpeed / 2) speed = -maxSpeed / 2;
-
-      car.userData.currentSpeed = speed;
-
-      // Update Audio
-      carAudio.update(speed);
-
-      // Steering (only if moving)
-      if (Math.abs(speed) > 0.1) {
-        const dir = speed > 0 ? 1 : -1;
-        const turnSpeed = 0.04 / (Math.abs(Math.sqrt(speed)) + 1);
-
-        if (controls.value.left) {
-          car.rotation.y += turnSpeed * dir;
-        }
-        if (controls.value.right) {
-          car.rotation.y -= turnSpeed * dir;
-        }
-      }
-
-      // Apply Velocity
-      car.position.x += Math.sin(car.rotation.y) * speed;
-      car.position.z += Math.cos(car.rotation.y) * speed;
-
-      // Simple Bounds Check
-      if (
-        car.position.x > BOUNDS ||
-        car.position.x < -BOUNDS ||
-        car.position.z > BOUNDS ||
-        car.position.z < -BOUNDS
-      ) {
-        // Wrap around? Or stop?
-        // Let's wrap around for endless driving
-        if (car.position.x > BOUNDS) car.position.x = -BOUNDS;
-        if (car.position.x < -BOUNDS) car.position.x = BOUNDS;
-        if (car.position.z > BOUNDS) car.position.z = -BOUNDS;
-        if (car.position.z < -BOUNDS) car.position.z = BOUNDS;
-      }
-
-      // Building Collision (Simple Box Check)
-      // Uses grid logic similar to sparks
-      const ix = Math.round((car.position.x - startOffset) / CELL_SIZE);
-      const iz = Math.round((car.position.z - startOffset) / CELL_SIZE);
-
-      if (occupiedGrids.has(`${ix},${iz}`)) {
-        const cX = startOffset + ix * CELL_SIZE;
-        const cZ = startOffset + iz * CELL_SIZE;
-        const dims = occupiedGrids.get(`${ix},${iz}`);
-
-        // Approx building half-width + car half-width (radius ~5)
-        if (
-          dims &&
-          Math.abs(car.position.x - cX) < dims.halfW + 5 &&
-          Math.abs(car.position.z - cZ) < dims.halfD + 5
-        ) {
-          // Collision - Bounce
-          car.userData.currentSpeed *= -0.5;
-          carAudio.playCrash();
-          // Push out slightly
-          const dx = car.position.x - cX;
-          const dz = car.position.z - cZ;
-          car.position.x += Math.sign(dx) * 2;
-          car.position.z += Math.sign(dz) * 2;
-
-          spawnSparks(car.position);
-        }
-      }
-    } else if (!car.userData.fading) {
+    if (!car.userData.fading) {
       // AI Movement
       if (!car.userData.isPlayerHit) {
         if (car.userData.axis === "x") {
@@ -1899,7 +1451,6 @@ function animate() {
       }
     } else {
       // Fading out logic
-      // Move slightly slower while fading? Or just drift
       if (car.userData.axis === "x") {
         car.position.x += car.userData.speed * 0.5 * car.userData.dir;
       } else {
@@ -1915,7 +1466,6 @@ function animate() {
           if (child instanceof Mesh) {
             const mat = child.material;
             if (!Array.isArray(mat)) {
-              // Scale current opacity relative to original
               const original =
                 child.userData.originalOpacity !== undefined
                   ? child.userData.originalOpacity
@@ -1928,10 +1478,7 @@ function animate() {
     }
   }
 
-  // Check Collisions (naive O(N^2) but N=150 is fine)
-  // Only check non-fading cars
-  // Reduced collision rate by decreasing collision distance threshold slightly
-  // and adding a random chance check
+  // Check Collisions
   const actualCollisionDist = 6;
 
   for (let i = 0; i < cars.length; i++) {
@@ -1941,10 +1488,6 @@ function animate() {
     for (let j = i + 1; j < cars.length; j++) {
       const carB = cars[j];
       if (carB.userData.fading) continue;
-
-      // If one is player controlled, we handle collision differently?
-      // For now, treat same as AI collision (explode/fade both)
-      // But maybe give player immunity or just bounce?
 
       const dx = carA.position.x - carB.position.x;
       const dz = carA.position.z - carB.position.z;
@@ -1980,19 +1523,11 @@ function animate() {
         carA.userData.fading = true;
         carB.userData.fading = true;
 
-        // Bounce (reverse direction)
         carA.userData.dir *= -1;
         carB.userData.dir *= -1;
 
-        // Slight visual bounce effect?
-        // Maybe rotate them a bit to look like a crash
         carA.rotation.y += Math.random() - 0.5;
         carB.rotation.y += Math.random() - 0.5;
-
-        // Spawn sparks at midpoint
-        // const midX = (carA.position.x + carB.position.x) / 2;
-        // const midZ = (carA.position.z + carB.position.z) / 2;
-        // spawnSparks(new Vector3(midX, 2, midZ));
       }
     }
   }
@@ -2004,27 +1539,22 @@ function animate() {
 
     for (let i = 0; i < sparkCount; i++) {
       if (sparkLifetimes[i] > 0) {
-        // Gravity and movement
         sparkVelocities[i * 3 + 1] -= 0.1; // gravity
-
         positions[i * 3] += sparkVelocities[i * 3];
         positions[i * 3 + 1] += sparkVelocities[i * 3 + 1];
         positions[i * 3 + 2] += sparkVelocities[i * 3 + 2];
 
-        // Ground collision
         if (positions[i * 3 + 1] < 0) {
           positions[i * 3 + 1] = 0;
-          sparkVelocities[i * 3 + 1] *= -0.5; // bounce
+          sparkVelocities[i * 3 + 1] *= -0.5;
         }
 
-        // Building Collision (approximate)
-        // Buildings are centered at startOffset + k * CELL_SIZE
-        const ix = Math.round((positions[i * 3] - startOffset) / CELL_SIZE);
-        const iz = Math.round((positions[i * 3 + 2] - startOffset) / CELL_SIZE);
+        const ix = Math.round((positions[i * 3] - START_OFFSET) / CELL_SIZE);
+        const iz = Math.round((positions[i * 3 + 2] - START_OFFSET) / CELL_SIZE);
 
         if (occupiedGrids.has(`${ix},${iz}`)) {
-          const cX = startOffset + ix * CELL_SIZE;
-          const cZ = startOffset + iz * CELL_SIZE;
+          const cX = START_OFFSET + ix * CELL_SIZE;
+          const cZ = START_OFFSET + iz * CELL_SIZE;
           const dims = occupiedGrids.get(`${ix},${iz}`);
 
           if (
@@ -2032,15 +1562,13 @@ function animate() {
             Math.abs(positions[i * 3] - cX) < dims.halfW &&
             Math.abs(positions[i * 3 + 2] - cZ) < dims.halfD
           ) {
-            // Hit building
             sparkLifetimes[i] = 0;
           }
         }
 
-        sparkLifetimes[i] -= 0.02; // decay
+        sparkLifetimes[i] -= 0.02;
         if (sparkLifetimes[i] < 0) {
           sparkLifetimes[i] = 0;
-          // Hide below ground
           positions[i * 3 + 1] = -100;
         }
         needsUpdate = true;
@@ -2051,133 +1579,61 @@ function animate() {
     }
   }
 
-  // Move drones
-  if (drones) {
+  // Move drones (Default Behavior if NOT handled by DroneMode)
+  // DroneMode automatically updates them in its update() method.
+  // We check if we are in DroneMode. If so, skip.
+  const isDroneMode = gameModeManager.getMode() instanceof DroneMode;
+  
+  if (drones && !isDroneMode) {
     const positions = drones.geometry.attributes.position.array;
+    
+    // Standard Mode: Oscillation around target
+    if (droneTargetPositions) {
+        const easing = 0.02;
+        const oscTime = Date.now() * 0.001;
 
-    if (isGameMode.value && droneVelocities) {
-      // Game Mode: Physics based movement
-      for (let i = 0; i < positions.length / 3; i++) {
-        if (deadDrones.has(i)) continue;
+        for (let i = 0; i < positions.length / 3; i++) {
+            if (deadDrones.has(i)) continue;
 
-        positions[i * 3] += droneVelocities[i * 3];
-        positions[i * 3 + 1] += droneVelocities[i * 3 + 1];
-        positions[i * 3 + 2] += droneVelocities[i * 3 + 2];
+            const offset = i;
+            const oscX = Math.sin(oscTime + offset) * 20;
+            const oscY = Math.cos(oscTime * 0.5 + offset) * 10;
+            const oscZ = Math.sin(oscTime * 0.8 + offset) * 20;
 
-        // Bounds check (wrap around)
-        const range = 2000;
-        if (positions[i * 3] > range) positions[i * 3] = -range;
-        if (positions[i * 3] < -range) positions[i * 3] = range;
+            const targetX = droneTargetPositions[i * 3] + oscX;
+            const targetY = droneTargetPositions[i * 3 + 1] + oscY;
+            const targetZ = droneTargetPositions[i * 3 + 2] + oscZ;
 
-        if (positions[i * 3 + 1] > 1000) positions[i * 3 + 1] = 0;
-        if (positions[i * 3 + 1] < 0) positions[i * 3 + 1] = 1000;
-
-        if (positions[i * 3 + 2] > range) positions[i * 3 + 2] = -range;
-        if (positions[i * 3 + 2] < -range) positions[i * 3 + 2] = range;
-      }
-    } else if (droneTargetPositions) {
-      // Standard Mode: Oscillation around target
-      const easing = 0.02;
-      const oscTime = Date.now() * 0.001;
-
-      for (let i = 0; i < positions.length / 3; i++) {
-        if (deadDrones.has(i)) continue;
-
-        const offset = i;
-
-        const oscX = Math.sin(oscTime + offset) * 20;
-        const oscY = Math.cos(oscTime * 0.5 + offset) * 10;
-        const oscZ = Math.sin(oscTime * 0.8 + offset) * 20;
-
-        const targetX = droneTargetPositions[i * 3] + oscX;
-        const targetY = droneTargetPositions[i * 3 + 1] + oscY;
-        const targetZ = droneTargetPositions[i * 3 + 2] + oscZ;
-
-        positions[i * 3] += (targetX - positions[i * 3]) * easing;
-        positions[i * 3 + 1] += (targetY - positions[i * 3 + 1]) * easing;
-        positions[i * 3 + 2] += (targetZ - positions[i * 3 + 2]) * easing;
-      }
+            positions[i * 3] += (targetX - positions[i * 3]) * easing;
+            positions[i * 3 + 1] += (targetY - positions[i * 3 + 1]) * easing;
+            positions[i * 3 + 2] += (targetZ - positions[i * 3 + 2]) * easing;
+        }
+        drones.geometry.attributes.position.needsUpdate = true;
     }
-    drones.geometry.attributes.position.needsUpdate = true;
   }
 
-  // Camera movement
-  if (isDrivingMode.value && activeCar.value) {
-    // Follow the car
-    const car = activeCar.value;
-    const angle = car.rotation.y;
-    const dist = 40;
-    const height = 20;
-
-    const targetX = car.position.x - Math.sin(angle) * dist;
-    const targetZ = car.position.z - Math.cos(angle) * dist;
-    const targetY = car.position.y + height;
-
-    // Smooth follow
-    camera.position.x += (targetX - camera.position.x) * 0.1;
-    camera.position.z += (targetZ - camera.position.z) * 0.1;
-    camera.position.y += (targetY - camera.position.y) * 0.1;
-
-    camera.lookAt(car.position.x, car.position.y, car.position.z);
-  } else if (isFlyingTour.value) {
-    // Flying Tour Mode
-    const tourSpeed = 0.15;
-
-    // More complex path: Figure-8ish / weaving
-    // Main circular orbit
-    const xBase = Math.sin(time * tourSpeed) * 1200;
-    const zBase = Math.cos(time * tourSpeed) * 800;
-
-    // Secondary wave for weaving
-    const xWeave = Math.sin(time * tourSpeed * 3) * 300;
-
-    camera.position.x = xBase + xWeave;
-    camera.position.z = zBase;
-
-    // Dynamic height: Dive down and up
-    // Base height 250, amplitude 150. Go between 100 and 400.
-    camera.position.y = 250 + Math.sin(time * tourSpeed * 2) * 150;
-
-    // Look ahead logic
-    // Calculate derivative (approx velocity direction)
-    const delta = 0.1;
-    const futureTime = time + delta;
-
-    const fxBase = Math.sin(futureTime * tourSpeed) * 1200;
-    const fzBase = Math.cos(futureTime * tourSpeed) * 800;
-    const fxWeave = Math.sin(futureTime * tourSpeed * 3) * 300;
-
-    const nextX = fxBase + fxWeave;
-    const nextZ = fzBase;
-    const nextY = 250 + Math.sin(futureTime * tourSpeed * 2) * 150;
-
-    camera.lookAt(nextX, nextY, nextZ);
-
-    // Banking effect (roll)
-    // Roll based on turn sharpness?
-    // Simplified: Roll towards center of turn.
-    // We can just rely on lookAt for pitch/yaw, but maybe add slight roll if we were using quaternions manually.
-    // For now, lookAt next position gives a nice "flight" feeling compared to looking at 0,0,0.
-
-  } else if (!isExplorationMode.value) {
+  // Camera movement (Orbit if no mode logic)
+  // If GameMode is active, it handles camera.
+  // Exception: DrivingMode handles camera. ExplorationMode handles camera. FlyingTourMode handles camera.
+  // If we receive "Standard Orbit" logic inside the mode? No.
+  // If gameModeManager.getMode() is null, or update() doesn't set camera, we do orbit.
+  
+  if (!gameModeManager.getMode()) {
     // Standard Orbit
     const orbitRadius = isMobile.value ? 1400 : 800;
     camera.position.x = Math.sin(time * 0.1) * orbitRadius;
     camera.position.z = Math.cos(time * 0.1) * orbitRadius;
 
-    // Recalculate Y if we were in driving mode
     const targetY = isMobile.value ? 350 : 250;
     if (Math.abs(camera.position.y - targetY) > 1) {
       camera.position.y += (targetY - camera.position.y) * 0.05;
     }
 
-    const targetLookAt = isGameMode.value
-      ? new Vector3(0, 500, 0)
-      : new Vector3(0, 0, 0);
+    const targetLookAt = new Vector3(0, 0, 0); 
     currentLookAt.lerp(targetLookAt, 0.02);
     camera.lookAt(currentLookAt);
   }
-
+  
   renderer.render(scene, camera);
 }
 

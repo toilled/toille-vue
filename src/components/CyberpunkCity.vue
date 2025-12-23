@@ -179,7 +179,7 @@ import { ExplorationMode } from "../game/modes/ExplorationMode";
 import { FlyingTourMode } from "../game/modes/FlyingTourMode";
 import { GameContext } from "../game/types";
 import { carAudio } from "../game/audio/CarAudio";
-import { BOUNDS, CELL_SIZE, START_OFFSET, CITY_SIZE, BLOCK_SIZE, ROAD_WIDTH, GRID_SIZE } from "../game/config";
+import { BOUNDS, CELL_SIZE, START_OFFSET, CITY_SIZE, BLOCK_SIZE, ROAD_WIDTH, GRID_SIZE, DRONE_COUNT } from "../game/config";
 import { KonamiManager } from "../game/KonamiManager";
 
 const canvasContainer = ref<HTMLDivElement | null>(null);
@@ -1059,7 +1059,7 @@ onMounted(() => {
 
   // Drone Swarm (formerly Starfield)
   const droneGeo = new BufferGeometry();
-  const droneCount = 1000;
+  const droneCount = DRONE_COUNT;
   const dronePositions = new Float32Array(droneCount * 3);
   const droneColorsArray = new Float32Array(droneCount * 3);
   droneTargetPositions = new Float32Array(droneCount * 3);
@@ -1068,9 +1068,10 @@ onMounted(() => {
   // Initialize Base Positions
   const baseRand = mulberry32(1337);
   for (let i = 0; i < droneCount; i++) {
-    droneBasePositions[i * 3] = (baseRand() - 0.5) * 4000;
+    const range = BOUNDS * 2;
+    droneBasePositions[i * 3] = (baseRand() - 0.5) * range;
     droneBasePositions[i * 3 + 1] = 300 + baseRand() * 800;
-    droneBasePositions[i * 3 + 2] = (baseRand() - 0.5) * 4000;
+    droneBasePositions[i * 3 + 2] = (baseRand() - 0.5) * range;
   }
 
   const dColor1 = new Color(0xff0000); // Red

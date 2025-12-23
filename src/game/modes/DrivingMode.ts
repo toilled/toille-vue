@@ -76,12 +76,21 @@ export class DrivingMode implements GameMode {
         let speed = car.userData.currentSpeed || 0;
         const maxSpeed = 2;
         const acceleration = 0.1;
-        const friction = 0.98;
+        const braking = 0.05;
+        const friction = 0.99;
 
         if (controls.value.forward) {
-            speed += acceleration;
+            if (speed < 0) {
+                speed += braking;
+            } else {
+                speed += acceleration;
+            }
         } else if (controls.value.backward) {
-            speed -= acceleration;
+            if (speed > 0) {
+                speed -= braking;
+            } else {
+                speed -= acceleration;
+            }
         }
 
         speed *= friction;

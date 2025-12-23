@@ -1376,7 +1376,7 @@ function generateDroneTargets(path: string) {
 watch(
   () => route.path,
   (newPath) => {
-    if (!isGameMode.value) {
+    if (!isGameMode.value && !isDrivingMode.value) {
       generateDroneTargets(newPath);
     }
   },
@@ -1388,7 +1388,7 @@ watch(activeCar, (newCar, oldCar) => {
 });
 
 watch(score, (val) => {
-  if (val >= 500 && !isGameMode.value) {
+  if (val >= 500 && !isGameMode.value && !isDrivingMode.value) {
     startTargetPractice();
   }
 });

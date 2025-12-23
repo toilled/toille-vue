@@ -1,5 +1,6 @@
 import { GameContext, GameMode } from "../types";
 import { Raycaster, Vector2, Vector3, BufferAttribute } from "three";
+import { BOUNDS, DRONE_COUNT } from "../config";
 
 export class DroneMode implements GameMode {
     context: GameContext | null = null;
@@ -12,7 +13,7 @@ export class DroneMode implements GameMode {
     init(context: GameContext) {
         this.context = context;
 
-        const droneCount = 1000; // Hardcoded in original component
+        const droneCount = DRONE_COUNT; // Hardcoded in original component
         this.droneVelocities = new Float32Array(droneCount * 3);
 
         for (let i = 0; i < droneCount; i++) {
@@ -32,7 +33,7 @@ export class DroneMode implements GameMode {
         const positions = drones.geometry.attributes.position.array as Float32Array;
 
         const count = positions.length / 3;
-        const range = 2000;
+        const range = BOUNDS;
 
         for (let i = 0; i < count; i++) {
             if (this.deadDrones.has(i)) continue;

@@ -147,7 +147,15 @@ vi.mock("three", async () => {
       removeEventListener() { }
     },
     Group: class {
-      position = { x: 0, y: 0, z: 0, set: vi.fn(), copy: vi.fn() };
+      position = {
+        x: 0,
+        y: 0,
+        z: 0,
+        set: vi.fn(),
+        copy: vi.fn(),
+        distanceTo: vi.fn(),
+        distanceToSquared: vi.fn(),
+      };
       rotation = { x: 0, y: 0, z: 0, copy: vi.fn() };
       userData: any = {};
       visible = true;

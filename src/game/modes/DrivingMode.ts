@@ -1,20 +1,18 @@
 import { GameContext, GameMode } from "../types";
 import { carAudio } from "../audio/CarAudio";
-import { BOUNDS, CELL_SIZE, START_OFFSET } from "../config";
-import { Vector3 } from "three";
+import { BOUNDS, CELL_SIZE, START_OFFSET, GRID_SIZE, CITY_SIZE } from "../config";
+import { Vector3, Group, BoxGeometry, MeshStandardMaterial, Mesh, SpotLight, Object3D } from "three";
 
 export class DrivingMode implements GameMode {
     context: GameContext | null = null;
+    redCar: Group | null = null;
+    redCarSpeed: number = 0;
+    redCarDir: Vector3 = new Vector3(0, 0, 0);
 
     init(context: GameContext) {
         this.context = context;
         if (!context.activeCar.value && context.cars.length > 0) {
             // Find a car to control (e.g. first one)
-            // In original code, it was set by clicking.
-            // If we switch to this mode, we assume a car is already selected OR we select one.
-            // If triggered by click, activeCar is already set in CyberpunkCity before switching?
-            // Or we pass the car to init?
-            // Let's assume activeCar is set by the trigger mechanism (click)
         }
 
         if (context.activeCar.value) {
@@ -24,12 +22,92 @@ export class DrivingMode implements GameMode {
             context.isGameOver.value = false;
             context.spawnCheckpoint();
             carAudio.start();
+
+            // Init Red Car Speed
+            this.redCarSpeed = 1.4;
+
+            // Spawn Red Car
+            this.spawnRedCar();
+        }
+    }
+
+    spawnRedCar() {
+        if (!this.context) return;
+
+        // Create Red Car Mesh
+        const carGroup = new Group();
+
+        // Car Body
+        const bodyGeo = new BoxGeometry(14, 4, 30);
+        const bodyMat = new MeshStandardMaterial({ color: 0xff0000, roughness: 0.2, metalness: 0.6 });
+        const body = new Mesh(bodyGeo, bodyMat);
+        body.position.y = 3;
+        body.castShadow = true;
+        carGroup.add(body);
+
+        // Cabin
+        const cabinGeo = new BoxGeometry(12, 3, 16);
+        const cabinMat = new MeshStandardMaterial({ color: 0x330000, roughness: 0.2, metalness: 0.8 });
+        const cabin = new Mesh(cabinGeo, cabinMat);
+        cabin.position.y = 6.5;
+        cabin.position.z = -2;
+        carGroup.add(cabin);
+
+        // Add Lights (Red Glow)
+        const light = new SpotLight(0xff0000, 200, 100, Math.PI / 3, 0.5, 1);
+        light.position.set(0, 10, 0);
+        const target = new Object3D();
+        target.position.set(0, 0, 10);
+        carGroup.add(target);
+        light.target = target;
+        carGroup.add(light);
+
+        this.redCar = carGroup;
+        this.context.scene.add(this.redCar);
+
+        // Position it far away
+        this.respawnRedCar();
+    }
+
+    respawnRedCar() {
+        if (!this.context || !this.redCar) return;
+        const player = this.context.activeCar.value;
+        if (!player) return;
+
+        // Find a valid road position far from player
+        let spawned = false;
+        let attempts = 0;
+        while (!spawned && attempts < 20) {
+            const roadIndex = Math.floor(Math.random() * (GRID_SIZE + 1));
+            const roadCoordinate = START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
+            const otherCoord = (Math.random() - 0.5) * CITY_SIZE;
+
+            const axis = Math.random() > 0.5 ? 'x' : 'z';
+            let x, z;
+
+            if (axis === 'x') {
+                z = roadCoordinate; // Road runs x-axis
+                x = otherCoord;
+                this.redCar.rotation.y = Math.random() > 0.5 ? Math.PI / 2 : -Math.PI / 2;
+            } else {
+                x = roadCoordinate; // Road runs z-axis
+                z = otherCoord;
+                this.redCar.rotation.y = Math.random() > 0.5 ? 0 : Math.PI;
+            }
+
+            // Check dist
+            const dist = Math.sqrt((x - player.position.x) ** 2 + (z - player.position.z) ** 2);
+            if (dist > 500) {
+                this.redCar.position.set(x, 1, z);
+                spawned = true;
+            }
+            attempts++;
         }
     }
 
     update(dt: number, time: number) {
         if (!this.context) return;
-        const { activeCar, timeLeft, checkpointMesh, navArrow, score, playPewSound, spawnCheckpoint, controls, cars, occupiedGrids, spawnSparks, camera, isGameOver, distToTarget } = this.context;
+        const { activeCar, timeLeft, checkpointMesh, navArrow, score, playPewSound, spawnCheckpoint, controls, occupiedGrids, spawnSparks, camera, isGameOver, distToTarget } = this.context;
 
         if (!activeCar.value) return;
 
@@ -37,17 +115,16 @@ export class DrivingMode implements GameMode {
 
         if (isGameOver.value) {
             // Force stop if game over
-            car.userData.currentSpeed *= 0.95; // Decelerate quickly
+            car.userData.currentSpeed *= 0.95;
             if (Math.abs(car.userData.currentSpeed) < 0.01) car.userData.currentSpeed = 0;
             carAudio.update(car.userData.currentSpeed);
 
-            // Still update position based on momentum
             const speed = car.userData.currentSpeed;
             car.position.x += Math.sin(car.rotation.y) * speed;
             car.position.z += Math.cos(car.rotation.y) * speed;
 
             // Still follow camera
-             const angle = car.rotation.y;
+            const angle = car.rotation.y;
             const dist = 40;
             const height = 20;
             const targetX = car.position.x - Math.sin(angle) * dist;
@@ -67,7 +144,6 @@ export class DrivingMode implements GameMode {
         if (timeLeft.value <= 0) {
             timeLeft.value = 0;
             isGameOver.value = true;
-            // Hide nav arrow
             navArrow.visible = false;
         } else {
             // Checkpoint Logic
@@ -84,6 +160,9 @@ export class DrivingMode implements GameMode {
                 timeLeft.value += 15;
                 playPewSound();
                 spawnCheckpoint();
+
+                // Increase Difficulty
+                this.redCarSpeed = Math.min(this.redCarSpeed + 0.1, 2.2);
             }
 
             // Update Nav Arrow
@@ -176,20 +255,115 @@ export class DrivingMode implements GameMode {
         camera.position.z += (targetZ - camera.position.z) * 0.1;
         camera.position.y += (targetY - camera.position.y) * 0.1;
         camera.lookAt(car.position.x, car.position.y, car.position.z);
+
+        // Update Red Car
+        this.updateRedCar(car);
+    }
+
+    updateRedCar(playerCar: Group) {
+        if (!this.redCar) return;
+
+        const redSpeed = this.redCarSpeed;
+
+        // Move Forward
+        this.redCar.position.x += Math.sin(this.redCar.rotation.y) * redSpeed;
+        this.redCar.position.z += Math.cos(this.redCar.rotation.y) * redSpeed;
+
+        // Wrap Bounds for Red Car
+        if (this.redCar.position.x > BOUNDS) this.redCar.position.x = -BOUNDS;
+        if (this.redCar.position.x < -BOUNDS) this.redCar.position.x = BOUNDS;
+        if (this.redCar.position.z > BOUNDS) this.redCar.position.z = -BOUNDS;
+        if (this.redCar.position.z < -BOUNDS) this.redCar.position.z = BOUNDS;
+
+        // Interaction Logic: Intersections
+        const roadHalf = CELL_SIZE / 2;
+        const gridX = Math.round((this.redCar.position.x - START_OFFSET - roadHalf) / CELL_SIZE);
+        const gridZ = Math.round((this.redCar.position.z - START_OFFSET - roadHalf) / CELL_SIZE);
+
+        const interX = START_OFFSET + gridX * CELL_SIZE + roadHalf;
+        const interZ = START_OFFSET + gridZ * CELL_SIZE + roadHalf;
+
+        const distToInter = Math.sqrt((this.redCar.position.x - interX) ** 2 + (this.redCar.position.z - interZ) ** 2);
+
+        if (distToInter < 5) {
+            const directions = [0, Math.PI / 2, Math.PI, -Math.PI / 2];
+
+            let bestDir = this.redCar.rotation.y;
+            let minDst = Infinity;
+
+            const curDirX = Math.sin(this.redCar.rotation.y);
+            const curDirZ = Math.cos(this.redCar.rotation.y);
+
+            for (const dir of directions) {
+                const dx = Math.sin(dir);
+                const dz = Math.cos(dir);
+
+                const dot = dx * curDirX + dz * curDirZ;
+                if (dot < -0.9) continue;
+
+                const px = this.redCar.position.x + dx * 100;
+                const pz = this.redCar.position.z + dz * 100;
+
+                const d = (px - playerCar.position.x) ** 2 + (pz - playerCar.position.z) ** 2;
+
+                if (d < minDst) {
+                    minDst = d;
+                    bestDir = dir;
+                }
+            }
+
+            this.redCar.position.x = interX;
+            this.redCar.position.z = interZ;
+
+            this.redCar.rotation.y = bestDir;
+
+            this.redCar.position.x += Math.sin(bestDir) * 6;
+            this.redCar.position.z += Math.cos(bestDir) * 6;
+        }
+
+        // Check Collision with Player
+        const distToPlayer = this.redCar.position.distanceTo(playerCar.position);
+        if (distToPlayer < 10) {
+            if (this.context && this.context.isGameOver) {
+                this.context.isGameOver.value = true;
+            }
+        }
+
+        // Update Chase Arrow
+        if (this.context && this.context.chaseArrow) {
+            const arrow = this.context.chaseArrow;
+            arrow.visible = true;
+            arrow.position.copy(playerCar.position);
+            arrow.position.y += 3; // Approx same level as car body
+            arrow.lookAt(this.redCar.position);
+
+            const dist = this.redCar.position.distanceTo(playerCar.position);
+            let op = 0;
+            if (dist < 200) op = 1;
+            else if (dist > 600) op = 0;
+            else op = 1 - (dist - 200) / 400;
+
+            arrow.traverse((c: any) => {
+                if (c.material) c.material.opacity = op;
+            });
+        }
     }
 
     cleanup() {
         if (this.context) {
             if (this.context.activeCar.value) {
                 this.context.activeCar.value.userData.isPlayerControlled = false;
-                // Don't null it here immediately if we want to reset it properly or reuse logic
-                // But originally `exitGameMode` set it to null.
                 this.context.activeCar.value = null;
             }
             this.context.navArrow.visible = false;
+            if (this.context.chaseArrow) this.context.chaseArrow.visible = false;
             if (this.context.checkpointMesh) this.context.checkpointMesh.visible = false;
 
-            // Reset controls
+            if (this.redCar) {
+                this.context.scene.remove(this.redCar);
+                this.redCar = null;
+            }
+
             const c = this.context.controls.value;
             c.forward = false;
             c.backward = false;

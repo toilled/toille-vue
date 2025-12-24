@@ -45,6 +45,7 @@ export interface GameContext {
     // Shared Objects
     checkpointMesh: any; // Mesh but typing might differ
     navArrow: Group;
+    chaseArrow: Group;
 }
 
 export interface GameMode {

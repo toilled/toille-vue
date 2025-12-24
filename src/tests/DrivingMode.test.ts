@@ -39,7 +39,9 @@ describe('DrivingMode Physics', () => {
             cars: [],
             occupiedGrids: new Map(),
             spawnSparks: vi.fn(),
-            camera: { position: new THREE.Vector3(0, 20, 40), lookAt: vi.fn() }
+            camera: { position: new THREE.Vector3(0, 20, 40), lookAt: vi.fn() },
+            isGameOver: { value: false },
+            distToTarget: { value: 0 }
         };
 
         drivingMode.init(mockContext);

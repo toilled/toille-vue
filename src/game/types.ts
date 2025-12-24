@@ -30,6 +30,8 @@ export interface GameContext {
     timeLeft: Ref<number>;
     activeCar: Ref<Group | null>;
     isMobile: Ref<boolean>;
+    isGameOver: Ref<boolean>;
+    distToTarget: Ref<number>;
 
     // Inputs
     controls: Ref<Controls>;

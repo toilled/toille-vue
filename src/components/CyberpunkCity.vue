@@ -272,7 +272,7 @@ const CAR_COUNT = 150;
 // Function to reset/spawn a car
 function addLightsToCar(car: Group) {
   // Headlights
-  const hlColor = 0xffffaa;
+  const hlColor = 0x39ff14;
   const hlIntensity = 2000;
   const hlDist = 800;
   const hlAngle = Math.PI / 4.5; // Narrower angle to prevent reaching too high
@@ -319,7 +319,7 @@ function addLightsToCar(car: Group) {
   car.add(hl2);
 
   // Taillights
-  const tlColor = 0xff0000;
+  const tlColor = 0xbe00fe;
   const tlIntensity = 150; // Reduced intensity
   const tlDist = 50;
   const tlAngle = Math.PI / 2.5;
@@ -441,7 +441,7 @@ function createWindowTexture() {
     for (let y = 2; y < 64; y += 4) {
       for (let x = 2; x < 32; x += 4) {
         if (Math.random() > 0.6) {
-          ctx.fillStyle = Math.random() > 0.5 ? "#ff00cc" : "#00ccff";
+          ctx.fillStyle = Math.random() > 0.5 ? "#be00fe" : "#39ff14";
           ctx.fillRect(x, y, 2, 2);
         }
       }
@@ -526,7 +526,7 @@ function createBillboardTextures() {
       ctx.fillRect(0, 0, 128, 64);
 
       // Neon border
-      const colors = ["#ff00cc", "#00ffcc", "#ffff00", "#ff0000", "#00ff00"];
+      const colors = ["#be00fe", "#39ff14", "#ffffff", "#ff0066", "#39ff14"];
       const color = colors[i % colors.length];
 
       ctx.strokeStyle = color;
@@ -774,8 +774,8 @@ onMounted(() => {
 
   // Scene setup
   scene = new Scene();
-  scene.background = new Color(0x050510);
-  scene.fog = new FogExp2(0x050510, 0.001); // Reduced fog density
+  scene.background = new Color(0x050505);
+  scene.fog = new FogExp2(0x050505, 0.0012); // Reduced fog density for visibility
 
   // Camera setup
   camera = new PerspectiveCamera(
@@ -794,14 +794,14 @@ onMounted(() => {
   canvasContainer.value.appendChild(renderer.domElement);
 
   // Lighting
-  const ambientLight = new AmbientLight(0xffffff, 0.2);
+  const ambientLight = new AmbientLight(0xffffff, 0.4); // Increased ambient light
   scene.add(ambientLight);
 
-  const dirLight = new DirectionalLight(0xff00cc, 0.5);
+  const dirLight = new DirectionalLight(0xbe00fe, 0.8); // Increased directional intensity
   dirLight.position.set(100, 200, 100);
   scene.add(dirLight);
 
-  const dirLight2 = new DirectionalLight(0x00ccff, 0.5);
+  const dirLight2 = new DirectionalLight(0x39ff14, 0.8); // Increased directional intensity
   dirLight2.position.set(-100, 200, -100);
   scene.add(dirLight2);
 
@@ -844,12 +844,12 @@ onMounted(() => {
   });
 
   const edgeMat1 = new LineBasicMaterial({
-    color: 0xff00cc,
+    color: 0xbe00fe,
     transparent: true,
     opacity: 0.4,
   });
   const edgeMat2 = new LineBasicMaterial({
-    color: 0x00ccff,
+    color: 0x39ff14,
     transparent: true,
     opacity: 0.4,
   });
@@ -994,20 +994,20 @@ onMounted(() => {
 
   const underglowGeo = new PlaneGeometry(5, 9);
   const underglowMat1 = new MeshBasicMaterial({
-    color: 0xff00cc,
+    color: 0xbe00fe,
     opacity: 0.5,
     transparent: true,
     side: DoubleSide,
   });
   const underglowMat2 = new MeshBasicMaterial({
-    color: 0x00ccff,
+    color: 0x39ff14,
     opacity: 0.5,
     transparent: true,
     side: DoubleSide,
   });
 
-  const tailLightMat = new MeshBasicMaterial({ color: 0xff0000 });
-  const headLightMat = new MeshBasicMaterial({ color: 0xffffaa });
+  const tailLightMat = new MeshBasicMaterial({ color: 0xbe00fe });
+  const headLightMat = new MeshBasicMaterial({ color: 0x39ff14 });
 
   // Hitbox for easier selection
   const hitboxGeo = new BoxGeometry(20, 20, 30);
@@ -1102,9 +1102,9 @@ onMounted(() => {
     droneBasePositions[i * 3 + 2] = (baseRand() - 0.5) * range;
   }
 
-  const dColor1 = new Color(0xff0000); // Red
-  const dColor2 = new Color(0x00ffcc); // Cyan
-  const dColor3 = new Color(0x00ff00); // Green
+  const dColor1 = new Color(0xff0066); // Hot Pink
+  const dColor2 = new Color(0xbe00fe); // Purple
+  const dColor3 = new Color(0x39ff14); // Neon Green
   const dColor4 = new Color(0xffffff); // White
 
   // Initial generation
@@ -1149,7 +1149,7 @@ onMounted(() => {
   sparkGeo.setAttribute("position", new BufferAttribute(sparkPositions, 3));
 
   const sparkMat = new PointsMaterial({
-    color: 0xffaa00,
+    color: 0x39ff14,
     size: 3,
     transparent: true,
     opacity: 1,
@@ -1756,12 +1756,12 @@ onBeforeUnmount(() => {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  color: #00ffcc;
+  color: #39ff14;
   font-family: "Courier New", Courier, monospace;
   font-size: 24px;
   font-weight: bold;
   z-index: 10;
-  text-shadow: 0 0 10px #00ffcc;
+  text-shadow: 0 0 10px #39ff14;
   pointer-events: none;
 }
 
@@ -1770,12 +1770,12 @@ onBeforeUnmount(() => {
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  color: #ff00cc;
+  color: #be00fe;
   font-family: "Courier New", Courier, monospace;
   font-size: 32px;
   font-weight: bold;
   z-index: 10;
-  text-shadow: 0 0 10px #ff00cc;
+  text-shadow: 0 0 10px #be00fe;
   pointer-events: none;
 }
 
@@ -1784,12 +1784,12 @@ onBeforeUnmount(() => {
   top: 60px; /* Below timer */
   left: 50%;
   transform: translateX(-50%);
-  color: #ffff00;
+  color: #ffffff;
   font-family: "Courier New", Courier, monospace;
   font-size: 24px;
   font-weight: bold;
   z-index: 10;
-  text-shadow: 0 0 10px #ffff00;
+  text-shadow: 0 0 10px #ffffff;
   pointer-events: none;
 }
 
@@ -1814,21 +1814,21 @@ onBeforeUnmount(() => {
   position: fixed;
   bottom: 20px;
   left: 20px;
-  background: rgba(0, 0, 0, 0.7);
-  color: #ff00cc;
-  border: 1px solid #ff00cc;
+  background: rgba(0, 0, 0, 0.8);
+  color: #be00fe;
+  border: 1px solid #be00fe;
   padding: 10px 20px;
   font-family: "Courier New", Courier, monospace;
   font-size: 18px;
   font-weight: bold;
   cursor: pointer;
   z-index: 10;
-  text-shadow: 0 0 5px #ff00cc;
-  box-shadow: 0 0 10px #ff00cc;
+  text-shadow: 0 0 5px #be00fe;
+  box-shadow: 0 0 10px #be00fe;
 }
 
 #return-button:hover {
-  background: rgba(255, 0, 204, 0.2);
+  background: rgba(190, 0, 254, 0.2);
   color: #ffffff;
   text-shadow: 0 0 10px #ffffff;
 }
@@ -1856,10 +1856,10 @@ onBeforeUnmount(() => {
 .control-btn {
   width: 60px;
   height: 60px;
-  background: rgba(0, 255, 204, 0.2);
-  border: 2px solid #00ffcc;
+  background: rgba(57, 255, 20, 0.2);
+  border: 2px solid #39ff14;
   border-radius: 50%;
-  color: #00ffcc;
+  color: #39ff14;
   font-size: 20px;
   font-weight: bold;
   display: flex;
@@ -1871,7 +1871,7 @@ onBeforeUnmount(() => {
 }
 
 .control-btn:active {
-  background: rgba(0, 255, 204, 0.5);
+  background: rgba(57, 255, 20, 0.5);
   color: #fff;
 }
 
@@ -1885,9 +1885,9 @@ onBeforeUnmount(() => {
   position: absolute;
   width: 30px;
   height: 30px;
-  background: rgba(0, 255, 204, 0.2);
-  border: 1px solid #00ffcc;
-  color: #00ffcc;
+  background: rgba(57, 255, 20, 0.2);
+  border: 1px solid #39ff14;
+  color: #39ff14;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1896,7 +1896,7 @@ onBeforeUnmount(() => {
   touch-action: manipulation;
 }
 .dpad-btn:active {
-  background: rgba(0, 255, 204, 0.5);
+  background: rgba(57, 255, 20, 0.5);
   color: #fff;
 }
 

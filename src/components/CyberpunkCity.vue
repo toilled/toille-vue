@@ -210,6 +210,7 @@ const isTransitioning = ref(false);
 const activeCar = ref<Group | null>(null);
 let checkpointMesh: Mesh;
 let navArrow: Group;
+let chaseArrow: Group;
 const timeLeft = ref(0);
 const isGameOver = ref(false);
 const lastTime = ref(0);
@@ -662,6 +663,29 @@ function createNavArrow() {
 
   navArrow.visible = false;
   scene.add(navArrow);
+}
+
+function createChaseArrow() {
+  chaseArrow = new Group();
+
+  const cone = new Mesh(
+    new ConeGeometry(2, 7.5, 16),
+    new MeshBasicMaterial({
+      color: 0xff0000,
+      depthTest: false,
+      depthWrite: false,
+      transparent: true,
+      opacity: 0.0, // Start invisible
+    }),
+  );
+  cone.rotation.x = Math.PI / 2;
+  cone.position.z = 25; // Offset from center (radius of 25)
+
+  chaseArrow.add(cone);
+  cone.renderOrder = 999;
+
+  chaseArrow.visible = false;
+  scene.add(chaseArrow);
 }
 
 function spawnCheckpoint() {
@@ -1143,6 +1167,7 @@ onMounted(() => {
 
   createCheckpoint();
   createNavArrow();
+  createChaseArrow();
 
   window.addEventListener("resize", onResize);
   window.addEventListener("click", onClick);
@@ -1172,7 +1197,8 @@ onMounted(() => {
     playPewSound,
     spawnCheckpoint,
     checkpointMesh,
-    navArrow
+    navArrow,
+    chaseArrow
   };
   gameModeManager = new GameModeManager(context);
 

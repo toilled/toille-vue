@@ -29,7 +29,7 @@ export class DrivingMode implements GameMode {
 
     update(dt: number, time: number) {
         if (!this.context) return;
-        const { activeCar, timeLeft, checkpointMesh, navArrow, score, playPewSound, spawnCheckpoint, controls, cars, occupiedGrids, spawnSparks, camera, isGameOver } = this.context;
+        const { activeCar, timeLeft, checkpointMesh, navArrow, score, playPewSound, spawnCheckpoint, controls, cars, occupiedGrids, spawnSparks, camera, isGameOver, distToTarget } = this.context;
 
         if (!activeCar.value) return;
 
@@ -77,6 +77,7 @@ export class DrivingMode implements GameMode {
             const tz = checkpointMesh.position.z;
 
             const distSq = (cx - tx) ** 2 + (cz - tz) ** 2;
+            distToTarget.value = Math.sqrt(distSq);
 
             if (distSq < 20 * 20) {
                 score.value += 500;

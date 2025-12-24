@@ -1165,6 +1165,7 @@ onMounted(() => {
     activeCar,
     isMobile,
     isGameOver,
+    distToTarget,
     controls,
     lookControls,
     spawnSparks,

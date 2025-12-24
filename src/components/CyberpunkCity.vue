@@ -7,6 +7,9 @@
   <div v-if="isDrivingMode" id="dist-counter">
     DIST: {{ Math.ceil(distToTarget) }}m
   </div>
+  <div v-if="isDrivingMode && isGameOver" id="game-over">
+    GAME OVER
+  </div>
   <button
     v-if="isGameMode || isDrivingMode || isExplorationMode || isFlyingTour"
     id="return-button"
@@ -208,6 +211,7 @@ const activeCar = ref<Group | null>(null);
 let checkpointMesh: Mesh;
 let navArrow: Group;
 const timeLeft = ref(0);
+const isGameOver = ref(false);
 const lastTime = ref(0);
 const distToTarget = ref(0);
 let gameModeManager: GameModeManager;
@@ -1160,6 +1164,7 @@ onMounted(() => {
     timeLeft,
     activeCar,
     isMobile,
+    isGameOver,
     controls,
     lookControls,
     spawnSparks,
@@ -1299,6 +1304,7 @@ function exitGameMode() {
   }
 
   isGameMode.value = false;
+  isGameOver.value = false;
   score.value = 0;
   emit("game-end");
 
@@ -1758,6 +1764,23 @@ onBeforeUnmount(() => {
   z-index: 10;
   text-shadow: 0 0 10px #ffff00;
   pointer-events: none;
+}
+
+#game-over {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #ff0000;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 64px;
+  font-weight: bold;
+  z-index: 30;
+  text-shadow: 0 0 20px #ff0000;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 20px 40px;
+  border: 4px solid #ff0000;
 }
 
 #return-button {

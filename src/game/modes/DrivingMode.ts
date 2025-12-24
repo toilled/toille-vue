@@ -21,6 +21,7 @@ export class DrivingMode implements GameMode {
             context.activeCar.value.userData.isPlayerControlled = true;
             context.activeCar.value.userData.currentSpeed = 0;
             context.timeLeft.value = 30;
+            context.isGameOver.value = false;
             context.spawnCheckpoint();
             carAudio.start();
         }
@@ -28,23 +29,46 @@ export class DrivingMode implements GameMode {
 
     update(dt: number, time: number) {
         if (!this.context) return;
-        const { activeCar, timeLeft, checkpointMesh, navArrow, score, playPewSound, spawnCheckpoint, controls, cars, occupiedGrids, spawnSparks, camera } = this.context;
+        const { activeCar, timeLeft, checkpointMesh, navArrow, score, playPewSound, spawnCheckpoint, controls, cars, occupiedGrids, spawnSparks, camera, isGameOver } = this.context;
 
         if (!activeCar.value) return;
 
         const car = activeCar.value;
 
+        if (isGameOver.value) {
+            // Force stop if game over
+            car.userData.currentSpeed *= 0.95; // Decelerate quickly
+            if (Math.abs(car.userData.currentSpeed) < 0.01) car.userData.currentSpeed = 0;
+            carAudio.update(car.userData.currentSpeed);
+
+            // Still update position based on momentum
+            const speed = car.userData.currentSpeed;
+            car.position.x += Math.sin(car.rotation.y) * speed;
+            car.position.z += Math.cos(car.rotation.y) * speed;
+
+            // Still follow camera
+             const angle = car.rotation.y;
+            const dist = 40;
+            const height = 20;
+            const targetX = car.position.x - Math.sin(angle) * dist;
+            const targetZ = car.position.z - Math.cos(angle) * dist;
+            const targetY = car.position.y + height;
+
+            camera.position.x += (targetX - camera.position.x) * 0.1;
+            camera.position.z += (targetZ - camera.position.z) * 0.1;
+            camera.position.y += (targetY - camera.position.y) * 0.1;
+            camera.lookAt(car.position.x, car.position.y, car.position.z);
+
+            return;
+        }
+
         // Timer
         timeLeft.value -= dt;
         if (timeLeft.value <= 0) {
             timeLeft.value = 0;
-            // Note: Exit logic needs to be handled by the Manager or Component observing timeLeft?
-            // Or we can emit an event? 
-            // For now, let's just stop the car. 
-            // The original code called exitGameMode() which cleared everything.
-            // We might need a callback or signal to exit.
-            // But GameMode doesn't have reference to Manager to call switch.
-            // We can handle this in the Component via watcher on timeLeft or pass an exit callback in Context.
+            isGameOver.value = true;
+            // Hide nav arrow
+            navArrow.visible = false;
         } else {
             // Checkpoint Logic
             const cx = car.position.x;
@@ -176,7 +200,7 @@ export class DrivingMode implements GameMode {
     }
 
     onKeyDown(event: KeyboardEvent) {
-        if (!this.context) return;
+        if (!this.context || this.context.isGameOver.value) return;
         const c = this.context.controls.value;
         switch (event.key.toLowerCase()) {
             case "w": case "arrowup": c.forward = true; break;
@@ -187,7 +211,7 @@ export class DrivingMode implements GameMode {
     }
 
     onKeyUp(event: KeyboardEvent) {
-        if (!this.context) return;
+        if (!this.context || this.context.isGameOver.value) return;
         const c = this.context.controls.value;
         switch (event.key.toLowerCase()) {
             case "w": case "arrowup": c.forward = false; break;

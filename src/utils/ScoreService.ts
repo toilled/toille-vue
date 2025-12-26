@@ -9,11 +9,16 @@ export const ScoreService = {
     async getTopScores(): Promise<ScoreEntry[]> {
         try {
             const res = await fetch('/api/scores');
-            // If we get an HTML response (likely SPA fallback for 404), treat as error
-            const contentType = res.headers.get("content-type");
-            if (res.ok && contentType && contentType.includes("application/json")) {
-                const data = await res.json();
-                if (Array.isArray(data)) return data;
+
+            if (res.ok) {
+                const contentType = res.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    const data = await res.json();
+                    if (Array.isArray(data)) return data;
+                }
+            } else {
+                // API exists but returned error (e.g. 500 No Database in Preview)
+                console.warn("Leaderboard API returned error, falling back to local storage.", res.status, res.statusText);
             }
         } catch (e) {
             console.warn("API unavailable, using local storage:", e);
@@ -28,10 +33,15 @@ export const ScoreService = {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, score })
             });
-            const contentType = res.headers.get("content-type");
-            if (res.ok && contentType && contentType.includes("application/json")) {
-                const data = await res.json();
-                if (Array.isArray(data)) return data;
+
+            if (res.ok) {
+                const contentType = res.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    const data = await res.json();
+                    if (Array.isArray(data)) return data;
+                }
+            } else {
+                console.warn("Leaderboard API returned error during submission, falling back to local storage.", res.status);
             }
         } catch (e) {
             console.warn("API unavailable, using local storage:", e);

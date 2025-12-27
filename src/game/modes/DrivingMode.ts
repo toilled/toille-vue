@@ -264,10 +264,48 @@ export class DrivingMode implements GameMode {
         if (!this.redCar) return;
 
         const redSpeed = this.redCarSpeed;
+        const currentRotation = this.redCar.rotation.y;
 
         // Move Forward
-        this.redCar.position.x += Math.sin(this.redCar.rotation.y) * redSpeed;
-        this.redCar.position.z += Math.cos(this.redCar.rotation.y) * redSpeed;
+        this.redCar.position.x += Math.sin(currentRotation) * redSpeed;
+        this.redCar.position.z += Math.cos(currentRotation) * redSpeed;
+
+        // Lateral Movement Logic relative to road
+        // Determine primary axis of movement (if cos is high, it's Z axis)
+        const isZAxis = Math.abs(Math.cos(currentRotation)) > 0.5;
+
+        // Find road center
+        const roadHalf = CELL_SIZE / 2;
+        const gridX = Math.round((this.redCar.position.x - START_OFFSET - roadHalf) / CELL_SIZE);
+        const gridZ = Math.round((this.redCar.position.z - START_OFFSET - roadHalf) / CELL_SIZE);
+
+        const roadCenterX = START_OFFSET + gridX * CELL_SIZE + roadHalf;
+        const roadCenterZ = START_OFFSET + gridZ * CELL_SIZE + roadHalf;
+
+        // Steering towards player
+        const lateralSpeed = redSpeed * 0.3; // Slower lateral movement
+        const maxOffset = 18; // Slightly less than ROAD_WIDTH/2 (20)
+
+        if (isZAxis) {
+            // Driving North/South (Z-axis). Steer X towards player.
+            let targetX = playerCar.position.x;
+            // Clamp target to road bounds
+            targetX = Math.max(roadCenterX - maxOffset, Math.min(roadCenterX + maxOffset, targetX));
+
+            const diff = targetX - this.redCar.position.x;
+            if (Math.abs(diff) > 0.1) {
+                this.redCar.position.x += Math.sign(diff) * Math.min(Math.abs(diff), lateralSpeed);
+            }
+        } else {
+            // Driving East/West (X-axis). Steer Z towards player.
+            let targetZ = playerCar.position.z;
+            targetZ = Math.max(roadCenterZ - maxOffset, Math.min(roadCenterZ + maxOffset, targetZ));
+
+            const diff = targetZ - this.redCar.position.z;
+            if (Math.abs(diff) > 0.1) {
+                this.redCar.position.z += Math.sign(diff) * Math.min(Math.abs(diff), lateralSpeed);
+            }
+        }
 
         // Wrap Bounds for Red Car
         if (this.redCar.position.x > BOUNDS) this.redCar.position.x = -BOUNDS;
@@ -276,16 +314,24 @@ export class DrivingMode implements GameMode {
         if (this.redCar.position.z < -BOUNDS) this.redCar.position.z = BOUNDS;
 
         // Interaction Logic: Intersections
-        const roadHalf = CELL_SIZE / 2;
-        const gridX = Math.round((this.redCar.position.x - START_OFFSET - roadHalf) / CELL_SIZE);
-        const gridZ = Math.round((this.redCar.position.z - START_OFFSET - roadHalf) / CELL_SIZE);
+        const interX = roadCenterX;
+        const interZ = roadCenterZ;
 
-        const interX = START_OFFSET + gridX * CELL_SIZE + roadHalf;
-        const interZ = START_OFFSET + gridZ * CELL_SIZE + roadHalf;
+        // Determine longitudinal distance and lateral distance
+        let longDist = 0;
+        let latDist = 0;
 
-        const distToInter = Math.sqrt((this.redCar.position.x - interX) ** 2 + (this.redCar.position.z - interZ) ** 2);
+        if (isZAxis) {
+            longDist = Math.abs(this.redCar.position.z - interZ);
+            latDist = Math.abs(this.redCar.position.x - interX);
+        } else {
+            longDist = Math.abs(this.redCar.position.x - interX);
+            latDist = Math.abs(this.redCar.position.z - interZ);
+        }
 
-        if (distToInter < 5) {
+        // Allow turn if close to intersection center longitudinally, 
+        // regardless of lateral offset (as long as within road)
+        if (longDist < 5 && latDist < 25) {
             const directions = [0, Math.PI / 2, Math.PI, -Math.PI / 2];
 
             let bestDir = this.redCar.rotation.y;
@@ -299,8 +345,9 @@ export class DrivingMode implements GameMode {
                 const dz = Math.cos(dir);
 
                 const dot = dx * curDirX + dz * curDirZ;
-                if (dot < -0.9) continue;
+                if (dot < -0.9) continue; // Don't turn 180
 
+                // Look ahead
                 const px = this.redCar.position.x + dx * 100;
                 const pz = this.redCar.position.z + dz * 100;
 
@@ -312,11 +359,10 @@ export class DrivingMode implements GameMode {
                 }
             }
 
-            this.redCar.position.x = interX;
-            this.redCar.position.z = interZ;
-
+            // Apply turn
             this.redCar.rotation.y = bestDir;
 
+            // Push car forward in new direction to clear intersection trigger
             this.redCar.position.x += Math.sin(bestDir) * 6;
             this.redCar.position.z += Math.cos(bestDir) * 6;
         }

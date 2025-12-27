@@ -35,12 +35,7 @@ export const onRequestPost = async (context: any) => {
         const { name, score } = await context.request.json() as { name: string, score: number };
         const db = context.env.DB;
 
-        if (!db) {
-            return new Response(JSON.stringify({
-                error: "No Database",
-                envKeys: Object.keys(context.env || {})
-            }), { status: 500 });
-        }
+        if (!db) return new Response(JSON.stringify({ error: "No Database" }), { status: 500 });
 
         // Insert
         await db.prepare(

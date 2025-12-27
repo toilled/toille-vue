@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
-    "pages:dev": "wrangler pages dev -- npm run dev",
+    "pages:dev": "mv wrangler.toml wrangler.toml.bak && wrangler pages dev --d1 DB=toille-vue-db -- npm run dev; mv wrangler.toml.bak wrangler.toml",
     "db:init": "wrangler d1 execute toille-vue-db --local --file=./schema.sql",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

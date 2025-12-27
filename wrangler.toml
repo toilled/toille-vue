@@ -1,0 +1,8 @@
+name = "toille-vue"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "leaderboard"
+database_id = "08f08ea3-149b-4a18-83a8-1890146f8d1b"

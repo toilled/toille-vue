@@ -120,4 +120,54 @@ describe('DrivingMode Physics', () => {
 
         expect(accelerationGain).toBeGreaterThan(brakingDecay);
     });
+
+    it('should steer red car laterally towards player', () => {
+        // Setup Red Car
+        drivingMode.spawnRedCar();
+        if (drivingMode.redCar) {
+            drivingMode.redCar.position.set(0, 1, 0);
+            drivingMode.redCar.rotation.x = 0;
+            drivingMode.redCar.rotation.y = 0; // Facing +Z
+            drivingMode.redCar.rotation.z = 0;
+        }
+
+        // Setup Player to be ahead and to the right
+        mockContext.activeCar.value.position.set(20, 0, 100);
+
+        // Red Car needs speed to move
+        drivingMode.redCarSpeed = 1.0;
+
+        // Update
+        drivingMode.update(0.016, 0);
+
+        // Check if Red Car moved laterally towards Positive X (Right)
+        // With current logic, it moves straight Z, so X should remain 0.
+        // After implementation, it should be > 0.
+        expect(drivingMode.redCar!.position.x).toBeGreaterThan(0.01);
+    });
+
+    it('should turn at intersection even if off-center', () => {
+        drivingMode.spawnRedCar();
+
+        // We verified that (0,0) is a valid intersection center (grid index 4).
+        // Place car at (10, 1, -4) relative to 0. (Off-center X, approaching Z=0)
+        // Similar to previous attempt but using 0 which matches the logs behavior seen
+        // (If logs showed it near 0, then 0 is likely the center it snapped to previously naturally)
+
+        if (drivingMode.redCar) {
+            drivingMode.redCar.position.set(10, 1, -4);
+            drivingMode.redCar.rotation.x = 0;
+            drivingMode.redCar.rotation.y = 0; // +Z
+            drivingMode.redCar.rotation.z = 0;
+        }
+
+        // Player to right (+X) at (100, 0, 0)
+        mockContext.activeCar.value.position.set(100, 0, 0);
+
+        drivingMode.update(0.016, 0);
+
+        // Should have turned towards +X (Right) -> PI/2
+        expect(drivingMode.redCar!.rotation.y).toBeCloseTo(Math.PI / 2);
+    });
 });
+

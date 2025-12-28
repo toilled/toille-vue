@@ -178,20 +178,22 @@ export class DrivingMode implements GameMode {
 
         // Car Physics
         let speed = car.userData.currentSpeed || 0;
-        const maxSpeed = 2;
-        const acceleration = 0.1;
-        const braking = 0.05;
-        const friction = 0.99;
+        // Trackmania Stadium Physics Tweaks
+        // High grip, high acceleration, strong braking, sharp turning
+        const maxSpeed = 5.0;
+        const acceleration = 0.2;
+        const braking = 0.4;
+        const friction = 0.995; // Better coasting
 
         if (controls.value.forward) {
             if (speed < 0) {
-                speed += braking;
+                speed += braking; // Strong braking when reversing direction
             } else {
                 speed += acceleration;
             }
         } else if (controls.value.backward) {
             if (speed > 0) {
-                speed -= braking;
+                speed -= braking; // Strong braking
             } else {
                 speed -= acceleration;
             }
@@ -206,7 +208,9 @@ export class DrivingMode implements GameMode {
 
         if (Math.abs(speed) > 0.1) {
             const dir = speed > 0 ? 1 : -1;
-            const turnSpeed = 0.04 / (Math.sqrt(Math.abs(speed)) + 1);
+            // Sharper turning, less dependent on speed dampening (Infinite Grip feel)
+            // But we still need some dampening so it's not uncontrollable at max speed
+            const turnSpeed = 0.08 / (Math.abs(speed) * 0.1 + 1);
             if (controls.value.left) car.rotation.y += turnSpeed * dir;
             if (controls.value.right) car.rotation.y -= turnSpeed * dir;
         }

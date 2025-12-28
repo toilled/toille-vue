@@ -1,0 +1,216 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { mount } from "@vue/test-utils";
+import CyberpunkCity from "../CyberpunkCity.vue";
+import { ScoreService } from "../../utils/ScoreService";
+
+// Mock dependencies
+vi.mock("vue-router", () => ({
+    useRoute: () => ({
+        path: "/",
+    }),
+}));
+
+// Mock ScoreService
+vi.mock("../../utils/ScoreService", () => ({
+    ScoreService: {
+        getTopScores: vi.fn(),
+        submitScore: vi.fn(),
+    },
+}));
+
+// Mock THREE (simplified as we don't need full rendering for this test)
+vi.mock("three", () => {
+    const THREE = {
+        Scene: vi.fn(() => ({
+            add: vi.fn(),
+            remove: vi.fn(),
+            fog: null,
+            background: null
+        })),
+        PerspectiveCamera: vi.fn(() => ({
+            position: { set: vi.fn(), y: 0, copy: vi.fn(), distanceTo: vi.fn(), lerp: vi.fn() },
+            rotation: { set: vi.fn(), copy: vi.fn(), y: 0 },
+            quaternion: { slerp: vi.fn() },
+            lookAt: vi.fn(),
+            updateProjectionMatrix: vi.fn()
+        })),
+        WebGLRenderer: vi.fn(() => ({
+            setSize: vi.fn(),
+            render: vi.fn(),
+            domElement: document.createElement('canvas'),
+            setPixelRatio: vi.fn(),
+            dispose: vi.fn()
+        })),
+        Color: vi.fn(),
+        FogExp2: vi.fn(),
+        BoxGeometry: vi.fn(() => ({
+            translate: vi.fn()
+        })),
+        CylinderGeometry: vi.fn(),
+        ConeGeometry: vi.fn(),
+        EdgesGeometry: vi.fn(),
+        PlaneGeometry: vi.fn(),
+        BufferGeometry: vi.fn(() => ({
+            setAttribute: vi.fn(),
+            setFromPoints: vi.fn()
+        })),
+        MeshBasicMaterial: vi.fn(() => ({
+            clone: vi.fn(() => ({ clone: vi.fn() }))
+        })),
+        MeshLambertMaterial: vi.fn(() => ({
+            clone: vi.fn(() => ({ clone: vi.fn() }))
+        })),
+        MeshStandardMaterial: vi.fn(() => ({
+            clone: vi.fn(() => ({ clone: vi.fn() }))
+        })),
+        PointsMaterial: vi.fn(),
+        LineBasicMaterial: vi.fn(),
+        LineSegments: vi.fn(() => ({
+            position: { set: vi.fn(), copy: vi.fn() },
+            scale: { set: vi.fn() }
+        })),
+        Line: vi.fn(),
+        Group: vi.fn(() => ({
+            add: vi.fn(),
+            position: { set: vi.fn(), z: 0, copy: vi.fn() },
+            rotation: { y: 0 },
+            traverse: vi.fn(),
+            userData: {},
+            lookAt: vi.fn()
+        })),
+        DoubleSide: 2,
+        Mesh: vi.fn(() => ({
+            position: { set: vi.fn(), x: 0, z: 0, distanceToSquared: vi.fn() },
+            rotation: { x: 0 },
+            scale: { set: vi.fn() },
+            userData: {},
+            add: vi.fn(),
+            lookAt: vi.fn()
+        })),
+        Points: vi.fn(() => ({
+            position: { set: vi.fn() },
+            geometry: {
+                attributes: {
+                    position: {
+                        array: new Float32Array(3000),
+                        needsUpdate: false
+                    },
+                    color: {
+                        array: new Float32Array(3000),
+                        needsUpdate: false,
+                        setXYZ: vi.fn()
+                    }
+                },
+                dispose: vi.fn()
+            },
+            material: {
+                dispose: vi.fn()
+            }
+        })),
+        Float32BufferAttribute: vi.fn(),
+        BufferAttribute: vi.fn(),
+        CanvasTexture: vi.fn(() => ({
+            wrapS: 0,
+            wrapT: 0,
+            magFilter: 0,
+            anisotropy: 0,
+            repeat: {
+                set: vi.fn()
+            }
+        })),
+        RepeatWrapping: 1000,
+        NearestFilter: 1001,
+        MathUtils: {
+            randFloatSpread: vi.fn(() => 100),
+            randFloat: vi.fn(() => 100)
+        },
+        AmbientLight: vi.fn(),
+        PointLight: vi.fn(() => ({
+            position: { set: vi.fn() }
+        })),
+        DirectionalLight: vi.fn(() => ({
+            position: { set: vi.fn() }
+        })),
+        SpotLight: vi.fn(() => ({
+            position: { set: vi.fn() },
+            target: { position: { set: vi.fn() } },
+            userData: {},
+            add: vi.fn()
+        })),
+        Object3D: vi.fn(() => ({
+            position: { set: vi.fn() },
+            add: vi.fn()
+        })),
+        Quaternion: vi.fn(() => ({
+            setFromEuler: vi.fn(),
+            slerp: vi.fn()
+        })),
+        Vector3: vi.fn(() => ({
+            x: 0, y: 0, z: 0,
+            lerp: vi.fn(),
+            subVectors: vi.fn(),
+            normalize: vi.fn(),
+            multiplyScalar: vi.fn(),
+            applyEuler: vi.fn()
+        })),
+        Vector2: vi.fn(),
+        Raycaster: vi.fn(() => ({
+            setFromCamera: vi.fn(),
+            intersectObjects: vi.fn(() => []),
+            intersectObject: vi.fn(() => []),
+            params: { Points: { threshold: 1 } }
+        })),
+        AdditiveBlending: 2000,
+        Euler: vi.fn(() => ({
+            set: vi.fn(),
+            copy: vi.fn()
+        }))
+    }
+    return THREE
+})
+
+
+describe("CyberpunkCity Leaderboard", () => {
+    let wrapper: ReturnType<typeof mount>;
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        (ScoreService.getTopScores as any).mockResolvedValue([
+            { name: "ACE", score: 1000 },
+            { name: "bob", score: 500 }, // Intentionally lowercase to check display logic
+        ]);
+        (ScoreService.submitScore as any).mockResolvedValue([
+            { name: "TEST", score: 1500 },
+            { name: "ACE", score: 1000 },
+        ]);
+
+        wrapper = mount(CyberpunkCity, {
+            attachTo: document.body,
+        });
+    });
+
+    afterEach(() => {
+        if (wrapper) wrapper.unmount();
+    });
+
+    it("submits score in uppercase", async () => {
+        const vm = wrapper.vm as any;
+
+        // Force game over state
+        vm.isDrivingMode = true;
+        vm.isGameOver = true;
+        vm.score = 1500;
+        await wrapper.vm.$nextTick();
+
+        // Find input and type lowercase name
+        const input = wrapper.find("input.name-input");
+        expect(input.exists()).toBe(true);
+        await input.setValue("test");
+
+        // Click submit
+        const submitBtn = wrapper.find("button.submit-btn");
+        await submitBtn.trigger("click");
+
+        expect(ScoreService.submitScore).toHaveBeenCalledWith("TEST", 1500);
+    });
+});

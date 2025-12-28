@@ -251,6 +251,98 @@ watch(isGameOver, async (val) => {
   }
 });
 
+let leaderboardCanvas: HTMLCanvasElement;
+let leaderboardTexture: CanvasTexture;
+
+function updateLeaderboardTexture() {
+  if (!leaderboardCanvas) return;
+  const ctx = leaderboardCanvas.getContext("2d");
+  if (!ctx) return;
+
+  // Background
+  ctx.fillStyle = "#100010";
+  ctx.fillRect(0, 0, 512, 512);
+
+  // Border
+  ctx.strokeStyle = "#00ffcc";
+  ctx.lineWidth = 8;
+  ctx.strokeRect(4, 4, 504, 504);
+
+  // Title
+  ctx.fillStyle = "#00ffcc";
+  ctx.font = "bold 60px Arial";
+  ctx.textAlign = "center";
+  ctx.shadowColor = "#00ffcc";
+  ctx.shadowBlur = 10;
+  ctx.fillText("LEADERBOARD", 256, 80);
+  ctx.shadowBlur = 0;
+
+  // Header Line
+  ctx.beginPath();
+  ctx.moveTo(20, 100);
+  ctx.lineTo(492, 100);
+  ctx.stroke();
+
+  // Scores
+  ctx.font = "bold 40px Courier New";
+  ctx.textAlign = "left";
+  let y = 160;
+
+  if (leaderboard.value.length === 0) {
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#aaaaaa";
+    ctx.fillText("Loading...", 256, 250);
+  } else {
+    leaderboard.value.forEach((entry, idx) => {
+      ctx.fillStyle = "#ffffff";
+      if (idx === 0) ctx.fillStyle = "#ffff00"; // Gold
+      else if (idx === 1) ctx.fillStyle = "#cccccc"; // Silver
+      else if (idx === 2) ctx.fillStyle = "#cd7f32"; // Bronze
+
+      // Format: 1. NAME   1000
+      const rank = `${idx + 1}.`;
+      const name = entry.name.substring(0, 8).toUpperCase();
+      const scoreStr = entry.score.toString();
+      
+      ctx.fillText(rank, 40, y);
+      ctx.fillText(name, 110, y);
+      
+      // Right align score
+      ctx.textAlign = "right";
+      ctx.fillText(scoreStr, 470, y);
+      ctx.textAlign = "left";
+
+      y += 60;
+    });
+  }
+  
+  // Footer / Instructions
+  ctx.fillStyle = "#00ffcc";
+  ctx.font = "20px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText("CRASH TO SUBMIT SCORE", 256, 480);
+
+  if (leaderboardTexture) {
+    leaderboardTexture.needsUpdate = true;
+  }
+}
+
+watch(leaderboard, () => {
+  updateLeaderboardTexture();
+}, { deep: true });
+
+function createLeaderboardTexture() {
+  leaderboardCanvas = document.createElement("canvas");
+  leaderboardCanvas.width = 512;
+  leaderboardCanvas.height = 512;
+  leaderboardTexture = new CanvasTexture(leaderboardCanvas);
+  leaderboardTexture.anisotropy = 16;
+  
+  updateLeaderboardTexture();
+  
+  return leaderboardTexture;
+}
+
 async function submitHighScore() {
   if (!playerName.value.trim()) return;
   const nameUpper = playerName.value.trim().toUpperCase();
@@ -871,6 +963,7 @@ onMounted(() => {
   // Generate City Grid
   const windowTexture = createWindowTexture();
   const billboardTextures = createBillboardTextures();
+  const lbTexture = createLeaderboardTexture(); // Create texture once
 
   const boxGeo = new BoxGeometry(1, 1, 1);
   boxGeo.translate(0, 0.5, 0); // pivot at bottom
@@ -912,15 +1005,23 @@ onMounted(() => {
 
   for (let x = 0; x < GRID_SIZE; x++) {
     for (let z = 0; z < GRID_SIZE; z++) {
-      // Skip some blocks for variety
-      if (Math.random() > 0.8) continue;
+      const isLeaderboardBuilding = x === 5 && z === 5;
+
+      // Skip some blocks for variety, but never skip the leaderboard building
+      if (!isLeaderboardBuilding && Math.random() > 0.8) continue;
 
       const xPos = START_OFFSET + x * CELL_SIZE;
       const zPos = START_OFFSET + z * CELL_SIZE;
 
-      const h = 40 + Math.random() * 120; // Slightly taller minimum
-      const w = BLOCK_SIZE - 10 - Math.random() * 20;
-      const d = BLOCK_SIZE - 10 - Math.random() * 20;
+      let h = 40 + Math.random() * 120; // Slightly taller minimum
+      let w = BLOCK_SIZE - 10 - Math.random() * 20;
+      let d = BLOCK_SIZE - 10 - Math.random() * 20;
+
+      if (isLeaderboardBuilding) {
+         h = 250; // Very tall
+         w = BLOCK_SIZE - 10;
+         d = BLOCK_SIZE - 10;
+      }
 
       occupiedGrids.set(`${x},${z}`, { halfW: w / 2, halfD: d / 2 });
 
@@ -967,7 +1068,7 @@ onMounted(() => {
       }
 
       // Billboards
-      if (h > 60 && Math.random() > 0.7) {
+      if (!isLeaderboardBuilding && h > 60 && Math.random() > 0.7) {
         const texIndex = Math.floor(Math.random() * billboardMaterials.length);
         const bbMat = billboardMaterials[texIndex];
 
@@ -1014,7 +1115,61 @@ onMounted(() => {
           );
           billboard.rotation.y = -Math.PI / 2;
         }
+
         buildingGroup.add(billboard);
+      }
+      
+      // Leaderboard specifics
+      if (isLeaderboardBuilding) {
+          const lbW = w * 0.8;
+          const lbH = lbW * 1.0; // Square-ish or whatever the aspect ratio of 512x512
+          const lbGeo = new PlaneGeometry(lbW, lbH);
+          
+          // Create for all 4 sides
+          // 0: +Z (Front), 1: -Z (Back), 2: +X (Right), 3: -X (Left)
+          for (let i = 0; i < 4; i++) {
+              const lbMat = new MeshBasicMaterial({
+                  map: lbTexture,
+                  side: DoubleSide,
+                  color: 0xffffff,
+              });
+              
+              const lbMesh = new Mesh(lbGeo, lbMat);
+              const offset = 0.6;
+              const yPos = h * 0.7;
+              
+              if (i === 0) {
+                  // +Z
+                  lbMesh.position.set(0, yPos, d/2 + offset);
+                  lbMesh.rotation.y = 0;
+              } else if (i === 1) {
+                  // -Z
+                  lbMesh.position.set(0, yPos, -d/2 - offset);
+                  lbMesh.rotation.y = Math.PI;
+              } else if (i === 2) {
+                  // +X
+                  lbMesh.position.set(w/2 + offset, yPos, 0);
+                  lbMesh.rotation.y = Math.PI / 2;
+              } else {
+                  // -X
+                  lbMesh.position.set(-w/2 - offset, yPos, 0);
+                  lbMesh.rotation.y = -Math.PI / 2;
+              }
+              
+              buildingGroup.add(lbMesh);
+
+              // Add a framing light for each side
+              const spot = new SpotLight(0x00ffcc, 500, 100, 0.6, 0.5, 1);
+              
+              if (i === 0) spot.position.set(0, h * 0.9, d + 30);
+              else if (i === 1) spot.position.set(0, h * 0.9, -d - 30);
+              else if (i === 2) spot.position.set(w + 30, h * 0.9, 0);
+              else spot.position.set(-w - 30, h * 0.9, 0);
+
+              spot.target = lbMesh;
+              buildingGroup.add(spot);
+              buildingGroup.add(spot.target);
+          }
       }
 
       scene.add(buildingGroup);
@@ -1244,6 +1399,12 @@ onMounted(() => {
 
   isActive = true;
   animate();
+
+  // Load initial leaderboard
+  ScoreService.getTopScores().then((scores) => {
+    leaderboard.value = scores;
+    updateLeaderboardTexture(); // Ensure texture updates with loaded scores
+  });
 });
 
 function onKeyDown(event: KeyboardEvent) {

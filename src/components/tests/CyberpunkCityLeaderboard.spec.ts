@@ -175,6 +175,31 @@ describe("CyberpunkCity Leaderboard", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+
+        // Mock canvas context
+        const mockContext = {
+            fillStyle: '',
+            strokeStyle: '',
+            lineWidth: 0,
+            font: '',
+            textAlign: '',
+            shadowColor: '',
+            shadowBlur: 0,
+            fillRect: vi.fn(),
+            strokeRect: vi.fn(),
+            fillText: vi.fn(),
+            beginPath: vi.fn(),
+            moveTo: vi.fn(),
+            lineTo: vi.fn(),
+            stroke: vi.fn(),
+            setLineDash: vi.fn(),
+            arc: vi.fn(),
+            fill: vi.fn(),
+            clearRect: vi.fn(),
+        } as unknown as CanvasRenderingContext2D;
+
+        vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(mockContext as any);
+
         (ScoreService.getTopScores as any).mockResolvedValue([
             { name: "ACE", score: 1000 },
             { name: "bob", score: 500 }, // Intentionally lowercase to check display logic

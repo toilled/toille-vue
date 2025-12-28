@@ -753,6 +753,71 @@ function createDroneTexture() {
   return texture;
 }
 
+function createRoughFloorTexture() {
+    const canvas = document.createElement("canvas");
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+        // Base dark concrete
+        ctx.fillStyle = "#111111";
+        ctx.fillRect(0, 0, 128, 128);
+        
+        // Add random darker/lighter patches - MORE CONTRAST
+        for (let i = 0; i < 20; i++) {
+             const shade = Math.floor(Math.random() * 100); // Increased range 0-100 (was 0-40)
+             ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
+             const w = 20 + Math.random() * 60;
+             const h = 20 + Math.random() * 60;
+             ctx.globalAlpha = 0.4; // Slightly more opaque
+             ctx.fillRect(Math.random() * 128 - 20, Math.random() * 128 - 20, w, h);
+        }
+        ctx.globalAlpha = 1.0;
+
+        // Add noise/cracks (small dots) - BRIGHTER
+        for (let i = 0; i < 400; i++) {
+            const val = Math.floor(Math.random() * 100) + 50; // Brighter dots (50-150)
+            ctx.fillStyle = `rgb(${val}, ${val}, ${val})`;
+            const w = Math.random() * 3 + 1;
+            const h = Math.random() * 3 + 1;
+            ctx.fillRect(Math.random() * 128, Math.random() * 128, w, h);
+        }
+        
+        // Add some colored industrial stains (very subtle)
+        const colors = ["#443300", "#003344", "#330033"]; // Slightly vivid
+        for(let i=0; i<5; i++) {
+             ctx.fillStyle = colors[Math.floor(Math.random()*colors.length)];
+             ctx.globalAlpha = 0.3;
+             const w = Math.random() * 30 + 10;
+             const h = Math.random() * 30 + 10;
+             ctx.fillRect(Math.random() * 128, Math.random() * 128, w, h);
+        }
+        ctx.globalAlpha = 1.0;
+        
+        // Add detailed lines/wires/cracks
+        ctx.strokeStyle = "#555555"; // Lighter lines
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for(let i=0; i<10; i++) {
+            ctx.moveTo(Math.random()*128, Math.random()*128);
+            ctx.lineTo(Math.random()*128, Math.random()*128);
+        }
+        ctx.stroke();
+
+        // Add some random larger darker plates
+        ctx.fillStyle = "#000000"; // Pure black for contrast
+        ctx.globalAlpha = 0.6;
+        for(let i=0; i<3; i++) {
+            ctx.fillRect(Math.random()*100, Math.random()*100, Math.random()*40+20, Math.random()*40+20);
+        }
+        ctx.globalAlpha = 1.0;
+    }
+    const texture = new CanvasTexture(canvas);
+    texture.wrapS = RepeatWrapping;
+    texture.wrapT = RepeatWrapping;
+    return texture;
+}
+
 function createCheckpoint() {
   // A glowing neon pillar/ring
   const geo = new CylinderGeometry(25, 25, 1000, 32, 1, true); // Taller and wider
@@ -1037,7 +1102,23 @@ onMounted(() => {
       const isLeaderboardBuilding = x === 5 && z === 5;
 
       // Skip some blocks for variety, but never skip the leaderboard building
-      if (!isLeaderboardBuilding && Math.random() > 0.8) continue;
+      if (!isLeaderboardBuilding && Math.random() > 0.8) {
+          // Add a rough floor for empty blocks
+          const floorSize = BLOCK_SIZE - 2; 
+          const floorGeo = new PlaneGeometry(floorSize, floorSize);
+          const floorMat = new MeshStandardMaterial({
+              color: 0x222222,
+              roughness: 0.9,
+              metalness: 0.1,
+              map: createRoughFloorTexture(),
+          });
+          const floorMesh = new Mesh(floorGeo, floorMat);
+          floorMesh.rotation.x = -Math.PI / 2;
+          floorMesh.position.set(START_OFFSET + x * CELL_SIZE, 0.1, START_OFFSET + z * CELL_SIZE);
+          scene.add(floorMesh);
+          buildings.push(floorMesh); // Add to buildings array for potential collision/interaction or just cleanup
+          continue;
+      }
 
       const xPos = START_OFFSET + x * CELL_SIZE;
       const zPos = START_OFFSET + z * CELL_SIZE;

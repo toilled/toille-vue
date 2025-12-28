@@ -1,6 +1,6 @@
 <template>
   <div ref="canvasContainer" id="cyberpunk-city"></div>
-  <div v-if="score > 0" id="score-counter">SCORE: {{ score }}</div>
+  <div v-if="(isDrivingMode ? drivingScore : droneScore) > 0" id="score-counter">SCORE: {{ isDrivingMode ? drivingScore : droneScore }}</div>
   <div v-if="isDrivingMode" id="timer-counter">
     TIME: {{ Math.ceil(timeLeft) }}
   </div>
@@ -9,7 +9,7 @@
   </div>
   <div v-if="isDrivingMode && isGameOver" id="game-over">
     <div class="game-over-title">GAME OVER</div>
-    <div class="final-score">SCORE: {{ score }}</div>
+    <div class="final-score">SCORE: {{ drivingScore }}</div>
 
     <div v-if="!isScoreSubmitted" class="score-form">
       <input 
@@ -224,6 +224,8 @@ let droneTargetPositions: Float32Array;
 let droneBasePositions: Float32Array;
 const deadDrones = new Set<number>();
 const score = ref(0);
+const droneScore = ref(0);
+const drivingScore = ref(0);
 const isGameMode = ref(false);
 const isDrivingMode = ref(false);
 const isExplorationMode = ref(false);
@@ -346,7 +348,9 @@ function createLeaderboardTexture() {
 async function submitHighScore() {
   if (!playerName.value.trim()) return;
   const nameUpper = playerName.value.trim().toUpperCase();
-  leaderboard.value = await ScoreService.submitScore(nameUpper, score.value);
+  // Assume leaderboard mainly tracks driving score for now, or use relevant score
+  const finalScore = isDrivingMode.value ? drivingScore.value : score.value;
+  leaderboard.value = await ScoreService.submitScore(nameUpper, finalScore);
   isScoreSubmitted.value = true;
 }
 
@@ -1381,6 +1385,8 @@ onMounted(() => {
     drones,
     occupiedGrids,
     score,
+    droneScore,
+    drivingScore,
     timeLeft,
     activeCar,
     isMobile,
@@ -1483,7 +1489,7 @@ watch(activeCar, (newCar, oldCar) => {
   if (newCar) addLightsToCar(newCar);
 });
 
-watch(score, (val) => {
+watch(droneScore, (val) => {
   if (val >= 500 && !isGameMode.value && !isDrivingMode.value) {
     startTargetPractice();
   }
@@ -1534,6 +1540,8 @@ function exitGameMode() {
   isGameMode.value = false;
   isGameOver.value = false;
   score.value = 0;
+  droneScore.value = 0;
+  drivingScore.value = 0;
   emit("game-end");
 
   // Restore dead drones & Reset positions to targets
@@ -1639,7 +1647,7 @@ function onClick(event: MouseEvent) {
         deadDrones.add(index);
 
         playPewSound();
-        score.value += 100;
+        droneScore.value += 100;
       }
     }
   }

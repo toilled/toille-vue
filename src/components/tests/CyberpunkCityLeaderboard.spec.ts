@@ -224,7 +224,7 @@ describe("CyberpunkCity Leaderboard", () => {
         // Force game over state
         vm.isDrivingMode = true;
         vm.isGameOver = true;
-        vm.score = 1500;
+        vm.drivingScore = 1500;
         await wrapper.vm.$nextTick();
 
         // Find input and type lowercase name

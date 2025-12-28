@@ -107,7 +107,7 @@ export class DrivingMode implements GameMode {
 
     update(dt: number, time: number) {
         if (!this.context) return;
-        const { activeCar, timeLeft, checkpointMesh, navArrow, score, playPewSound, spawnCheckpoint, controls, occupiedGrids, spawnSparks, camera, isGameOver, distToTarget } = this.context;
+        const { activeCar, timeLeft, checkpointMesh, navArrow, drivingScore, playPewSound, spawnCheckpoint, controls, occupiedGrids, spawnSparks, camera, isGameOver, distToTarget } = this.context;
 
         if (!activeCar.value) return;
 
@@ -156,7 +156,7 @@ export class DrivingMode implements GameMode {
             distToTarget.value = Math.sqrt(distSq);
 
             if (distSq < 20 * 20) {
-                score.value += 500;
+                drivingScore.value += 500;
                 timeLeft.value += 15;
                 playPewSound();
                 spawnCheckpoint();

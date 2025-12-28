@@ -206,7 +206,8 @@ vi.mock("three", async () => {
     },
     LineSegments: class {
       scale = { set: vi.fn() };
-      position = { y: 0 };
+      position = { set: vi.fn(), x: 0, y: 0, z: 0 };
+      rotation = { x: 0, y: 0, z: 0, copy: vi.fn() };
       isObject3D = true;
       add() { }
       removeFromParent() { }

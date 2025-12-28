@@ -564,30 +564,91 @@ function resetCar(carGroup: Group) {
   }
 }
 
-// Reusable Texture for Windows
-function createWindowTexture() {
-  const canvas = document.createElement("canvas");
-  canvas.width = 32;
-  canvas.height = 64;
-  const ctx = canvas.getContext("2d");
-  if (ctx) {
-    ctx.fillStyle = "#020202";
-    ctx.fillRect(0, 0, 32, 64);
-    // random windows
+// Reusable Textures for Windows
+function createWindowTextures() {
+  const textures: CanvasTexture[] = [];
+
+  // Style 1: Standard Scattered
+  const c1 = document.createElement("canvas");
+  c1.width = 32;
+  c1.height = 64;
+  const ctx1 = c1.getContext("2d");
+  if (ctx1) {
+    ctx1.fillStyle = "#020202";
+    ctx1.fillRect(0, 0, 32, 64);
     for (let y = 2; y < 64; y += 4) {
       for (let x = 2; x < 32; x += 4) {
         if (Math.random() > 0.6) {
-          ctx.fillStyle = Math.random() > 0.5 ? "#ff00cc" : "#00ccff";
-          ctx.fillRect(x, y, 2, 2);
+          ctx1.fillStyle = Math.random() > 0.5 ? "#ff00cc" : "#00ccff";
+          ctx1.fillRect(x, y, 2, 2);
         }
       }
     }
   }
-  const texture = new CanvasTexture(canvas);
-  texture.wrapS = RepeatWrapping;
-  texture.wrapT = RepeatWrapping;
-  texture.magFilter = NearestFilter;
-  return texture;
+  const t1 = new CanvasTexture(c1);
+  textures.push(t1);
+
+  // Style 2: Vertical Stripes (Cyberpunk / Blade Runner)
+  const c2 = document.createElement("canvas");
+  c2.width = 32;
+  c2.height = 64;
+  const ctx2 = c2.getContext("2d");
+  if (ctx2) {
+    ctx2.fillStyle = "#050505";
+    ctx2.fillRect(0, 0, 32, 64);
+    for (let x = 4; x < 32; x += 8) {
+      ctx2.fillStyle =
+        Math.random() > 0.5
+          ? "rgba(0, 255, 204, 0.4)"
+          : "rgba(255, 0, 204, 0.4)";
+      ctx2.fillRect(x, 0, 2, 64);
+      // Bright spots
+      for (let y = 0; y < 64; y += 8) {
+        if (Math.random() > 0.7) {
+          ctx2.fillStyle = "#ffffff";
+          ctx2.fillRect(x, y, 2, 4);
+        }
+      }
+    }
+  }
+  const t2 = new CanvasTexture(c2);
+  textures.push(t2);
+
+  // Style 3: Dense Grid (Office)
+  const c3 = document.createElement("canvas");
+  c3.width = 32;
+  c3.height = 64;
+  const ctx3 = c3.getContext("2d");
+  if (ctx3) {
+    ctx3.fillStyle = "#000000";
+    ctx3.fillRect(0, 0, 32, 64);
+    ctx3.fillStyle = "#111111";
+    ctx3.fillRect(2, 0, 28, 64);
+
+    ctx3.fillStyle = "#000000";
+    for (let y = 2; y < 64; y += 2) {
+      ctx3.fillRect(0, y, 32, 1);
+    }
+    // Random lights
+    for (let y = 2; y < 64; y += 2) {
+      for (let x = 4; x < 28; x += 4) {
+        if (Math.random() > 0.9) {
+          ctx3.fillStyle = "#ffffaa";
+          ctx3.fillRect(x, y, 2, 1);
+        }
+      }
+    }
+  }
+  const t3 = new CanvasTexture(c3);
+  textures.push(t3);
+
+  textures.forEach((t) => {
+    t.wrapS = RepeatWrapping;
+    t.wrapT = RepeatWrapping;
+    t.magFilter = NearestFilter;
+  });
+
+  return textures;
 }
 
 function createGroundTexture() {
@@ -965,7 +1026,7 @@ onMounted(() => {
   scene.add(plane);
 
   // Generate City Grid
-  const windowTexture = createWindowTexture();
+  const windowTextures = createWindowTextures();
   const billboardTextures = createBillboardTextures();
   const lbTexture = createLeaderboardTexture(); // Create texture once
 
@@ -975,10 +1036,13 @@ onMounted(() => {
   const edgesGeo = new EdgesGeometry(boxGeo);
 
   // Reusable Materials
-  const buildingMaterial = new MeshLambertMaterial({
-    color: 0x222222,
-    map: windowTexture,
-  });
+  const buildingMaterials = windowTextures.map(
+    (t) =>
+      new MeshLambertMaterial({
+        color: 0x222222,
+        map: t,
+      }),
+  );
 
   const edgeMat1 = new LineBasicMaterial({
     color: 0xff00cc,
@@ -996,6 +1060,9 @@ onMounted(() => {
     opacity: 0.5,
   });
   const antennaMat = new MeshBasicMaterial({ color: 0xffffff });
+  const ventMat = new MeshLambertMaterial({ color: 0x333333 });
+  const pipeMat = new MeshLambertMaterial({ color: 0x444444 });
+  const warningLightMat = new MeshBasicMaterial({ color: 0xff0000 });
 
   const billboardMaterials = billboardTextures.map(
     (tex) =>
@@ -1006,6 +1073,230 @@ onMounted(() => {
         opacity: 0.9,
       }),
   );
+
+  // Helper to add rooftop details
+  const addRooftopDetails = (
+    group: Group,
+    w: number,
+    y: number,
+    d: number,
+    offX = 0,
+    offZ = 0,
+  ) => {
+    // Antenna
+    if (Math.random() > 0.6) {
+      const antH = 10 + Math.random() * 30;
+      const ant = new Mesh(boxGeo, antennaMat); // using box as stick
+      ant.scale.set(0.5, antH, 0.5);
+      ant.position.set(offX, y, offZ);
+      group.add(ant);
+
+      // Warning Light
+      if (y + antH > 150) {
+        const light = new Mesh(boxGeo, warningLightMat);
+        light.scale.set(1, 1, 1);
+        light.position.set(offX, y + antH, offZ);
+        group.add(light);
+      }
+    }
+
+    // Vents / AC Units
+    if (w > 10 && d > 10) {
+      const numVents = Math.floor(Math.random() * 4);
+      for (let i = 0; i < numVents; i++) {
+        const vent = new Mesh(boxGeo, ventMat);
+        const vW = 3 + Math.random() * 4;
+        const vH = 2 + Math.random() * 3;
+        const vD = 3 + Math.random() * 4;
+        vent.scale.set(vW, vH, vD);
+
+        const vX = (Math.random() - 0.5) * (w - vW) + offX;
+        const vZ = (Math.random() - 0.5) * (d - vD) + offZ;
+
+        vent.position.set(vX, y, vZ);
+        group.add(vent);
+      }
+    }
+  };
+
+  // Helper to create building based on style
+  const createBuilding = (
+    x: number,
+    z: number,
+    w: number,
+    h: number,
+    d: number,
+    isLeaderboard: boolean,
+  ) => {
+    const group = new Group();
+    group.position.set(x, 0, z);
+
+    // Select Material
+    const matIndex = Math.floor(Math.random() * buildingMaterials.length);
+    const mat = buildingMaterials[matIndex];
+    const edgeMat = Math.random() > 0.5 ? edgeMat1 : edgeMat2;
+
+    // Style determination
+    // 0: Standard, 1: Stepped, 2: Twin Towers
+    let style = 0;
+    if (!isLeaderboard && h > 80 && w > 20 && d > 20) {
+      const r = Math.random();
+      if (r < 0.3) style = 1;
+      else if (r < 0.5) style = 2;
+    }
+
+    if (isLeaderboard) style = 0; // Keep leaderboard simple base
+
+    if (style === 1) {
+      // Stepped (Ziggurat)
+      const tiers = 3;
+      let currentH = 0;
+      let currentW = w;
+      let currentD = d;
+
+      for (let i = 0; i < tiers; i++) {
+        const tierH = h / tiers;
+        const mesh = new Mesh(boxGeo, mat);
+        mesh.scale.set(currentW, tierH, currentD);
+        mesh.position.y = currentH;
+        group.add(mesh);
+
+        const edges = new LineSegments(edgesGeo, edgeMat);
+        edges.scale.set(currentW, tierH, currentD);
+        edges.position.y = currentH;
+        group.add(edges);
+
+        currentH += tierH;
+        currentW *= 0.7;
+        currentD *= 0.7;
+      }
+      // Add details on top
+      addRooftopDetails(group, currentW, currentH, currentD);
+    } else if (style === 2) {
+      // Twin Towers
+      // Base
+      const baseH = h * 0.2;
+      const base = new Mesh(boxGeo, mat);
+      base.scale.set(w, baseH, d);
+      group.add(base);
+      const baseEdges = new LineSegments(edgesGeo, edgeMat);
+      baseEdges.scale.set(w, baseH, d);
+      group.add(baseEdges);
+
+      // Towers
+      const towerW = w * 0.35;
+      const towerD = d * 0.35;
+      const towerH = h - baseH;
+
+      // Tower 1
+      const t1 = new Mesh(boxGeo, mat);
+      t1.scale.set(towerW, towerH, towerD);
+      t1.position.set(-w * 0.25, baseH, -d * 0.25);
+      group.add(t1);
+      const t1e = new LineSegments(edgesGeo, edgeMat);
+      t1e.scale.set(towerW, towerH, towerD);
+      t1e.position.set(-w * 0.25, baseH, -d * 0.25);
+      group.add(t1e);
+
+      // Tower 2
+      const t2 = new Mesh(boxGeo, mat);
+      t2.scale.set(towerW, towerH, towerD);
+      t2.position.set(w * 0.25, baseH, d * 0.25);
+      group.add(t2);
+      const t2e = new LineSegments(edgesGeo, edgeMat);
+      t2e.scale.set(towerW, towerH, towerD);
+      t2e.position.set(w * 0.25, baseH, d * 0.25);
+      group.add(t2e);
+
+      addRooftopDetails(group, towerW, h, towerD, -w * 0.25, -d * 0.25);
+      addRooftopDetails(group, towerW, h, towerD, w * 0.25, d * 0.25);
+    } else {
+      // Standard (Original + enhancements)
+      const mainBlock = new Mesh(boxGeo, mat);
+      mainBlock.scale.set(w, h, d);
+      group.add(mainBlock);
+
+      const line = new LineSegments(edgesGeo, edgeMat);
+      line.scale.set(w, h, d);
+      group.add(line);
+
+      // Random setbacks/top structure
+      if (h > 100 && Math.random() > 0.4) {
+        const h2 = h * 0.3;
+        const w2 = w * 0.6;
+        const d2 = d * 0.6;
+
+        const topBlock = new Mesh(boxGeo, mat);
+        topBlock.scale.set(w2, h2, d2);
+        topBlock.position.y = h;
+        group.add(topBlock);
+
+        const topEdge = new LineSegments(edgesGeo, topEdgeMat);
+        topEdge.scale.set(w2, h2, d2);
+        topEdge.position.y = h;
+        group.add(topEdge);
+
+        addRooftopDetails(group, w2, h + h2, d2);
+      } else {
+        addRooftopDetails(group, w, h, d);
+      }
+    }
+
+    // Billboards
+    if (!isLeaderboard && h > 60 && Math.random() > 0.7) {
+      const texIndex = Math.floor(Math.random() * billboardMaterials.length);
+      const bbMat = billboardMaterials[texIndex];
+
+      const bbW = 20 + Math.random() * 15;
+      const bbH = 10 + Math.random() * 10;
+      const bbGeo = new PlaneGeometry(bbW, bbH);
+      const billboard = new Mesh(bbGeo, bbMat);
+
+      // Position on a random face
+      const face = Math.floor(Math.random() * 4);
+      const offset = 1;
+
+      // Ensure we attach to the main mass of the building
+      // If stepped, we should attach to bottom or mid tier.
+      // For simplicity, attach to center of "w,h,d" box space, but need to be careful with stepped.
+      // If stepped, h is total h.
+
+      let attachH = h * (0.5 + Math.random() * 0.3);
+      if (style === 1) attachH = h * 0.4; // lower for stepped
+
+      if (face === 0) {
+        billboard.position.set(0, attachH, d / 2 + offset);
+      } else if (face === 1) {
+        billboard.position.set(0, attachH, -d / 2 - offset);
+        billboard.rotation.y = Math.PI;
+      } else if (face === 2) {
+        billboard.position.set(w / 2 + offset, attachH, 0);
+        billboard.rotation.y = Math.PI / 2;
+      } else {
+        billboard.position.set(-w / 2 - offset, attachH, 0);
+        billboard.rotation.y = -Math.PI / 2;
+      }
+      group.add(billboard);
+    }
+
+    // Side Pipes (Industrial detail)
+    if (!isLeaderboard && h > 100 && Math.random() > 0.6) {
+        const pipeH = h * 0.8;
+        const pipeR = 1 + Math.random() * 2;
+        const pipe = new Mesh(new CylinderGeometry(pipeR, pipeR, pipeH), pipeMat);
+
+        // Attach to side
+        const side = Math.floor(Math.random() * 4);
+        if (side === 0) pipe.position.set(w/3, pipeH/2, d/2 + pipeR);
+        else if (side === 1) pipe.position.set(-w/3, pipeH/2, -d/2 - pipeR);
+        else if (side === 2) pipe.position.set(w/2 + pipeR, pipeH/2, d/3);
+        else pipe.position.set(-w/2 - pipeR, pipeH/2, -d/3);
+
+        group.add(pipe);
+    }
+
+    return group;
+  };
 
   for (let x = 0; x < GRID_SIZE; x++) {
     for (let z = 0; z < GRID_SIZE; z++) {
@@ -1022,158 +1313,59 @@ onMounted(() => {
       let d = BLOCK_SIZE - 10 - Math.random() * 20;
 
       if (isLeaderboardBuilding) {
-         h = 250; // Very tall
-         w = BLOCK_SIZE - 10;
-         d = BLOCK_SIZE - 10;
+        h = 250; // Very tall
+        w = BLOCK_SIZE - 10;
+        d = BLOCK_SIZE - 10;
       }
 
       occupiedGrids.set(`${x},${z}`, { halfW: w / 2, halfD: d / 2 });
 
-      const buildingGroup = new Group();
-      buildingGroup.position.set(xPos, 0, zPos);
+      const buildingGroup = createBuilding(xPos, zPos, w, h, d, isLeaderboardBuilding);
 
-      // Main Block
-      const mainBlock = new Mesh(boxGeo, buildingMaterial);
-      mainBlock.scale.set(w, h, d);
-      buildingGroup.add(mainBlock);
-
-      // Edges for Main Block
-      const line = new LineSegments(
-        edgesGeo,
-        Math.random() > 0.5 ? edgeMat1 : edgeMat2,
-      );
-      line.scale.set(w, h, d);
-      buildingGroup.add(line);
-
-      // Top Structure (for taller buildings)
-      if (h > 100 && Math.random() > 0.4) {
-        const h2 = h * 0.3;
-        const w2 = w * 0.6;
-        const d2 = d * 0.6;
-
-        const topBlock = new Mesh(boxGeo, buildingMaterial);
-        topBlock.scale.set(w2, h2, d2);
-        topBlock.position.y = h;
-        buildingGroup.add(topBlock);
-
-        const topLine = new LineSegments(edgesGeo, topEdgeMat);
-        topLine.scale.set(w2, h2, d2);
-        topLine.position.y = h;
-        buildingGroup.add(topLine);
-
-        // Antenna
-        if (Math.random() > 0.5) {
-          const antennaH = h * 0.2;
-          const antenna = new Mesh(boxGeo, antennaMat);
-          antenna.scale.set(2, antennaH, 2);
-          antenna.position.y = h + h2;
-          buildingGroup.add(antenna);
-        }
-      }
-
-      // Billboards
-      if (!isLeaderboardBuilding && h > 60 && Math.random() > 0.7) {
-        const texIndex = Math.floor(Math.random() * billboardMaterials.length);
-        const bbMat = billboardMaterials[texIndex];
-
-        const bbW = 20 + Math.random() * 15;
-        const bbH = 10 + Math.random() * 10;
-        const bbGeo = new PlaneGeometry(bbW, bbH);
-
-        const billboard = new Mesh(bbGeo, bbMat);
-
-        // Position on a random face
-        // 0: +Z, 1: -Z, 2: +X, 3: -X
-        const face = Math.floor(Math.random() * 4);
-        const offset = 1;
-
-        if (face === 0) {
-          // +Z
-          billboard.position.set(
-            0,
-            h * (0.5 + Math.random() * 0.3),
-            d / 2 + offset,
-          );
-        } else if (face === 1) {
-          // -Z
-          billboard.position.set(
-            0,
-            h * (0.5 + Math.random() * 0.3),
-            -d / 2 - offset,
-          );
-          billboard.rotation.y = Math.PI;
-        } else if (face === 2) {
-          // +X
-          billboard.position.set(
-            w / 2 + offset,
-            h * (0.5 + Math.random() * 0.3),
-            0,
-          );
-          billboard.rotation.y = Math.PI / 2;
-        } else {
-          // -X
-          billboard.position.set(
-            -w / 2 - offset,
-            h * (0.5 + Math.random() * 0.3),
-            0,
-          );
-          billboard.rotation.y = -Math.PI / 2;
-        }
-
-        buildingGroup.add(billboard);
-      }
-      
-      // Leaderboard specifics
+      // Leaderboard specifics (Textures)
       if (isLeaderboardBuilding) {
-          const lbW = w * 0.8;
-          const lbH = lbW * 1.0; // Square-ish or whatever the aspect ratio of 512x512
-          const lbGeo = new PlaneGeometry(lbW, lbH);
-          
-          // Create for all 4 sides
-          // 0: +Z (Front), 1: -Z (Back), 2: +X (Right), 3: -X (Left)
-          for (let i = 0; i < 4; i++) {
-              const lbMat = new MeshBasicMaterial({
-                  map: lbTexture,
-                  side: DoubleSide,
-                  color: 0xffffff,
-              });
-              
-              const lbMesh = new Mesh(lbGeo, lbMat);
-              const offset = 0.6;
-              const yPos = h * 0.7;
-              
-              if (i === 0) {
-                  // +Z
-                  lbMesh.position.set(0, yPos, d/2 + offset);
-                  lbMesh.rotation.y = 0;
-              } else if (i === 1) {
-                  // -Z
-                  lbMesh.position.set(0, yPos, -d/2 - offset);
-                  lbMesh.rotation.y = Math.PI;
-              } else if (i === 2) {
-                  // +X
-                  lbMesh.position.set(w/2 + offset, yPos, 0);
-                  lbMesh.rotation.y = Math.PI / 2;
-              } else {
-                  // -X
-                  lbMesh.position.set(-w/2 - offset, yPos, 0);
-                  lbMesh.rotation.y = -Math.PI / 2;
-              }
-              
-              buildingGroup.add(lbMesh);
+        const lbW = w * 0.8;
+        const lbH = lbW * 1.0;
+        const lbGeo = new PlaneGeometry(lbW, lbH);
 
-              // Add a framing light for each side
-              const spot = new SpotLight(0x00ffcc, 500, 100, 0.6, 0.5, 1);
-              
-              if (i === 0) spot.position.set(0, h * 0.9, d + 30);
-              else if (i === 1) spot.position.set(0, h * 0.9, -d - 30);
-              else if (i === 2) spot.position.set(w + 30, h * 0.9, 0);
-              else spot.position.set(-w - 30, h * 0.9, 0);
+        for (let i = 0; i < 4; i++) {
+          const lbMat = new MeshBasicMaterial({
+            map: lbTexture,
+            side: DoubleSide,
+            color: 0xffffff,
+          });
 
-              spot.target = lbMesh;
-              buildingGroup.add(spot);
-              buildingGroup.add(spot.target);
+          const lbMesh = new Mesh(lbGeo, lbMat);
+          const offset = 0.6;
+          const yPos = h * 0.7;
+
+          if (i === 0) {
+            lbMesh.position.set(0, yPos, d / 2 + offset);
+            lbMesh.rotation.y = 0;
+          } else if (i === 1) {
+            lbMesh.position.set(0, yPos, -d / 2 - offset);
+            lbMesh.rotation.y = Math.PI;
+          } else if (i === 2) {
+            lbMesh.position.set(w / 2 + offset, yPos, 0);
+            lbMesh.rotation.y = Math.PI / 2;
+          } else {
+            lbMesh.position.set(-w / 2 - offset, yPos, 0);
+            lbMesh.rotation.y = -Math.PI / 2;
           }
+
+          buildingGroup.add(lbMesh);
+
+          const spot = new SpotLight(0x00ffcc, 500, 100, 0.6, 0.5, 1);
+
+          if (i === 0) spot.position.set(0, h * 0.9, d + 30);
+          else if (i === 1) spot.position.set(0, h * 0.9, -d - 30);
+          else if (i === 2) spot.position.set(w + 30, h * 0.9, 0);
+          else spot.position.set(-w - 30, h * 0.9, 0);
+
+          spot.target = lbMesh;
+          buildingGroup.add(spot);
+          buildingGroup.add(spot.target);
+        }
       }
 
       scene.add(buildingGroup);

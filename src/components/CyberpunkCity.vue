@@ -576,7 +576,7 @@ function createWindowTexture() {
     // random windows
     for (let y = 2; y < 64; y += 4) {
       for (let x = 2; x < 32; x += 4) {
-        if (Math.random() > 0.6) {
+        if (Math.random() > 0.5) { // Increased density (was 0.6)
           ctx.fillStyle = Math.random() > 0.5 ? "#ff00cc" : "#00ccff";
           ctx.fillRect(x, y, 2, 2);
         }
@@ -599,38 +599,45 @@ function createGroundTexture() {
     ctx.fillStyle = "#0a0a15"; // Base ground color
     ctx.fillRect(0, 0, 512, 512);
 
-    // Road color (darker)
+    // Draw Cross Roads - AT EDGES so center is block
     ctx.fillStyle = "#050505";
-
-    // Calculate relative road width on texture
-    // CELL_SIZE = BLOCK_SIZE + ROAD_WIDTH
-    // We want the road to be at the edges of the cell? Or center?
-    // Let's assume texture represents ONE cell.
-    // Center: Block. Edges: Road.
-
-    const roadRatio = ROAD_WIDTH / CELL_SIZE; // approx 40/190 = 0.21
+    const roadRatio = ROAD_WIDTH / CELL_SIZE; 
     const roadPx = 512 * roadRatio;
     const halfRoad = roadPx / 2;
 
-    // Draw Cross Roads
-    ctx.fillRect(0, 256 - halfRoad, 512, roadPx); // Horizontal
-    ctx.fillRect(256 - halfRoad, 0, roadPx, 512); // Vertical
+    // Horizontal (Top and Bottom)
+    ctx.fillRect(0, 0, 512, halfRoad); 
+    ctx.fillRect(0, 512 - halfRoad, 512, halfRoad);
 
-    // Road Lines (Dashed)
+    // Vertical (Left and Right)
+    ctx.fillRect(0, 0, halfRoad, 512);
+    ctx.fillRect(512 - halfRoad, 0, halfRoad, 512);
+
+    // Road Lines (Dashed) - EDGE CENTERED
     ctx.strokeStyle = "#333333";
     ctx.lineWidth = 2;
     ctx.setLineDash([10, 10]);
 
-    // Horizontal Line
+    // Horizontal Line (at 0 and 512, visually merged)
     ctx.beginPath();
-    ctx.moveTo(0, 256);
-    ctx.lineTo(512, 256);
+    ctx.moveTo(0, 0); // Top
+    ctx.lineTo(512, 0);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0, 512); // Bottom
+    ctx.lineTo(512, 512);
     ctx.stroke();
 
     // Vertical Line
     ctx.beginPath();
-    ctx.moveTo(256, 0);
-    ctx.lineTo(256, 512);
+    ctx.moveTo(0, 0); // Left
+    ctx.lineTo(0, 512);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(512, 0); // Right
+    ctx.lineTo(512, 512);
     ctx.stroke();
 
     // Stop lines / Intersection details?
@@ -751,6 +758,71 @@ function createDroneTexture() {
   }
   const texture = new CanvasTexture(canvas);
   return texture;
+}
+
+function createRoughFloorTexture() {
+    const canvas = document.createElement("canvas");
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+        // Base dark concrete
+        ctx.fillStyle = "#111111";
+        ctx.fillRect(0, 0, 128, 128);
+        
+        // Add random darker/lighter patches - MORE CONTRAST
+        for (let i = 0; i < 20; i++) {
+             const shade = Math.floor(Math.random() * 100); // Increased range 0-100 (was 0-40)
+             ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
+             const w = 20 + Math.random() * 60;
+             const h = 20 + Math.random() * 60;
+             ctx.globalAlpha = 0.4; // Slightly more opaque
+             ctx.fillRect(Math.random() * 128 - 20, Math.random() * 128 - 20, w, h);
+        }
+        ctx.globalAlpha = 1.0;
+
+        // Add noise/cracks (small dots) - BRIGHTER
+        for (let i = 0; i < 400; i++) {
+            const val = Math.floor(Math.random() * 100) + 50; // Brighter dots (50-150)
+            ctx.fillStyle = `rgb(${val}, ${val}, ${val})`;
+            const w = Math.random() * 3 + 1;
+            const h = Math.random() * 3 + 1;
+            ctx.fillRect(Math.random() * 128, Math.random() * 128, w, h);
+        }
+        
+        // Add some colored industrial stains (very subtle)
+        const colors = ["#443300", "#003344", "#330033"]; // Slightly vivid
+        for(let i=0; i<5; i++) {
+             ctx.fillStyle = colors[Math.floor(Math.random()*colors.length)];
+             ctx.globalAlpha = 0.3;
+             const w = Math.random() * 30 + 10;
+             const h = Math.random() * 30 + 10;
+             ctx.fillRect(Math.random() * 128, Math.random() * 128, w, h);
+        }
+        ctx.globalAlpha = 1.0;
+        
+        // Add detailed lines/wires/cracks
+        ctx.strokeStyle = "#555555"; // Lighter lines
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for(let i=0; i<10; i++) {
+            ctx.moveTo(Math.random()*128, Math.random()*128);
+            ctx.lineTo(Math.random()*128, Math.random()*128);
+        }
+        ctx.stroke();
+
+        // Add some random larger darker plates
+        ctx.fillStyle = "#000000"; // Pure black for contrast
+        ctx.globalAlpha = 0.6;
+        for(let i=0; i<3; i++) {
+            ctx.fillRect(Math.random()*100, Math.random()*100, Math.random()*40+20, Math.random()*40+20);
+        }
+        ctx.globalAlpha = 1.0;
+    }
+    const texture = new CanvasTexture(canvas);
+    texture.wrapS = RepeatWrapping;
+    texture.wrapT = RepeatWrapping;
+    return texture;
 }
 
 function createCheckpoint() {
@@ -959,6 +1031,14 @@ onMounted(() => {
     roughness: 0.8,
     metalness: 0.2,
   });
+
+  // Center the texture so (0,0) world space aligns with center of a texture block
+  // Plane starts at -CITY_SIZE. 
+  // We want the texture grid to align with our building grid.
+  // Building grid is centered around (0,0).
+  // Texture repeat starts at -CITY_SIZE.
+  const offset = -CITY_SIZE / CELL_SIZE; // Aligns the phase
+  groundTexture.offset.set(offset, offset);
   const plane = new Mesh(planeGeometry, planeMaterial);
   plane.rotation.x = -Math.PI / 2;
   plane.position.y = -0.5;
@@ -975,10 +1055,31 @@ onMounted(() => {
   const edgesGeo = new EdgesGeometry(boxGeo);
 
   // Reusable Materials
-  const buildingMaterial = new MeshLambertMaterial({
+  const buildingMaterial = new MeshStandardMaterial({
     color: 0x222222,
     map: windowTexture,
+    emissiveMap: windowTexture,
+    emissive: 0xffffff,
+    emissiveIntensity: 0.2, 
+    roughness: 0.2,
+    metalness: 0.8,
   });
+
+  const roofMaterial = new MeshStandardMaterial({
+    color: 0x111111,
+    roughness: 0.9,
+    metalness: 0.1,
+  });
+
+  // [Right, Left, Top, Bottom, Front, Back]
+  const buildingMaterials = [
+    buildingMaterial, // Right
+    buildingMaterial, // Left
+    roofMaterial,     // Top
+    roofMaterial,     // Bottom
+    buildingMaterial, // Front
+    buildingMaterial, // Back
+  ];
 
   const edgeMat1 = new LineBasicMaterial({
     color: 0xff00cc,
@@ -1007,22 +1108,42 @@ onMounted(() => {
       }),
   );
 
+  const coneGeo = new ConeGeometry(0.7, 1, 4);
+  coneGeo.translate(0, 0.5, 0);
+  const coneEdgesGeo = new EdgesGeometry(coneGeo);
+
   for (let x = 0; x < GRID_SIZE; x++) {
     for (let z = 0; z < GRID_SIZE; z++) {
       const isLeaderboardBuilding = x === 5 && z === 5;
 
       // Skip some blocks for variety, but never skip the leaderboard building
-      if (!isLeaderboardBuilding && Math.random() > 0.8) continue;
+      if (!isLeaderboardBuilding && Math.random() > 0.8) {
+          // Add a rough floor for empty blocks
+          const floorSize = BLOCK_SIZE - 2; 
+          const floorGeo = new PlaneGeometry(floorSize, floorSize);
+          const floorMat = new MeshStandardMaterial({
+              color: 0x222222,
+              roughness: 0.9,
+              metalness: 0.1,
+              map: createRoughFloorTexture(),
+          });
+          const floorMesh = new Mesh(floorGeo, floorMat);
+          floorMesh.rotation.x = -Math.PI / 2;
+          floorMesh.position.set(START_OFFSET + x * CELL_SIZE, 0.1, START_OFFSET + z * CELL_SIZE);
+          scene.add(floorMesh);
+          buildings.push(floorMesh); // Add to buildings array for potential collision/interaction or just cleanup
+          continue;
+      }
 
       const xPos = START_OFFSET + x * CELL_SIZE;
       const zPos = START_OFFSET + z * CELL_SIZE;
 
-      let h = 40 + Math.random() * 120; // Slightly taller minimum
+      let h = 40 + Math.random() * 120;
       let w = BLOCK_SIZE - 10 - Math.random() * 20;
       let d = BLOCK_SIZE - 10 - Math.random() * 20;
 
       if (isLeaderboardBuilding) {
-         h = 250; // Very tall
+         h = 250;
          w = BLOCK_SIZE - 10;
          d = BLOCK_SIZE - 10;
       }
@@ -1032,46 +1153,112 @@ onMounted(() => {
       const buildingGroup = new Group();
       buildingGroup.position.set(xPos, 0, zPos);
 
-      // Main Block
-      const mainBlock = new Mesh(boxGeo, buildingMaterial);
+      // Determine Style
+      let style = "SIMPLE";
+      if (!isLeaderboardBuilding) {
+        const r = Math.random();
+        if (r > 0.9) style = "SPIRE";
+        else if (r > 0.7) style = "TIERED";
+        else if (r > 0.5) style = "GREEBLED";
+      }
+
+      // Base Block
+      const mainBlock = new Mesh(boxGeo, buildingMaterials);
       mainBlock.scale.set(w, h, d);
       buildingGroup.add(mainBlock);
 
-      // Edges for Main Block
-      const line = new LineSegments(
+      const mainLine = new LineSegments(
         edgesGeo,
-        Math.random() > 0.5 ? edgeMat1 : edgeMat2,
+        Math.random() > 0.5 ? edgeMat1 : edgeMat2
       );
-      line.scale.set(w, h, d);
-      buildingGroup.add(line);
+      mainLine.scale.set(w, h, d);
+      buildingGroup.add(mainLine);
 
-      // Top Structure (for taller buildings)
-      if (h > 100 && Math.random() > 0.4) {
-        const h2 = h * 0.3;
-        const w2 = w * 0.6;
-        const d2 = d * 0.6;
+      // Apply Styles
+      if (style === "TIERED") {
+        const tiers = 1 + Math.floor(Math.random() * 2);
+        let currentH = h;
+        let currentW = w;
+        let currentD = d;
+        
+        for (let t = 0; t < tiers; t++) {
+             const tierH = 20 + Math.random() * 40;
+             currentW *= (0.6 + Math.random() * 0.2);
+             currentD *= (0.6 + Math.random() * 0.2);
+             
+             const tierBlock = new Mesh(boxGeo, buildingMaterials);
+             tierBlock.scale.set(currentW, tierH, currentD);
+             tierBlock.position.y = currentH;
+             buildingGroup.add(tierBlock);
+             
+             const tierLine = new LineSegments(edgesGeo, topEdgeMat);
+             tierLine.scale.set(currentW, tierH, currentD);
+             tierLine.position.y = currentH;
+             buildingGroup.add(tierLine);
+             
+             currentH += tierH;
+        }
+      } else if (style === "SPIRE") {
+        // Add a tall spire on top
+        const spireH = h * 0.5 + Math.random() * h;
+        const spireW = w * 0.5;
+        const spireD = d * 0.5;
+        
+        // Pyramid top
+        const spire = new Mesh(coneGeo, buildingMaterial);
+        spire.scale.set(spireW, spireH, spireD);
+        spire.position.y = h;
+        // Rotate 45 deg to align with box corners if needed, strictly cone geo is 4 sided
+        spire.rotation.y = Math.PI / 4; 
+        buildingGroup.add(spire);
 
-        const topBlock = new Mesh(boxGeo, buildingMaterial);
-        topBlock.scale.set(w2, h2, d2);
-        topBlock.position.y = h;
-        buildingGroup.add(topBlock);
-
-        const topLine = new LineSegments(edgesGeo, topEdgeMat);
-        topLine.scale.set(w2, h2, d2);
-        topLine.position.y = h;
-        buildingGroup.add(topLine);
-
-        // Antenna
-        if (Math.random() > 0.5) {
-          const antennaH = h * 0.2;
-          const antenna = new Mesh(boxGeo, antennaMat);
-          antenna.scale.set(2, antennaH, 2);
-          antenna.position.y = h + h2;
-          buildingGroup.add(antenna);
+        const spireLine = new LineSegments(coneEdgesGeo, topEdgeMat);
+        spireLine.scale.set(spireW, spireH, spireD);
+        spireLine.position.y = h;
+        spireLine.rotation.y = Math.PI / 4;
+        buildingGroup.add(spireLine);
+      } else if (style === "GREEBLED") {
+        // Add random blocks to sides
+        const count = 4 + Math.floor(Math.random() * 6);
+        for(let g=0; g<count; g++) {
+           const gw = 5 + Math.random() * 10;
+           const gh = 5 + Math.random() * 20;
+           const gd = 5 + Math.random() * 10;
+           
+           const gMesh = new Mesh(boxGeo, roofMaterial);
+           gMesh.scale.set(gw, gh, gd);
+           
+           // Pick face
+           const face = Math.floor(Math.random()*4);
+           // Position relative to center
+           if(face===0) gMesh.position.set(0, Math.random()*h, d/2 + gd/2);
+           else if(face===1) gMesh.position.set(0, Math.random()*h, -d/2 - gd/2);
+           else if(face===2) gMesh.position.set(w/2 + gw/2, Math.random()*h, 0);
+           else gMesh.position.set(-w/2 - gw/2, Math.random()*h, 0);
+           
+           buildingGroup.add(gMesh);
+           
+           const gLine = new LineSegments(edgesGeo, edgeMat2);
+           gLine.scale.set(gw, gh, gd);
+           gLine.position.copy(gMesh.position);
+           buildingGroup.add(gLine);
         }
       }
 
-      // Billboards
+      // Existing "Top Structure" logic is now mostly covered by styles, 
+      // but let's keep a simple antenna chance for non-spire buildings
+      if (style !== "SPIRE" && Math.random() > 0.7) {
+          const antennaH = 20 + Math.random() * 50;
+          const antenna = new Mesh(boxGeo, antennaMat);
+          antenna.scale.set(2, antennaH, 2);
+          // find top of building (approximate if tiered)
+          let topY = h;
+          // If tiered, we could find actual top, but simplified: assume simple top or placed on main block
+          antenna.position.y = topY; 
+          buildingGroup.add(antenna);
+      }
+
+      // Billboards (Existing logic)
       if (!isLeaderboardBuilding && h > 60 && Math.random() > 0.7) {
         const texIndex = Math.floor(Math.random() * billboardMaterials.length);
         const bbMat = billboardMaterials[texIndex];
@@ -1083,40 +1270,19 @@ onMounted(() => {
         const billboard = new Mesh(bbGeo, bbMat);
 
         // Position on a random face
-        // 0: +Z, 1: -Z, 2: +X, 3: -X
         const face = Math.floor(Math.random() * 4);
         const offset = 1;
 
         if (face === 0) {
-          // +Z
-          billboard.position.set(
-            0,
-            h * (0.5 + Math.random() * 0.3),
-            d / 2 + offset,
-          );
+          billboard.position.set(0, h * (0.5 + Math.random() * 0.3), d / 2 + offset);
         } else if (face === 1) {
-          // -Z
-          billboard.position.set(
-            0,
-            h * (0.5 + Math.random() * 0.3),
-            -d / 2 - offset,
-          );
+          billboard.position.set(0, h * (0.5 + Math.random() * 0.3), -d / 2 - offset);
           billboard.rotation.y = Math.PI;
         } else if (face === 2) {
-          // +X
-          billboard.position.set(
-            w / 2 + offset,
-            h * (0.5 + Math.random() * 0.3),
-            0,
-          );
+          billboard.position.set(w / 2 + offset, h * (0.5 + Math.random() * 0.3), 0);
           billboard.rotation.y = Math.PI / 2;
         } else {
-          // -X
-          billboard.position.set(
-            -w / 2 - offset,
-            h * (0.5 + Math.random() * 0.3),
-            0,
-          );
+          billboard.position.set(-w / 2 - offset, h * (0.5 + Math.random() * 0.3), 0);
           billboard.rotation.y = -Math.PI / 2;
         }
 
@@ -1126,11 +1292,9 @@ onMounted(() => {
       // Leaderboard specifics
       if (isLeaderboardBuilding) {
           const lbW = w * 0.8;
-          const lbH = lbW * 1.0; // Square-ish or whatever the aspect ratio of 512x512
+          const lbH = lbW * 1.0; 
           const lbGeo = new PlaneGeometry(lbW, lbH);
           
-          // Create for all 4 sides
-          // 0: +Z (Front), 1: -Z (Back), 2: +X (Right), 3: -X (Left)
           for (let i = 0; i < 4; i++) {
               const lbMat = new MeshBasicMaterial({
                   map: lbTexture,
@@ -1143,26 +1307,21 @@ onMounted(() => {
               const yPos = h * 0.7;
               
               if (i === 0) {
-                  // +Z
                   lbMesh.position.set(0, yPos, d/2 + offset);
                   lbMesh.rotation.y = 0;
               } else if (i === 1) {
-                  // -Z
                   lbMesh.position.set(0, yPos, -d/2 - offset);
                   lbMesh.rotation.y = Math.PI;
               } else if (i === 2) {
-                  // +X
                   lbMesh.position.set(w/2 + offset, yPos, 0);
                   lbMesh.rotation.y = Math.PI / 2;
               } else {
-                  // -X
                   lbMesh.position.set(-w/2 - offset, yPos, 0);
                   lbMesh.rotation.y = -Math.PI / 2;
               }
               
               buildingGroup.add(lbMesh);
 
-              // Add a framing light for each side
               const spot = new SpotLight(0x00ffcc, 500, 100, 0.6, 0.5, 1);
               
               if (i === 0) spot.position.set(0, h * 0.9, d + 30);

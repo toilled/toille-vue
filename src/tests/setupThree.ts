@@ -56,11 +56,13 @@ vi.mock("three", async () => {
     CylinderGeometry: class {
       parameters: any;
       constructor() { }
+      translate() { }
       dispose() { }
     },
     ConeGeometry: class {
       parameters: any;
       constructor() { }
+      translate() { }
       dispose() { }
     },
     BoxGeometry: class {
@@ -206,7 +208,14 @@ vi.mock("three", async () => {
     },
     LineSegments: class {
       scale = { set: vi.fn() };
-      position = { y: 0 };
+      position = {
+        x: 0,
+        y: 0,
+        z: 0,
+        set: vi.fn(),
+        copy: vi.fn(),
+      };
+      rotation = { x: 0, y: 0, z: 0, copy: vi.fn() };
       isObject3D = true;
       add() { }
       removeFromParent() { }

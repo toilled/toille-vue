@@ -28,8 +28,8 @@ vi.mock("three", () => {
             background: null
         })),
         PerspectiveCamera: vi.fn(() => ({
-            position: { set: vi.fn(), y: 0, copy: vi.fn(), distanceTo: vi.fn(), lerp: vi.fn() },
-            rotation: { set: vi.fn(), copy: vi.fn(), y: 0 },
+            position: { set: vi.fn(), x: 0, y: 0, z: 0, copy: vi.fn(), distanceTo: vi.fn(), lerp: vi.fn() },
+            rotation: { set: vi.fn(), copy: vi.fn(), x: 0, y: 0, z: 0 },
             quaternion: { slerp: vi.fn() },
             lookAt: vi.fn(),
             updateProjectionMatrix: vi.fn()
@@ -47,7 +47,9 @@ vi.mock("three", () => {
             translate: vi.fn()
         })),
         CylinderGeometry: vi.fn(),
-        ConeGeometry: vi.fn(),
+        ConeGeometry: vi.fn(() => ({
+            translate: vi.fn()
+        })),
         EdgesGeometry: vi.fn(),
         PlaneGeometry: vi.fn(),
         BufferGeometry: vi.fn(() => ({
@@ -66,29 +68,30 @@ vi.mock("three", () => {
         PointsMaterial: vi.fn(),
         LineBasicMaterial: vi.fn(),
         LineSegments: vi.fn(() => ({
-            position: { set: vi.fn(), copy: vi.fn() },
+            position: { set: vi.fn(), copy: vi.fn(), x: 0, y: 0, z: 0 },
+            rotation: { x: 0, y: 0, z: 0 },
             scale: { set: vi.fn() }
         })),
         Line: vi.fn(),
         Group: vi.fn(() => ({
             add: vi.fn(),
-            position: { set: vi.fn(), z: 0, copy: vi.fn() },
-            rotation: { y: 0 },
+            position: { set: vi.fn(), x: 0, y: 0, z: 0, copy: vi.fn() },
+            rotation: { x: 0, y: 0, z: 0 },
             traverse: vi.fn(),
             userData: {},
             lookAt: vi.fn()
         })),
         DoubleSide: 2,
         Mesh: vi.fn(() => ({
-            position: { set: vi.fn(), x: 0, z: 0, distanceToSquared: vi.fn() },
-            rotation: { x: 0 },
+            position: { set: vi.fn(), x: 0, y: 0, z: 0, distanceToSquared: vi.fn() },
+            rotation: { x: 0, y: 0, z: 0 },
             scale: { set: vi.fn() },
             userData: {},
             add: vi.fn(),
             lookAt: vi.fn()
         })),
         Points: vi.fn(() => ({
-            position: { set: vi.fn() },
+            position: { set: vi.fn(), x: 0, y: 0, z: 0 },
             geometry: {
                 attributes: {
                     position: {
@@ -116,6 +119,9 @@ vi.mock("three", () => {
             anisotropy: 0,
             repeat: {
                 set: vi.fn()
+            },
+            offset: {
+                set: vi.fn()
             }
         })),
         RepeatWrapping: 1000,
@@ -126,19 +132,19 @@ vi.mock("three", () => {
         },
         AmbientLight: vi.fn(),
         PointLight: vi.fn(() => ({
-            position: { set: vi.fn() }
+            position: { set: vi.fn(), x: 0, y: 0, z: 0 }
         })),
         DirectionalLight: vi.fn(() => ({
-            position: { set: vi.fn() }
+            position: { set: vi.fn(), x: 0, y: 0, z: 0 }
         })),
         SpotLight: vi.fn(() => ({
-            position: { set: vi.fn() },
-            target: { position: { set: vi.fn() } },
+            position: { set: vi.fn(), x: 0, y: 0, z: 0 },
+            target: { position: { set: vi.fn(), x: 0, y: 0, z: 0 } },
             userData: {},
             add: vi.fn()
         })),
         Object3D: vi.fn(() => ({
-            position: { set: vi.fn() },
+            position: { set: vi.fn(), x: 0, y: 0, z: 0 },
             add: vi.fn()
         })),
         Quaternion: vi.fn(() => ({

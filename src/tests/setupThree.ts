@@ -67,6 +67,14 @@ vi.mock("three", async () => {
       translate() { }
       getIndex() { return null; }
       getAttribute() { return { count: 0, itemSize: 3, array: [] }; }
+      attributes = {
+        uv: {
+          count: 24,
+          getX: vi.fn(),
+          getY: vi.fn(),
+          setXY: vi.fn(),
+        },
+      };
       clone() { return this; }
       dispose() { }
       parameters = {};

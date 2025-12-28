@@ -570,17 +570,18 @@ function createWindowTextures() {
 
   // Style 1: Standard Scattered
   const c1 = document.createElement("canvas");
-  c1.width = 32;
-  c1.height = 64;
+  c1.width = 64;
+  c1.height = 128;
   const ctx1 = c1.getContext("2d");
   if (ctx1) {
-    ctx1.fillStyle = "#020202";
-    ctx1.fillRect(0, 0, 32, 64);
-    for (let y = 2; y < 64; y += 4) {
-      for (let x = 2; x < 32; x += 4) {
-        if (Math.random() > 0.6) {
+    ctx1.fillStyle = "#000000";
+    ctx1.fillRect(0, 0, 64, 128);
+    for (let y = 4; y < 128; y += 8) {
+      for (let x = 4; x < 64; x += 8) {
+        if (Math.random() > 0.4) {
+          // Increased probability
           ctx1.fillStyle = Math.random() > 0.5 ? "#ff00cc" : "#00ccff";
-          ctx1.fillRect(x, y, 2, 2);
+          ctx1.fillRect(x, y, 4, 4); // Larger windows
         }
       }
     }
@@ -590,23 +591,23 @@ function createWindowTextures() {
 
   // Style 2: Vertical Stripes (Cyberpunk / Blade Runner)
   const c2 = document.createElement("canvas");
-  c2.width = 32;
-  c2.height = 64;
+  c2.width = 64;
+  c2.height = 128;
   const ctx2 = c2.getContext("2d");
   if (ctx2) {
     ctx2.fillStyle = "#050505";
-    ctx2.fillRect(0, 0, 32, 64);
-    for (let x = 4; x < 32; x += 8) {
+    ctx2.fillRect(0, 0, 64, 128);
+    for (let x = 8; x < 64; x += 16) {
       ctx2.fillStyle =
         Math.random() > 0.5
-          ? "rgba(0, 255, 204, 0.4)"
-          : "rgba(255, 0, 204, 0.4)";
-      ctx2.fillRect(x, 0, 2, 64);
+          ? "rgba(0, 255, 204, 0.8)" // More opaque
+          : "rgba(255, 0, 204, 0.8)";
+      ctx2.fillRect(x, 0, 4, 128);
       // Bright spots
-      for (let y = 0; y < 64; y += 8) {
-        if (Math.random() > 0.7) {
+      for (let y = 0; y < 128; y += 16) {
+        if (Math.random() > 0.6) {
           ctx2.fillStyle = "#ffffff";
-          ctx2.fillRect(x, y, 2, 4);
+          ctx2.fillRect(x, y, 4, 8);
         }
       }
     }
@@ -616,25 +617,25 @@ function createWindowTextures() {
 
   // Style 3: Dense Grid (Office)
   const c3 = document.createElement("canvas");
-  c3.width = 32;
-  c3.height = 64;
+  c3.width = 64;
+  c3.height = 128;
   const ctx3 = c3.getContext("2d");
   if (ctx3) {
     ctx3.fillStyle = "#000000";
-    ctx3.fillRect(0, 0, 32, 64);
+    ctx3.fillRect(0, 0, 64, 128);
     ctx3.fillStyle = "#111111";
-    ctx3.fillRect(2, 0, 28, 64);
+    ctx3.fillRect(4, 0, 56, 128);
 
     ctx3.fillStyle = "#000000";
-    for (let y = 2; y < 64; y += 2) {
-      ctx3.fillRect(0, y, 32, 1);
+    for (let y = 4; y < 128; y += 4) {
+      ctx3.fillRect(0, y, 64, 2);
     }
     // Random lights
-    for (let y = 2; y < 64; y += 2) {
-      for (let x = 4; x < 28; x += 4) {
-        if (Math.random() > 0.9) {
+    for (let y = 4; y < 128; y += 4) {
+      for (let x = 8; x < 56; x += 8) {
+        if (Math.random() > 0.8) {
           ctx3.fillStyle = "#ffffaa";
-          ctx3.fillRect(x, y, 2, 1);
+          ctx3.fillRect(x, y, 4, 2);
         }
       }
     }
@@ -646,6 +647,8 @@ function createWindowTextures() {
     t.wrapS = RepeatWrapping;
     t.wrapT = RepeatWrapping;
     t.magFilter = NearestFilter;
+    t.anisotropy = 16; // Improve quality at angles
+    t.needsUpdate = true;
   });
 
   return textures;
@@ -1147,6 +1150,55 @@ onMounted(() => {
 
     if (isLeaderboard) style = 0; // Keep leaderboard simple base
 
+    // Helper to create geometry with tiled UVs
+    const createTiledBox = (bw: number, bh: number, bd: number) => {
+      // Create a unique geometry for this block to support custom UVs
+      const geo = new BoxGeometry(bw, bh, bd);
+
+      // Scale factor for UVs to ensure texture density is consistent
+      const scaleU = 0.05;
+      const scaleV = 0.05;
+
+      const uvAttribute = geo.attributes.uv;
+
+      // Three.js BoxGeometry constructs faces in a specific order:
+      // +x (Right), -x (Left), +y (Top), -y (Bottom), +z (Front), -z (Back)
+      // Each face has 4 vertices (indexed geometry).
+      // We identify the face by index range (0-3, 4-7, etc.) and scale UVs based on that face's dimensions.
+
+      for (let i = 0; i < uvAttribute.count; i++) {
+        const u = uvAttribute.getX(i);
+        const v = uvAttribute.getY(i);
+
+        let sU = 1;
+        let sV = 1;
+
+        // Face determination
+        const faceIndex = Math.floor(i / 4);
+
+        if (faceIndex === 0 || faceIndex === 1) { // Right / Left
+            sU = bd * scaleU;
+            sV = bh * scaleV;
+        } else if (faceIndex === 2 || faceIndex === 3) { // Top / Bottom
+            sU = bw * scaleU;
+            sV = bd * scaleV;
+        } else { // Front / Back
+            sU = bw * scaleU;
+            sV = bh * scaleV;
+        }
+
+        uvAttribute.setXY(i, u * sU, v * sV);
+      }
+
+      // Adjust pivot to bottom like before?
+      // Old: boxGeo.translate(0, 0.5, 0) then scale.
+      // New: geo is size w, h, d. Center is 0,0,0.
+      // We want bottom at 0. So translate y by h/2.
+      geo.translate(0, bh / 2, 0);
+
+      return new Mesh(geo, mat);
+    };
+
     if (style === 1) {
       // Stepped (Ziggurat)
       const tiers = 3;
@@ -1156,13 +1208,21 @@ onMounted(() => {
 
       for (let i = 0; i < tiers; i++) {
         const tierH = h / tiers;
-        const mesh = new Mesh(boxGeo, mat);
-        mesh.scale.set(currentW, tierH, currentD);
+
+        // Use createTiledBox instead of scaling a unit box
+        const mesh = createTiledBox(currentW, tierH, currentD);
         mesh.position.y = currentH;
         group.add(mesh);
 
         const edges = new LineSegments(edgesGeo, edgeMat);
         edges.scale.set(currentW, tierH, currentD);
+        // The edge geometry is pivoted at bottom (0.5 y).
+        // Our new mesh is also pivoted at bottom locally (via translate).
+        // Wait, mesh.position.y = currentH puts the bottom at currentH.
+        // The edge geometry `boxGeo` was `translate(0, 0.5, 0)`.
+        // `edgesGeo` was created from that.
+        // So `edges` with scale (w, h, d) will sit on XZ plane if position is 0.
+        // So `edges.position.y = currentH` is correct.
         edges.position.y = currentH;
         group.add(edges);
 
@@ -1176,9 +1236,9 @@ onMounted(() => {
       // Twin Towers
       // Base
       const baseH = h * 0.2;
-      const base = new Mesh(boxGeo, mat);
-      base.scale.set(w, baseH, d);
+      const base = createTiledBox(w, baseH, d);
       group.add(base);
+
       const baseEdges = new LineSegments(edgesGeo, edgeMat);
       baseEdges.scale.set(w, baseH, d);
       group.add(baseEdges);
@@ -1189,20 +1249,20 @@ onMounted(() => {
       const towerH = h - baseH;
 
       // Tower 1
-      const t1 = new Mesh(boxGeo, mat);
-      t1.scale.set(towerW, towerH, towerD);
+      const t1 = createTiledBox(towerW, towerH, towerD);
       t1.position.set(-w * 0.25, baseH, -d * 0.25);
       group.add(t1);
+
       const t1e = new LineSegments(edgesGeo, edgeMat);
       t1e.scale.set(towerW, towerH, towerD);
       t1e.position.set(-w * 0.25, baseH, -d * 0.25);
       group.add(t1e);
 
       // Tower 2
-      const t2 = new Mesh(boxGeo, mat);
-      t2.scale.set(towerW, towerH, towerD);
+      const t2 = createTiledBox(towerW, towerH, towerD);
       t2.position.set(w * 0.25, baseH, d * 0.25);
       group.add(t2);
+
       const t2e = new LineSegments(edgesGeo, edgeMat);
       t2e.scale.set(towerW, towerH, towerD);
       t2e.position.set(w * 0.25, baseH, d * 0.25);
@@ -1212,8 +1272,7 @@ onMounted(() => {
       addRooftopDetails(group, towerW, h, towerD, w * 0.25, d * 0.25);
     } else {
       // Standard (Original + enhancements)
-      const mainBlock = new Mesh(boxGeo, mat);
-      mainBlock.scale.set(w, h, d);
+      const mainBlock = createTiledBox(w, h, d);
       group.add(mainBlock);
 
       const line = new LineSegments(edgesGeo, edgeMat);
@@ -1226,8 +1285,7 @@ onMounted(() => {
         const w2 = w * 0.6;
         const d2 = d * 0.6;
 
-        const topBlock = new Mesh(boxGeo, mat);
-        topBlock.scale.set(w2, h2, d2);
+        const topBlock = createTiledBox(w2, h2, d2);
         topBlock.position.y = h;
         group.add(topBlock);
 

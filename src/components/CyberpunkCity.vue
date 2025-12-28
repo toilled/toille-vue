@@ -253,7 +253,8 @@ watch(isGameOver, async (val) => {
 
 async function submitHighScore() {
   if (!playerName.value.trim()) return;
-  leaderboard.value = await ScoreService.submitScore(playerName.value, score.value);
+  const nameUpper = playerName.value.trim().toUpperCase();
+  leaderboard.value = await ScoreService.submitScore(nameUpper, score.value);
   isScoreSubmitted.value = true;
 }
 
@@ -2019,5 +2020,6 @@ onBeforeUnmount(() => {
   font-size: 20px;
   color: #fff;
   margin-bottom: 5px;
+  text-transform: uppercase;
 }
 </style>

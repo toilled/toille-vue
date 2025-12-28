@@ -94,7 +94,7 @@ export class DroneMode implements GameMode {
 
     onClick(event: MouseEvent) {
         if (!this.context || !this.context.drones) return;
-        const { camera, drones, score, playPewSound, spawnSparks } = this.context;
+        const { camera, drones, droneScore, playPewSound, spawnSparks } = this.context;
 
         this.pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
         this.pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -124,7 +124,7 @@ export class DroneMode implements GameMode {
                 this.deadDrones.add(index);
 
                 playPewSound();
-                score.value += 100;
+                droneScore.value += 100;
             }
         }
     }

@@ -9,23 +9,32 @@
         @activity="toggleActivity"
         @joke="toggleJoke"
       />
-      <Menu :pages="visiblePages" @explore="startExploration" @fly="startFlyingTour" />
+      <Menu 
+        :pages="visiblePages" 
+        :content-visible="isContentVisible"
+        @explore="startExploration" 
+        @fly="startFlyingTour" 
+        @toggle-content="toggleContent"
+      />
     </nav>
-    <div class="router-view-container" ref="containerRef">
-      <router-view v-slot="{ Component, route }">
-        <Transition
-          :name="transitionName"
-          @before-leave="onBeforeLeave"
-          @enter="onEnter"
-          @after-enter="onAfterEnter"
-        >
-          <component :is="Component" :key="route.path" />
-        </Transition>
-      </router-view>
-    </div>
+    <Transition name="cyberpunk-glitch">
+      <div class="router-view-container" ref="containerRef" v-show="isContentVisible">
+        <router-view v-slot="{ Component, route }">
+          <Transition
+            :name="transitionName"
+            @before-leave="onBeforeLeave"
+            @enter="onEnter"
+            @after-enter="onAfterEnter"
+          >
+            <component :is="Component" :key="route.path" />
+          </Transition>
+        </router-view>
+      </div>
+    </Transition>
     <Transition name="fade">
       <footer
         v-if="noFootersShowing && showHint"
+        v-show="isContentVisible"
         @click="checker = !checker"
         class="content-container"
       >
@@ -86,6 +95,11 @@ const route = useRoute();
 const router = useRouter();
 const transitionName = ref("cards");
 const gameMode = ref(false);
+const isContentVisible = ref(true);
+
+function toggleContent() {
+  isContentVisible.value = !isContentVisible.value;
+}
 
 const cyberpunkCityRef = ref<any>(null);
 
@@ -326,6 +340,62 @@ watch(
     opacity: 0;
     transform: translate(0);
     clip-path: inset(0 0 0 0);
+  }
+}
+
+</style>
+
+<style>
+.cyberpunk-glitch-enter-active {
+  animation: glitch-in 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.cyberpunk-glitch-leave-active {
+  animation: glitch-out 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+@keyframes glitch-in {
+  0% {
+    opacity: 0;
+    transform: scaleY(0.1) skewX(20deg);
+    filter: hue-rotate(90deg);
+    clip-path: inset(50% 0 50% 0);
+  }
+  20% {
+    opacity: 1;
+    transform: scaleY(0.4) skewX(-10deg);
+    clip-path: inset(20% 0 30% 0);
+  }
+  60% {
+    transform: scaleY(1.1) skewX(5deg);
+    clip-path: inset(0 0 0 0);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1) skewX(0);
+    filter: hue-rotate(0deg);
+  }
+}
+
+@keyframes glitch-out {
+  0% {
+    opacity: 1;
+    transform: scaleY(1) skewX(0);
+    clip-path: inset(0 0 0 0);
+  }
+  40% {
+    transform: scaleY(1.1) skewX(-5deg);
+    clip-path: inset(10% 0 10% 0);
+  }
+  80% {
+    opacity: 0.5;
+    transform: scaleY(0.2) skewX(40deg);
+    clip-path: inset(40% 0 40% 0);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleY(0.1) skewX(60deg);
+    clip-path: inset(50% 0 50% 0);
   }
 }
 </style>

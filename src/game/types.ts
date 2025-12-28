@@ -26,7 +26,9 @@ export interface GameContext {
     occupiedGrids: Map<string, { halfW: number; halfD: number }>;
 
     // State
-    score: Ref<number>;
+    score: Ref<number>; // Kept for backward compatibility or computed
+    droneScore: Ref<number>;
+    drivingScore: Ref<number>;
     timeLeft: Ref<number>;
     activeCar: Ref<Group | null>;
     isMobile: Ref<boolean>;

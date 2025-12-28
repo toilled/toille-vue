@@ -599,38 +599,45 @@ function createGroundTexture() {
     ctx.fillStyle = "#0a0a15"; // Base ground color
     ctx.fillRect(0, 0, 512, 512);
 
-    // Road color (darker)
+    // Draw Cross Roads - AT EDGES so center is block
     ctx.fillStyle = "#050505";
-
-    // Calculate relative road width on texture
-    // CELL_SIZE = BLOCK_SIZE + ROAD_WIDTH
-    // We want the road to be at the edges of the cell? Or center?
-    // Let's assume texture represents ONE cell.
-    // Center: Block. Edges: Road.
-
-    const roadRatio = ROAD_WIDTH / CELL_SIZE; // approx 40/190 = 0.21
+    const roadRatio = ROAD_WIDTH / CELL_SIZE; 
     const roadPx = 512 * roadRatio;
     const halfRoad = roadPx / 2;
 
-    // Draw Cross Roads
-    ctx.fillRect(0, 256 - halfRoad, 512, roadPx); // Horizontal
-    ctx.fillRect(256 - halfRoad, 0, roadPx, 512); // Vertical
+    // Horizontal (Top and Bottom)
+    ctx.fillRect(0, 0, 512, halfRoad); 
+    ctx.fillRect(0, 512 - halfRoad, 512, halfRoad);
 
-    // Road Lines (Dashed)
+    // Vertical (Left and Right)
+    ctx.fillRect(0, 0, halfRoad, 512);
+    ctx.fillRect(512 - halfRoad, 0, halfRoad, 512);
+
+    // Road Lines (Dashed) - EDGE CENTERED
     ctx.strokeStyle = "#333333";
     ctx.lineWidth = 2;
     ctx.setLineDash([10, 10]);
 
-    // Horizontal Line
+    // Horizontal Line (at 0 and 512, visually merged)
     ctx.beginPath();
-    ctx.moveTo(0, 256);
-    ctx.lineTo(512, 256);
+    ctx.moveTo(0, 0); // Top
+    ctx.lineTo(512, 0);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0, 512); // Bottom
+    ctx.lineTo(512, 512);
     ctx.stroke();
 
     // Vertical Line
     ctx.beginPath();
-    ctx.moveTo(256, 0);
-    ctx.lineTo(256, 512);
+    ctx.moveTo(0, 0); // Left
+    ctx.lineTo(0, 512);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(512, 0); // Right
+    ctx.lineTo(512, 512);
     ctx.stroke();
 
     // Stop lines / Intersection details?
@@ -1024,6 +1031,14 @@ onMounted(() => {
     roughness: 0.8,
     metalness: 0.2,
   });
+
+  // Center the texture so (0,0) world space aligns with center of a texture block
+  // Plane starts at -CITY_SIZE. 
+  // We want the texture grid to align with our building grid.
+  // Building grid is centered around (0,0).
+  // Texture repeat starts at -CITY_SIZE.
+  const offset = -CITY_SIZE / CELL_SIZE; // Aligns the phase
+  groundTexture.offset.set(offset, offset);
   const plane = new Mesh(planeGeometry, planeMaterial);
   plane.rotation.x = -Math.PI / 2;
   plane.position.y = -0.5;

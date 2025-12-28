@@ -911,7 +911,7 @@ onMounted(() => {
   // Scene setup
   scene = new Scene();
   scene.background = new Color(0x050510);
-  scene.fog = new FogExp2(0x050510, 0.001); // Reduced fog density
+  scene.fog = new FogExp2(0x050510, isMobile.value ? 0.00057 : 0.001); // Reduced fog density
 
   // Camera setup
   camera = new PerspectiveCamera(

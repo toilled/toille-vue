@@ -67,6 +67,14 @@ vi.mock("three", async () => {
       translate() { }
       getIndex() { return null; }
       getAttribute() { return { count: 0, itemSize: 3, array: [] }; }
+      attributes = {
+        uv: {
+          count: 24,
+          getX: vi.fn(),
+          getY: vi.fn(),
+          setXY: vi.fn(),
+        },
+      };
       clone() { return this; }
       dispose() { }
       parameters = {};
@@ -206,7 +214,8 @@ vi.mock("three", async () => {
     },
     LineSegments: class {
       scale = { set: vi.fn() };
-      position = { y: 0 };
+      position = { set: vi.fn(), x: 0, y: 0, z: 0 };
+      rotation = { x: 0, y: 0, z: 0, copy: vi.fn() };
       isObject3D = true;
       add() { }
       removeFromParent() { }

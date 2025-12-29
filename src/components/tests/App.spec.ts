@@ -56,6 +56,9 @@ describe("App.vue", () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(mockWeatherData),
+      headers: {
+        get: vi.fn(),
+      },
     });
 
     vi.stubGlobal("fetch", mockFetch);

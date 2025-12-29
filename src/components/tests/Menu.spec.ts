@@ -52,7 +52,7 @@ describe("Menu.vue", () => {
       { name: "About", link: "/about" },
     ];
     const wrapper = mount(Menu, {
-      props: { pages },
+      props: { pages, contentVisible: true },
       global: {
         plugins: [router],
       },
@@ -68,7 +68,7 @@ describe("Menu.vue", () => {
 
   it("renders an empty list when no pages are provided", () => {
     const wrapper = mount(Menu, {
-      props: { pages: [] },
+      props: { pages: [], contentVisible: true },
       global: {
         plugins: [router],
       },
@@ -82,7 +82,7 @@ describe("Menu.vue", () => {
       { name: "Home", link: "/" }
     ];
     const wrapper = mount(Menu, {
-      props: { pages },
+      props: { pages, contentVisible: true },
       global: {
         plugins: [router],
       },

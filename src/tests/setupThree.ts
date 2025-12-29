@@ -29,6 +29,7 @@ HTMLCanvasElement.prototype.getContext = vi.fn((contextId: string) => {
       clip: vi.fn(),
       strokeRect: vi.fn(),
       setLineDash: vi.fn(),
+      fillText: vi.fn(), // Added fillText
       fillStyle: "",
       strokeStyle: "",
       lineWidth: 0,
@@ -292,6 +293,9 @@ vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({
   json: () => Promise.resolve({}),
   text: () => Promise.resolve(""),
   ok: true,
+  headers: {
+    get: vi.fn(),
+  },
 })));
 
 vi.stubGlobal("AudioContext", class AudioContext {

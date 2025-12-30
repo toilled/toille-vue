@@ -1,0 +1,400 @@
+import {
+  BoxGeometry,
+  Group,
+  Mesh,
+  MeshBasicMaterial,
+  MeshLambertMaterial,
+  Object3D,
+  PlaneGeometry,
+  Scene,
+  SpotLight,
+  DoubleSide,
+} from "three";
+import {
+  BOUNDS,
+  CELL_SIZE,
+  CITY_SIZE,
+  GRID_SIZE,
+  ROAD_WIDTH,
+  START_OFFSET,
+} from "./config";
+import { carAudio } from "./audio/CarAudio";
+
+export class TrafficSystem {
+  private scene: Scene;
+  private cars: Group[] = [];
+  private carCount: number;
+  private occupiedGrids: Map<string, { halfW: number; halfD: number }>;
+  private spawnSparks: (pos: any) => void;
+
+  constructor(
+    scene: Scene,
+    carCount: number,
+    occupiedGrids: Map<string, { halfW: number; halfD: number }>,
+    spawnSparks: (pos: any) => void
+  ) {
+    this.scene = scene;
+    this.carCount = carCount;
+    this.occupiedGrids = occupiedGrids;
+    this.spawnSparks = spawnSparks;
+    this.initCars();
+  }
+
+  public getCars(): Group[] {
+    return this.cars;
+  }
+
+  private initCars() {
+    const carGeo = new BoxGeometry(4, 2, 8);
+    const tailLightGeo = new BoxGeometry(0.5, 0.5, 0.1);
+    const headLightGeo = new BoxGeometry(0.5, 0.5, 0.1);
+
+    const carBodyMat1 = new MeshLambertMaterial({ color: 0x222222 });
+    const carBodyMat2 = new MeshLambertMaterial({ color: 0x050505 });
+    const carBodyMat3 = new MeshLambertMaterial({ color: 0x111111 });
+
+    const underglowGeo = new PlaneGeometry(5, 9);
+    const underglowMat1 = new MeshBasicMaterial({
+      color: 0xff00cc,
+      opacity: 0.5,
+      transparent: true,
+      side: DoubleSide,
+    });
+    const underglowMat2 = new MeshBasicMaterial({
+      color: 0x00ccff,
+      opacity: 0.5,
+      transparent: true,
+      side: DoubleSide,
+    });
+
+    const tailLightMat = new MeshBasicMaterial({ color: 0xff0000 });
+    const headLightMat = new MeshBasicMaterial({ color: 0xffffaa });
+
+    const hitboxGeo = new BoxGeometry(20, 20, 30);
+    const hitboxMat = new MeshBasicMaterial({
+      color: 0xff0000,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      visible: true,
+    });
+
+    for (let i = 0; i < this.carCount; i++) {
+      const isSpecial = Math.random() > 0.8;
+      const bodyMat = (
+        isSpecial
+          ? carBodyMat1
+          : Math.random() > 0.5
+          ? carBodyMat2
+          : carBodyMat3
+      ).clone();
+      bodyMat.transparent = true;
+
+      const carGroup = new Group();
+
+      const carBody = new Mesh(carGeo, bodyMat);
+      carBody.userData.originalOpacity = 1.0;
+      carGroup.add(carBody);
+
+      if (Math.random() > 0.3) {
+        const underglowMat = (
+          Math.random() > 0.5 ? underglowMat1 : underglowMat2
+        ).clone();
+        const underglow = new Mesh(underglowGeo, underglowMat);
+        underglow.userData.originalOpacity = 0.5;
+        underglow.rotation.x = Math.PI / 2;
+        underglow.position.y = -0.9;
+        carGroup.add(underglow);
+      }
+
+      const tlMat = tailLightMat.clone();
+      tlMat.transparent = true;
+      const tl1 = new Mesh(tailLightGeo, tlMat);
+      tl1.userData.originalOpacity = 1.0;
+      tl1.position.set(1.5, 0, -4);
+      carGroup.add(tl1);
+
+      const tl2 = new Mesh(tailLightGeo, tlMat);
+      tl2.userData.originalOpacity = 1.0;
+      tl2.position.set(-1.5, 0, -4);
+      carGroup.add(tl2);
+
+      const hlMat = headLightMat.clone();
+      hlMat.transparent = true;
+      const hl1 = new Mesh(headLightGeo, hlMat);
+      hl1.userData.originalOpacity = 1.0;
+      hl1.position.set(1.5, 0, 4);
+      carGroup.add(hl1);
+
+      const hl2 = new Mesh(headLightGeo, hlMat);
+      hl2.userData.originalOpacity = 1.0;
+      hl2.position.set(-1.5, 0, 4);
+      carGroup.add(hl2);
+
+      const hitbox = new Mesh(hitboxGeo, hitboxMat);
+      hitbox.userData.originalOpacity = 0;
+      carGroup.add(hitbox);
+
+      carGroup.userData = {};
+      this.resetCar(carGroup);
+
+      this.scene.add(carGroup);
+      this.cars.push(carGroup);
+    }
+  }
+
+  public addLightsToCar(car: Group) {
+    const hlColor = 0xffffaa;
+    const hlIntensity = 2000;
+    const hlDist = 800;
+    const hlAngle = Math.PI / 4.5;
+    const hlPenumbra = 0.2;
+
+    const hl1 = new SpotLight(
+      hlColor,
+      hlIntensity,
+      hlDist,
+      hlAngle,
+      hlPenumbra,
+      1
+    );
+    hl1.position.set(1.5, 2, 4);
+    hl1.castShadow = false;
+
+    const hl1Target = new Object3D();
+    hl1Target.position.set(1.5, -10, 40);
+    car.add(hl1Target);
+    hl1.target = hl1Target;
+
+    hl1.userData.isCarLight = true;
+    car.add(hl1);
+
+    const hl2 = new SpotLight(
+      hlColor,
+      hlIntensity,
+      hlDist,
+      hlAngle,
+      hlPenumbra,
+      1
+    );
+    hl2.position.set(-1.5, 2, 4);
+    hl2.castShadow = false;
+
+    const hl2Target = new Object3D();
+    hl2Target.position.set(-1.5, -10, 40);
+    car.add(hl2Target);
+    hl2.target = hl2Target;
+
+    hl2.userData.isCarLight = true;
+    car.add(hl2);
+
+    const tlColor = 0xff0000;
+    const tlIntensity = 150;
+    const tlDist = 50;
+    const tlAngle = Math.PI / 2.5;
+
+    const tl1 = new SpotLight(tlColor, tlIntensity, tlDist, tlAngle, 0.5, 1);
+    tl1.position.set(1.5, 2, -4);
+
+    const tl1Target = new Object3D();
+    tl1Target.position.set(1.5, -5, -20);
+    car.add(tl1Target);
+    tl1.target = tl1Target;
+
+    tl1.userData.isCarLight = true;
+    car.add(tl1);
+
+    const tl2 = new SpotLight(tlColor, tlIntensity, tlDist, tlAngle, 0.5, 1);
+    tl2.position.set(-1.5, 2, -4);
+
+    const tl2Target = new Object3D();
+    tl2Target.position.set(-1.5, -5, -20);
+    car.add(tl2Target);
+    tl2.target = tl2Target;
+
+    tl2.userData.isCarLight = true;
+    car.add(tl2);
+  }
+
+  public removeLightsFromCar(car: Group) {
+    const lightsToRemove: Object3D[] = [];
+    const targetsToRemove: Object3D[] = [];
+
+    car.traverse((child) => {
+      if (child.userData.isCarLight) {
+        lightsToRemove.push(child);
+        if (child instanceof SpotLight) {
+          targetsToRemove.push(child.target);
+        }
+      }
+    });
+
+    lightsToRemove.forEach((l) => {
+      car.remove(l);
+      if (l instanceof SpotLight) {
+        l.dispose();
+      }
+    });
+
+    targetsToRemove.forEach((t) => car.remove(t));
+  }
+
+  public resetCar(carGroup: Group, activeCar?: Group | null) {
+    const wasActive = activeCar && carGroup.uuid === activeCar.uuid;
+
+    this.removeLightsFromCar(carGroup);
+
+    const axis = Math.random() > 0.5 ? "x" : "z";
+    const dir = Math.random() > 0.5 ? 1 : -1;
+
+    const roadIndex = Math.floor(Math.random() * (GRID_SIZE + 1));
+    const roadCoordinate = START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
+
+    const laneOffset = (Math.random() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
+
+    let x = 0,
+      z = 0;
+
+    if (axis === "x") {
+      z = roadCoordinate + laneOffset;
+      x = (Math.random() - 0.5) * CITY_SIZE;
+      carGroup.rotation.y = dir === 1 ? Math.PI / 2 : -Math.PI / 2;
+    } else {
+      x = roadCoordinate + laneOffset;
+      z = (Math.random() - 0.5) * CITY_SIZE;
+      carGroup.rotation.y = dir === 1 ? 0 : Math.PI;
+    }
+
+    carGroup.position.set(x, 1, z);
+
+    carGroup.userData.speed = 0.5 + Math.random() * 1.0;
+    carGroup.userData.dir = dir;
+    carGroup.userData.axis = axis;
+    carGroup.userData.laneOffset = laneOffset;
+    carGroup.userData.collided = false;
+    carGroup.userData.fading = false;
+    carGroup.userData.isPlayerHit = false;
+    carGroup.userData.opacity = 1.0;
+    carGroup.userData.isPlayerControlled = false;
+    carGroup.userData.currentSpeed = 0;
+
+    carGroup.visible = true;
+
+    carGroup.traverse((child) => {
+      if (child instanceof Mesh) {
+        const mat = child.material;
+        if (
+          !Array.isArray(mat) &&
+          child.userData.originalOpacity !== undefined
+        ) {
+          mat.opacity = child.userData.originalOpacity;
+        }
+      }
+    });
+
+    if (wasActive) {
+      this.addLightsToCar(carGroup);
+    }
+  }
+
+  public update() {
+    // Move cars & Handle Collisions
+    for (let i = 0; i < this.cars.length; i++) {
+      const car = this.cars[i];
+
+      if (car.userData.isPlayerControlled) {
+        continue;
+      }
+
+      if (!car.userData.fading) {
+        // AI Movement
+        if (!car.userData.isPlayerHit) {
+          if (car.userData.axis === "x") {
+            car.position.x += car.userData.speed * car.userData.dir;
+            if (car.position.x > BOUNDS) car.position.x = -BOUNDS;
+            if (car.position.x < -BOUNDS) car.position.x = BOUNDS;
+          } else {
+            car.position.z += car.userData.speed * car.userData.dir;
+            if (car.position.z > BOUNDS) car.position.z = -BOUNDS;
+            if (car.position.z < -BOUNDS) car.position.z = BOUNDS;
+          }
+        }
+      } else {
+        // Fading out logic
+        if (car.userData.axis === "x") {
+          car.position.x += car.userData.speed * 0.5 * car.userData.dir;
+        } else {
+          car.position.z += car.userData.speed * 0.5 * car.userData.dir;
+        }
+
+        car.userData.opacity -= 0.02;
+        if (car.userData.opacity <= 0) {
+          this.resetCar(car);
+        } else {
+          // Apply opacity
+          car.traverse((child) => {
+            if (child instanceof Mesh) {
+              const mat = child.material;
+              if (!Array.isArray(mat)) {
+                const original =
+                  child.userData.originalOpacity !== undefined
+                    ? child.userData.originalOpacity
+                    : 1.0;
+                mat.opacity = original * car.userData.opacity;
+              }
+            }
+          });
+        }
+      }
+    }
+
+    // Check Collisions
+    const actualCollisionDist = 6;
+
+    for (let i = 0; i < this.cars.length; i++) {
+      const carA = this.cars[i];
+      if (carA.userData.fading) continue;
+
+      for (let j = i + 1; j < this.cars.length; j++) {
+        const carB = this.cars[j];
+        if (carB.userData.fading) continue;
+
+        const dx = carA.position.x - carB.position.x;
+        const dz = carA.position.z - carB.position.z;
+        const distSq = dx * dx + dz * dz;
+
+        if (distSq < actualCollisionDist * actualCollisionDist) {
+          if (
+            carA.userData.isPlayerControlled ||
+            carB.userData.isPlayerControlled
+          ) {
+            const player = carA.userData.isPlayerControlled ? carA : carB;
+            const ai = carA.userData.isPlayerControlled ? carB : carA;
+
+            player.userData.currentSpeed *= -0.5;
+            carAudio.playCrash();
+            player.position.x += (player.position.x - ai.position.x) * 0.5;
+            player.position.z += (player.position.z - ai.position.z) * 0.5;
+
+            ai.userData.fading = true;
+            ai.userData.dir *= -1;
+            ai.rotation.y += Math.random() - 0.5;
+            this.spawnSparks(player.position);
+            continue;
+          }
+
+          if (Math.random() > 0.5) continue;
+
+          carA.userData.fading = true;
+          carB.userData.fading = true;
+
+          carA.userData.dir *= -1;
+          carB.userData.dir *= -1;
+
+          carA.rotation.y += Math.random() - 0.5;
+          carB.rotation.y += Math.random() - 0.5;
+        }
+      }
+    }
+  }
+}

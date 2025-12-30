@@ -87,31 +87,35 @@ export class GangWarManager {
   }
 
   initWarriors() {
-    // Spawn 10 warriors for each gang
-    const warriorsPerGang = 8;
+    // Spawn warriors for each gang
+    const warriorsPerGang = 20;
 
     GANGS.forEach(gang => {
-      // Pick a random block for this gang's base/spawn area to cluster them slightly
-      const blockX = Math.floor(Math.random() * GRID_SIZE);
-      const blockZ = Math.floor(Math.random() * GRID_SIZE);
-
-      for (let i = 0; i < warriorsPerGang; i++) {
-        // Spawn near the block but ensuring not ON the road center
-        // Block center:
-        const cx = START_OFFSET + blockX * CELL_SIZE;
-        const cz = START_OFFSET + blockZ * CELL_SIZE;
-
-        // Random scatter around block center
-        // Block is BLOCK_SIZE wide (approx 150).
-        const offsetX = (Math.random() - 0.5) * (BLOCK_SIZE + ROAD_WIDTH * 0.5);
-        const offsetZ = (Math.random() - 0.5) * (BLOCK_SIZE + ROAD_WIDTH * 0.5);
-
-        const x = cx + offsetX;
-        const z = cz + offsetZ;
-
-        this.spawnWarrior(x, z, gang);
-      }
+      this.spawnGangBatch(gang, warriorsPerGang);
     });
+  }
+
+  spawnGangBatch(gang: GangConfig, count: number) {
+    // Pick a random block for this gang's base/spawn area to cluster them slightly
+    const blockX = Math.floor(Math.random() * GRID_SIZE);
+    const blockZ = Math.floor(Math.random() * GRID_SIZE);
+
+    for (let i = 0; i < count; i++) {
+      // Spawn near the block but ensuring not ON the road center
+      // Block center:
+      const cx = START_OFFSET + blockX * CELL_SIZE;
+      const cz = START_OFFSET + blockZ * CELL_SIZE;
+
+      // Random scatter around block center
+      // Block is BLOCK_SIZE wide (approx 150).
+      const offsetX = (Math.random() - 0.5) * (BLOCK_SIZE + ROAD_WIDTH * 0.5);
+      const offsetZ = (Math.random() - 0.5) * (BLOCK_SIZE + ROAD_WIDTH * 0.5);
+
+      const x = cx + offsetX;
+      const z = cz + offsetZ;
+
+      this.spawnWarrior(x, z, gang);
+    }
   }
 
   spawnWarrior(x: number, z: number, gang: GangConfig) {
@@ -139,13 +143,24 @@ export class GangWarManager {
   }
 
   update(dt: number) {
+    // Check for reinforcement needs
+    this.checkReinforcements();
+
     // Update Warriors
     for (const warrior of this.warriors) {
       if (warrior.state === "DEAD") continue;
 
-      if (warrior.target && (warrior.target.state === "DEAD" || !this.isValidTarget(warrior, warrior.target))) {
-        warrior.target = null;
-        warrior.state = "IDLE";
+      // Check if target is still valid
+      if (warrior.target) {
+        if (warrior.target.state === "DEAD") {
+          warrior.target = null;
+          warrior.state = "IDLE";
+        } else if (!this.isValidTarget(warrior, warrior.target)) {
+          // Keep target but switch to chasing?
+          // For now, if out of range, drop target and maybe find new one or move closer
+          warrior.target = null;
+          warrior.state = "IDLE";
+        }
       }
 
       if (!warrior.target) {
@@ -202,20 +217,21 @@ export class GangWarManager {
   }
 
   isValidTarget(w: Warrior, target: Warrior): boolean {
-    const range = 100;
+    const range = 150; // Increased range
     return w.group.position.distanceToSquared(target.group.position) < range * range;
   }
 
   findTarget(w: Warrior) {
     let minDist = Infinity;
     let closest: Warrior | null = null;
+    const searchRange = 500; // Search far for enemies to move towards
 
     for (const other of this.warriors) {
       if (other.gangId === w.gangId) continue;
       if (other.state === "DEAD") continue;
 
       const d = w.group.position.distanceToSquared(other.group.position);
-      if (d < 100 * 100 && d < minDist) {
+      if (d < searchRange * searchRange && d < minDist) {
         minDist = d;
         closest = other;
       }
@@ -229,20 +245,29 @@ export class GangWarManager {
   updateCombat(w: Warrior, dt: number) {
     if (!w.target) return;
 
+    // Distance check
+    const distSq = w.group.position.distanceToSquared(w.target.group.position);
+    const shootRange = 150;
+
     // Face target
     const targetPos = w.target.group.position.clone();
     w.group.lookAt(targetPos.x, w.group.position.y, targetPos.z);
 
-    // Shoot
-    if (w.cooldown <= 0) {
-      this.shoot(w, w.target);
-      w.cooldown = 0.5 + Math.random() * 1.0; // Fire rate
+    if (distSq > shootRange * shootRange) {
+      // Chase
+      const dir = targetPos.sub(w.group.position).normalize();
+      w.group.position.add(dir.multiplyScalar(w.speed * dt));
+    } else {
+      // Shoot
+      if (w.cooldown <= 0) {
+        this.shoot(w, w.target);
+        w.cooldown = 0.5 + Math.random() * 1.0; // Fire rate
+      }
     }
   }
 
   updateIdle(w: Warrior, dt: number) {
-    // Wander?
-    // For now, just stand still or rotate slowly
+    // If no target found (no one within 500), just wander or rotate.
     w.group.rotation.y += dt * 0.5;
   }
 
@@ -294,26 +319,33 @@ export class GangWarManager {
     w.group.rotation.x = Math.PI / 2; // Fall over
     w.group.position.y = 0.5;
 
-    // Optional: respawn later?
-    setTimeout(() => {
-        this.respawnWarrior(w);
-    }, 5000 + Math.random() * 5000);
+    // We remove them from scene after a while to save memory, or reuse them.
+    // For now, let's just leave them as corpses or sink them.
+    // The checkReinforcements will handle spawning NEW ones.
   }
 
-  respawnWarrior(w: Warrior) {
-      // Find new spot
-      const blockX = Math.floor(Math.random() * GRID_SIZE);
-      const blockZ = Math.floor(Math.random() * GRID_SIZE);
-      const cx = START_OFFSET + blockX * CELL_SIZE;
-      const cz = START_OFFSET + blockZ * CELL_SIZE;
-      const offsetX = (Math.random() - 0.5) * (BLOCK_SIZE + ROAD_WIDTH * 0.5);
-      const offsetZ = (Math.random() - 0.5) * (BLOCK_SIZE + ROAD_WIDTH * 0.5);
+  checkReinforcements() {
+    // Count living members per gang
+    const counts = new Map<number, number>();
+    GANGS.forEach(g => counts.set(g.id, 0));
 
-      w.group.position.set(cx + offsetX, 1.25, cz + offsetZ);
-      w.group.rotation.set(0, Math.random() * Math.PI * 2, 0);
-      w.state = "IDLE";
-      w.hp = 3;
-      (w.body.material as MeshBasicMaterial).color.setHex(0x111111);
+    this.warriors.forEach(w => {
+      if (w.state !== "DEAD") {
+        counts.set(w.gangId, (counts.get(w.gangId) || 0) + 1);
+      }
+    });
+
+    const threshold = 5;
+    const reinforceCount = 10;
+
+    counts.forEach((count, gangId) => {
+      if (count < threshold) {
+        const gang = GANGS.find(g => g.id === gangId);
+        if (gang) {
+          this.spawnGangBatch(gang, reinforceCount);
+        }
+      }
+    });
   }
 
   dispose() {

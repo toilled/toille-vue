@@ -32,7 +32,7 @@
     </div>
   </div>
   <button
-    v-if="isGameMode || isDrivingMode || isExplorationMode || isFlyingTour"
+    v-if="isGameMode || isDrivingMode || isExplorationMode || isFlyingTour || isCinematicMode"
     id="return-button"
     @click="exitGameMode"
   >
@@ -206,6 +206,7 @@ import { GameContext } from "../game/types";
 import { carAudio } from "../game/audio/CarAudio";
 import { BOUNDS, CELL_SIZE, START_OFFSET, CITY_SIZE, BLOCK_SIZE, ROAD_WIDTH, GRID_SIZE, DRONE_COUNT } from "../game/config";
 import { KonamiManager } from "../game/KonamiManager";
+import { GangWarManager } from "../game/GangWarManager";
 
 const canvasContainer = ref<HTMLDivElement | null>(null);
 
@@ -230,6 +231,8 @@ const isGameMode = ref(false);
 const isDrivingMode = ref(false);
 const isExplorationMode = ref(false);
 const isFlyingTour = ref(false);
+const isCinematicMode = ref(false); // New mode for gang fight viewing
+const cinematicTarget = new Vector3();
 const isTransitioning = ref(false);
 const activeCar = ref<Group | null>(null);
 let checkpointMesh: Mesh;
@@ -241,6 +244,7 @@ const lastTime = ref(0);
 const distToTarget = ref(0);
 let gameModeManager: GameModeManager;
 let konamiManager: KonamiManager;
+let gangWarManager: GangWarManager;
 
 const leaderboard = ref<ScoreEntry[]>([]);
 const playerName = ref("");
@@ -1523,6 +1527,9 @@ onMounted(() => {
   // Initialize Fireworks via Manager
   konamiManager = new KonamiManager(scene);
 
+  // Initialize Gang Wars
+  gangWarManager = new GangWarManager(scene, spawnSparks, playPewSound);
+
   createCheckpoint();
   createNavArrow();
   createChaseArrow();
@@ -1696,6 +1703,7 @@ function exitGameMode() {
     isFlyingTour.value = false;
   }
 
+  isCinematicMode.value = false; // Exit cinematic mode
   isGameMode.value = false;
   isGameOver.value = false;
   score.value = 0;
@@ -1749,6 +1757,22 @@ function onClick(event: MouseEvent) {
   pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
   raycaster.setFromCamera(pointer, camera);
+
+  // Fight Markers Interaction
+  if (gangWarManager && gangWarManager.fightMarkers.length > 0) {
+    const markerIntersects = raycaster.intersectObjects(gangWarManager.fightMarkers);
+    if (markerIntersects.length > 0) {
+      const hit = markerIntersects[0].object;
+      if (hit.userData.isFightMarker && hit.userData.target) {
+        // Enter Cinematic Mode
+        isGameMode.value = true;
+        isCinematicMode.value = true;
+        cinematicTarget.copy(hit.userData.target);
+        emit("game-start");
+        return;
+      }
+    }
+  }
 
   // Cars Interaction (Start Driving) is "Lobby" logic
   // Traverse cars to get meshes
@@ -1826,6 +1850,7 @@ function animate() {
   lastTime.value = now;
 
   konamiManager.update(dt);
+  gangWarManager.update(dt);
 
   // Let GameModeManager handle active mode logic
   gameModeManager.update(dt, time);
@@ -2030,19 +2055,37 @@ function animate() {
   // If gameModeManager.getMode() is null, or update() doesn't set camera, we do orbit.
   
   if (!gameModeManager.getMode()) {
-    // Standard Orbit
-    const orbitRadius = isMobile.value ? 1400 : 800;
-    camera.position.x = Math.sin(time * 0.1) * orbitRadius;
-    camera.position.z = Math.cos(time * 0.1) * orbitRadius;
+    if (isCinematicMode.value) {
+       // Orbit around the fight
+       const orbitRadius = 200;
+       const orbitSpeed = 0.5;
+       const angle = time * orbitSpeed;
 
-    const targetY = isMobile.value ? 350 : 250;
-    if (Math.abs(camera.position.y - targetY) > 1) {
-      camera.position.y += (targetY - camera.position.y) * 0.05;
+       const tx = cinematicTarget.x + Math.sin(angle) * orbitRadius;
+       const tz = cinematicTarget.z + Math.cos(angle) * orbitRadius;
+
+       camera.position.x += (tx - camera.position.x) * 0.05;
+       camera.position.z += (tz - camera.position.z) * 0.05;
+       camera.position.y += (150 - camera.position.y) * 0.05;
+
+       currentLookAt.lerp(cinematicTarget, 0.05);
+       camera.lookAt(currentLookAt);
+
+    } else {
+       // Standard Orbit
+       const orbitRadius = isMobile.value ? 1400 : 800;
+       camera.position.x = Math.sin(time * 0.1) * orbitRadius;
+       camera.position.z = Math.cos(time * 0.1) * orbitRadius;
+
+       const targetY = isMobile.value ? 350 : 250;
+       if (Math.abs(camera.position.y - targetY) > 1) {
+         camera.position.y += (targetY - camera.position.y) * 0.05;
+       }
+
+       const targetLookAt = new Vector3(0, 0, 0);
+       currentLookAt.lerp(targetLookAt, 0.02);
+       camera.lookAt(currentLookAt);
     }
-
-    const targetLookAt = new Vector3(0, 0, 0); 
-    currentLookAt.lerp(targetLookAt, 0.02);
-    camera.lookAt(currentLookAt);
   }
   
   renderer.render(scene, camera);
@@ -2050,7 +2093,7 @@ function animate() {
 
 let audioCtx: AudioContext | null = null;
 
-function playPewSound() {
+function playPewSound(pos?: Vector3) {
   const AudioContext =
     window.AudioContext || (window as any).webkitAudioContext;
   if (!AudioContext) return;
@@ -2073,8 +2116,21 @@ function playPewSound() {
     audioCtx.currentTime + 0.2,
   ); // Drop to A2
 
-  gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-  gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+  let volume = 0.1;
+
+  if (pos && camera) {
+      const dist = pos.distanceTo(camera.position);
+      // Attenuate volume based on distance
+      // e.g. 1 at 0, 0.5 at 500, 0.1 at 2000
+      // formula: 1 / (1 + dist/300)
+      volume = 0.1 / (1 + dist / 300);
+
+      // Clamp minimum
+      if (volume < 0.001) volume = 0;
+  }
+
+  gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
 
   oscillator.connect(gainNode);
   gainNode.connect(audioCtx.destination);
@@ -2106,6 +2162,9 @@ onBeforeUnmount(() => {
   }
   if (konamiManager) {
     konamiManager.dispose();
+  }
+  if (gangWarManager) {
+    gangWarManager.dispose();
   }
 });
 </script>

@@ -58,6 +58,13 @@ vi.mock("three", async () => {
       parameters: any;
       constructor() { }
       translate() { }
+      rotateX = vi.fn();
+      dispose() { }
+    },
+    SphereGeometry: class {
+      parameters: any;
+      constructor() { }
+      translate() { }
       dispose() { }
     },
     ConeGeometry: class {

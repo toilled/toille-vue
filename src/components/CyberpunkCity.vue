@@ -1,201 +1,50 @@
 <template>
   <div ref="canvasContainer" id="cyberpunk-city"></div>
-  <div v-if="(isDrivingMode ? drivingScore : droneScore) > 0" id="score-counter">SCORE: {{ isDrivingMode ? drivingScore : droneScore }}</div>
-  <div v-if="isDrivingMode" id="timer-counter">
-    TIME: {{ Math.ceil(timeLeft) }}
-  </div>
-  <div v-if="isDrivingMode" id="dist-counter">
-    DIST: {{ Math.ceil(distToTarget) }}m
-  </div>
-  <div v-if="isDrivingMode && isGameOver" id="game-over">
-    <div class="game-over-title">GAME OVER</div>
-    <div class="final-score">SCORE: {{ drivingScore }}</div>
-
-    <div v-if="!isScoreSubmitted" class="score-form">
-      <input 
-        v-model="playerName" 
-        placeholder="ENTER NAME" 
-        maxlength="8" 
-        @keyup.enter="submitHighScore"
-        class="name-input"
-        autofocus
-      />
-      <button @click="submitHighScore" class="submit-btn">SUBMIT</button>
-    </div>
-
-    <div class="leaderboard">
-      <div class="lb-header">TOP DRIVERS</div>
-      <div v-for="(entry, index) in leaderboard" :key="index" class="lb-row">
-        <span class="lb-name">{{ index + 1 }}. {{ entry.name }}</span>
-        <span class="lb-score">{{ entry.score }}</span>
-      </div>
-    </div>
-  </div>
-  <button
-    v-if="isGameMode || isDrivingMode || isExplorationMode || isFlyingTour || isCinematicMode"
-    id="return-button"
-    @click="exitGameMode"
-  >
-    RETURN
-  </button>
-
-  <div v-if="isDrivingMode" id="driving-controls">
-    <div class="control-group left">
-      <button
-        class="control-btn"
-        @mousedown="controls.left = true"
-        @mouseup="controls.left = false"
-        @mouseleave="controls.left = false"
-        @touchstart.prevent="controls.left = true"
-        @touchend.prevent="controls.left = false"
-      >
-        ←
-      </button>
-      <button
-        class="control-btn"
-        @mousedown="controls.right = true"
-        @mouseup="controls.right = false"
-        @mouseleave="controls.right = false"
-        @touchstart.prevent="controls.right = true"
-        @touchend.prevent="controls.right = false"
-      >
-        →
-      </button>
-    </div>
-    <div class="control-group right">
-      <button
-        class="control-btn"
-        @mousedown="controls.backward = true"
-        @mouseup="controls.backward = false"
-        @mouseleave="controls.backward = false"
-        @touchstart.prevent="controls.backward = true"
-        @touchend.prevent="controls.backward = false"
-      >
-        BRK
-      </button>
-      <button
-        class="control-btn"
-        @mousedown="controls.forward = true"
-        @mouseup="controls.forward = false"
-        @mouseleave="controls.forward = false"
-        @touchstart.prevent="controls.forward = true"
-        @touchend.prevent="controls.forward = false"
-      >
-        GAS
-      </button>
-    </div>
-  </div>
-
-  <div v-if="isExplorationMode && isMobile" id="exploration-controls">
-    <div class="control-group left">
-      <div class="dpad">
-        <button
-          class="dpad-btn up"
-          @touchstart.prevent="controls.forward = true"
-          @touchend.prevent="controls.forward = false"
-        >
-          W
-        </button>
-        <button
-          class="dpad-btn left"
-          @touchstart.prevent="controls.left = true"
-          @touchend.prevent="controls.left = false"
-        >
-          A
-        </button>
-        <button
-          class="dpad-btn right"
-          @touchstart.prevent="controls.right = true"
-          @touchend.prevent="controls.right = false"
-        >
-          D
-        </button>
-        <button
-          class="dpad-btn down"
-          @touchstart.prevent="controls.backward = true"
-          @touchend.prevent="controls.backward = false"
-        >
-          S
-        </button>
-      </div>
-    </div>
-    <div class="control-group right">
-      <div class="dpad">
-        <button
-          class="dpad-btn up"
-          @touchstart.prevent="lookControls.up = true"
-          @touchend.prevent="lookControls.up = false"
-        >
-          ↑
-        </button>
-        <button
-          class="dpad-btn left"
-          @touchstart.prevent="lookControls.left = true"
-          @touchend.prevent="lookControls.left = false"
-        >
-          ←
-        </button>
-        <button
-          class="dpad-btn right"
-          @touchstart.prevent="lookControls.right = true"
-          @touchend.prevent="lookControls.right = false"
-        >
-          →
-        </button>
-        <button
-          class="dpad-btn down"
-          @touchstart.prevent="lookControls.down = true"
-          @touchend.prevent="lookControls.down = false"
-        >
-          ↓
-        </button>
-      </div>
-    </div>
-  </div>
+  <GameUI
+    :isDrivingMode="isDrivingMode"
+    :isGameMode="isGameMode"
+    :isExplorationMode="isExplorationMode"
+    :isFlyingTour="isFlyingTour"
+    :isCinematicMode="isCinematicMode"
+    :isGameOver="isGameOver"
+    :isMobile="isMobile"
+    :drivingScore="drivingScore"
+    :droneScore="droneScore"
+    :timeLeft="timeLeft"
+    :distToTarget="distToTarget"
+    :controls="controls"
+    :lookControls="lookControls"
+    :leaderboard="leaderboard"
+    @exit-game-mode="exitGameMode"
+    @update-leaderboard="updateLeaderboard"
+  />
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref, watch, computed } from "vue";
+import { onMounted, onBeforeUnmount, ref, watch, defineAsyncComponent } from "vue";
 import { useRoute } from "vue-router";
 import { ScoreService, type ScoreEntry } from "../utils/ScoreService";
 import {
   AdditiveBlending,
-  AmbientLight,
-  BoxGeometry,
   BufferAttribute,
   BufferGeometry,
   CanvasTexture,
   Color,
-  DirectionalLight,
-  DoubleSide,
-  EdgesGeometry,
-  FogExp2,
-  Group,
-  InterleavedBufferAttribute,
-  Line,
-  LineBasicMaterial,
-  LineSegments,
-  Mesh,
-  MeshBasicMaterial,
-  MeshLambertMaterial,
-  MeshStandardMaterial,
-  NearestFilter,
-  Object3D,
   PerspectiveCamera,
-  PlaneGeometry,
   Points,
   PointsMaterial,
   Raycaster,
-  RepeatWrapping,
   Scene,
-  SpotLight,
   Vector2,
   Vector3,
   WebGLRenderer,
-  Euler,
-  Quaternion,
   CylinderGeometry,
+  MeshBasicMaterial,
+  Mesh,
+  DoubleSide,
+  Group,
   ConeGeometry,
+  Object3D
 } from "three";
 import { GameModeManager } from "../game/GameModeManager";
 import { DrivingMode } from "../game/modes/DrivingMode";
@@ -204,9 +53,14 @@ import { ExplorationMode } from "../game/modes/ExplorationMode";
 import { FlyingTourMode } from "../game/modes/FlyingTourMode";
 import { GameContext } from "../game/types";
 import { carAudio } from "../game/audio/CarAudio";
-import { BOUNDS, CELL_SIZE, START_OFFSET, CITY_SIZE, BLOCK_SIZE, ROAD_WIDTH, GRID_SIZE, DRONE_COUNT } from "../game/config";
+import { BOUNDS, CELL_SIZE, START_OFFSET, DRONE_COUNT, GRID_SIZE } from "../game/config";
 import { KonamiManager } from "../game/KonamiManager";
 import { GangWarManager } from "../game/GangWarManager";
+import { createDroneTexture } from "../utils/TextureGenerator";
+import { CityBuilder } from "../game/CityBuilder";
+import { TrafficSystem } from "../game/TrafficSystem";
+
+const GameUI = defineAsyncComponent(() => import("./GameUI.vue"));
 
 const canvasContainer = ref<HTMLDivElement | null>(null);
 
@@ -216,9 +70,8 @@ let renderer: WebGLRenderer;
 let animationId: number;
 let isActive = false;
 
-const buildings: Object3D[] = [];
-const occupiedGrids = new Map<string, { halfW: number; halfD: number }>();
-const cars: Group[] = [];
+let occupiedGrids = new Map<string, { halfW: number; halfD: number }>();
+let cars: Group[] = [];
 
 let drones: Points;
 let droneTargetPositions: Float32Array;
@@ -231,9 +84,8 @@ const isGameMode = ref(false);
 const isDrivingMode = ref(false);
 const isExplorationMode = ref(false);
 const isFlyingTour = ref(false);
-const isCinematicMode = ref(false); // New mode for gang fight viewing
+const isCinematicMode = ref(false);
 const cinematicTarget = new Vector3();
-const isTransitioning = ref(false);
 const activeCar = ref<Group | null>(null);
 let checkpointMesh: Mesh;
 let navArrow: Group;
@@ -245,20 +97,18 @@ const distToTarget = ref(0);
 let gameModeManager: GameModeManager;
 let konamiManager: KonamiManager;
 let gangWarManager: GangWarManager;
+let trafficSystem: TrafficSystem;
+let cityBuilder: CityBuilder;
 
 const leaderboard = ref<ScoreEntry[]>([]);
-const playerName = ref("");
-const isScoreSubmitted = ref(false);
-
-watch(isGameOver, async (val) => {
-  if (val && isDrivingMode.value) {
-    isScoreSubmitted.value = false;
-    leaderboard.value = await ScoreService.getTopScores();
-  }
-});
 
 let leaderboardCanvas: HTMLCanvasElement;
 let leaderboardTexture: CanvasTexture;
+
+function updateLeaderboard(newScores: ScoreEntry[]) {
+  leaderboard.value = newScores;
+  // Texture update is handled by watch(leaderboard)
+}
 
 function updateLeaderboardTexture() {
   if (!leaderboardCanvas) return;
@@ -349,15 +199,6 @@ function createLeaderboardTexture() {
   return leaderboardTexture;
 }
 
-async function submitHighScore() {
-  if (!playerName.value.trim()) return;
-  const nameUpper = playerName.value.trim().toUpperCase();
-  // Assume leaderboard mainly tracks driving score for now, or use relevant score
-  const finalScore = isDrivingMode.value ? drivingScore.value : score.value;
-  leaderboard.value = await ScoreService.submitScore(nameUpper, finalScore);
-  isScoreSubmitted.value = true;
-}
-
 const isMobile = ref(false);
 
 const updateIsMobile = () => {
@@ -379,16 +220,6 @@ const lookControls = ref({
   down: false,
 });
 
-const isJumping = ref(false);
-let velocityY = 0;
-const gravity = 0.015;
-const jumpStrength = 0.4;
-const groundPosition = 1.8;
-
-const playerRotation = new Euler(0, 0, 0, "YXZ");
-
-// Car Audio System removed (extracted to src/game/audio/CarAudio.ts)
-
 const emit = defineEmits(["game-start", "game-end"]);
 
 const currentLookAt = new Vector3(0, 0, 0);
@@ -404,438 +235,14 @@ const sparkVelocities = new Float32Array(sparkCount * 3);
 const sparkLifetimes = new Float32Array(sparkCount); // 0 = dead, 1 = full life
 
 const route = useRoute();
-
-// Configuration is imported from ../game/config
-// OLD CONSTANTS REMOVED
 const CAR_COUNT = 150;
 
-// Function to reset/spawn a car
-function addLightsToCar(car: Group) {
-  // Headlights
-  const hlColor = 0xffffaa;
-  const hlIntensity = 2000;
-  const hlDist = 800;
-  const hlAngle = Math.PI / 4.5; // Narrower angle to prevent reaching too high
-  const hlPenumbra = 0.2;
-
-  const hl1 = new SpotLight(
-    hlColor,
-    hlIntensity,
-    hlDist,
-    hlAngle,
-    hlPenumbra,
-    1,
-  );
-  hl1.position.set(1.5, 2, 4);
-  hl1.castShadow = false;
-
-  // Target for headlight 1 (angled down to hit ground closer)
-  const hl1Target = new Object3D();
-  hl1Target.position.set(1.5, -10, 40);
-  car.add(hl1Target);
-  hl1.target = hl1Target;
-
-  hl1.userData.isCarLight = true;
-  car.add(hl1);
-
-  const hl2 = new SpotLight(
-    hlColor,
-    hlIntensity,
-    hlDist,
-    hlAngle,
-    hlPenumbra,
-    1,
-  );
-  hl2.position.set(-1.5, 2, 4);
-  hl2.castShadow = false;
-
-  // Target for headlight 2
-  const hl2Target = new Object3D();
-  hl2Target.position.set(-1.5, -10, 40);
-  car.add(hl2Target);
-  hl2.target = hl2Target;
-
-  hl2.userData.isCarLight = true;
-  car.add(hl2);
-
-  // Taillights
-  const tlColor = 0xff0000;
-  const tlIntensity = 150; // Reduced intensity
-  const tlDist = 50;
-  const tlAngle = Math.PI / 2.5;
-
-  const tl1 = new SpotLight(tlColor, tlIntensity, tlDist, tlAngle, 0.5, 1);
-  tl1.position.set(1.5, 2, -4);
-
-  const tl1Target = new Object3D();
-  tl1Target.position.set(1.5, -5, -20);
-  car.add(tl1Target);
-  tl1.target = tl1Target;
-
-  tl1.userData.isCarLight = true;
-  car.add(tl1);
-
-  const tl2 = new SpotLight(tlColor, tlIntensity, tlDist, tlAngle, 0.5, 1);
-  tl2.position.set(-1.5, 2, -4);
-
-  const tl2Target = new Object3D();
-  tl2Target.position.set(-1.5, -5, -20);
-  car.add(tl2Target);
-  tl2.target = tl2Target;
-
-  tl2.userData.isCarLight = true;
-  car.add(tl2);
-}
-
-function removeLightsFromCar(car: Group) {
-  const lightsToRemove: Object3D[] = [];
-  const targetsToRemove: Object3D[] = [];
-
-  car.traverse((child) => {
-    if (child.userData.isCarLight) {
-      lightsToRemove.push(child);
-      if (child instanceof SpotLight) {
-        targetsToRemove.push(child.target);
-      }
-    }
-  });
-
-  lightsToRemove.forEach((l) => {
-    car.remove(l);
-    if (l instanceof SpotLight) {
-      l.dispose();
-    }
-  });
-
-  targetsToRemove.forEach((t) => car.remove(t));
-}
-
-function resetCar(carGroup: Group) {
-  const wasActive = activeCar.value && carGroup.uuid === activeCar.value.uuid;
-
-  // Ensure lights are removed if recycled
-  removeLightsFromCar(carGroup);
-
-  const axis = Math.random() > 0.5 ? "x" : "z";
-  const dir = Math.random() > 0.5 ? 1 : -1;
-
-  const roadIndex = Math.floor(Math.random() * (GRID_SIZE + 1));
-  const roadCoordinate = START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
-
-  const laneOffset = (Math.random() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
-
-  let x = 0,
-    z = 0;
-
-  if (axis === "x") {
-    z = roadCoordinate + laneOffset;
-    x = (Math.random() - 0.5) * CITY_SIZE;
-    carGroup.rotation.y = dir === 1 ? Math.PI / 2 : -Math.PI / 2;
-  } else {
-    x = roadCoordinate + laneOffset;
-    z = (Math.random() - 0.5) * CITY_SIZE;
-    carGroup.rotation.y = dir === 1 ? 0 : Math.PI;
-  }
-
-  carGroup.position.set(x, 1, z);
-
-  // Slower speed for easier clicking: 0.5 to 1.5
-  carGroup.userData.speed = 0.5 + Math.random() * 1.0;
-  carGroup.userData.dir = dir;
-  carGroup.userData.axis = axis;
-  carGroup.userData.laneOffset = laneOffset;
-  carGroup.userData.collided = false;
-  carGroup.userData.fading = false;
-  carGroup.userData.isPlayerHit = false;
-  carGroup.userData.opacity = 1.0;
-  carGroup.userData.isPlayerControlled = false;
-  carGroup.userData.currentSpeed = 0;
-
-  carGroup.visible = true;
-
-  // Reset opacity of children
-  carGroup.traverse((child) => {
-    if (child instanceof Mesh) {
-      const mat = child.material;
-      if (!Array.isArray(mat) && child.userData.originalOpacity !== undefined) {
-        mat.opacity = child.userData.originalOpacity;
-      }
-    }
-  });
-
-  if (wasActive) {
-    addLightsToCar(carGroup);
-  }
-}
-
-// Reusable Texture for Windows
-function createWindowTexture() {
-  const canvas = document.createElement("canvas");
-  canvas.width = 32;
-  canvas.height = 64;
-  const ctx = canvas.getContext("2d");
-  if (ctx) {
-    ctx.fillStyle = "#020202";
-    ctx.fillRect(0, 0, 32, 64);
-    // random windows
-    for (let y = 2; y < 64; y += 4) {
-      for (let x = 2; x < 32; x += 4) {
-        if (Math.random() > 0.5) { // Increased density (was 0.6)
-          ctx.fillStyle = Math.random() > 0.5 ? "#ff00cc" : "#00ccff";
-          ctx.fillRect(x, y, 2, 2);
-        }
-      }
-    }
-  }
-  const texture = new CanvasTexture(canvas);
-  texture.wrapS = RepeatWrapping;
-  texture.wrapT = RepeatWrapping;
-  texture.magFilter = NearestFilter;
-  return texture;
-}
-
-function createGroundTexture() {
-  const canvas = document.createElement("canvas");
-  canvas.width = 512;
-  canvas.height = 512;
-  const ctx = canvas.getContext("2d");
-  if (ctx) {
-    ctx.fillStyle = "#0a0a15"; // Base ground color
-    ctx.fillRect(0, 0, 512, 512);
-
-    // Draw Cross Roads - AT EDGES so center is block
-    ctx.fillStyle = "#050505";
-    const roadRatio = ROAD_WIDTH / CELL_SIZE; 
-    const roadPx = 512 * roadRatio;
-    const halfRoad = roadPx / 2;
-
-    // Horizontal (Top and Bottom)
-    ctx.fillRect(0, 0, 512, halfRoad); 
-    ctx.fillRect(0, 512 - halfRoad, 512, halfRoad);
-
-    // Vertical (Left and Right)
-    ctx.fillRect(0, 0, halfRoad, 512);
-    ctx.fillRect(512 - halfRoad, 0, halfRoad, 512);
-
-    // Road Lines (Dashed) - EDGE CENTERED
-    ctx.strokeStyle = "#333333";
-    ctx.lineWidth = 2;
-    ctx.setLineDash([10, 10]);
-
-    // Horizontal Line (at 0 and 512, visually merged)
-    ctx.beginPath();
-    ctx.moveTo(0, 0); // Top
-    ctx.lineTo(512, 0);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(0, 512); // Bottom
-    ctx.lineTo(512, 512);
-    ctx.stroke();
-
-    // Vertical Line
-    ctx.beginPath();
-    ctx.moveTo(0, 0); // Left
-    ctx.lineTo(0, 512);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(512, 0); // Right
-    ctx.lineTo(512, 512);
-    ctx.stroke();
-
-    // Stop lines / Intersection details?
-    // Add subtle noise?
-    ctx.fillStyle = "rgba(255, 255, 255, 0.02)";
-    for (let i = 0; i < 100; i++) {
-      ctx.fillRect(Math.random() * 512, Math.random() * 512, 2, 2);
-    }
-  }
-  const texture = new CanvasTexture(canvas);
-  texture.wrapS = RepeatWrapping;
-  texture.wrapT = RepeatWrapping;
-  texture.magFilter = NearestFilter;
-  texture.anisotropy = 16;
-  return texture;
-}
-
-// Generate Billboard Textures
-function createBillboardTextures() {
-  const textures: CanvasTexture[] = [];
-  for (let i = 0; i < 5; i++) {
-    const canvas = document.createElement("canvas");
-    canvas.width = 128;
-    canvas.height = 64;
-    const ctx = canvas.getContext("2d");
-    if (ctx) {
-      // Dark background
-      ctx.fillStyle = "#100010";
-      ctx.fillRect(0, 0, 128, 64);
-
-      // Neon border
-      const colors = ["#ff00cc", "#00ffcc", "#ffff00", "#ff0000", "#00ff00"];
-      const color = colors[i % colors.length];
-
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 4;
-      ctx.strokeRect(4, 4, 120, 56);
-
-      // "Text" / Content
-      ctx.fillStyle = color;
-      ctx.shadowColor = color;
-      ctx.shadowBlur = 10;
-
-      if (i === 0) {
-        // Lines
-        ctx.fillRect(15, 15, 80, 5);
-        ctx.fillRect(15, 30, 60, 5);
-        ctx.fillRect(15, 45, 90, 5);
-      } else if (i === 1) {
-        // Circles
-        ctx.beginPath();
-        ctx.arc(32, 32, 20, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = "#000";
-        ctx.beginPath();
-        ctx.arc(32, 32, 10, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = color;
-        ctx.fillRect(64, 20, 40, 24);
-      } else {
-        // Random blocks
-        for (let k = 0; k < 5; k++) {
-          ctx.fillRect(
-            10 + Math.random() * 100,
-            10 + Math.random() * 40,
-            10 + Math.random() * 20,
-            5 + Math.random() * 10,
-          );
-        }
-      }
-    }
-    const texture = new CanvasTexture(canvas);
-    textures.push(texture);
-  }
-  return textures;
-}
-
-function createDroneTexture() {
-  const canvas = document.createElement("canvas");
-  canvas.width = 32;
-  canvas.height = 32;
-  const ctx = canvas.getContext("2d");
-  if (ctx) {
-    ctx.clearRect(0, 0, 32, 32);
-
-    // Drone body (Quadcopter silhouette)
-    ctx.strokeStyle = "#888888";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(4, 4);
-    ctx.lineTo(28, 28);
-    ctx.moveTo(28, 4);
-    ctx.lineTo(4, 28);
-    ctx.stroke();
-
-    // Rotors
-    ctx.fillStyle = "#444444";
-    ctx.beginPath();
-    ctx.arc(4, 4, 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(28, 4, 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(4, 28, 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(28, 28, 3, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Central Light (White, to be tinted by vertex color)
-    ctx.fillStyle = "#ffffff";
-    ctx.shadowColor = "#ffffff";
-    ctx.shadowBlur = 6;
-    ctx.beginPath();
-    ctx.arc(16, 16, 5, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  const texture = new CanvasTexture(canvas);
-  return texture;
-}
-
-function createRoughFloorTexture() {
-    const canvas = document.createElement("canvas");
-    canvas.width = 128;
-    canvas.height = 128;
-    const ctx = canvas.getContext("2d");
-    if (ctx) {
-        // Base dark concrete
-        ctx.fillStyle = "#111111";
-        ctx.fillRect(0, 0, 128, 128);
-        
-        // Add random darker/lighter patches - MORE CONTRAST
-        for (let i = 0; i < 20; i++) {
-             const shade = Math.floor(Math.random() * 100); // Increased range 0-100 (was 0-40)
-             ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
-             const w = 20 + Math.random() * 60;
-             const h = 20 + Math.random() * 60;
-             ctx.globalAlpha = 0.4; // Slightly more opaque
-             ctx.fillRect(Math.random() * 128 - 20, Math.random() * 128 - 20, w, h);
-        }
-        ctx.globalAlpha = 1.0;
-
-        // Add noise/cracks (small dots) - BRIGHTER
-        for (let i = 0; i < 400; i++) {
-            const val = Math.floor(Math.random() * 100) + 50; // Brighter dots (50-150)
-            ctx.fillStyle = `rgb(${val}, ${val}, ${val})`;
-            const w = Math.random() * 3 + 1;
-            const h = Math.random() * 3 + 1;
-            ctx.fillRect(Math.random() * 128, Math.random() * 128, w, h);
-        }
-        
-        // Add some colored industrial stains (very subtle)
-        const colors = ["#443300", "#003344", "#330033"]; // Slightly vivid
-        for(let i=0; i<5; i++) {
-             ctx.fillStyle = colors[Math.floor(Math.random()*colors.length)];
-             ctx.globalAlpha = 0.3;
-             const w = Math.random() * 30 + 10;
-             const h = Math.random() * 30 + 10;
-             ctx.fillRect(Math.random() * 128, Math.random() * 128, w, h);
-        }
-        ctx.globalAlpha = 1.0;
-        
-        // Add detailed lines/wires/cracks
-        ctx.strokeStyle = "#555555"; // Lighter lines
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        for(let i=0; i<10; i++) {
-            ctx.moveTo(Math.random()*128, Math.random()*128);
-            ctx.lineTo(Math.random()*128, Math.random()*128);
-        }
-        ctx.stroke();
-
-        // Add some random larger darker plates
-        ctx.fillStyle = "#000000"; // Pure black for contrast
-        ctx.globalAlpha = 0.6;
-        for(let i=0; i<3; i++) {
-            ctx.fillRect(Math.random()*100, Math.random()*100, Math.random()*40+20, Math.random()*40+20);
-        }
-        ctx.globalAlpha = 1.0;
-    }
-    const texture = new CanvasTexture(canvas);
-    texture.wrapS = RepeatWrapping;
-    texture.wrapT = RepeatWrapping;
-    return texture;
-}
-
 function createCheckpoint() {
-  // A glowing neon pillar/ring
-  const geo = new CylinderGeometry(25, 25, 1000, 32, 1, true); // Taller and wider
+  const geo = new CylinderGeometry(25, 25, 1000, 32, 1, true);
   const mat = new MeshBasicMaterial({
     color: 0x00ff00,
     transparent: true,
-    opacity: 0.6, // More opaque
+    opacity: 0.6,
     side: DoubleSide,
     depthWrite: false,
     blending: AdditiveBlending,
@@ -844,7 +251,6 @@ function createCheckpoint() {
   checkpointMesh.visible = false;
   scene.add(checkpointMesh);
 
-  // Inner brighter core
   const coreGeo = new CylinderGeometry(5, 5, 1000, 16);
   const coreMat = new MeshBasicMaterial({ color: 0xffffff });
   const core = new Mesh(coreGeo, coreMat);
@@ -854,9 +260,8 @@ function createCheckpoint() {
 function createNavArrow() {
   navArrow = new Group();
 
-  // Cone pointing at target
   const cone = new Mesh(
-    new ConeGeometry(2, 7.5, 16), // Quarter size
+    new ConeGeometry(2, 7.5, 16),
     new MeshBasicMaterial({
       color: 0xffff00,
       depthTest: false,
@@ -865,12 +270,9 @@ function createNavArrow() {
       opacity: 0.9,
     }),
   );
-  // Cone points +Y. We want it to point +Z (forward)
   cone.rotation.x = Math.PI / 2;
 
   navArrow.add(cone);
-
-  // Make sure it renders on top
   cone.renderOrder = 999;
 
   navArrow.visible = false;
@@ -887,11 +289,11 @@ function createChaseArrow() {
       depthTest: false,
       depthWrite: false,
       transparent: true,
-      opacity: 0.0, // Start invisible
+      opacity: 0.0,
     }),
   );
   cone.rotation.x = Math.PI / 2;
-  cone.position.z = 25; // Offset from center (radius of 25)
+  cone.position.z = 25;
 
   chaseArrow.add(cone);
   cone.renderOrder = 999;
@@ -901,33 +303,25 @@ function createChaseArrow() {
 }
 
 function spawnCheckpoint() {
-  // Pick random road coordinate
   const roadIndexX = Math.floor(Math.random() * (GRID_SIZE + 1));
   const roadIndexZ = Math.floor(Math.random() * (GRID_SIZE + 1));
 
-  // We want the checkpoint to be on an intersection or road
-  // Let's pick an intersection for simplicity, or just one axis road
-
-  // Pick random axis
   const axis = Math.random() > 0.5 ? "x" : "z";
   const roadCoordinate =
     START_OFFSET +
     (axis === "x" ? roadIndexX : roadIndexZ) * CELL_SIZE -
     CELL_SIZE / 2;
 
-  // Coordinate along the road.
-  // Constrain to slightly less than city bounds to ensure it's reachable and not in void.
-  // BOUNDS is where cars wrap, so let's use slightly less.
   const limit = (GRID_SIZE * CELL_SIZE) / 2;
   const otherCoord = (Math.random() - 0.5) * 2 * limit * 0.9;
 
   let x = 0,
     z = 0;
   if (axis === "x") {
-    z = roadCoordinate; // Road runs along X at this Z
+    z = roadCoordinate;
     x = otherCoord;
   } else {
-    x = roadCoordinate; // Road runs along Z at this X
+    x = roadCoordinate;
     z = otherCoord;
   }
 
@@ -939,11 +333,9 @@ function spawnSparks(position: Vector3) {
   if (!sparks) return;
   const posAttribute = sparks.geometry.attributes.position;
 
-  // Spawn a burst of sparks
   let spawned = 0;
-  const burstSize = 30; // Increased burst size
+  const burstSize = 30;
 
-  // First pass: try to find dead sparks
   for (let i = 0; i < sparkCount; i++) {
     if (sparkLifetimes[i] <= 0) {
       activateSpark(i, position, posAttribute);
@@ -952,7 +344,6 @@ function spawnSparks(position: Vector3) {
     }
   }
 
-  // Second pass: if not enough spawned, recycle random sparks
   if (spawned < burstSize) {
     for (let i = 0; i < burstSize - spawned; i++) {
       const randIndex = Math.floor(Math.random() * sparkCount);
@@ -966,17 +357,13 @@ function spawnSparks(position: Vector3) {
 function activateSpark(
   i: number,
   position: Vector3,
-  posAttribute: BufferAttribute | InterleavedBufferAttribute,
+  posAttribute: BufferAttribute | any,
 ) {
   sparkLifetimes[i] = 1.0;
-
-  // Set position
   posAttribute.setXYZ(i, position.x, position.y, position.z);
-
-  // Random velocity
-  sparkVelocities[i * 3] = (Math.random() - 0.5) * 5; // vx
-  sparkVelocities[i * 3 + 1] = Math.random() * 5 + 2; // vy (upwards)
-  sparkVelocities[i * 3 + 2] = (Math.random() - 0.5) * 5; // vz
+  sparkVelocities[i * 3] = (Math.random() - 0.5) * 5;
+  sparkVelocities[i * 3 + 1] = Math.random() * 5 + 2;
+  sparkVelocities[i * 3 + 2] = (Math.random() - 0.5) * 5;
 }
 
 onMounted(() => {
@@ -987,7 +374,6 @@ onMounted(() => {
   // Scene setup
   scene = new Scene();
   scene.background = new Color(0x050510);
-  scene.fog = new FogExp2(0x050510, isMobile.value ? 0.00057 : 0.001); // Reduced fog density
 
   // Camera setup
   camera = new PerspectiveCamera(
@@ -996,7 +382,7 @@ onMounted(() => {
     1,
     3000,
   );
-  camera.position.set(0, 250, 600); // Lowered camera slightly
+  camera.position.set(0, 250, 600);
   camera.lookAt(0, 0, 0);
 
   // Renderer setup
@@ -1005,449 +391,18 @@ onMounted(() => {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   canvasContainer.value.appendChild(renderer.domElement);
 
-  // Lighting
-  const ambientLight = new AmbientLight(0xffffff, 0.2);
-  scene.add(ambientLight);
+  // City Builder
+  const lbTexture = createLeaderboardTexture();
+  cityBuilder = new CityBuilder(scene);
+  cityBuilder.buildCity(isMobile.value, lbTexture);
+  const buildings = cityBuilder.getBuildings();
+  occupiedGrids = cityBuilder.getOccupiedGrids();
 
-  const dirLight = new DirectionalLight(0xff00cc, 0.5);
-  dirLight.position.set(100, 200, 100);
-  scene.add(dirLight);
+  // Traffic System
+  trafficSystem = new TrafficSystem(scene, CAR_COUNT, occupiedGrids, spawnSparks);
+  cars = trafficSystem.getCars();
 
-  const dirLight2 = new DirectionalLight(0x00ccff, 0.5);
-  dirLight2.position.set(-100, 200, -100);
-  scene.add(dirLight2);
-
-  // Ground Plane
-  const groundTexture = createGroundTexture();
-  const planeGeometry = new PlaneGeometry(CITY_SIZE * 2, CITY_SIZE * 2);
-
-  // Calculate repetitions based on city size vs cell size
-  // CITY_SIZE * 2 covers -2000 to 2000 range approx (4000 total)
-  // CELL_SIZE is 190.
-  // We want texture to repeat every CELL_SIZE units.
-  const repeatCount = (CITY_SIZE * 2) / CELL_SIZE;
-  groundTexture.repeat.set(repeatCount, repeatCount);
-
-  // Using MeshStandardMaterial to allow light casting from car headlights
-  const planeMaterial = new MeshStandardMaterial({
-    color: 0xffffff, // White to show texture colors
-    map: groundTexture,
-    roughness: 0.8,
-    metalness: 0.2,
-  });
-
-  // Center the texture so (0,0) world space aligns with center of a texture block
-  // Plane starts at -CITY_SIZE. 
-  // We want the texture grid to align with our building grid.
-  // Building grid is centered around (0,0).
-  // Texture repeat starts at -CITY_SIZE.
-  const offset = -CITY_SIZE / CELL_SIZE; // Aligns the phase
-  groundTexture.offset.set(offset, offset);
-  const plane = new Mesh(planeGeometry, planeMaterial);
-  plane.rotation.x = -Math.PI / 2;
-  plane.position.y = -0.5;
-  scene.add(plane);
-
-  // Generate City Grid
-  const windowTexture = createWindowTexture();
-  const billboardTextures = createBillboardTextures();
-  const lbTexture = createLeaderboardTexture(); // Create texture once
-
-  const boxGeo = new BoxGeometry(1, 1, 1);
-  boxGeo.translate(0, 0.5, 0); // pivot at bottom
-
-  const edgesGeo = new EdgesGeometry(boxGeo);
-
-  // Reusable Materials
-  const buildingMaterial = new MeshStandardMaterial({
-    color: 0x222222,
-    map: windowTexture,
-    emissiveMap: windowTexture,
-    emissive: 0xffffff,
-    emissiveIntensity: 0.2, 
-    roughness: 0.2,
-    metalness: 0.8,
-  });
-
-  const roofMaterial = new MeshStandardMaterial({
-    color: 0x111111,
-    roughness: 0.9,
-    metalness: 0.1,
-  });
-
-  // [Right, Left, Top, Bottom, Front, Back]
-  const buildingMaterials = [
-    buildingMaterial, // Right
-    buildingMaterial, // Left
-    roofMaterial,     // Top
-    roofMaterial,     // Bottom
-    buildingMaterial, // Front
-    buildingMaterial, // Back
-  ];
-
-  const edgeMat1 = new LineBasicMaterial({
-    color: 0xff00cc,
-    transparent: true,
-    opacity: 0.4,
-  });
-  const edgeMat2 = new LineBasicMaterial({
-    color: 0x00ccff,
-    transparent: true,
-    opacity: 0.4,
-  });
-  const topEdgeMat = new LineBasicMaterial({
-    color: 0xffffff,
-    transparent: true,
-    opacity: 0.5,
-  });
-  const antennaMat = new MeshBasicMaterial({ color: 0xffffff });
-
-  const billboardMaterials = billboardTextures.map(
-    (tex) =>
-      new MeshBasicMaterial({
-        map: tex,
-        side: DoubleSide,
-        transparent: true,
-        opacity: 0.9,
-      }),
-  );
-
-  const coneGeo = new ConeGeometry(0.7, 1, 4);
-  coneGeo.translate(0, 0.5, 0);
-  const coneEdgesGeo = new EdgesGeometry(coneGeo);
-
-  for (let x = 0; x < GRID_SIZE; x++) {
-    for (let z = 0; z < GRID_SIZE; z++) {
-      const isLeaderboardBuilding = x === 5 && z === 5;
-
-      // Skip some blocks for variety, but never skip the leaderboard building
-      if (!isLeaderboardBuilding && Math.random() > 0.8) {
-          // Add a rough floor for empty blocks
-          const floorSize = BLOCK_SIZE - 2; 
-          const floorGeo = new PlaneGeometry(floorSize, floorSize);
-          const floorMat = new MeshStandardMaterial({
-              color: 0x222222,
-              roughness: 0.9,
-              metalness: 0.1,
-              map: createRoughFloorTexture(),
-          });
-          const floorMesh = new Mesh(floorGeo, floorMat);
-          floorMesh.rotation.x = -Math.PI / 2;
-          floorMesh.position.set(START_OFFSET + x * CELL_SIZE, 0.1, START_OFFSET + z * CELL_SIZE);
-          scene.add(floorMesh);
-          buildings.push(floorMesh); // Add to buildings array for potential collision/interaction or just cleanup
-          continue;
-      }
-
-      const xPos = START_OFFSET + x * CELL_SIZE;
-      const zPos = START_OFFSET + z * CELL_SIZE;
-
-      let h = 40 + Math.random() * 120;
-      let w = BLOCK_SIZE - 10 - Math.random() * 20;
-      let d = BLOCK_SIZE - 10 - Math.random() * 20;
-
-      if (isLeaderboardBuilding) {
-         h = 250;
-         w = BLOCK_SIZE - 10;
-         d = BLOCK_SIZE - 10;
-      }
-
-      occupiedGrids.set(`${x},${z}`, { halfW: w / 2, halfD: d / 2 });
-
-      const buildingGroup = new Group();
-      buildingGroup.position.set(xPos, 0, zPos);
-
-      // Determine Style
-      let style = "SIMPLE";
-      if (!isLeaderboardBuilding) {
-        const r = Math.random();
-        if (r > 0.9) style = "SPIRE";
-        else if (r > 0.7) style = "TIERED";
-        else if (r > 0.5) style = "GREEBLED";
-      }
-
-      // Base Block
-      const mainBlock = new Mesh(boxGeo, buildingMaterials);
-      mainBlock.scale.set(w, h, d);
-      buildingGroup.add(mainBlock);
-
-      const mainLine = new LineSegments(
-        edgesGeo,
-        Math.random() > 0.5 ? edgeMat1 : edgeMat2
-      );
-      mainLine.scale.set(w, h, d);
-      buildingGroup.add(mainLine);
-
-      // Apply Styles
-      if (style === "TIERED") {
-        const tiers = 1 + Math.floor(Math.random() * 2);
-        let currentH = h;
-        let currentW = w;
-        let currentD = d;
-        
-        for (let t = 0; t < tiers; t++) {
-             const tierH = 20 + Math.random() * 40;
-             currentW *= (0.6 + Math.random() * 0.2);
-             currentD *= (0.6 + Math.random() * 0.2);
-             
-             const tierBlock = new Mesh(boxGeo, buildingMaterials);
-             tierBlock.scale.set(currentW, tierH, currentD);
-             tierBlock.position.y = currentH;
-             buildingGroup.add(tierBlock);
-             
-             const tierLine = new LineSegments(edgesGeo, topEdgeMat);
-             tierLine.scale.set(currentW, tierH, currentD);
-             tierLine.position.y = currentH;
-             buildingGroup.add(tierLine);
-             
-             currentH += tierH;
-        }
-      } else if (style === "SPIRE") {
-        // Add a tall spire on top
-        const spireH = h * 0.5 + Math.random() * h;
-        const spireW = w * 0.5;
-        const spireD = d * 0.5;
-        
-        // Pyramid top
-        const spire = new Mesh(coneGeo, buildingMaterial);
-        spire.scale.set(spireW, spireH, spireD);
-        spire.position.y = h;
-        // Rotate 45 deg to align with box corners if needed, strictly cone geo is 4 sided
-        spire.rotation.y = Math.PI / 4; 
-        buildingGroup.add(spire);
-
-        const spireLine = new LineSegments(coneEdgesGeo, topEdgeMat);
-        spireLine.scale.set(spireW, spireH, spireD);
-        spireLine.position.y = h;
-        spireLine.rotation.y = Math.PI / 4;
-        buildingGroup.add(spireLine);
-      } else if (style === "GREEBLED") {
-        // Add random blocks to sides
-        const count = 4 + Math.floor(Math.random() * 6);
-        for(let g=0; g<count; g++) {
-           const gw = 5 + Math.random() * 10;
-           const gh = 5 + Math.random() * 20;
-           const gd = 5 + Math.random() * 10;
-           
-           const gMesh = new Mesh(boxGeo, roofMaterial);
-           gMesh.scale.set(gw, gh, gd);
-           
-           // Pick face
-           const face = Math.floor(Math.random()*4);
-           // Position relative to center
-           if(face===0) gMesh.position.set(0, Math.random()*h, d/2 + gd/2);
-           else if(face===1) gMesh.position.set(0, Math.random()*h, -d/2 - gd/2);
-           else if(face===2) gMesh.position.set(w/2 + gw/2, Math.random()*h, 0);
-           else gMesh.position.set(-w/2 - gw/2, Math.random()*h, 0);
-           
-           buildingGroup.add(gMesh);
-           
-           const gLine = new LineSegments(edgesGeo, edgeMat2);
-           gLine.scale.set(gw, gh, gd);
-           gLine.position.copy(gMesh.position);
-           buildingGroup.add(gLine);
-        }
-      }
-
-      // Existing "Top Structure" logic is now mostly covered by styles, 
-      // but let's keep a simple antenna chance for non-spire buildings
-      if (style !== "SPIRE" && Math.random() > 0.7) {
-          const antennaH = 20 + Math.random() * 50;
-          const antenna = new Mesh(boxGeo, antennaMat);
-          antenna.scale.set(2, antennaH, 2);
-          // find top of building (approximate if tiered)
-          let topY = h;
-          // If tiered, we could find actual top, but simplified: assume simple top or placed on main block
-          antenna.position.y = topY; 
-          buildingGroup.add(antenna);
-      }
-
-      // Billboards (Existing logic)
-      if (!isLeaderboardBuilding && h > 60 && Math.random() > 0.7) {
-        const texIndex = Math.floor(Math.random() * billboardMaterials.length);
-        const bbMat = billboardMaterials[texIndex];
-
-        const bbW = 20 + Math.random() * 15;
-        const bbH = 10 + Math.random() * 10;
-        const bbGeo = new PlaneGeometry(bbW, bbH);
-
-        const billboard = new Mesh(bbGeo, bbMat);
-
-        // Position on a random face
-        const face = Math.floor(Math.random() * 4);
-        const offset = 1;
-
-        if (face === 0) {
-          billboard.position.set(0, h * (0.5 + Math.random() * 0.3), d / 2 + offset);
-        } else if (face === 1) {
-          billboard.position.set(0, h * (0.5 + Math.random() * 0.3), -d / 2 - offset);
-          billboard.rotation.y = Math.PI;
-        } else if (face === 2) {
-          billboard.position.set(w / 2 + offset, h * (0.5 + Math.random() * 0.3), 0);
-          billboard.rotation.y = Math.PI / 2;
-        } else {
-          billboard.position.set(-w / 2 - offset, h * (0.5 + Math.random() * 0.3), 0);
-          billboard.rotation.y = -Math.PI / 2;
-        }
-
-        buildingGroup.add(billboard);
-      }
-      
-      // Leaderboard specifics
-      if (isLeaderboardBuilding) {
-          const lbW = w * 0.8;
-          const lbH = lbW * 1.0; 
-          const lbGeo = new PlaneGeometry(lbW, lbH);
-          
-          for (let i = 0; i < 4; i++) {
-              const lbMat = new MeshBasicMaterial({
-                  map: lbTexture,
-                  side: DoubleSide,
-                  color: 0xffffff,
-              });
-              
-              const lbMesh = new Mesh(lbGeo, lbMat);
-              const offset = 0.6;
-              const yPos = h * 0.7;
-              
-              if (i === 0) {
-                  lbMesh.position.set(0, yPos, d/2 + offset);
-                  lbMesh.rotation.y = 0;
-              } else if (i === 1) {
-                  lbMesh.position.set(0, yPos, -d/2 - offset);
-                  lbMesh.rotation.y = Math.PI;
-              } else if (i === 2) {
-                  lbMesh.position.set(w/2 + offset, yPos, 0);
-                  lbMesh.rotation.y = Math.PI / 2;
-              } else {
-                  lbMesh.position.set(-w/2 - offset, yPos, 0);
-                  lbMesh.rotation.y = -Math.PI / 2;
-              }
-              
-              buildingGroup.add(lbMesh);
-
-              const spot = new SpotLight(0x00ffcc, 500, 100, 0.6, 0.5, 1);
-              
-              if (i === 0) spot.position.set(0, h * 0.9, d + 30);
-              else if (i === 1) spot.position.set(0, h * 0.9, -d - 30);
-              else if (i === 2) spot.position.set(w + 30, h * 0.9, 0);
-              else spot.position.set(-w - 30, h * 0.9, 0);
-
-              spot.target = lbMesh;
-              buildingGroup.add(spot);
-              buildingGroup.add(spot.target);
-          }
-      }
-
-      scene.add(buildingGroup);
-      buildings.push(buildingGroup);
-    }
-  }
-
-  // Cars
-  const carGeo = new BoxGeometry(4, 2, 8);
-  const tailLightGeo = new BoxGeometry(0.5, 0.5, 0.1);
-  const headLightGeo = new BoxGeometry(0.5, 0.5, 0.1);
-
-  // Reusable Car Materials
-  const carBodyMat1 = new MeshLambertMaterial({ color: 0x222222 });
-  const carBodyMat2 = new MeshLambertMaterial({ color: 0x050505 });
-  const carBodyMat3 = new MeshLambertMaterial({ color: 0x111111 });
-
-  const underglowGeo = new PlaneGeometry(5, 9);
-  const underglowMat1 = new MeshBasicMaterial({
-    color: 0xff00cc,
-    opacity: 0.5,
-    transparent: true,
-    side: DoubleSide,
-  });
-  const underglowMat2 = new MeshBasicMaterial({
-    color: 0x00ccff,
-    opacity: 0.5,
-    transparent: true,
-    side: DoubleSide,
-  });
-
-  const tailLightMat = new MeshBasicMaterial({ color: 0xff0000 });
-  const headLightMat = new MeshBasicMaterial({ color: 0xffffaa });
-
-  // Hitbox for easier selection
-  const hitboxGeo = new BoxGeometry(20, 20, 30);
-  const hitboxMat = new MeshBasicMaterial({
-    color: 0xff0000, // Color doesn't matter (invisible)
-    transparent: true,
-    opacity: 0,
-    depthWrite: false,
-    visible: true,
-  });
-
-  for (let i = 0; i < CAR_COUNT; i++) {
-    const isSpecial = Math.random() > 0.8;
-    const bodyMat = (
-      isSpecial ? carBodyMat1 : Math.random() > 0.5 ? carBodyMat2 : carBodyMat3
-    ).clone();
-    bodyMat.transparent = true;
-
-    // Car Group
-    const carGroup = new Group();
-
-    // Car Body
-    const carBody = new Mesh(carGeo, bodyMat);
-    carBody.userData.originalOpacity = 1.0;
-    carGroup.add(carBody);
-
-    // Underglow (Neon)
-    if (Math.random() > 0.3) {
-      const underglowMat = (
-        Math.random() > 0.5 ? underglowMat1 : underglowMat2
-      ).clone();
-      const underglow = new Mesh(underglowGeo, underglowMat);
-      underglow.userData.originalOpacity = 0.5;
-      underglow.rotation.x = Math.PI / 2;
-      underglow.position.y = -0.9;
-      carGroup.add(underglow);
-    }
-
-    // Tail lights
-    const tlMat = tailLightMat.clone();
-    tlMat.transparent = true;
-    const tl1 = new Mesh(tailLightGeo, tlMat);
-    tl1.userData.originalOpacity = 1.0;
-    tl1.position.set(1.5, 0, -4);
-    carGroup.add(tl1);
-
-    const tl2 = new Mesh(tailLightGeo, tlMat);
-    tl2.userData.originalOpacity = 1.0;
-    tl2.position.set(-1.5, 0, -4);
-    carGroup.add(tl2);
-
-    // Head lights
-    const hlMat = headLightMat.clone();
-    hlMat.transparent = true;
-    const hl1 = new Mesh(headLightGeo, hlMat);
-    hl1.userData.originalOpacity = 1.0;
-    hl1.position.set(1.5, 0, 4);
-    carGroup.add(hl1);
-
-    const hl2 = new Mesh(headLightGeo, hlMat);
-    hl2.userData.originalOpacity = 1.0;
-    hl2.position.set(-1.5, 0, 4);
-    carGroup.add(hl2);
-
-    // Invisible Hitbox
-    const hitbox = new Mesh(hitboxGeo, hitboxMat);
-    hitbox.userData.originalOpacity = 0;
-    carGroup.add(hitbox);
-
-    // Use resetCar to set initial position and state
-    carGroup.userData = {}; // init object
-    resetCar(carGroup);
-
-    scene.add(carGroup);
-    cars.push(carGroup);
-  }
-
-  // Drone Swarm (formerly Starfield)
+  // Drone Swarm
   const droneGeo = new BufferGeometry();
   const droneCount = DRONE_COUNT;
   const dronePositions = new Float32Array(droneCount * 3);
@@ -1455,7 +410,6 @@ onMounted(() => {
   droneTargetPositions = new Float32Array(droneCount * 3);
   droneBasePositions = new Float32Array(droneCount * 3);
 
-  // Initialize Base Positions
   const baseRand = mulberry32(1337);
   for (let i = 0; i < droneCount; i++) {
     const range = BOUNDS * 2;
@@ -1469,10 +423,8 @@ onMounted(() => {
   const dColor3 = new Color(0x00ff00); // Green
   const dColor4 = new Color(0xffffff); // White
 
-  // Initial generation
   generateDroneTargets(route.path);
 
-  // Set initial positions to target positions
   for (let i = 0; i < droneCount * 3; i++) {
     dronePositions[i] = droneTargetPositions[i];
   }
@@ -1493,13 +445,13 @@ onMounted(() => {
   droneGeo.setAttribute("color", new BufferAttribute(droneColorsArray, 3));
 
   const droneMaterial = new PointsMaterial({
-    size: 15, // Larger to see the texture
+    size: 15,
     map: createDroneTexture(),
     vertexColors: true,
     transparent: true,
     opacity: 0.9,
     sizeAttenuation: true,
-    depthWrite: false, // Better for transparency
+    depthWrite: false,
     blending: AdditiveBlending,
   });
 
@@ -1521,7 +473,7 @@ onMounted(() => {
   });
 
   sparks = new Points(sparkGeo, sparkMat);
-  sparks.frustumCulled = false; // Prevent culling when sparks fly outside initial bounds
+  sparks.frustumCulled = false;
   scene.add(sparks);
 
   // Initialize Fireworks via Manager
@@ -1539,7 +491,6 @@ onMounted(() => {
   window.addEventListener("keydown", onKeyDown);
   window.addEventListener("keyup", onKeyUp);
   window.addEventListener("mousemove", onMouseMove);
-  // Pointer lock change
   document.addEventListener("pointerlockchange", onPointerLockChange);
 
   // Initialize Game Context and Manager
@@ -1550,6 +501,8 @@ onMounted(() => {
     cars,
     drones,
     occupiedGrids,
+    // @ts-ignore
+    buildings,
     score,
     droneScore,
     drivingScore,
@@ -1572,10 +525,9 @@ onMounted(() => {
   isActive = true;
   animate();
 
-  // Load initial leaderboard
   ScoreService.getTopScores().then((scores) => {
     leaderboard.value = scores;
-    updateLeaderboardTexture(); // Ensure texture updates with loaded scores
+    updateLeaderboardTexture();
   });
 });
 
@@ -1584,10 +536,7 @@ function onKeyDown(event: KeyboardEvent) {
     exitGameMode();
     return;
   }
-
-  // Konami Code Check
   konamiManager.onKeyDown(event);
-
   gameModeManager.onKeyDown(event);
 }
 
@@ -1595,7 +544,6 @@ function onKeyUp(event: KeyboardEvent) {
   gameModeManager.onKeyUp(event);
 }
 
-// Seeded random number generator
 function mulberry32(a: number) {
   return function () {
     var t = (a += 0x6d2b79f5);
@@ -1605,24 +553,17 @@ function mulberry32(a: number) {
   };
 }
 
-// Generate targets based on route
 function generateDroneTargets(path: string) {
-  // If we are in Drone Mode, let it handle it?
-  // Actually standard idle behavior uses this.
-  
-  // Create a seed from the path string
   let seed = 0;
   for (let i = 0; i < path.length; i++) {
     seed = (seed << 5) - seed + path.charCodeAt(i);
     seed |= 0;
   }
-  // Ensure positive seed
   seed = Math.abs(seed) + 1;
 
   const rand = mulberry32(seed);
 
   for (let i = 0; i < droneTargetPositions.length / 3; i++) {
-    // Generate a small offset instead of a new full position
     const xOffset = (rand() - 0.5) * 500;
     const yOffset = (rand() - 0.5) * 200;
     const zOffset = (rand() - 0.5) * 500;
@@ -1632,7 +573,6 @@ function generateDroneTargets(path: string) {
       droneTargetPositions[i * 3 + 1] = droneBasePositions[i * 3 + 1] + yOffset;
       droneTargetPositions[i * 3 + 2] = droneBasePositions[i * 3 + 2] + zOffset;
     } else {
-      // Fallback
       droneTargetPositions[i * 3] = xOffset * 8;
       droneTargetPositions[i * 3 + 1] = 300 + (yOffset + 100) * 4;
       droneTargetPositions[i * 3 + 2] = zOffset * 8;
@@ -1643,7 +583,6 @@ function generateDroneTargets(path: string) {
 watch(
   () => route.path,
   (newPath) => {
-    // Only update targets if NOT in a specific game mode that overrides drone behavior
     if (!isGameMode.value && !isDrivingMode.value) {
       generateDroneTargets(newPath);
     }
@@ -1651,8 +590,8 @@ watch(
 );
 
 watch(activeCar, (newCar, oldCar) => {
-  if (oldCar) removeLightsFromCar(oldCar);
-  if (newCar) addLightsToCar(newCar);
+  if (oldCar) trafficSystem.removeLightsFromCar(oldCar);
+  if (newCar) trafficSystem.addLightsToCar(newCar);
 });
 
 watch(droneScore, (val) => {
@@ -1688,11 +627,6 @@ function exitGameMode() {
 
   if (isDrivingMode.value) {
     isDrivingMode.value = false;
-    if (activeCar.value) {
-       // Cleanup handled by DrivingMode.cleanup() but we also sync state here just in case
-       // or rather, rely on manager.
-       // The cleanup() of DrivingMode nulls activeCar but maybe we should ensure it.
-    }
   }
 
   if (isExplorationMode.value) {
@@ -1703,7 +637,7 @@ function exitGameMode() {
     isFlyingTour.value = false;
   }
 
-  isCinematicMode.value = false; // Exit cinematic mode
+  isCinematicMode.value = false;
   isGameMode.value = false;
   isGameOver.value = false;
   score.value = 0;
@@ -1711,12 +645,6 @@ function exitGameMode() {
   drivingScore.value = 0;
   emit("game-end");
 
-  // Restore dead drones & Reset positions to targets
-  // This logic was partly in DroneMode.cleanup but we want it for ALL modes exit probably?
-  // Actually only DroneMode messed with drones significantly (killed them).
-  // But DroneMode.cleanup() clears deadDrones set.
-  // We need to ensure positions are reset to target positions so they don't get stuck.
-  
   if (drones && droneTargetPositions) {
     const positions = drones.geometry.attributes.position.array;
     const count = positions.length / 3;
@@ -1738,19 +666,13 @@ function onResize() {
 }
 
 function onPointerLockChange() {
-  // If pointer lock is lost and we are in desktop exploration mode, maybe pause?
-  // Or just let it be.
 }
 
 function onClick(event: MouseEvent) {
   if (!camera) return;
 
-  // Delegate to active mode
   gameModeManager.onClick(event);
 
-  // If we are already in a mode that consumes clicks (like Exploration requestPointerLock inside mode), we might stop.
-  // But DroneMode also uses clicks.
-  // We need to check if we are in a mode.
   if (isGameMode.value || isDrivingMode.value) return;
 
   pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -1758,13 +680,11 @@ function onClick(event: MouseEvent) {
 
   raycaster.setFromCamera(pointer, camera);
 
-  // Fight Markers Interaction
   if (gangWarManager && gangWarManager.fightMarkers.length > 0) {
     const markerIntersects = raycaster.intersectObjects(gangWarManager.fightMarkers);
     if (markerIntersects.length > 0) {
       const hit = markerIntersects[0].object;
       if (hit.userData.isFightMarker && hit.userData.target) {
-        // Enter Cinematic Mode
         isGameMode.value = true;
         isCinematicMode.value = true;
         cinematicTarget.copy(hit.userData.target);
@@ -1774,8 +694,6 @@ function onClick(event: MouseEvent) {
     }
   }
 
-  // Cars Interaction (Start Driving) is "Lobby" logic
-  // Traverse cars to get meshes
   const carMeshes: Object3D[] = [];
   cars.forEach((c) =>
     c.traverse((child) => {
@@ -1786,14 +704,12 @@ function onClick(event: MouseEvent) {
   const carIntersects = raycaster.intersectObjects(carMeshes);
   if (carIntersects.length > 0) {
     const hit = carIntersects[0].object;
-    // Traverse up to find Group
     let target = hit;
     while (target.parent && target.parent.type !== "Scene") {
       target = target.parent;
     }
 
     if (target instanceof Group && target.userData.speed !== undefined) {
-      // Found a car
       isDrivingMode.value = true;
       emit("game-start");
       
@@ -1806,7 +722,6 @@ function onClick(event: MouseEvent) {
     }
   }
   
-  // Drone Interaction (Lobby Shooting)
   if (drones && !isExplorationMode.value) {
     raycaster.params.Points.threshold = 20; 
     const intersects = raycaster.intersectObject(drones);
@@ -1823,7 +738,6 @@ function onClick(event: MouseEvent) {
 
         spawnSparks(new Vector3(x, y, z));
 
-        // Hide drone
         posAttribute.setXYZ(index, 0, -99999, 0);
         posAttribute.needsUpdate = true;
 
@@ -1851,124 +765,9 @@ function animate() {
 
   konamiManager.update(dt);
   gangWarManager.update(dt);
-
-  // Let GameModeManager handle active mode logic
   gameModeManager.update(dt, time);
+  trafficSystem.update();
 
-  // Global Logic (e.g. World Simulation) logic that runs regardless of mode (or if not handled by mode)
-  
-  // Move cars & Handle Collisions
-  // Note: DrivingMode handles the PLAYER car. We should skip it here if it's Player Controlled.
-  
-  for (let i = 0; i < cars.length; i++) {
-    const car = cars[i];
-
-    if (car.userData.isPlayerControlled) {
-       // Skip physics update for player car here, let DrivingMode handle it
-       // But we still need checking for collision with OTHER cars?
-       // DrivingMode checks collision with environment.
-       // We might need to handle car-car collision here or in DrivingMode.
-       // Current implementation of checks is below (N^2 check).
-       continue;
-    }
-
-    if (!car.userData.fading) {
-      // AI Movement
-      if (!car.userData.isPlayerHit) {
-        if (car.userData.axis === "x") {
-          car.position.x += car.userData.speed * car.userData.dir;
-          if (car.position.x > BOUNDS) car.position.x = -BOUNDS;
-          if (car.position.x < -BOUNDS) car.position.x = BOUNDS;
-        } else {
-          car.position.z += car.userData.speed * car.userData.dir;
-          if (car.position.z > BOUNDS) car.position.z = -BOUNDS;
-          if (car.position.z < -BOUNDS) car.position.z = BOUNDS;
-        }
-      }
-    } else {
-      // Fading out logic
-      if (car.userData.axis === "x") {
-        car.position.x += car.userData.speed * 0.5 * car.userData.dir;
-      } else {
-        car.position.z += car.userData.speed * 0.5 * car.userData.dir;
-      }
-
-      car.userData.opacity -= 0.02;
-      if (car.userData.opacity <= 0) {
-        resetCar(car);
-      } else {
-        // Apply opacity
-        car.traverse((child) => {
-          if (child instanceof Mesh) {
-            const mat = child.material;
-            if (!Array.isArray(mat)) {
-              const original =
-                child.userData.originalOpacity !== undefined
-                  ? child.userData.originalOpacity
-                  : 1.0;
-              mat.opacity = original * car.userData.opacity;
-            }
-          }
-        });
-      }
-    }
-  }
-
-  // Check Collisions
-  const actualCollisionDist = 6;
-
-  for (let i = 0; i < cars.length; i++) {
-    const carA = cars[i];
-    if (carA.userData.fading) continue;
-
-    for (let j = i + 1; j < cars.length; j++) {
-      const carB = cars[j];
-      if (carB.userData.fading) continue;
-
-      const dx = carA.position.x - carB.position.x;
-      const dz = carA.position.z - carB.position.z;
-      const distSq = dx * dx + dz * dz;
-
-      if (distSq < actualCollisionDist * actualCollisionDist) {
-        // If player is involved
-        if (
-          carA.userData.isPlayerControlled ||
-          carB.userData.isPlayerControlled
-        ) {
-          // Bounce player, destroy AI?
-          const player = carA.userData.isPlayerControlled ? carA : carB;
-          const ai = carA.userData.isPlayerControlled ? carB : carA;
-
-          player.userData.currentSpeed *= -0.5;
-          carAudio.playCrash();
-          // Push apart
-          player.position.x += (player.position.x - ai.position.x) * 0.5;
-          player.position.z += (player.position.z - ai.position.z) * 0.5;
-
-          ai.userData.fading = true; // Destroy AI car
-          ai.userData.dir *= -1;
-          ai.rotation.y += Math.random() - 0.5;
-          spawnSparks(player.position);
-          continue;
-        }
-
-        // Additional check to reduce collision rate for AI
-        if (Math.random() > 0.5) continue;
-
-        // Collision!
-        carA.userData.fading = true;
-        carB.userData.fading = true;
-
-        carA.userData.dir *= -1;
-        carB.userData.dir *= -1;
-
-        carA.rotation.y += Math.random() - 0.5;
-        carB.rotation.y += Math.random() - 0.5;
-      }
-    }
-  }
-
-  // Update Sparks
   if (sparks) {
     const positions = sparks.geometry.attributes.position.array;
     let needsUpdate = false;
@@ -2015,15 +814,11 @@ function animate() {
     }
   }
 
-  // Move drones (Default Behavior if NOT handled by DroneMode)
-  // DroneMode automatically updates them in its update() method.
-  // We check if we are in DroneMode. If so, skip.
   const isDroneMode = gameModeManager.getMode() instanceof DroneMode;
   
   if (drones && !isDroneMode) {
     const positions = drones.geometry.attributes.position.array;
     
-    // Standard Mode: Oscillation around target
     if (droneTargetPositions) {
         const easing = 0.02;
         const oscTime = Date.now() * 0.001;
@@ -2048,15 +843,8 @@ function animate() {
     }
   }
 
-  // Camera movement (Orbit if no mode logic)
-  // If GameMode is active, it handles camera.
-  // Exception: DrivingMode handles camera. ExplorationMode handles camera. FlyingTourMode handles camera.
-  // If we receive "Standard Orbit" logic inside the mode? No.
-  // If gameModeManager.getMode() is null, or update() doesn't set camera, we do orbit.
-  
   if (!gameModeManager.getMode()) {
     if (isCinematicMode.value) {
-       // Orbit around the fight
        const orbitRadius = 200;
        const orbitSpeed = 0.5;
        const angle = time * orbitSpeed;
@@ -2072,7 +860,6 @@ function animate() {
        camera.lookAt(currentLookAt);
 
     } else {
-       // Standard Orbit
        const orbitRadius = isMobile.value ? 1400 : 800;
        camera.position.x = Math.sin(time * 0.1) * orbitRadius;
        camera.position.z = Math.cos(time * 0.1) * orbitRadius;
@@ -2110,22 +897,18 @@ function playPewSound(pos?: Vector3) {
   const gainNode = audioCtx.createGain();
 
   oscillator.type = "sawtooth";
-  oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+  oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
   oscillator.frequency.exponentialRampToValueAtTime(
     110,
     audioCtx.currentTime + 0.2,
-  ); // Drop to A2
+  );
 
   let volume = 0.1;
 
   if (pos && camera) {
       const dist = pos.distanceTo(camera.position);
-      // Attenuate volume based on distance
-      // e.g. 1 at 0, 0.5 at 500, 0.1 at 2000
-      // formula: 1 / (1 + dist/300)
       volume = 0.1 / (1 + dist / 300);
 
-      // Clamp minimum
       if (volume < 0.001) volume = 0;
   }
 
@@ -2177,236 +960,5 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   z-index: -1;
-}
-
-#score-counter {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  color: #00ffcc;
-  font-family: "Courier New", Courier, monospace;
-  font-size: 24px;
-  font-weight: bold;
-  z-index: 10;
-  text-shadow: 0 0 10px #00ffcc;
-  pointer-events: none;
-}
-
-#timer-counter {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: #ff00cc;
-  font-family: "Courier New", Courier, monospace;
-  font-size: 32px;
-  font-weight: bold;
-  z-index: 10;
-  text-shadow: 0 0 10px #ff00cc;
-  pointer-events: none;
-}
-
-#dist-counter {
-  position: fixed;
-  top: 60px; /* Below timer */
-  left: 50%;
-  transform: translateX(-50%);
-  color: #ffff00;
-  font-family: "Courier New", Courier, monospace;
-  font-size: 24px;
-  font-weight: bold;
-  z-index: 10;
-  text-shadow: 0 0 10px #ffff00;
-  pointer-events: none;
-}
-
-#game-over {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: #ff0000;
-  font-family: "Courier New", Courier, monospace;
-  font-size: 64px;
-  font-weight: bold;
-  z-index: 30;
-  text-shadow: 0 0 20px #ff0000;
-  text-shadow: 0 0 20px #ff0000;
-  pointer-events: auto;
-  background: rgba(0, 0, 0, 0.9);
-  padding: 40px;
-  border: 4px solid #ff0000;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 400px;
-}
-
-#return-button {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  background: rgba(0, 0, 0, 0.7);
-  color: #ff00cc;
-  border: 1px solid #ff00cc;
-  padding: 10px 20px;
-  font-family: "Courier New", Courier, monospace;
-  font-size: 18px;
-  font-weight: bold;
-  cursor: pointer;
-  z-index: 10;
-  text-shadow: 0 0 5px #ff00cc;
-  box-shadow: 0 0 10px #ff00cc;
-}
-
-#return-button:hover {
-  background: rgba(255, 0, 204, 0.2);
-  color: #ffffff;
-  text-shadow: 0 0 10px #ffffff;
-}
-
-#driving-controls,
-#exploration-controls {
-  position: fixed;
-  bottom: 80px;
-  left: 0;
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  padding: 0 20px;
-  box-sizing: border-box;
-  z-index: 20;
-  pointer-events: none; /* Allow clicks to pass through empty space */
-}
-
-.control-group {
-  display: flex;
-  gap: 20px;
-  pointer-events: auto;
-}
-
-.control-btn {
-  width: 60px;
-  height: 60px;
-  background: rgba(0, 255, 204, 0.2);
-  border: 2px solid #00ffcc;
-  border-radius: 50%;
-  color: #00ffcc;
-  font-size: 20px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  user-select: none;
-  touch-action: manipulation;
-}
-
-.control-btn:active {
-  background: rgba(0, 255, 204, 0.5);
-  color: #fff;
-}
-
-.dpad {
-  position: relative;
-  width: 100px;
-  height: 100px;
-}
-
-.dpad-btn {
-  position: absolute;
-  width: 30px;
-  height: 30px;
-  background: rgba(0, 255, 204, 0.2);
-  border: 1px solid #00ffcc;
-  color: #00ffcc;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  user-select: none;
-  touch-action: manipulation;
-}
-.dpad-btn:active {
-  background: rgba(0, 255, 204, 0.5);
-  color: #fff;
-}
-
-.dpad-btn.up {
-  top: 0;
-  left: 35px;
-}
-.dpad-btn.down {
-  bottom: 0;
-  left: 35px;
-}
-.dpad-btn.left {
-  top: 35px;
-  left: 0;
-}
-.dpad-btn.right {
-  top: 35px;
-  right: 0;
-}
-.game-over-title {
-  font-size: 64px;
-  color: #ff0000;
-  margin-bottom: 20px;
-}
-.final-score {
-  font-size: 32px;
-  color: #ffff00;
-  margin-bottom: 30px;
-}
-.score-form {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 30px;
-  z-index: 100;
-}
-.name-input {
-  background: rgba(0, 0, 0, 0.5);
-  border: 2px solid #00ffcc;
-  color: #00ffcc;
-  padding: 10px;
-  font-family: inherit;
-  font-size: 24px;
-  text-transform: uppercase;
-  width: 200px;
-  pointer-events: auto;
-}
-.submit-btn {
-  background: #00ffcc;
-  color: #000;
-  border: none;
-  padding: 10px 20px;
-  font-family: inherit;
-  font-size: 24px;
-  font-weight: bold;
-  cursor: pointer;
-  pointer-events: auto;
-}
-.submit-btn:hover {
-  background: #fff;
-}
-.leaderboard {
-  width: 100%;
-  max-width: 400px;
-  text-align: left;
-}
-.lb-header {
-  color: #ff00cc;
-  font-size: 24px;
-  border-bottom: 2px solid #ff00cc;
-  margin-bottom: 10px;
-  padding-bottom: 5px;
-}
-.lb-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 20px;
-  color: #fff;
-  margin-bottom: 5px;
-  text-transform: uppercase;
 }
 </style>

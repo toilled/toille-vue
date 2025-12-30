@@ -1,0 +1,125 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { GangWarManager } from '../GangWarManager';
+import { Scene, Vector3, Mesh } from 'three';
+
+// Mock Three.js classes that aren't fully mocked in setupThree
+vi.mock('three', async () => {
+  const actual = await vi.importActual('three');
+  return {
+    ...actual,
+    CylinderGeometry: class {},
+    SphereGeometry: class {},
+    BoxGeometry: class {},
+    MeshBasicMaterial: class {},
+    Mesh: class {
+      position = new Vector3();
+      rotation = { x: 0, y: 0, z: 0, set: vi.fn() };
+      material = { color: { setHex: vi.fn() } };
+      add = vi.fn();
+      lookAt = vi.fn();
+    },
+    Group: class {
+      position = new Vector3();
+      rotation = { x: 0, y: 0, z: 0, set: vi.fn() };
+      add = vi.fn();
+      lookAt = vi.fn();
+    },
+    Vector3: class {
+      x = 0; y = 0; z = 0;
+      constructor(x=0, y=0, z=0) { this.x = x; this.y = y; this.z = z; }
+      set(x, y, z) { this.x = x; this.y = y; this.z = z; return this; }
+      clone() { return new (this.constructor as any)(this.x, this.y, this.z); }
+      copy(v) { this.x = v.x; this.y = v.y; this.z = v.z; return this; }
+      add(v) { this.x += v.x; this.y += v.y; this.z += v.z; return this; }
+      sub(v) { this.x -= v.x; this.y -= v.y; this.z -= v.z; return this; }
+      multiplyScalar(s) { this.x *= s; this.y *= s; this.z *= s; return this; }
+      normalize() { return this; }
+      distanceToSquared(v) {
+        const dx = this.x - v.x;
+        const dy = this.y - v.y;
+        const dz = this.z - v.z;
+        return dx*dx + dy*dy + dz*dz;
+      }
+    }
+  };
+});
+
+describe('GangWarManager', () => {
+  let scene: Scene;
+  let manager: GangWarManager;
+  let spawnSparks: any;
+  let playPewSound: any;
+
+  beforeEach(() => {
+    scene = {
+      add: vi.fn(),
+      remove: vi.fn(),
+    } as any;
+    spawnSparks = vi.fn();
+    playPewSound = vi.fn();
+
+    manager = new GangWarManager(scene, spawnSparks, playPewSound);
+  });
+
+  it('should initialize with warriors', () => {
+    // 4 gangs * 8 warriors = 32
+    expect(manager.warriors.length).toBe(32);
+    expect(scene.add).toHaveBeenCalledTimes(32); // Groups added to scene
+  });
+
+  it('should update warriors and create projectiles', () => {
+    // Force warriors close to each other
+    manager.warriors[0].group.position.set(0, 0, 0);
+    manager.warriors[1].group.position.set(10, 0, 0);
+    manager.warriors[1].gangId = (manager.warriors[0].gangId + 1) % 4; // Ensure enemy
+
+    // Update to trigger target finding and shooting
+    // Need multiple updates because fire rate is random 0.5 - 1.5s
+    // Initial cooldown is 0
+    manager.update(0.1);
+
+    // Check if target found
+    expect(manager.warriors[0].target).toBeDefined();
+
+    // Force cooldown to 0 to ensure shooting
+    manager.warriors[0].cooldown = 0;
+    manager.updateCombat(manager.warriors[0], 0.1);
+
+    expect(manager.projectiles.length).toBeGreaterThan(0);
+    expect(scene.add).toHaveBeenCalled(); // Projectile added
+  });
+
+  it('should handle damage and death', () => {
+      const w1 = manager.warriors[0];
+      const w2 = manager.warriors[1];
+      w2.gangId = (w1.gangId + 1) % 4;
+
+      w1.group.position.set(0,0,0);
+      w2.group.position.set(2,0,0); // Close
+
+      // Manually trigger a shoot to ensure projectile exists
+      manager.shoot(w2, w1);
+      const proj = manager.projectiles[0];
+
+      // Move projectile to hit w1
+      // Need to move it enough so that during update loop it is detected
+      // The update loop adds velocity * dt to position
+      // So set position so that next frame it is close
+
+      // Override velocity to be zero for test control or just position it right
+      proj.mesh.position.set(0,0,0);
+      proj.velocity.set(0,0,0);
+
+      // Force update to check collision
+      manager.update(0.1);
+
+      expect(spawnSparks).toHaveBeenCalled();
+      // HP starts at 3, damage is 1
+      expect(w1.hp).toBe(2);
+
+      // Kill
+      manager.damageWarrior(w1, 10);
+      expect(w1.state).toBe("DEAD");
+      expect(w1.group.rotation.x).toBe(Math.PI/2);
+  });
+});

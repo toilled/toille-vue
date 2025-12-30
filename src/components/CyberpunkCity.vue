@@ -206,6 +206,7 @@ import { GameContext } from "../game/types";
 import { carAudio } from "../game/audio/CarAudio";
 import { BOUNDS, CELL_SIZE, START_OFFSET, CITY_SIZE, BLOCK_SIZE, ROAD_WIDTH, GRID_SIZE, DRONE_COUNT } from "../game/config";
 import { KonamiManager } from "../game/KonamiManager";
+import { GangWarManager } from "../game/GangWarManager";
 
 const canvasContainer = ref<HTMLDivElement | null>(null);
 
@@ -241,6 +242,7 @@ const lastTime = ref(0);
 const distToTarget = ref(0);
 let gameModeManager: GameModeManager;
 let konamiManager: KonamiManager;
+let gangWarManager: GangWarManager;
 
 const leaderboard = ref<ScoreEntry[]>([]);
 const playerName = ref("");
@@ -1523,6 +1525,9 @@ onMounted(() => {
   // Initialize Fireworks via Manager
   konamiManager = new KonamiManager(scene);
 
+  // Initialize Gang Wars
+  gangWarManager = new GangWarManager(scene, spawnSparks, playPewSound);
+
   createCheckpoint();
   createNavArrow();
   createChaseArrow();
@@ -1826,6 +1831,7 @@ function animate() {
   lastTime.value = now;
 
   konamiManager.update(dt);
+  gangWarManager.update(dt);
 
   // Let GameModeManager handle active mode logic
   gameModeManager.update(dt, time);
@@ -2106,6 +2112,9 @@ onBeforeUnmount(() => {
   }
   if (konamiManager) {
     konamiManager.dispose();
+  }
+  if (gangWarManager) {
+    gangWarManager.dispose();
   }
 });
 </script>

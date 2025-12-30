@@ -231,14 +231,14 @@ export class GangWarManager {
   }
 
   isValidTarget(w: Warrior, target: Warrior): boolean {
-    const range = 150; // Increased range
+    const range = 3000; // Massive range to keep them seeking across map
     return w.group.position.distanceToSquared(target.group.position) < range * range;
   }
 
   findTarget(w: Warrior) {
     let minDist = Infinity;
     let closest: Warrior | null = null;
-    const searchRange = 500; // Search far for enemies to move towards
+    const searchRange = 3000; // Search entire map for enemies
 
     for (const other of this.warriors) {
       if (other.gangId === w.gangId) continue;

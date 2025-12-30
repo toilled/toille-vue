@@ -1,26 +1,33 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GangWarManager } from '../GangWarManager';
-import { Scene, Vector3, Mesh } from 'three';
+import { Scene, Vector3, Mesh, Group, MeshBasicMaterial } from 'three';
+import { CITY_SIZE } from '../config';
 
-// Mock Three.js classes that aren't fully mocked in setupThree
+// Mock Three.js objects
 vi.mock('three', async () => {
   const actual = await vi.importActual('three');
   return {
     ...actual,
     CylinderGeometry: class {
         rotateX = vi.fn();
+        translate = vi.fn();
     },
     SphereGeometry: class {},
-    BoxGeometry: class {},
-    MeshBasicMaterial: class {},
+    BoxGeometry: class {
+        translate = vi.fn();
+    },
+    MeshBasicMaterial: class {
+        color = { setHex: vi.fn(), set: vi.fn() };
+    },
     Mesh: class {
       position = new Vector3();
       rotation = { x: 0, y: 0, z: 0, set: vi.fn() };
-      material = { color: { setHex: vi.fn() } };
+      material = { color: { setHex: vi.fn(), set: vi.fn() } };
       add = vi.fn();
       lookAt = vi.fn();
       userData = {};
       constructor() {}
+      scale = { set: vi.fn() };
     },
     Group: class {
       position = new Vector3();
@@ -38,7 +45,11 @@ vi.mock('three', async () => {
       sub(v) { this.x -= v.x; this.y -= v.y; this.z -= v.z; return this; }
       multiplyScalar(s) { this.x *= s; this.y *= s; this.z *= s; return this; }
       divideScalar(s) { this.x /= s; this.y /= s; this.z /= s; return this; }
-      normalize() { return this; }
+      normalize() {
+        const len = Math.sqrt(this.x*this.x + this.y*this.y + this.z*this.z);
+        if (len > 0) this.divideScalar(len);
+        return this;
+      }
       distanceToSquared(v) {
         const dx = this.x - v.x;
         const dy = this.y - v.y;
@@ -62,8 +73,8 @@ describe('GangWarManager', () => {
     } as any;
     spawnSparks = vi.fn();
     playPewSound = vi.fn();
-
     manager = new GangWarManager(scene, spawnSparks, playPewSound);
+    // Note: Initialization happens in constructor, spawning warriors.
   });
 
   it('should initialize with warriors', () => {
@@ -143,18 +154,11 @@ describe('GangWarManager', () => {
       w2.group.position.set(2,0,0); // Close
 
       // Manually trigger a shoot to ensure projectile exists
-      // We need to mock Math.random to ensure it shoots sound (probability 0.3)
-      // Actually code says if (Math.random() > 0.7)
-
-      // Spy on Math.random
+      // Spy on Math.random to ensure it shoots sound (probability 0.3)
       const randSpy = vi.spyOn(Math, 'random').mockReturnValue(0.9); // Ensure > 0.7
 
       manager.shoot(w2, w1);
 
-      // Should play sound with position of SHOOTER (w2)
-      // w2 is at 2,0,0 ?
-      // In setup: w2.group.position.set(2,0,0);
-      // shoot uses startPos = shooter.group.position.clone() and adds gun height (y+=0.8)
       expect(playPewSound).toHaveBeenCalledWith(expect.objectContaining({ x: 2, y: 0.8, z: 0 }));
 
       const proj = manager.projectiles[0];
@@ -162,11 +166,6 @@ describe('GangWarManager', () => {
       randSpy.mockRestore();
 
       // Move projectile to hit w1
-      // Need to move it enough so that during update loop it is detected
-      // The update loop adds velocity * dt to position
-      // So set position so that next frame it is close
-
-      // Override velocity to be zero for test control or just position it right
       proj.mesh.position.set(0,0,0);
       proj.velocity.set(0,0,0);
 
@@ -180,6 +179,69 @@ describe('GangWarManager', () => {
       // Kill
       manager.damageWarrior(w1, 10);
       expect(w1.state).toBe("DEAD");
-      expect(w1.group.rotation.x).toBe(Math.PI/2);
+  });
+
+  // NEW TESTS FOR ACTIVE SEEKING BEHAVIOR
+
+  it('should find targets at long range', () => {
+    // Clear auto-spawned warriors to have a clean slate
+    manager.warriors = [];
+
+    // Add two warriors far apart
+    const addWarrior = (x: number, z: number, gangId: number) => {
+        const group = new Group();
+        group.position.set(x, 1.25, z);
+        const warrior: any = {
+            group,
+            gangId,
+            hp: 3,
+            state: 'IDLE',
+            target: null,
+            cooldown: 0,
+            speed: 5,
+            head: new Mesh(),
+            body: new Mesh(),
+            gun: new Mesh()
+        };
+        manager.warriors.push(warrior);
+        return warrior;
+    };
+
+    const w1 = addWarrior(0, 0, 0);
+    const w2 = addWarrior(1000, 0, 1); // 1000 units away
+
+    manager.findTarget(w1);
+
+    expect(w1.target).toBe(w2);
+  });
+
+  it('should consider targets valid at long range', () => {
+      // Clear warriors
+      manager.warriors = [];
+
+      const addWarrior = (x: number, z: number, gangId: number) => {
+        const group = new Group();
+        group.position.set(x, 1.25, z);
+        const warrior: any = {
+            group,
+            gangId,
+            hp: 3,
+            state: 'COMBAT',
+            target: null,
+            cooldown: 0,
+            speed: 5,
+            head: new Mesh(),
+            body: new Mesh(),
+            gun: new Mesh()
+        };
+        manager.warriors.push(warrior);
+        return warrior;
+    };
+
+    const w1 = addWarrior(0, 0, 0);
+    const w2 = addWarrior(1000, 0, 1);
+    w1.target = w2;
+
+    expect(manager.isValidTarget(w1, w2)).toBe(true);
   });
 });

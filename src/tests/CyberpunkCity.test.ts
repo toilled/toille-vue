@@ -38,7 +38,11 @@ vi.mock('three', () => {
     BoxGeometry: vi.fn(() => ({
       translate: vi.fn()
     })),
-    CylinderGeometry: vi.fn(),
+    CylinderGeometry: vi.fn(() => ({
+      rotateX: vi.fn(),
+      translate: vi.fn()
+    })),
+    SphereGeometry: vi.fn(),
     ConeGeometry: vi.fn(() => ({
       translate: vi.fn()
     })),
@@ -73,7 +77,26 @@ vi.mock('three', () => {
     Line: vi.fn(),
     Group: vi.fn(() => ({
       add: vi.fn(),
-      position: { set: vi.fn(), x: 0, y: 0, z: 0, copy: vi.fn() },
+      position: {
+        set: vi.fn(),
+        x: 0, y: 0, z: 0,
+        copy: vi.fn(),
+        distanceToSquared: vi.fn(() => 100), // Added
+        distanceTo: vi.fn(() => 10), // Added
+        clone: vi.fn(() => ({
+            add: vi.fn(function() { return this; }),
+            sub: vi.fn(function() { return this; }),
+            normalize: vi.fn(function() { return this; }),
+            multiplyScalar: vi.fn(function() { return this; }),
+            x: 0, y: 0, z: 0,
+            clone: vi.fn(function() { return this; }),
+            distanceTo: vi.fn(() => 10)
+        })),
+        add: vi.fn(),
+        sub: vi.fn(),
+        normalize: vi.fn(),
+        multiplyScalar: vi.fn()
+      },
       rotation: { x: 0, y: 0, z: 0 },
       traverse: vi.fn(),
       userData: {},
@@ -81,12 +104,20 @@ vi.mock('three', () => {
     })),
     DoubleSide: 2,
     Mesh: vi.fn(() => ({
-      position: { set: vi.fn(), x: 0, y: 0, z: 0, distanceToSquared: vi.fn() },
+      position: {
+        set: vi.fn(),
+        x: 0, y: 0, z: 0,
+        distanceToSquared: vi.fn(),
+        copy: vi.fn(), // Added copy
+        clone: vi.fn(() => ({ sub: vi.fn(), normalize: vi.fn(), add: vi.fn() })),
+        add: vi.fn()
+      },
       rotation: { x: 0, y: 0, z: 0 },
       scale: { set: vi.fn() },
       userData: {},
       add: vi.fn(),
-      lookAt: vi.fn()
+      lookAt: vi.fn(),
+      material: { color: { setHex: vi.fn() } } // Added material.color
     })),
     Points: vi.fn(() => ({
       position: { set: vi.fn(), x: 0, y: 0, z: 0 },

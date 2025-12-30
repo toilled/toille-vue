@@ -46,7 +46,11 @@ vi.mock("three", () => {
         BoxGeometry: vi.fn(() => ({
             translate: vi.fn()
         })),
-        CylinderGeometry: vi.fn(),
+        CylinderGeometry: vi.fn(() => ({
+            rotateX: vi.fn(), // Added rotateX
+            translate: vi.fn()
+        })),
+        SphereGeometry: vi.fn(), // Added SphereGeometry
         ConeGeometry: vi.fn(() => ({
             translate: vi.fn()
         })),
@@ -75,7 +79,26 @@ vi.mock("three", () => {
         Line: vi.fn(),
         Group: vi.fn(() => ({
             add: vi.fn(),
-            position: { set: vi.fn(), x: 0, y: 0, z: 0, copy: vi.fn() },
+            position: {
+                set: vi.fn(),
+                x: 0, y: 0, z: 0,
+                copy: vi.fn(),
+                distanceToSquared: vi.fn(() => 100),
+                distanceTo: vi.fn(() => 10),
+                clone: vi.fn(() => ({
+                    add: vi.fn(function() { return this; }),
+                    sub: vi.fn(function() { return this; }),
+                    normalize: vi.fn(function() { return this; }),
+                    multiplyScalar: vi.fn(function() { return this; }),
+                    x: 0, y: 0, z: 0,
+                    clone: vi.fn(function() { return this; }), // Added clone to the cloned object
+                    distanceTo: vi.fn(() => 10) // Added distanceTo
+                })),
+                add: vi.fn(),
+                sub: vi.fn(function() { return this; }),
+                normalize: vi.fn(function() { return this; }),
+                multiplyScalar: vi.fn()
+            },
             rotation: { x: 0, y: 0, z: 0 },
             traverse: vi.fn(),
             userData: {},
@@ -83,12 +106,20 @@ vi.mock("three", () => {
         })),
         DoubleSide: 2,
         Mesh: vi.fn(() => ({
-            position: { set: vi.fn(), x: 0, y: 0, z: 0, distanceToSquared: vi.fn() },
+            position: {
+                set: vi.fn(),
+                x: 0, y: 0, z: 0,
+                distanceToSquared: vi.fn(),
+                copy: vi.fn(), // Added copy
+                clone: vi.fn(() => ({ sub: vi.fn(), normalize: vi.fn(), add: vi.fn() })), // Added clone chain
+                add: vi.fn() // Added add
+            },
             rotation: { x: 0, y: 0, z: 0 },
             scale: { set: vi.fn() },
             userData: {},
             add: vi.fn(),
-            lookAt: vi.fn()
+            lookAt: vi.fn(),
+            material: { color: { setHex: vi.fn() } } // Added material.color
         })),
         Points: vi.fn(() => ({
             position: { set: vi.fn(), x: 0, y: 0, z: 0 },
@@ -157,7 +188,9 @@ vi.mock("three", () => {
             subVectors: vi.fn(),
             normalize: vi.fn(),
             multiplyScalar: vi.fn(),
-            applyEuler: vi.fn()
+            applyEuler: vi.fn(),
+            distanceTo: vi.fn(() => 10),
+            distanceToSquared: vi.fn(() => 100)
         })),
         Vector2: vi.fn(),
         Raycaster: vi.fn(() => ({

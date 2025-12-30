@@ -7,7 +7,9 @@ vi.mock('three', async () => {
   const actual = await vi.importActual('three');
   return {
     ...actual,
-    CylinderGeometry: class {},
+    CylinderGeometry: class {
+        rotateX = vi.fn();
+    },
     SphereGeometry: class {},
     BoxGeometry: class {},
     MeshBasicMaterial: class {},
@@ -17,6 +19,8 @@ vi.mock('three', async () => {
       material = { color: { setHex: vi.fn() } };
       add = vi.fn();
       lookAt = vi.fn();
+      userData = {};
+      constructor() {}
     },
     Group: class {
       position = new Vector3();
@@ -33,6 +37,7 @@ vi.mock('three', async () => {
       add(v) { this.x += v.x; this.y += v.y; this.z += v.z; return this; }
       sub(v) { this.x -= v.x; this.y -= v.y; this.z -= v.z; return this; }
       multiplyScalar(s) { this.x *= s; this.y *= s; this.z *= s; return this; }
+      divideScalar(s) { this.x /= s; this.y /= s; this.z /= s; return this; }
       normalize() { return this; }
       distanceToSquared(v) {
         const dx = this.x - v.x;
@@ -101,6 +106,32 @@ describe('GangWarManager', () => {
      // Should have added 10 new ones
      const newGang0Warriors = manager.warriors.filter(w => w.gangId === 0 && w.state !== "DEAD");
      expect(newGang0Warriors.length).toBe(10);
+  });
+
+  it('should create fight markers for combat clusters', () => {
+      // Setup a cluster of 4 warriors in COMBAT
+      manager.warriors[0].group.position.set(0,0,0);
+      manager.warriors[1].group.position.set(5,0,0);
+      manager.warriors[2].group.position.set(0,0,5);
+      manager.warriors[3].group.position.set(5,0,5);
+
+      [0,1,2,3].forEach(i => {
+          manager.warriors[i].state = "COMBAT";
+          manager.warriors[i].hp = 3;
+      });
+
+      // Force update markers
+      manager.lastMarkerUpdate = 10;
+      manager.updateFightMarkers(0.1);
+
+      expect(manager.fightMarkers.length).toBe(1);
+      const marker = manager.fightMarkers[0];
+      expect(marker.userData.isFightMarker).toBe(true);
+
+      // Centroid should be around 2.5, 0, 2.5
+      expect(marker.position.x).toBeCloseTo(2.5);
+      expect(marker.position.z).toBeCloseTo(2.5);
+      expect(scene.add).toHaveBeenCalled();
   });
 
   it('should handle damage and death', () => {

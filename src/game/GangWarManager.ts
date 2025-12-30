@@ -69,8 +69,10 @@ export class GangWarManager {
   scene: Scene;
   warriors: Warrior[] = [];
   projectiles: Projectile[] = [];
+  fightMarkers: Mesh[] = [];
   spawnSparks: (pos: Vector3) => void;
   playPewSound: () => void;
+  lastMarkerUpdate: number = 0;
 
   // Reusable Geometries
   bodyGeo = new CylinderGeometry(0.5, 0.5, 2.5);
@@ -78,10 +80,19 @@ export class GangWarManager {
   gunGeo = new BoxGeometry(0.2, 0.2, 1);
   projectileGeo = new BoxGeometry(0.2, 0.2, 2);
 
+  // Fight Marker
+  arrowGeo: CylinderGeometry;
+  arrowMat: MeshBasicMaterial;
+
   constructor(scene: Scene, spawnSparks: (pos: Vector3) => void, playPewSound: () => void) {
     this.scene = scene;
     this.spawnSparks = spawnSparks;
     this.playPewSound = playPewSound;
+
+    // Create arrow geometry
+    this.arrowGeo = new CylinderGeometry(0, 4, 10, 8);
+    this.arrowGeo.rotateX(Math.PI); // Point down
+    this.arrowMat = new MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.8 });
 
     this.initWarriors();
   }
@@ -145,6 +156,9 @@ export class GangWarManager {
   update(dt: number) {
     // Check for reinforcement needs
     this.checkReinforcements();
+
+    // Update fight markers
+    this.updateFightMarkers(dt);
 
     // Update Warriors
     for (const warrior of this.warriors) {
@@ -348,9 +362,71 @@ export class GangWarManager {
     });
   }
 
+  updateFightMarkers(dt: number) {
+    this.lastMarkerUpdate += dt;
+    if (this.lastMarkerUpdate < 1.0) { // Update every second
+        // Just animate existing arrows
+        const time = Date.now() * 0.003;
+        this.fightMarkers.forEach(m => {
+            m.position.y = 80 + Math.sin(time) * 5;
+            m.rotation.y += dt;
+        });
+        return;
+    }
+    this.lastMarkerUpdate = 0;
+
+    // Clear old markers
+    this.fightMarkers.forEach(m => this.scene.remove(m));
+    this.fightMarkers = [];
+
+    // Identify clusters of combat
+    const combatants = this.warriors.filter(w => w.state === "COMBAT" && w.hp > 0);
+    if (combatants.length === 0) return;
+
+    // Simple clustering: Grid based? Or just proximity
+    const clusters: Vector3[] = [];
+    const visited = new Set<number>();
+    const clusterRangeSq = 100 * 100;
+
+    // Warning: O(N^2) on combatants
+    for (let i = 0; i < combatants.length; i++) {
+        if (visited.has(i)) continue;
+
+        let center = combatants[i].group.position.clone();
+        let count = 1;
+        visited.add(i);
+
+        for (let j = i + 1; j < combatants.length; j++) {
+            if (visited.has(j)) continue;
+
+            if (combatants[i].group.position.distanceToSquared(combatants[j].group.position) < clusterRangeSq) {
+                center.add(combatants[j].group.position);
+                count++;
+                visited.add(j);
+            }
+        }
+
+        if (count >= 4) { // Only show for decent fights
+            center.divideScalar(count);
+            clusters.push(center);
+        }
+    }
+
+    clusters.forEach(pos => {
+        const arrow = new Mesh(this.arrowGeo, this.arrowMat);
+        arrow.position.set(pos.x, 80, pos.z);
+        arrow.userData.isFightMarker = true; // Tag for raycasting
+        arrow.userData.target = pos; // Store target location
+
+        this.scene.add(arrow);
+        this.fightMarkers.push(arrow);
+    });
+  }
+
   dispose() {
       // Cleanup meshes
       this.warriors.forEach(w => this.scene.remove(w.group));
       this.projectiles.forEach(p => this.scene.remove(p.mesh));
+      this.fightMarkers.forEach(m => this.scene.remove(m));
   }
 }

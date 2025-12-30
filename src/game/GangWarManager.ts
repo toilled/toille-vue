@@ -71,7 +71,7 @@ export class GangWarManager {
   projectiles: Projectile[] = [];
   fightMarkers: Mesh[] = [];
   spawnSparks: (pos: Vector3) => void;
-  playPewSound: () => void;
+  playPewSound: (pos?: Vector3) => void;
   lastMarkerUpdate: number = 0;
 
   // Reusable Geometries
@@ -84,7 +84,7 @@ export class GangWarManager {
   arrowGeo: CylinderGeometry;
   arrowMat: MeshBasicMaterial;
 
-  constructor(scene: Scene, spawnSparks: (pos: Vector3) => void, playPewSound: () => void) {
+  constructor(scene: Scene, spawnSparks: (pos: Vector3) => void, playPewSound: (pos?: Vector3) => void) {
     this.scene = scene;
     this.spawnSparks = spawnSparks;
     this.playPewSound = playPewSound;
@@ -311,7 +311,7 @@ export class GangWarManager {
     this.projectiles.push(new Projectile(mesh, velocity, shooter.gangId));
 
     if (Math.random() > 0.7) {
-        this.playPewSound();
+        this.playPewSound(startPos);
     }
   }
 

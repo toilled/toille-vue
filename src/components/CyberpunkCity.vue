@@ -2093,7 +2093,7 @@ function animate() {
 
 let audioCtx: AudioContext | null = null;
 
-function playPewSound() {
+function playPewSound(pos?: Vector3) {
   const AudioContext =
     window.AudioContext || (window as any).webkitAudioContext;
   if (!AudioContext) return;
@@ -2116,8 +2116,21 @@ function playPewSound() {
     audioCtx.currentTime + 0.2,
   ); // Drop to A2
 
-  gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-  gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+  let volume = 0.1;
+
+  if (pos && camera) {
+      const dist = pos.distanceTo(camera.position);
+      // Attenuate volume based on distance
+      // e.g. 1 at 0, 0.5 at 500, 0.1 at 2000
+      // formula: 1 / (1 + dist/300)
+      volume = 0.1 / (1 + dist / 300);
+
+      // Clamp minimum
+      if (volume < 0.001) volume = 0;
+  }
+
+  gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
 
   oscillator.connect(gainNode);
   gainNode.connect(audioCtx.destination);

@@ -143,8 +143,23 @@ describe('GangWarManager', () => {
       w2.group.position.set(2,0,0); // Close
 
       // Manually trigger a shoot to ensure projectile exists
+      // We need to mock Math.random to ensure it shoots sound (probability 0.3)
+      // Actually code says if (Math.random() > 0.7)
+
+      // Spy on Math.random
+      const randSpy = vi.spyOn(Math, 'random').mockReturnValue(0.9); // Ensure > 0.7
+
       manager.shoot(w2, w1);
+
+      // Should play sound with position of SHOOTER (w2)
+      // w2 is at 2,0,0 ?
+      // In setup: w2.group.position.set(2,0,0);
+      // shoot uses startPos = shooter.group.position.clone() and adds gun height (y+=0.8)
+      expect(playPewSound).toHaveBeenCalledWith(expect.objectContaining({ x: 2, y: 0.8, z: 0 }));
+
       const proj = manager.projectiles[0];
+
+      randSpy.mockRestore();
 
       // Move projectile to hit w1
       // Need to move it enough so that during update loop it is detected

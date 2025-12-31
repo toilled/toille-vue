@@ -297,7 +297,7 @@ vi.stubGlobal("ResizeObserver", class ResizeObserver {
 });
 
 vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({
-  json: () => Promise.resolve({}),
+  json: () => Promise.resolve({ buildings: [], floorTiles: [] }),
   text: () => Promise.resolve(""),
   ok: true,
   headers: {

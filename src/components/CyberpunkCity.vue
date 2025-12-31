@@ -395,6 +395,8 @@ onMounted(async () => {
   const lbTexture = createLeaderboardTexture();
   cityBuilder = new CityBuilder(scene);
   await cityBuilder.buildCity(isMobile.value, lbTexture);
+  if (!canvasContainer.value) return;
+
   const buildings = cityBuilder.getBuildings();
   occupiedGrids = cityBuilder.getOccupiedGrids();
 

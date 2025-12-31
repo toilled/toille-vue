@@ -24,7 +24,12 @@ export const onRequestGet = async (context: any) => {
         const { results } = await db.prepare(
             "SELECT name, score FROM scores ORDER BY score DESC LIMIT 5"
         ).all();
-        return new Response(JSON.stringify(results), { headers: { 'Content-Type': 'application/json' } });
+        return new Response(JSON.stringify(results), {
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'public, max-age=60'
+            }
+        });
     } catch (err: any) {
         return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }

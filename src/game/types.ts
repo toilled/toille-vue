@@ -61,3 +61,67 @@ export interface GameMode {
     onClick(event: MouseEvent): void;
     onMouseMove(event: MouseEvent): void;
 }
+
+// City Data Types
+export interface CityData {
+  buildings: BuildingData[];
+  floorTiles: FloorTileData[];
+}
+
+export interface FloorTileData {
+  x: number;
+  z: number;
+  size: number;
+}
+
+export interface BuildingData {
+  x: number;
+  z: number;
+  width: number;
+  height: number;
+  depth: number;
+  isLeaderboard: boolean;
+  style: 'SIMPLE' | 'SPIRE' | 'TIERED' | 'GREEBLED';
+  tiers?: TierData[];
+  spire?: SpireData;
+  greebles?: GreebleData[];
+  antenna?: AntennaData;
+  billboard?: BillboardData;
+}
+
+export interface TierData {
+  width: number;
+  height: number;
+  depth: number;
+  y: number;
+}
+
+export interface SpireData {
+  width: number;
+  height: number;
+  depth: number;
+  y: number;
+}
+
+export interface GreebleData {
+  width: number;
+  height: number;
+  depth: number;
+  x: number;
+  y: number;
+  z: number;
+}
+
+export interface AntennaData {
+  height: number;
+  y: number;
+}
+
+export interface BillboardData {
+    width: number;
+    height: number;
+    face: number;
+    texIndex: number;
+    offset: number;
+    y: number;
+}

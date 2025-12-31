@@ -32,6 +32,7 @@ import {
   createRoughFloorTexture,
   createWindowTexture,
 } from "../utils/TextureGenerator";
+import { CityData } from "./types";
 
 export class CityBuilder {
   private scene: Scene;
@@ -50,10 +51,18 @@ export class CityBuilder {
     return this.occupiedGrids;
   }
 
-  public buildCity(isMobile: boolean, lbTexture: any) {
+  public async buildCity(isMobile: boolean, lbTexture: any) {
     this.setupLighting();
     this.createGround();
-    this.createBuildings(lbTexture);
+
+    try {
+      const res = await fetch('/api/city');
+      if (!res.ok) throw new Error('Failed to fetch city data');
+      const data: CityData = await res.json();
+      this.createBuildingsFromData(data, lbTexture);
+    } catch (e) {
+      console.error("Error building city:", e);
+    }
 
     // Setup Fog
     this.scene.fog = new FogExp2(0x050510, isMobile ? 0.00057 : 0.001);
@@ -94,7 +103,7 @@ export class CityBuilder {
     this.scene.add(plane);
   }
 
-  private createBuildings(lbTexture: any) {
+  private createBuildingsFromData(data: CityData, lbTexture: any) {
     const windowTexture = createWindowTexture();
     const billboardTextures = createBillboardTextures();
 
@@ -159,237 +168,162 @@ export class CityBuilder {
     coneGeo.translate(0, 0.5, 0);
     const coneEdgesGeo = new EdgesGeometry(coneGeo);
 
-    for (let x = 0; x < GRID_SIZE; x++) {
-      for (let z = 0; z < GRID_SIZE; z++) {
-        const isLeaderboardBuilding = x === 5 && z === 5;
+    // Floor Tiles
+    for (const tile of data.floorTiles) {
+      const floorGeo = new PlaneGeometry(tile.size, tile.size);
+      const floorMat = new MeshStandardMaterial({
+        color: 0x222222,
+        roughness: 0.9,
+        metalness: 0.1,
+        map: createRoughFloorTexture(),
+      });
+      const floorMesh = new Mesh(floorGeo, floorMat);
+      floorMesh.rotation.x = -Math.PI / 2;
+      floorMesh.position.set(tile.x, 0.1, tile.z);
+      this.scene.add(floorMesh);
+      this.buildings.push(floorMesh);
+    }
 
-        if (!isLeaderboardBuilding && Math.random() > 0.8) {
-          const floorSize = BLOCK_SIZE - 2;
-          const floorGeo = new PlaneGeometry(floorSize, floorSize);
-          const floorMat = new MeshStandardMaterial({
-            color: 0x222222,
-            roughness: 0.9,
-            metalness: 0.1,
-            map: createRoughFloorTexture(),
-          });
-          const floorMesh = new Mesh(floorGeo, floorMat);
-          floorMesh.rotation.x = -Math.PI / 2;
-          floorMesh.position.set(
-            START_OFFSET + x * CELL_SIZE,
-            0.1,
-            START_OFFSET + z * CELL_SIZE,
-          );
-          this.scene.add(floorMesh);
-          this.buildings.push(floorMesh);
-          continue;
+    // Buildings
+    for (const b of data.buildings) {
+      const gridX = Math.round((b.x - START_OFFSET) / CELL_SIZE);
+      const gridZ = Math.round((b.z - START_OFFSET) / CELL_SIZE);
+
+      this.occupiedGrids.set(`${gridX},${gridZ}`, { halfW: b.width / 2, halfD: b.depth / 2 });
+
+      const buildingGroup = new Group();
+      buildingGroup.position.set(b.x, 0, b.z);
+
+      const mainBlock = new Mesh(boxGeo, buildingMaterials);
+      mainBlock.scale.set(b.width, b.height, b.depth);
+      buildingGroup.add(mainBlock);
+
+      const mainLine = new LineSegments(
+        edgesGeo,
+        Math.random() > 0.5 ? edgeMat1 : edgeMat2,
+      );
+      mainLine.scale.set(b.width, b.height, b.depth);
+      buildingGroup.add(mainLine);
+
+      if (b.tiers) {
+        for (const t of b.tiers) {
+          const tierBlock = new Mesh(boxGeo, buildingMaterials);
+          tierBlock.scale.set(t.width, t.height, t.depth);
+          tierBlock.position.y = t.y;
+          buildingGroup.add(tierBlock);
+
+          const tierLine = new LineSegments(edgesGeo, topEdgeMat);
+          tierLine.scale.set(t.width, t.height, t.depth);
+          tierLine.position.y = t.y;
+          buildingGroup.add(tierLine);
         }
-
-        const xPos = START_OFFSET + x * CELL_SIZE;
-        const zPos = START_OFFSET + z * CELL_SIZE;
-
-        let h = 40 + Math.random() * 120;
-        let w = BLOCK_SIZE - 10 - Math.random() * 20;
-        let d = BLOCK_SIZE - 10 - Math.random() * 20;
-
-        if (isLeaderboardBuilding) {
-          h = 250;
-          w = BLOCK_SIZE - 10;
-          d = BLOCK_SIZE - 10;
-        }
-
-        this.occupiedGrids.set(`${x},${z}`, { halfW: w / 2, halfD: d / 2 });
-
-        const buildingGroup = new Group();
-        buildingGroup.position.set(xPos, 0, zPos);
-
-        let style = "SIMPLE";
-        if (!isLeaderboardBuilding) {
-          const r = Math.random();
-          if (r > 0.9) style = "SPIRE";
-          else if (r > 0.7) style = "TIERED";
-          else if (r > 0.5) style = "GREEBLED";
-        }
-
-        const mainBlock = new Mesh(boxGeo, buildingMaterials);
-        mainBlock.scale.set(w, h, d);
-        buildingGroup.add(mainBlock);
-
-        const mainLine = new LineSegments(
-          edgesGeo,
-          Math.random() > 0.5 ? edgeMat1 : edgeMat2,
-        );
-        mainLine.scale.set(w, h, d);
-        buildingGroup.add(mainLine);
-
-        if (style === "TIERED") {
-          const tiers = 1 + Math.floor(Math.random() * 2);
-          let currentH = h;
-          let currentW = w;
-          let currentD = d;
-
-          for (let t = 0; t < tiers; t++) {
-            const tierH = 20 + Math.random() * 40;
-            currentW *= 0.6 + Math.random() * 0.2;
-            currentD *= 0.6 + Math.random() * 0.2;
-
-            const tierBlock = new Mesh(boxGeo, buildingMaterials);
-            tierBlock.scale.set(currentW, tierH, currentD);
-            tierBlock.position.y = currentH;
-            buildingGroup.add(tierBlock);
-
-            const tierLine = new LineSegments(edgesGeo, topEdgeMat);
-            tierLine.scale.set(currentW, tierH, currentD);
-            tierLine.position.y = currentH;
-            buildingGroup.add(tierLine);
-
-            currentH += tierH;
-          }
-        } else if (style === "SPIRE") {
-          const spireH = h * 0.5 + Math.random() * h;
-          const spireW = w * 0.5;
-          const spireD = d * 0.5;
-
-          const spire = new Mesh(coneGeo, buildingMaterial);
-          spire.scale.set(spireW, spireH, spireD);
-          spire.position.y = h;
-          spire.rotation.y = Math.PI / 4;
-          buildingGroup.add(spire);
-
-          const spireLine = new LineSegments(coneEdgesGeo, topEdgeMat);
-          spireLine.scale.set(spireW, spireH, spireD);
-          spireLine.position.y = h;
-          spireLine.rotation.y = Math.PI / 4;
-          buildingGroup.add(spireLine);
-        } else if (style === "GREEBLED") {
-          const count = 4 + Math.floor(Math.random() * 6);
-          for (let g = 0; g < count; g++) {
-            const gw = 5 + Math.random() * 10;
-            const gh = 5 + Math.random() * 20;
-            const gd = 5 + Math.random() * 10;
-
-            const gMesh = new Mesh(boxGeo, roofMaterial);
-            gMesh.scale.set(gw, gh, gd);
-
-            const face = Math.floor(Math.random() * 4);
-            if (face === 0)
-              gMesh.position.set(0, Math.random() * h, d / 2 + gd / 2);
-            else if (face === 1)
-              gMesh.position.set(0, Math.random() * h, -d / 2 - gd / 2);
-            else if (face === 2)
-              gMesh.position.set(w / 2 + gw / 2, Math.random() * h, 0);
-            else gMesh.position.set(-w / 2 - gw / 2, Math.random() * h, 0);
-
-            buildingGroup.add(gMesh);
-
-            const gLine = new LineSegments(edgesGeo, edgeMat2);
-            gLine.scale.set(gw, gh, gd);
-            gLine.position.copy(gMesh.position);
-            buildingGroup.add(gLine);
-          }
-        }
-
-        if (style !== "SPIRE" && Math.random() > 0.7) {
-          const antennaH = 20 + Math.random() * 50;
-          const antenna = new Mesh(boxGeo, antennaMat);
-          antenna.scale.set(2, antennaH, 2);
-          let topY = h;
-          antenna.position.y = topY;
-          buildingGroup.add(antenna);
-        }
-
-        if (!isLeaderboardBuilding && h > 60 && Math.random() > 0.7) {
-          const texIndex = Math.floor(Math.random() * billboardMaterials.length);
-          const bbMat = billboardMaterials[texIndex];
-
-          const bbW = 20 + Math.random() * 15;
-          const bbH = 10 + Math.random() * 10;
-          const bbGeo = new PlaneGeometry(bbW, bbH);
-
-          const billboard = new Mesh(bbGeo, bbMat);
-
-          const face = Math.floor(Math.random() * 4);
-          const offset = 1;
-
-          if (face === 0) {
-            billboard.position.set(
-              0,
-              h * (0.5 + Math.random() * 0.3),
-              d / 2 + offset,
-            );
-          } else if (face === 1) {
-            billboard.position.set(
-              0,
-              h * (0.5 + Math.random() * 0.3),
-              -d / 2 - offset,
-            );
-            billboard.rotation.y = Math.PI;
-          } else if (face === 2) {
-            billboard.position.set(
-              w / 2 + offset,
-              h * (0.5 + Math.random() * 0.3),
-              0,
-            );
-            billboard.rotation.y = Math.PI / 2;
-          } else {
-            billboard.position.set(
-              -w / 2 - offset,
-              h * (0.5 + Math.random() * 0.3),
-              0,
-            );
-            billboard.rotation.y = -Math.PI / 2;
-          }
-
-          buildingGroup.add(billboard);
-        }
-
-        if (isLeaderboardBuilding) {
-          const lbW = w * 0.8;
-          const lbH = lbW * 1.0;
-          const lbGeo = new PlaneGeometry(lbW, lbH);
-
-          for (let i = 0; i < 4; i++) {
-            const lbMat = new MeshBasicMaterial({
-              map: lbTexture,
-              side: DoubleSide,
-              color: 0xffffff,
-            });
-
-            const lbMesh = new Mesh(lbGeo, lbMat);
-            const offset = 0.6;
-            const yPos = h * 0.7;
-
-            if (i === 0) {
-              lbMesh.position.set(0, yPos, d / 2 + offset);
-              lbMesh.rotation.y = 0;
-            } else if (i === 1) {
-              lbMesh.position.set(0, yPos, -d / 2 - offset);
-              lbMesh.rotation.y = Math.PI;
-            } else if (i === 2) {
-              lbMesh.position.set(w / 2 + offset, yPos, 0);
-              lbMesh.rotation.y = Math.PI / 2;
-            } else {
-              lbMesh.position.set(-w / 2 - offset, yPos, 0);
-              lbMesh.rotation.y = -Math.PI / 2;
-            }
-
-            buildingGroup.add(lbMesh);
-
-            const spot = new SpotLight(0x00ffcc, 500, 100, 0.6, 0.5, 1);
-
-            if (i === 0) spot.position.set(0, h * 0.9, d + 30);
-            else if (i === 1) spot.position.set(0, h * 0.9, -d - 30);
-            else if (i === 2) spot.position.set(w + 30, h * 0.9, 0);
-            else spot.position.set(-w - 30, h * 0.9, 0);
-
-            spot.target = lbMesh;
-            buildingGroup.add(spot);
-            buildingGroup.add(spot.target);
-          }
-        }
-
-        this.scene.add(buildingGroup);
-        this.buildings.push(buildingGroup);
       }
+
+      if (b.spire) {
+        const s = b.spire;
+        const spire = new Mesh(coneGeo, buildingMaterial);
+        spire.scale.set(s.width, s.height, s.depth);
+        spire.position.y = s.y;
+        spire.rotation.y = Math.PI / 4;
+        buildingGroup.add(spire);
+
+        const spireLine = new LineSegments(coneEdgesGeo, topEdgeMat);
+        spireLine.scale.set(s.width, s.height, s.depth);
+        spireLine.position.y = s.y;
+        spireLine.rotation.y = Math.PI / 4;
+        buildingGroup.add(spireLine);
+      }
+
+      if (b.greebles) {
+        for (const g of b.greebles) {
+          const gMesh = new Mesh(boxGeo, roofMaterial);
+          gMesh.scale.set(g.width, g.height, g.depth);
+          gMesh.position.set(g.x, g.y, g.z);
+          buildingGroup.add(gMesh);
+
+          const gLine = new LineSegments(edgesGeo, edgeMat2);
+          gLine.scale.set(g.width, g.height, g.depth);
+          gLine.position.copy(gMesh.position);
+          buildingGroup.add(gLine);
+        }
+      }
+
+      if (b.antenna) {
+        const a = b.antenna;
+        const antenna = new Mesh(boxGeo, antennaMat);
+        antenna.scale.set(2, a.height, 2);
+        antenna.position.y = a.y;
+        buildingGroup.add(antenna);
+      }
+
+      if (b.billboard) {
+        const bb = b.billboard;
+        const bbMat = billboardMaterials[bb.texIndex % billboardMaterials.length];
+        const bbGeo = new PlaneGeometry(bb.width, bb.height);
+        const billboard = new Mesh(bbGeo, bbMat);
+
+        if (bb.face === 0) {
+          billboard.position.set(0, bb.y, b.depth / 2 + bb.offset);
+        } else if (bb.face === 1) {
+          billboard.position.set(0, bb.y, -b.depth / 2 - bb.offset);
+          billboard.rotation.y = Math.PI;
+        } else if (bb.face === 2) {
+          billboard.position.set(b.width / 2 + bb.offset, bb.y, 0);
+          billboard.rotation.y = Math.PI / 2;
+        } else {
+          billboard.position.set(-b.width / 2 - bb.offset, bb.y, 0);
+          billboard.rotation.y = -Math.PI / 2;
+        }
+        buildingGroup.add(billboard);
+      }
+
+      if (b.isLeaderboard) {
+        const lbW = b.width * 0.8;
+        const lbH = lbW * 1.0;
+        const lbGeo = new PlaneGeometry(lbW, lbH);
+
+        for (let i = 0; i < 4; i++) {
+          const lbMat = new MeshBasicMaterial({
+            map: lbTexture,
+            side: DoubleSide,
+            color: 0xffffff,
+          });
+
+          const lbMesh = new Mesh(lbGeo, lbMat);
+          const offset = 0.6;
+          const yPos = b.height * 0.7;
+
+          if (i === 0) {
+            lbMesh.position.set(0, yPos, b.depth / 2 + offset);
+            lbMesh.rotation.y = 0;
+          } else if (i === 1) {
+            lbMesh.position.set(0, yPos, -b.depth / 2 - offset);
+            lbMesh.rotation.y = Math.PI;
+          } else if (i === 2) {
+            lbMesh.position.set(b.width / 2 + offset, yPos, 0);
+            lbMesh.rotation.y = Math.PI / 2;
+          } else {
+            lbMesh.position.set(-b.width / 2 - offset, yPos, 0);
+            lbMesh.rotation.y = -Math.PI / 2;
+          }
+
+          buildingGroup.add(lbMesh);
+
+          const spot = new SpotLight(0x00ffcc, 500, 100, 0.6, 0.5, 1);
+
+          if (i === 0) spot.position.set(0, b.height * 0.9, b.depth + 30);
+          else if (i === 1) spot.position.set(0, b.height * 0.9, -b.depth - 30);
+          else if (i === 2) spot.position.set(b.width + 30, b.height * 0.9, 0);
+          else spot.position.set(-b.width - 30, b.height * 0.9, 0);
+
+          spot.target = lbMesh;
+          buildingGroup.add(spot);
+          buildingGroup.add(spot.target);
+        }
+      }
+
+      this.scene.add(buildingGroup);
+      this.buildings.push(buildingGroup);
     }
   }
 }

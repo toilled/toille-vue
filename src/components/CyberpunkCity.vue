@@ -366,7 +366,7 @@ function activateSpark(
   sparkVelocities[i * 3 + 2] = (Math.random() - 0.5) * 5;
 }
 
-onMounted(() => {
+onMounted(async () => {
   if (!canvasContainer.value) return;
 
   updateIsMobile();
@@ -394,7 +394,7 @@ onMounted(() => {
   // City Builder
   const lbTexture = createLeaderboardTexture();
   cityBuilder = new CityBuilder(scene);
-  cityBuilder.buildCity(isMobile.value, lbTexture);
+  await cityBuilder.buildCity(isMobile.value, lbTexture);
   const buildings = cityBuilder.getBuildings();
   occupiedGrids = cityBuilder.getOccupiedGrids();
 

@@ -221,7 +221,7 @@ export const onRequestGet = async () => {
     return new Response(JSON.stringify(cityData), {
         headers: {
             "Content-Type": "application/json",
-            "Cache-Control": "public, max-age=3600"
+            "Cache-Control": "no-store"
         }
     });
 };

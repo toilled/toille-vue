@@ -12,7 +12,7 @@
       <Menu 
         :pages="visiblePages" 
         :content-visible="isContentVisible"
-        @explore="startExploration" 
+        @watch-fight="startWatchFight"
         @fly="startFlyingTour" 
         @toggle-content="toggleContent"
       />
@@ -103,9 +103,9 @@ function toggleContent() {
 
 const cyberpunkCityRef = ref<any>(null);
 
-function startExploration() {
-  if (cyberpunkCityRef.value && cyberpunkCityRef.value.startExplorationMode) {
-    cyberpunkCityRef.value.startExplorationMode();
+function startWatchFight() {
+  if (cyberpunkCityRef.value && cyberpunkCityRef.value.startWatchFightMode) {
+    cyberpunkCityRef.value.startWatchFightMode();
   }
 }
 

@@ -362,6 +362,45 @@ export class GangWarManager {
     });
   }
 
+  getActiveFight(): Warrior | null {
+    // Return a warrior who is currently in combat
+    const combatants = this.warriors.filter(w => w.state === "COMBAT");
+    if (combatants.length > 0) {
+      return combatants[Math.floor(Math.random() * combatants.length)];
+    }
+    return null;
+  }
+
+  getPotentialFight(): Warrior | null {
+    // Find warrior closest to an enemy
+    let closestDist = Infinity;
+    let candidate: Warrior | null = null;
+
+    // Check a subset to optimize? Or all.
+    // O(N^2) might be heavy if many warriors.
+    // Let's just pick a random warrior and find their closest enemy.
+    // Or just iterate all and find globally closest pair.
+
+    // Better: Find warrior with shortest distance to closest enemy
+    for (const w of this.warriors) {
+        if (w.state === "DEAD") continue;
+
+        // Find closest enemy to w
+        for (const other of this.warriors) {
+            if (other.gangId === w.gangId) continue;
+            if (other.state === "DEAD") continue;
+
+            const dist = w.group.position.distanceToSquared(other.group.position);
+            if (dist < closestDist) {
+                closestDist = dist;
+                candidate = w;
+            }
+        }
+    }
+
+    return candidate;
+  }
+
   updateFightMarkers(dt: number) {
     this.lastMarkerUpdate += dt;
     if (this.lastMarkerUpdate < 1.0) { // Update every second

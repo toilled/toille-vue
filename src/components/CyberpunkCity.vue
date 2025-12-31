@@ -51,6 +51,7 @@ import { DrivingMode } from "../game/modes/DrivingMode";
 import { DroneMode } from "../game/modes/DroneMode";
 import { ExplorationMode } from "../game/modes/ExplorationMode";
 import { FlyingTourMode } from "../game/modes/FlyingTourMode";
+import { WatchFightMode } from "../game/modes/WatchFightMode";
 import { GameContext } from "../game/types";
 import { carAudio } from "../game/audio/CarAudio";
 import { BOUNDS, CELL_SIZE, START_OFFSET, DRONE_COUNT, GRID_SIZE } from "../game/config";
@@ -518,7 +519,9 @@ onMounted(() => {
     spawnCheckpoint,
     checkpointMesh,
     navArrow,
-    chaseArrow
+    chaseArrow,
+    // @ts-ignore
+    gangWarManager
   };
   gameModeManager = new GameModeManager(context);
 
@@ -606,6 +609,22 @@ function startTargetPractice() {
   gameModeManager.setMode(new DroneMode());
 }
 
+function startWatchFightMode() {
+  isGameMode.value = true;
+  isExplorationMode.value = false;
+  emit("game-start");
+
+  // Need to augment context with gangWarManager for the mode to use it
+  const mode = new WatchFightMode();
+  // We can hack the context on the manager side or ensuring context has it.
+  // The context passed to GameModeManager is static, so we should add gangWarManager to it during init.
+  // OR, we can attach it here.
+
+  // Let's update the context object in mounted to include gangWarManager.
+  // See below for context update.
+  gameModeManager.setMode(mode);
+}
+
 function startExplorationMode() {
   isGameMode.value = true;
   isExplorationMode.value = true;
@@ -620,7 +639,7 @@ function startFlyingTour() {
   gameModeManager.setMode(new FlyingTourMode());
 }
 
-defineExpose({ startExplorationMode, startFlyingTour });
+defineExpose({ startExplorationMode, startFlyingTour, startWatchFightMode });
 
 function exitGameMode() {
   gameModeManager.clearMode();

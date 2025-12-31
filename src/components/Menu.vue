@@ -2,8 +2,8 @@
   <ul>
     <MenuItem v-for="page in pages" :key="page.link" :page="page" />
     <li class="icons-container">
-      <div @click="$emit('explore')" class="icon-wrapper" title="Explore City">
-        <img src="/person-icon.svg" alt="Explore City" class="icon" />
+      <div @click="$emit('watch-fight')" class="icon-wrapper" title="Watch Gang Fight">
+        <img src="/person-icon.svg" alt="Watch Gang Fight" class="icon" />
       </div>
       <div @click="$emit('fly')" class="icon-wrapper" title="Fly Tour">
         <img src="/plane-icon.svg" alt="Fly Tour" class="icon" />
@@ -60,7 +60,7 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: "explore"): void;
+  (e: "watch-fight"): void;
   (e: "fly"): void;
   (e: "toggle-content"): void;
 }>();

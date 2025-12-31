@@ -1,5 +1,6 @@
 import { Scene, PerspectiveCamera, WebGLRenderer, Group, Points, Vector3 } from "three";
 import { Ref } from "vue";
+import { GangWarManager } from "./GangWarManager";
 
 export interface Controls {
     left: boolean;
@@ -48,6 +49,9 @@ export interface GameContext {
     checkpointMesh: any; // Mesh but typing might differ
     navArrow: Group;
     chaseArrow: Group;
+
+    // Managers
+    gangWarManager?: GangWarManager;
 }
 
 export interface GameMode {

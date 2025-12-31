@@ -68,7 +68,7 @@ const hideHint = ref(false);
 async function fetchActivity() {
   loading.value = true;
   try {
-    const response = await fetch("https://bored.api.lewagon.com/api/activity");
+    const response = await fetch("/api/activity");
     activity.value = await response.json();
   } catch (error) {
     console.error(error);

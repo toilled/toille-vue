@@ -53,7 +53,7 @@
     <Suggestion
       v-show="joke"
       :class="{ 'fade-out': gameMode }"
-      url="https://icanhazdadjoke.com/"
+      url="/api/joke"
       valueName="joke"
       title="Have a laugh!"
     />

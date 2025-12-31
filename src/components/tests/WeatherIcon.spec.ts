@@ -6,21 +6,14 @@ describe("WeatherIcon.vue", () => {
   // Use a date that matches the mock data hour
   const MOCK_DATE = new Date("2023-10-27T10:00:00Z");
 
-  const mockHourlyData = {
-    time: [
-      "2023-10-27T10:00",
-      "2023-10-27T11:00",
-      "2023-10-27T12:00",
-      "2023-10-27T13:00",
-      "2023-10-27T14:00",
-      "2023-10-27T15:00",
-      "2023-10-27T16:00",
-      "2023-10-27T17:00",
-      "2023-10-27T18:00",
-    ],
-    temperature_2m: [10, 11, 12, 13, 14, 15, 14, 13, 12],
-    rain: [0, 0.5, 1.2, 0.8, 0, 0, 0, 0.2, 0],
-  };
+  const mockHourlyData = [
+    { time: "10:00", temp: 10, rain: 0 },
+    { time: "11:00", temp: 11, rain: 0.5 },
+    { time: "12:00", temp: 12, rain: 1.2 },
+    { time: "13:00", temp: 13, rain: 0.8 },
+    { time: "14:00", temp: 14, rain: 0 },
+    { time: "15:00", temp: 15, rain: 0 },
+  ];
 
   beforeEach(() => {
     const mockFetch = vi.fn().mockResolvedValue({
@@ -50,9 +43,7 @@ describe("WeatherIcon.vue", () => {
 
     await flushPromises();
 
-    expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining("api.open-meteo.com"),
-    );
+    expect(fetch).toHaveBeenCalledWith("/api/weather");
     expect(wrapper.find(".icon-wrapper").attributes("title")).toBe(
       "Clear Sky (20°C) in Cheltenham, UK",
     );

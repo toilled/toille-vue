@@ -172,9 +172,7 @@ const hourlyForecast = ref<HourlyData[]>([]);
 
 const fetchWeather = async () => {
   try {
-    const res = await fetch(
-      'https://api.open-meteo.com/v1/forecast?latitude=51.9001&longitude=-2.0877&current_weather=true&hourly=temperature_2m,rain&timezone=Europe%2FLondon'
-    );
+    const res = await fetch('/api/weather');
     if (!res.ok) throw new Error('Failed to fetch weather');
 
     const data = await res.json();
@@ -190,39 +188,18 @@ const fetchWeather = async () => {
   }
 };
 
-const processHourlyData = (hourly: any) => {
-  const now = new Date();
-  const currentHourStr = now.toISOString().slice(0, 13); // Match YYYY-MM-DDTHH format
-
-  // Open Meteo returns time in ISO format (e.g., 2023-10-27T10:00)
-  // Find index of current hour or next hour
-  let startIndex = hourly.time.findIndex((t: string) => t.startsWith(currentHourStr));
-
-  if (startIndex === -1) {
-    // Fallback if not found (e.g. timezone diff), just take nearest based on time comparison
-    const nowTime = now.getTime();
-    let minDiff = Infinity;
-    startIndex = 0;
-    for(let i=0; i<hourly.time.length; i++) {
-        const t = new Date(hourly.time[i]).getTime();
-        const diff = Math.abs(t - nowTime);
-        if(diff < minDiff) {
-            minDiff = diff;
-            startIndex = i;
-        }
-    }
-  }
-
-  // Take next 6 hours (including current)
+const processHourlyData = (hourly: any[]) => {
+  // Server already filtered to next 12 hours starting from "current" or close to it
   const next6 = [];
-  for (let i = startIndex; i < startIndex + 6; i++) {
-    if (hourly.time[i]) {
-      next6.push({
-        time: hourly.time[i].slice(11, 16), // Extract HH:MM
-        temp: hourly.temperature_2m[i],
-        rain: hourly.rain ? hourly.rain[i] : 0
-      });
-    }
+  // We only show 6
+  const limit = Math.min(6, hourly.length);
+  
+  for (let i = 0; i < limit; i++) {
+    next6.push({
+      time: hourly[i].time.slice(11, 16), // Extract HH:MM
+      temp: hourly[i].temp,
+      rain: hourly[i].rain
+    });
   }
   hourlyForecast.value = next6;
 };

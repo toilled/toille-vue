@@ -520,7 +520,6 @@ onMounted(() => {
     checkpointMesh,
     navArrow,
     chaseArrow,
-    // @ts-ignore
     gangWarManager
   };
   gameModeManager = new GameModeManager(context);
@@ -614,14 +613,7 @@ function startWatchFightMode() {
   isExplorationMode.value = false;
   emit("game-start");
 
-  // Need to augment context with gangWarManager for the mode to use it
   const mode = new WatchFightMode();
-  // We can hack the context on the manager side or ensuring context has it.
-  // The context passed to GameModeManager is static, so we should add gangWarManager to it during init.
-  // OR, we can attach it here.
-
-  // Let's update the context object in mounted to include gangWarManager.
-  // See below for context update.
   gameModeManager.setMode(mode);
 }
 

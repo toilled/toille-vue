@@ -15,7 +15,7 @@ export class ExplorationMode implements GameMode {
     // Constants
     gravity = 0.015;
     jumpStrength = 0.4;
-    groundPosition = 1.8;
+    groundPosition = 3;
 
     init(context: GameContext) {
         this.context = context;
@@ -37,7 +37,7 @@ export class ExplorationMode implements GameMode {
         const { camera, controls, isMobile, occupiedGrids, cars, lookControls } = this.context;
 
         if (this.isTransitioning) {
-            const targetPos = new Vector3(0, 1.8, 0);
+            const targetPos = new Vector3(0, 3, 0);
             const targetQ = new Quaternion().setFromEuler(this.playerRotation);
 
             camera.position.lerp(targetPos, 0.05);

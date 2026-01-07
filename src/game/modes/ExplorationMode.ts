@@ -15,7 +15,7 @@ export class ExplorationMode implements GameMode {
     // Constants
     gravity = 0.015;
     jumpStrength = 0.4;
-    groundPosition = 1.8;
+    groundPosition = 3;
 
     init(context: GameContext) {
         this.context = context;

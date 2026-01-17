@@ -208,6 +208,10 @@ vi.mock("three", async () => {
       dispose() { }
     },
     MeshBasicMaterial: class {
+      color = { getHex: vi.fn(() => 0xffffff) };
+      constructor(params?: any) {
+        if (params?.color !== undefined) this.color.getHex = vi.fn(() => params.color);
+      }
       clone() { return this; }
       dispose() { }
     },
@@ -276,6 +280,24 @@ vi.mock("three", async () => {
       userData = {};
       castShadow = false;
       isObject3D = true;
+      add() { }
+      remove() { }
+      removeFromParent() { }
+      dispose() { }
+      dispatchEvent() { }
+      addEventListener() { }
+      removeEventListener() { }
+    },
+    PointLight: class {
+      position = { set: vi.fn(), copy: vi.fn() };
+      color = { getHex: vi.fn(() => 0xff0000) };
+      userData = {};
+      visible = true;
+      isObject3D = true;
+      constructor(color?: any, intensity?: any, distance?: any) {
+        if (color !== undefined) this.color.getHex = vi.fn(() => color);
+      }
+      traverse(cb: any) { cb(this); }
       add() { }
       remove() { }
       removeFromParent() { }

@@ -161,7 +161,10 @@ vi.mock('three', () => {
     },
     AmbientLight: vi.fn(),
     PointLight: vi.fn(() => ({
-      position: { set: vi.fn(), x: 0, y: 0, z: 0 }
+      position: { set: vi.fn(), x: 0, y: 0, z: 0 },
+      userData: {},
+      visible: true,
+      color: { getHex: vi.fn() }
     })),
     DirectionalLight: vi.fn(() => ({
       position: { set: vi.fn(), x: 0, y: 0, z: 0 }

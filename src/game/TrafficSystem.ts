@@ -9,6 +9,7 @@ import {
   Scene,
   SpotLight,
   DoubleSide,
+  PointLight,
 } from "three";
 import {
   BOUNDS,
@@ -52,6 +53,10 @@ export class TrafficSystem {
     const carBodyMat1 = new MeshLambertMaterial({ color: 0x222222 });
     const carBodyMat2 = new MeshLambertMaterial({ color: 0x050505 });
     const carBodyMat3 = new MeshLambertMaterial({ color: 0x111111 });
+    const policeBodyMat = new MeshLambertMaterial({ color: 0xeeeeee }); // White-ish
+
+    const lightBarGeo = new BoxGeometry(2, 0.5, 0.5);
+    const lightBarMat = new MeshBasicMaterial({ color: 0x000000 });
 
     const underglowGeo = new PlaneGeometry(5, 9);
     const underglowMat1 = new MeshBasicMaterial({
@@ -79,15 +84,25 @@ export class TrafficSystem {
       visible: true,
     });
 
-    for (let i = 0; i < this.carCount; i++) {
-      const isSpecial = Math.random() > 0.8;
-      const bodyMat = (
-        isSpecial
-          ? carBodyMat1
-          : Math.random() > 0.5
-          ? carBodyMat2
-          : carBodyMat3
-      ).clone();
+    const policeCount = 3;
+    const totalCars = this.carCount + policeCount; // Add police cars on top of count
+
+    for (let i = 0; i < totalCars; i++) {
+      const isPolice = i >= this.carCount; // Last few are police
+      let bodyMat;
+
+      if (isPolice) {
+        bodyMat = policeBodyMat.clone();
+      } else {
+        const isSpecial = Math.random() > 0.8;
+        bodyMat = (
+          isSpecial
+            ? carBodyMat1
+            : Math.random() > 0.5
+            ? carBodyMat2
+            : carBodyMat3
+        ).clone();
+      }
       bodyMat.transparent = true;
 
       const carGroup = new Group();
@@ -96,15 +111,52 @@ export class TrafficSystem {
       carBody.userData.originalOpacity = 1.0;
       carGroup.add(carBody);
 
-      if (Math.random() > 0.3) {
-        const underglowMat = (
-          Math.random() > 0.5 ? underglowMat1 : underglowMat2
-        ).clone();
-        const underglow = new Mesh(underglowGeo, underglowMat);
-        underglow.userData.originalOpacity = 0.5;
-        underglow.rotation.x = Math.PI / 2;
-        underglow.position.y = -0.9;
-        carGroup.add(underglow);
+      if (isPolice) {
+        // Police Light Bar
+        const lb = new Mesh(lightBarGeo, lightBarMat);
+        lb.position.set(0, 1.25, 0);
+        lb.userData.originalOpacity = 1.0;
+        carGroup.add(lb);
+
+        // Flashing Lights
+        const flIntensity = 200;
+        const flDist = 100;
+
+        const redLight = new PointLight(0xff0000, flIntensity, flDist);
+        redLight.position.set(-0.8, 1.5, 0);
+        redLight.userData.isPoliceFlasher = true;
+        redLight.visible = false;
+        carGroup.add(redLight);
+
+        const blueLight = new PointLight(0x0000ff, flIntensity, flDist);
+        blueLight.position.set(0.8, 1.5, 0);
+        blueLight.userData.isPoliceFlasher = true;
+        blueLight.visible = false;
+        carGroup.add(blueLight);
+
+        // Emissive meshes for the lightbar
+        const redMesh = new Mesh(new BoxGeometry(0.8, 0.4, 0.4), new MeshBasicMaterial({ color: 0xff0000 }));
+        redMesh.position.set(-0.8, 1.5, 0);
+        redMesh.userData.isPoliceFlasherMesh = true;
+        redMesh.visible = false;
+        carGroup.add(redMesh);
+
+        const blueMesh = new Mesh(new BoxGeometry(0.8, 0.4, 0.4), new MeshBasicMaterial({ color: 0x0000ff }));
+        blueMesh.position.set(0.8, 1.5, 0);
+        blueMesh.userData.isPoliceFlasherMesh = true;
+        blueMesh.visible = false;
+        carGroup.add(blueMesh);
+      } else {
+        if (Math.random() > 0.3) {
+          const underglowMat = (
+            Math.random() > 0.5 ? underglowMat1 : underglowMat2
+          ).clone();
+          const underglow = new Mesh(underglowGeo, underglowMat);
+          underglow.userData.originalOpacity = 0.5;
+          underglow.rotation.x = Math.PI / 2;
+          underglow.position.y = -0.9;
+          carGroup.add(underglow);
+        }
       }
 
       const tlMat = tailLightMat.clone();
@@ -135,7 +187,7 @@ export class TrafficSystem {
       hitbox.userData.originalOpacity = 0;
       carGroup.add(hitbox);
 
-      carGroup.userData = {};
+      carGroup.userData = { isPolice };
       this.resetCar(carGroup);
 
       this.scene.add(carGroup);
@@ -241,6 +293,7 @@ export class TrafficSystem {
 
   public resetCar(carGroup: Group, activeCar?: Group | null) {
     const wasActive = activeCar && carGroup.uuid === activeCar.uuid;
+    const isPolice = !!carGroup.userData.isPolice;
 
     this.removeLightsFromCar(carGroup);
 
@@ -267,7 +320,7 @@ export class TrafficSystem {
 
     carGroup.position.set(x, 1, z);
 
-    carGroup.userData.speed = 0.5 + Math.random() * 1.0;
+    carGroup.userData.speed = isPolice ? 2.5 + Math.random() * 1.5 : 0.5 + Math.random() * 1.0;
     carGroup.userData.dir = dir;
     carGroup.userData.axis = axis;
     carGroup.userData.laneOffset = laneOffset;
@@ -277,6 +330,8 @@ export class TrafficSystem {
     carGroup.userData.opacity = 1.0;
     carGroup.userData.isPlayerControlled = false;
     carGroup.userData.currentSpeed = 0;
+    carGroup.userData.isPolice = isPolice;
+    carGroup.userData.turnCooldown = 0;
 
     carGroup.visible = true;
 
@@ -302,6 +357,24 @@ export class TrafficSystem {
     for (let i = 0; i < this.cars.length; i++) {
       const car = this.cars[i];
 
+      if (car.userData.isPolice) {
+        const time = Date.now();
+        const isRedOn = Math.floor(time / 150) % 2 === 0;
+        car.traverse((child) => {
+          if (child.userData.isPoliceFlasher) {
+            const light = child as PointLight;
+            const isRed = light.color.getHex() === 0xff0000;
+            light.visible = isRed ? isRedOn : !isRedOn;
+          }
+          if (child.userData.isPoliceFlasherMesh) {
+            const mesh = child as Mesh;
+            const mat = mesh.material as MeshBasicMaterial;
+            const isRed = mat.color.getHex() === 0xff0000;
+            mesh.visible = isRed ? isRedOn : !isRedOn;
+          }
+        });
+      }
+
       if (car.userData.isPlayerControlled) {
         continue;
       }
@@ -309,12 +382,68 @@ export class TrafficSystem {
       if (!car.userData.fading) {
         // AI Movement
         if (!car.userData.isPlayerHit) {
+          if (car.userData.turnCooldown > 0) {
+            car.userData.turnCooldown--;
+          }
+
           if (car.userData.axis === "x") {
             car.position.x += car.userData.speed * car.userData.dir;
+
+            // Police Aggressive Turning
+            if (car.userData.isPolice && car.userData.turnCooldown <= 0) {
+              const currentPos = car.position.x;
+              const roadIndex = Math.round(
+                (currentPos - (START_OFFSET - CELL_SIZE / 2)) / CELL_SIZE
+              );
+              const roadCenter =
+                START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
+
+              if (Math.abs(currentPos - roadCenter) < car.userData.speed * 1.5) {
+                if (Math.random() < 0.4) {
+                  // Turn
+                  const newDir = Math.random() > 0.5 ? 1 : -1;
+                  const newLaneOffset =
+                    (Math.random() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
+
+                  car.position.x = roadCenter + newLaneOffset;
+                  car.userData.axis = "z";
+                  car.userData.dir = newDir;
+                  car.rotation.y = newDir === 1 ? 0 : Math.PI;
+                  car.userData.turnCooldown = 60; // 1 second cooldown
+                }
+              }
+            }
+
             if (car.position.x > BOUNDS) car.position.x = -BOUNDS;
             if (car.position.x < -BOUNDS) car.position.x = BOUNDS;
           } else {
             car.position.z += car.userData.speed * car.userData.dir;
+
+            // Police Aggressive Turning
+            if (car.userData.isPolice && car.userData.turnCooldown <= 0) {
+              const currentPos = car.position.z;
+              const roadIndex = Math.round(
+                (currentPos - (START_OFFSET - CELL_SIZE / 2)) / CELL_SIZE
+              );
+              const roadCenter =
+                START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
+
+              if (Math.abs(currentPos - roadCenter) < car.userData.speed * 1.5) {
+                if (Math.random() < 0.4) {
+                  // Turn
+                  const newDir = Math.random() > 0.5 ? 1 : -1;
+                  const newLaneOffset =
+                    (Math.random() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
+
+                  car.position.z = roadCenter + newLaneOffset;
+                  car.userData.axis = "x";
+                  car.userData.dir = newDir;
+                  car.rotation.y = newDir === 1 ? Math.PI / 2 : -Math.PI / 2;
+                  car.userData.turnCooldown = 60;
+                }
+              }
+            }
+
             if (car.position.z > BOUNDS) car.position.z = -BOUNDS;
             if (car.position.z < -BOUNDS) car.position.z = BOUNDS;
           }

@@ -1,0 +1,10 @@
+---
+import Layout from '../layouts/Layout.astro';
+import MiniGame from '../components/MiniGame.vue';
+
+const title = "Elliot > Catch the Button!";
+---
+
+<Layout title={title}>
+  <MiniGame client:load />
+</Layout>

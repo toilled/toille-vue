@@ -1,0 +1,10 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Ask from '../components/Ask.vue';
+
+const title = "Elliot > Ask Me";
+---
+
+<Layout title={title}>
+  <Ask client:load />
+</Layout>

@@ -8,7 +8,7 @@ const mockSuggestion = {
 };
 
 beforeEach(() => {
-  vi.spyOn(global, "fetch").mockResolvedValue({
+  vi.spyOn(globalThis, "fetch").mockResolvedValue({
     json: () => Promise.resolve(mockSuggestion),
   } as Response);
 });
@@ -44,7 +44,7 @@ describe("Suggestion.vue", () => {
     const newMockSuggestion = {
       joke: "I'm reading a book on anti-gravity. It's impossible to put down!",
     };
-    global.fetch.mockResolvedValue({
+    (globalThis.fetch as any).mockResolvedValue({
       json: () => Promise.resolve(newMockSuggestion),
     } as Response);
     await wrapper.trigger("click");
@@ -82,7 +82,7 @@ describe("Suggestion.vue", () => {
 
   it("handles fetch errors gracefully", async () => {
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    global.fetch.mockRejectedValue(new Error("API is down"));
+    (globalThis.fetch as any).mockRejectedValue(new Error("API is down"));
     const wrapper = mount(Suggestion, {
       props: {
         url: "https://icanhazdadjoke.com/",

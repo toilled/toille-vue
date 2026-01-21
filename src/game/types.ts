@@ -1,5 +1,5 @@
 import { Scene, PerspectiveCamera, WebGLRenderer, Group, Points, Vector3 } from "three";
-import { Ref } from "vue";
+import type { Ref } from "vue";
 
 export interface Controls {
     left: boolean;

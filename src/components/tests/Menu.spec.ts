@@ -2,16 +2,19 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import Menu from "../Menu.vue";
 import MenuItem from "../MenuItem.vue";
-import { createRouter, createWebHistory } from "vue-router";
+import { requestMode } from '../../stores/gameStore';
 
-const routes = [
-  { path: "/", component: { template: "Home" } },
-  { path: "/about", component: { template: "About" } },
-];
-const router = createRouter({
-  history: createWebHistory(),
-  routes,
-});
+vi.mock('../../stores/gameStore', () => ({
+  requestMode: vi.fn(),
+  toggleContent: vi.fn(),
+  isContentVisible: {
+    get: () => true,
+    subscribe: (fn: any) => {
+      fn(true);
+      return () => {};
+    }
+  }
+}));
 
 describe("Menu.vue", () => {
   beforeEach(() => {
@@ -52,10 +55,7 @@ describe("Menu.vue", () => {
       { name: "About", link: "/about" },
     ];
     const wrapper = mount(Menu, {
-      props: { pages, contentVisible: true },
-      global: {
-        plugins: [router],
-      },
+      props: { pages },
     });
     const menuItems = wrapper.findAllComponents(MenuItem);
     expect(menuItems.length).toBe(2);
@@ -68,29 +68,22 @@ describe("Menu.vue", () => {
 
   it("renders an empty list when no pages are provided", () => {
     const wrapper = mount(Menu, {
-      props: { pages: [], contentVisible: true },
-      global: {
-        plugins: [router],
-      },
+      props: { pages: [] },
     });
     const menuItems = wrapper.findAllComponents(MenuItem);
     expect(menuItems.length).toBe(0);
   });
 
-  it("emits 'fly' event when plane icon is clicked", async () => {
+  it("calls requestMode('flying') when plane icon is clicked", async () => {
     const pages = [
       { name: "Home", link: "/" }
     ];
     const wrapper = mount(Menu, {
-      props: { pages, contentVisible: true },
-      global: {
-        plugins: [router],
-      },
+      props: { pages },
     });
 
     // Find the fly icon wrapper
     const iconWrappers = wrapper.findAll('.icon-wrapper');
-    // Assuming the second one is the plane icon based on my change
     // Order: Explore, Fly, Sound
     expect(iconWrappers.length).toBeGreaterThanOrEqual(2);
     const flyIcon = iconWrappers[1];
@@ -99,6 +92,6 @@ describe("Menu.vue", () => {
     expect(flyIcon.attributes('title')).toBe('Fly Tour');
 
     await flyIcon.trigger('click');
-    expect(wrapper.emitted('fly')).toBeTruthy();
+    expect(requestMode).toHaveBeenCalledWith('flying');
   });
 });

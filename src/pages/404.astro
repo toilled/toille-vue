@@ -1,0 +1,16 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Paragraph from '../components/Paragraph.vue';
+import PageHeader from '../components/PageHeader.vue';
+
+const title = "Elliot > 404";
+---
+
+<Layout title={title}>
+  <main>
+    <section>
+      <PageHeader title="404 - Page not found" client:load />
+      <Paragraph paragraph="The page you are looking for does not exist." last={true} />
+    </section>
+  </main>
+</Layout>

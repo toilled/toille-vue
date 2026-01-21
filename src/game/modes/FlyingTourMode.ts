@@ -1,4 +1,4 @@
-import { GameContext, GameMode } from "../types";
+import type { GameContext, GameMode } from "../types";
 
 export class FlyingTourMode implements GameMode {
     context: GameContext | null = null;

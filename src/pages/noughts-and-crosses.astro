@@ -1,0 +1,10 @@
+---
+import Layout from '../layouts/Layout.astro';
+import NoughtsAndCrosses from '../components/NoughtsAndCrosses.vue';
+
+const title = "Elliot > Noughts and Crosses";
+---
+
+<Layout title={title}>
+  <NoughtsAndCrosses client:load />
+</Layout>

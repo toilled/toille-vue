@@ -13,7 +13,7 @@ describe("NoughtsAndCrosses.vue", () => {
     const makeMove = vi.fn();
     const resetGame = vi.fn();
 
-    useNoughtsAndCrosses.mockReturnValue({
+    (useNoughtsAndCrosses as any).mockReturnValue({
       board,
       winner,
       makeMove,
@@ -30,7 +30,7 @@ describe("NoughtsAndCrosses.vue", () => {
     const makeMove = vi.fn();
     const resetGame = vi.fn();
 
-    useNoughtsAndCrosses.mockReturnValue({
+    (useNoughtsAndCrosses as any).mockReturnValue({
       board,
       winner,
       makeMove,
@@ -47,7 +47,7 @@ describe("NoughtsAndCrosses.vue", () => {
     const makeMove = vi.fn();
     const resetGame = vi.fn();
 
-    useNoughtsAndCrosses.mockReturnValue({
+    (useNoughtsAndCrosses as any).mockReturnValue({
       board,
       winner,
       makeMove,

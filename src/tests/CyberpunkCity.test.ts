@@ -84,12 +84,12 @@ vi.mock('three', () => {
         distanceToSquared: vi.fn(() => 100), // Added
         distanceTo: vi.fn(() => 10), // Added
         clone: vi.fn(() => ({
-            add: vi.fn(function() { return this; }),
-            sub: vi.fn(function() { return this; }),
-            normalize: vi.fn(function() { return this; }),
-            multiplyScalar: vi.fn(function() { return this; }),
+            add: vi.fn(function(this: any) { return this; }),
+            sub: vi.fn(function(this: any) { return this; }),
+            normalize: vi.fn(function(this: any) { return this; }),
+            multiplyScalar: vi.fn(function(this: any) { return this; }),
             x: 0, y: 0, z: 0,
-            clone: vi.fn(function() { return this; }),
+            clone: vi.fn(function(this: any) { return this; }),
             distanceTo: vi.fn(() => 10)
         })),
         add: vi.fn(),

@@ -24,7 +24,7 @@ export function useNoughtsAndCrosses() {
 
   const computerMove = () => {
     let bestScore = -Infinity;
-    let move;
+    let move: number = -1;
     for (let i = 0; i < 9; i++) {
       if (board.value[i] === '') {
         const newBoard = [...board.value];
@@ -37,7 +37,9 @@ export function useNoughtsAndCrosses() {
       }
     }
 
-    board.value[move] = 'O';
+    if (move !== -1) {
+      board.value[move] = 'O';
+    }
     if (checkWinner(board.value, 'O')) {
       winner.value = 'O';
     } else if (board.value.every(cell => cell)) {

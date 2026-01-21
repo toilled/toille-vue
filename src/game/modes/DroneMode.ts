@@ -1,4 +1,4 @@
-import { GameContext, GameMode } from "../types";
+import type { GameContext, GameMode } from "../types";
 import { Raycaster, Vector2, Vector3, BufferAttribute } from "three";
 import { BOUNDS, DRONE_COUNT } from "../config";
 

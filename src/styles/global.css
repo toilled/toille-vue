@@ -1,0 +1,253 @@
+/* Global Styles */
+
+@import "@picocss/pico/css/pico.min.css";
+
+html {
+  user-select: none;
+  --pico-font-family: "Courier New", Courier, monospace;
+  --pico-background-color: #050510;
+  --pico-color: #00ffcc;
+  --pico-h1-color: #ff00cc;
+  --pico-h2-color: #ff00cc;
+  --pico-h3-color: #ff00cc;
+  --pico-h4-color: #ff00cc;
+  --pico-h5-color: #ff00cc;
+  --pico-h6-color: #ff00cc;
+  --pico-primary: #ff00cc;
+  --pico-primary-background: #ff00cc;
+  --pico-primary-underline: #00ffcc;
+  --pico-primary-hover: #cc00aa;
+  --pico-primary-hover-background: #cc00aa;
+  --pico-primary-focus: rgba(255, 0, 204, 0.5);
+  --pico-card-background-color: rgba(10, 10, 20, 0.9);
+  --pico-card-sectioning-background-color: rgba(20, 20, 40, 0.9);
+  --pico-muted-color: #8888aa;
+  --pico-muted-border-color: #333355;
+  --pico-border-color: #00ffcc;
+}
+
+body {
+  background-color: transparent !important; /* Let canvas show through */
+}
+
+.question {
+  cursor: help;
+}
+
+.marginless {
+  margin: 0;
+}
+
+.title {
+  text-shadow: 2px 2px 4px #ff00cc, 0 0 10px #ff00cc;
+  color: #fff !important;
+}
+
+article {
+  box-shadow: 0 0 15px #00ffcc, inset 0 0 20px rgba(0, 255, 204, 0.2);
+  border: 1px solid #00ffcc;
+  background-color: rgba(5, 5, 16, 0.85);
+  backdrop-filter: blur(5px);
+}
+
+h1>a,
+h2>a {
+  text-decoration: none !important;
+  color: inherit;
+}
+
+section,
+.content-container {
+  max-width: 50em;
+  margin: 0 auto;
+}
+
+section p,
+.content-container p {
+  line-height: 1.2em;
+  text-shadow: 0 0 2px #00ffcc;
+}
+
+/* Neon buttons/links */
+a {
+  color: #00ffcc;
+  text-shadow: 0 0 5px #00ffcc;
+  transition: all 0.3s ease;
+}
+
+a:hover {
+  color: #fff;
+  text-shadow: 0 0 10px #fff, 0 0 20px #00ffcc;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #050510;
+}
+::-webkit-scrollbar-thumb {
+  background: #ff00cc;
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00ffcc;
+}
+
+/* Animations and Transitions */
+.router-view-container {
+  perspective: 1000px;
+  position: relative;
+  transition: height 0.5s ease;
+  overflow: hidden;
+}
+
+/* Glitch Animation */
+.cyberpunk-glitch-enter-active {
+  animation: glitch-in 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.cyberpunk-glitch-leave-active {
+  animation: glitch-out 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+@keyframes glitch-in {
+  0% {
+    opacity: 0;
+    transform: scaleY(0.1) skewX(20deg);
+    filter: hue-rotate(90deg);
+    clip-path: inset(50% 0 50% 0);
+  }
+  20% {
+    opacity: 1;
+    transform: scaleY(0.4) skewX(-10deg);
+    clip-path: inset(20% 0 30% 0);
+  }
+  60% {
+    transform: scaleY(1.1) skewX(5deg);
+    clip-path: inset(0 0 0 0);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1) skewX(0);
+    filter: hue-rotate(0deg);
+  }
+}
+
+@keyframes glitch-out {
+  0% {
+    opacity: 1;
+    transform: scaleY(1) skewX(0);
+    clip-path: inset(0 0 0 0);
+  }
+  40% {
+    transform: scaleY(1.1) skewX(-5deg);
+    clip-path: inset(10% 0 10% 0);
+  }
+  80% {
+    opacity: 0.5;
+    transform: scaleY(0.2) skewX(40deg);
+    clip-path: inset(40% 0 40% 0);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleY(0.1) skewX(60deg);
+    clip-path: inset(50% 0 50% 0);
+  }
+}
+
+/* Fade Transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.fade-out {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 2s ease;
+}
+
+/* Game Mode Active State */
+body.game-mode-active #content-area,
+body.game-mode-active #site-overlay {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 2s ease;
+}
+
+/* Content Hidden State */
+body.content-hidden #content-area {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+/* Splash Screen Glitch Fade */
+.glitch-fade-leave-active {
+  animation: glitch-fade-out 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+@keyframes glitch-fade-out {
+  0% {
+    opacity: 1;
+    transform: translate(0);
+    clip-path: inset(0 0 0 0);
+  }
+  10% {
+    opacity: 1;
+    transform: translate(-2px, 2px);
+    clip-path: inset(10% 0 80% 0);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(2px, -2px);
+    clip-path: inset(80% 0 10% 0);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(-2px, 2px);
+    clip-path: inset(10% 0 80% 0);
+  }
+  40% {
+    opacity: 1;
+    transform: translate(2px, -2px);
+    clip-path: inset(80% 0 10% 0);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-2px, 2px);
+    clip-path: inset(10% 0 80% 0);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(2px, -2px);
+    clip-path: inset(80% 0 10% 0);
+  }
+  70% {
+    opacity: 1;
+    transform: translate(-2px, 2px);
+    clip-path: inset(10% 0 80% 0);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(2px, -2px);
+    clip-path: inset(80% 0 10% 0);
+  }
+  90% {
+    opacity: 1;
+    transform: translate(-2px, 2px);
+    clip-path: inset(10% 0 80% 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(0);
+    clip-path: inset(0 0 0 0);
+  }
+}

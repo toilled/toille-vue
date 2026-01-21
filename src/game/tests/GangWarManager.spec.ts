@@ -31,15 +31,15 @@ vi.mock('three', async () => {
     Vector3: class {
       x = 0; y = 0; z = 0;
       constructor(x=0, y=0, z=0) { this.x = x; this.y = y; this.z = z; }
-      set(x, y, z) { this.x = x; this.y = y; this.z = z; return this; }
+      set(x: any, y: any, z: any) { this.x = x; this.y = y; this.z = z; return this; }
       clone() { return new (this.constructor as any)(this.x, this.y, this.z); }
-      copy(v) { this.x = v.x; this.y = v.y; this.z = v.z; return this; }
-      add(v) { this.x += v.x; this.y += v.y; this.z += v.z; return this; }
-      sub(v) { this.x -= v.x; this.y -= v.y; this.z -= v.z; return this; }
-      multiplyScalar(s) { this.x *= s; this.y *= s; this.z *= s; return this; }
-      divideScalar(s) { this.x /= s; this.y /= s; this.z /= s; return this; }
+      copy(v: any) { this.x = v.x; this.y = v.y; this.z = v.z; return this; }
+      add(v: any) { this.x += v.x; this.y += v.y; this.z += v.z; return this; }
+      sub(v: any) { this.x -= v.x; this.y -= v.y; this.z -= v.z; return this; }
+      multiplyScalar(s: any) { this.x *= s; this.y *= s; this.z *= s; return this; }
+      divideScalar(s: any) { this.x /= s; this.y /= s; this.z /= s; return this; }
       normalize() { return this; }
-      distanceToSquared(v) {
+      distanceToSquared(v: any) {
         const dx = this.x - v.x;
         const dy = this.y - v.y;
         const dz = this.z - v.z;

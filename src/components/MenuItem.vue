@@ -1,6 +1,6 @@
 <template>
   <li class="menu-item">
-    <router-link :to="page.link" @mousedown.prevent>{{ page.name }}</router-link>
+    <a :href="page.link" :class="{ 'active': isActive }" @mousedown.prevent>{{ page.name }}</a>
   </li>
 </template>
 
@@ -9,15 +9,17 @@ import { Page } from "../interfaces/Page";
 
 /**
  * @file MenuItem.vue
- * @description A component that displays a single menu item as a router link.
+ * @description A component that displays a single menu item.
  */
 
 /**
  * @props {Object}
  * @property {Page} page - The page object containing the link and name for the menu item.
+ * @property {boolean} isActive - Whether the menu item is currently active.
  */
 defineProps<{
   page: Page;
+  isActive: boolean;
 }>();
 </script>
 
@@ -55,7 +57,7 @@ defineProps<{
 }
 
 /* Current Page Indicator */
-.menu-item a.router-link-active {
+.menu-item a.active {
   background: rgba(30, 45, 80, 0.7);
   box-shadow: 0 0 10px rgba(100, 149, 237, 0.4);
   border-color: rgba(100, 149, 237, 0.5);

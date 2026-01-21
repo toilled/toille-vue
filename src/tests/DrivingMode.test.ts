@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DrivingMode } from '../game/modes/DrivingMode';
-import { GameContext } from '../game/types';
+import type { GameContext } from '../game/types';
 import * as THREE from 'three';
 
 // Mock audio

@@ -1,4 +1,4 @@
-import { GameContext, GameMode } from "../types";
+import type { GameContext, GameMode } from "../types";
 import { carAudio } from "../audio/CarAudio";
 import { BOUNDS, CELL_SIZE, START_OFFSET, GRID_SIZE, CITY_SIZE } from "../config";
 import { Vector3, Group, BoxGeometry, MeshStandardMaterial, Mesh, SpotLight, Object3D } from "three";

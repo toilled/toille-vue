@@ -1,4 +1,4 @@
-import { GameContext, GameMode } from "../types";
+import type { GameContext, GameMode } from "../types";
 import { carAudio } from "../audio/CarAudio";
 import { BOUNDS, CELL_SIZE, START_OFFSET } from "../config";
 import { Vector3, Euler, Quaternion } from "three";

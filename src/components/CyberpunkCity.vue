@@ -22,7 +22,8 @@
 
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref, watch, defineAsyncComponent } from "vue";
-import { useRoute } from "vue-router";
+import { useStore } from '@nanostores/vue';
+import { requestedMode, setGameMode } from '../stores/gameStore';
 import { ScoreService, type ScoreEntry } from "../utils/ScoreService";
 import {
   AdditiveBlending,
@@ -105,9 +106,18 @@ const leaderboard = ref<ScoreEntry[]>([]);
 let leaderboardCanvas: HTMLCanvasElement;
 let leaderboardTexture: CanvasTexture;
 
+const $requestedMode = useStore(requestedMode);
+
+watch($requestedMode, (mode) => {
+  if (mode === 'exploration') {
+    startExplorationMode();
+  } else if (mode === 'flying') {
+    startFlyingTour();
+  }
+});
+
 function updateLeaderboard(newScores: ScoreEntry[]) {
   leaderboard.value = newScores;
-  // Texture update is handled by watch(leaderboard)
 }
 
 function updateLeaderboardTexture() {
@@ -209,8 +219,7 @@ const updateIsMobile = () => {
 const controls = ref({
   left: false,
   right: false,
-  forward: false,
-  backward: false,
+  forward: false,  backward: false,
 });
 
 const lookControls = ref({
@@ -219,8 +228,6 @@ const lookControls = ref({
   up: false,
   down: false,
 });
-
-const emit = defineEmits(["game-start", "game-end"]);
 
 const currentLookAt = new Vector3(0, 0, 0);
 
@@ -234,7 +241,6 @@ const sparkPositions = new Float32Array(sparkCount * 3);
 const sparkVelocities = new Float32Array(sparkCount * 3);
 const sparkLifetimes = new Float32Array(sparkCount); // 0 = dead, 1 = full life
 
-const route = useRoute();
 const CAR_COUNT = 150;
 
 function createCheckpoint() {
@@ -423,7 +429,7 @@ onMounted(() => {
   const dColor3 = new Color(0x00ff00); // Green
   const dColor4 = new Color(0xffffff); // White
 
-  generateDroneTargets(route.path);
+  generateDroneTargets(window.location.pathname);
 
   for (let i = 0; i < droneCount * 3; i++) {
     dronePositions[i] = droneTargetPositions[i];
@@ -493,6 +499,9 @@ onMounted(() => {
   window.addEventListener("mousemove", onMouseMove);
   document.addEventListener("pointerlockchange", onPointerLockChange);
 
+  // Listen to navigation to update drone targets
+  document.addEventListener('astro:page-load', onPageLoad);
+
   // Initialize Game Context and Manager
   const context: GameContext = {
     scene,
@@ -530,6 +539,12 @@ onMounted(() => {
     updateLeaderboardTexture();
   });
 });
+
+function onPageLoad() {
+    if (!isGameMode.value && !isDrivingMode.value) {
+      generateDroneTargets(window.location.pathname);
+    }
+}
 
 function onKeyDown(event: KeyboardEvent) {
   if (event.key === "Escape") {
@@ -580,15 +595,6 @@ function generateDroneTargets(path: string) {
   }
 }
 
-watch(
-  () => route.path,
-  (newPath) => {
-    if (!isGameMode.value && !isDrivingMode.value) {
-      generateDroneTargets(newPath);
-    }
-  },
-);
-
 watch(activeCar, (newCar, oldCar) => {
   if (oldCar) trafficSystem.removeLightsFromCar(oldCar);
   if (newCar) trafficSystem.addLightsToCar(newCar);
@@ -602,25 +608,23 @@ watch(droneScore, (val) => {
 
 function startTargetPractice() {
   isGameMode.value = true;
-  emit("game-start");
+  setGameMode(true);
   gameModeManager.setMode(new DroneMode());
 }
 
 function startExplorationMode() {
   isGameMode.value = true;
   isExplorationMode.value = true;
-  emit("game-start");
+  setGameMode(true);
   gameModeManager.setMode(new ExplorationMode());
 }
 
 function startFlyingTour() {
   isGameMode.value = true;
   isFlyingTour.value = true;
-  emit("game-start");
+  setGameMode(true);
   gameModeManager.setMode(new FlyingTourMode());
 }
-
-defineExpose({ startExplorationMode, startFlyingTour });
 
 function exitGameMode() {
   gameModeManager.clearMode();
@@ -639,11 +643,11 @@ function exitGameMode() {
 
   isCinematicMode.value = false;
   isGameMode.value = false;
+  setGameMode(false);
   isGameOver.value = false;
   score.value = 0;
   droneScore.value = 0;
   drivingScore.value = 0;
-  emit("game-end");
 
   if (drones && droneTargetPositions) {
     const positions = drones.geometry.attributes.position.array;
@@ -688,7 +692,7 @@ function onClick(event: MouseEvent) {
         isGameMode.value = true;
         isCinematicMode.value = true;
         cinematicTarget.copy(hit.userData.target);
-        emit("game-start");
+        setGameMode(true);
         return;
       }
     }
@@ -711,7 +715,7 @@ function onClick(event: MouseEvent) {
 
     if (target instanceof Group && target.userData.speed !== undefined) {
       isDrivingMode.value = true;
-      emit("game-start");
+      setGameMode(true);
       
       activeCar.value = target;
       target.userData.isPlayerControlled = true;
@@ -930,6 +934,7 @@ onBeforeUnmount(() => {
   window.removeEventListener("keyup", onKeyUp);
   window.removeEventListener("mousemove", onMouseMove);
   document.removeEventListener("pointerlockchange", onPointerLockChange);
+  document.removeEventListener('astro:page-load', onPageLoad);
 
   cancelAnimationFrame(animationId);
   if (renderer) {

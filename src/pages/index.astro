@@ -1,0 +1,20 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Paragraph from '../components/Paragraph.vue';
+import PageHeader from '../components/PageHeader.vue';
+import pages from '../configs/pages.json';
+
+const page = pages.find(p => p.link === '/');
+const title = "Elliot > " + (page ? page.title : "Home");
+---
+
+<Layout title={title}>
+  <main>
+    <section>
+      {page && <PageHeader title={page.title} client:load />}
+      {page && page.body.map((p, index) => (
+         <Paragraph paragraph={p} last={index + 1 === page.body.length} />
+      ))}
+    </section>
+  </main>
+</Layout>

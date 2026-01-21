@@ -1,0 +1,29 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Paragraph from '../components/Paragraph.vue';
+import PageHeader from '../components/PageHeader.vue';
+import pages from '../configs/pages.json';
+
+export async function getStaticPaths() {
+  return pages
+    .filter(page => page.link !== '/')
+    .map(page => ({
+      params: { slug: page.link.substring(1) },
+      props: { page },
+    }));
+}
+
+const { page } = Astro.props;
+const title = "Elliot > " + page.title;
+---
+
+<Layout title={title}>
+  <main>
+    <section>
+      <PageHeader title={page.title} client:load />
+      {page.body.map((p, index) => (
+         <Paragraph paragraph={p} last={index + 1 === page.body.length} />
+      ))}
+    </section>
+  </main>
+</Layout>

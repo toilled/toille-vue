@@ -64,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, watch, defineAsyncComponent } from "vue";
+import { ref, onMounted, onUnmounted, computed, watch, defineAsyncComponent, onErrorCaptured } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Title from "./components/Title.vue";
 import Menu from "./components/Menu.vue";
@@ -209,6 +209,12 @@ onMounted(() => {
   });
 
   window.addEventListener("keydown", handleKeydown);
+});
+
+onErrorCaptured((err) => {
+  console.error("App Error Captured:", err);
+  showSplash.value = false;
+  return true;
 });
 
 onUnmounted(() => {

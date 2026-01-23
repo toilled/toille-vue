@@ -202,7 +202,9 @@ function createLeaderboardTexture() {
 const isMobile = ref(false);
 
 const updateIsMobile = () => {
-  isMobile.value = window.innerWidth <= 768;
+  if (typeof window !== 'undefined') {
+    isMobile.value = window.innerWidth <= 768;
+  }
 };
 
 // Controls State

@@ -6,6 +6,7 @@ const mockApp = {
 };
 
 vi.doMock("vue", () => ({
+  createSSRApp: vi.fn(() => mockApp),
   createApp: vi.fn(() => mockApp),
   defineComponent: vi.fn((comp) => comp),
   ref: vi.fn(),
@@ -21,6 +22,7 @@ const mockRouter = {
 vi.doMock("vue-router", () => ({
   createRouter: vi.fn(() => mockRouter),
   createWebHistory: vi.fn(),
+  createMemoryHistory: vi.fn(),
   useRoute: vi.fn(() => ({ params: {} })),
 }));
 
@@ -30,14 +32,16 @@ describe("main.ts", () => {
   });
 
   it("creates a Vue app with the App component", async () => {
-    const { createApp } = await import("vue");
-    await import("../main");
-    expect(createApp).toHaveBeenCalledWith(expect.objectContaining({ __name: "App" }));
+    const { createSSRApp } = await import("vue");
+    const { createApp } = await import("../main");
+    createApp();
+    expect(createSSRApp).toHaveBeenCalledWith(expect.objectContaining({ __name: "App" }));
   });
 
   it("creates a router with the correct routes", async () => {
     const { createRouter } = await import("vue-router");
-    await import("../main");
+    const { createApp } = await import("../main");
+    createApp();
     expect(createRouter).toHaveBeenCalledWith({
       history: undefined,
       routes: [
@@ -52,9 +56,9 @@ describe("main.ts", () => {
     });
   });
 
-  it("uses the router and mounts the app", async () => {
-    await import("../main");
+  it("uses the router", async () => {
+    const { createApp } = await import("../main");
+    createApp();
     expect(mockApp.use).toHaveBeenCalledWith(mockRouter);
-    expect(mockApp.mount).toHaveBeenCalledWith("#app");
   });
 });

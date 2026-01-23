@@ -257,7 +257,9 @@ watch(
       }
     }
 
-    document.title = "Elliot > " + pageTitle;
+    if (typeof document !== 'undefined') {
+      document.title = "Elliot > " + pageTitle;
+    }
   },
   { immediate: true },
 );

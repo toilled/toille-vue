@@ -7,3 +7,4 @@ npm_output.log
 dev_server.log
 server.log
 dev.log
+functions/ssr-app.js

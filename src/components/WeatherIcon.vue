@@ -71,7 +71,7 @@
     </svg>
 
     <!-- Modal -->
-    <Teleport to="body">
+    <Teleport to="body" v-if="isMounted">
       <div v-if="showModal" class="weather-modal-overlay" @click.self="showModal = false">
         <article class="weather-modal">
           <header class="modal-header">
@@ -162,6 +162,7 @@ import { ref, onMounted, computed } from 'vue';
 const iconType = ref<string>('');
 const description = ref<string>('Loading weather...');
 const showModal = ref(false);
+const isMounted = ref(false);
 
 interface HourlyData {
   time: string;
@@ -301,6 +302,7 @@ const graphPoints = computed(() => {
 });
 
 onMounted(() => {
+  isMounted.value = true;
   fetchWeather();
 });
 </script>

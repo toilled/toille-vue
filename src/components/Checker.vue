@@ -1,6 +1,6 @@
 <template>
-  <footer>
-    <article style="margin-bottom: 0">
+  <footer class="content-container">
+    <article class="marginless">
       <header>Alcohol Checker</header>
       <section class="grid">
         <button @click="add" class="outline">Add</button>

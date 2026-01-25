@@ -4,7 +4,7 @@
     :style="{ cursor: loading ? 'progress' : '' }"
     class="content-container"
   >
-    <article v-if="activity" title="Click for a new suggestion" style="margin-bottom: 0">
+    <article v-if="activity" title="Click for a new suggestion" class="marginless">
       <header>
         <strong>
           Try this {{ activity.type }} activity
@@ -13,7 +13,7 @@
       </header>
       <p class="marginless">{{ activity.activity }}</p>
     </article>
-    <article v-else style="margin-bottom: 0">
+    <article v-else class="marginless">
       <header>
         <strong>Try this activity</strong>
       </header>

@@ -4,13 +4,13 @@
     :style="{ cursor: loading ? 'progress' : '' }"
     class="content-container"
   >
-    <article v-if="suggestion" :title="hoverHintText" style="margin-bottom: 0">
+    <article v-if="suggestion" :title="hoverHintText" class="marginless">
       <header>
         <strong>{{ title }}</strong>
       </header>
       <p class="marginless">{{ suggestion[valueName] }}</p>
     </article>
-    <article v-else style="margin-bottom: 0">
+    <article v-else class="marginless">
       <header>
         <strong>{{ title }}</strong>
       </header>

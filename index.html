@@ -49,7 +49,8 @@
       }
 
       .marginless {
-        margin: 0;
+        margin: 0 !important;
+        margin-bottom: 0 !important;
       }
 
       .title {
@@ -73,7 +74,7 @@
       section,
       .content-container {
         max-width: 50em;
-        margin: 0 auto;
+        margin: 1rem auto;
       }
 
       section p,
@@ -173,34 +174,8 @@
     <link rel="manifest" href="/site.webmanifest" />
   </head>
 
-  <body id="app" class="container">
-    <script type="module" src="/src/main.ts"></script>
-    <noscript>
-      <nav>
-        <ul>
-          <li>
-            <hgroup>
-              <h1 class="title">Elliot Dickerson</h1>
-              <h2 class="title">A site to test things</h2>
-            </hgroup>
-          </li>
-        </ul>
-      </nav>
-      <main>
-        <header>
-          <h2 class="title">Home</h2>
-        </header>
-        <p>You need to enable JavaScript to run this app.</p>
-        <p>
-          The source code for this site is available on
-          <a
-            href="https://github.com/toilled/toille-solid"
-            class="contrast"
-            target="_blank"
-            >this GitHub repository</a
-          >.
-        </p>
-      </main>
-    </noscript>
+  <body>
+    <div id="app" class="container"><!--app-html--></div>
+    <script type="module" src="/src/entry-client.ts"></script>
   </body>
 </html>

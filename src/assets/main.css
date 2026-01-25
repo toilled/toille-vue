@@ -1,0 +1,145 @@
+html {
+  user-select: none;
+  --pico-font-family: "Courier New", Courier, monospace;
+  --pico-background-color: #050510;
+  --pico-color: #00ffcc;
+  --pico-h1-color: #ff00cc;
+  --pico-h2-color: #ff00cc;
+  --pico-h3-color: #ff00cc;
+  --pico-h4-color: #ff00cc;
+  --pico-h5-color: #ff00cc;
+  --pico-h6-color: #ff00cc;
+  --pico-primary: #ff00cc;
+  --pico-primary-background: #ff00cc;
+  --pico-primary-underline: #00ffcc;
+  --pico-primary-hover: #cc00aa;
+  --pico-primary-hover-background: #cc00aa;
+  --pico-primary-focus: rgba(255, 0, 204, 0.5);
+  --pico-card-background-color: rgba(10, 10, 20, 0.9);
+  --pico-card-sectioning-background-color: rgba(20, 20, 40, 0.9);
+  --pico-muted-color: #8888aa;
+  --pico-muted-border-color: #333355;
+  --pico-border-color: #00ffcc;
+}
+
+body {
+  background-color: transparent !important; /* Let canvas show through */
+}
+
+.question {
+  cursor: help;
+}
+
+.marginless {
+  margin: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.title {
+  text-shadow: 2px 2px 4px #ff00cc, 0 0 10px #ff00cc;
+  color: #fff !important;
+}
+
+article {
+  box-shadow: 0 0 15px #00ffcc, inset 0 0 20px rgba(0, 255, 204, 0.2);
+  border: 1px solid #00ffcc;
+  background-color: rgba(5, 5, 16, 0.85);
+  backdrop-filter: blur(5px);
+}
+
+h1>a,
+h2>a {
+  text-decoration: none !important;
+  color: inherit;
+}
+
+section,
+.content-container {
+  max-width: 50em;
+  margin: 1rem auto;
+}
+
+section p,
+.content-container p {
+  line-height: 1.2em;
+  text-shadow: 0 0 2px #00ffcc;
+}
+
+/* Neon buttons/links */
+a {
+  color: #00ffcc;
+  text-shadow: 0 0 5px #00ffcc;
+  transition: all 0.3s ease;
+}
+
+a:hover {
+  color: #fff;
+  text-shadow: 0 0 10px #fff, 0 0 20px #00ffcc;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #050510;
+}
+::-webkit-scrollbar-thumb {
+  background: #ff00cc;
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00ffcc;
+}
+
+.router-view-container {
+  perspective: 1000px;
+  position: relative;
+  transition: height 0.5s ease;
+  overflow: hidden;
+}
+
+.cards-enter-active,
+.cards-leave-active,
+.cards-reverse-enter-active,
+.cards-reverse-leave-active {
+  transition: all 0.5s ease-out;
+  width: 100%;
+  position: absolute;
+}
+
+.cards-enter-from {
+  opacity: 0;
+  transform: translateY(30px) scale(0.95);
+  z-index: 1;
+}
+
+.cards-enter-to {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  z-index: 1;
+}
+
+.cards-leave-to {
+  opacity: 0;
+  transform: translateY(-30px) scale(0.95);
+  z-index: 0;
+}
+
+.cards-reverse-enter-from {
+  opacity: 0;
+  transform: translateY(-30px) scale(0.95);
+  z-index: 1;
+}
+
+.cards-reverse-enter-to {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  z-index: 1;
+}
+
+.cards-reverse-leave-to {
+  opacity: 0;
+  transform: translateY(30px) scale(0.95);
+  z-index: 0;
+}

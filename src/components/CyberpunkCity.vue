@@ -44,8 +44,15 @@ import {
   DoubleSide,
   Group,
   ConeGeometry,
-  Object3D
+  Object3D,
+  HalfFloatType,
+  WebGLRenderTarget
 } from "three";
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { SSRPass } from 'three/examples/jsm/postprocessing/SSRPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { GameModeManager } from "../game/GameModeManager";
 import { DrivingMode } from "../game/modes/DrivingMode";
 import { DroneMode } from "../game/modes/DroneMode";
@@ -67,6 +74,7 @@ const canvasContainer = ref<HTMLDivElement | null>(null);
 let scene: Scene;
 let camera: PerspectiveCamera;
 let renderer: WebGLRenderer;
+let composer: EffectComposer;
 let animationId: number;
 let isActive = false;
 
@@ -393,6 +401,41 @@ onMounted(() => {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   canvasContainer.value.appendChild(renderer.domElement);
 
+  // Post Processing
+  const renderTarget = new WebGLRenderTarget(window.innerWidth, window.innerHeight, {
+    type: HalfFloatType
+  });
+  composer = new EffectComposer(renderer, renderTarget);
+
+  const renderPass = new RenderPass(scene, camera);
+  composer.addPass(renderPass);
+
+  const ssrPass = new SSRPass({
+    renderer,
+    scene,
+    camera,
+    width: window.innerWidth,
+    height: window.innerHeight,
+    groundReflector: null,
+    selects: null
+  });
+  ssrPass.thickness = 0.018;
+  ssrPass.infiniteThick = false;
+  // @ts-ignore
+  ssrPass.opacity = 1;
+  composer.addPass(ssrPass);
+
+  const bloomPass = new UnrealBloomPass(
+    new Vector2(window.innerWidth, window.innerHeight),
+    1.5,
+    0.4,
+    0.85
+  );
+  composer.addPass(bloomPass);
+
+  const outputPass = new OutputPass();
+  composer.addPass(outputPass);
+
   // City Builder
   const lbTexture = createLeaderboardTexture();
   cityBuilder = new CityBuilder(scene);
@@ -664,6 +707,7 @@ function onResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
   updateIsMobile();
 }
 
@@ -877,7 +921,7 @@ function animate() {
     }
   }
   
-  renderer.render(scene, camera);
+  composer.render();
 }
 
 let audioCtx: AudioContext | null = null;

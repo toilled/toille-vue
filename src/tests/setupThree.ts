@@ -401,6 +401,7 @@ vi.mock("three/examples/jsm/postprocessing/EffectComposer.js", () => ({
   EffectComposer: class {
     constructor() {}
     setSize() {}
+    setPixelRatio() {}
     render() {}
     addPass() {}
   },
@@ -424,4 +425,8 @@ vi.mock("three/examples/jsm/postprocessing/SSRPass.js", () => ({
 
 vi.mock("three/examples/jsm/postprocessing/OutputPass.js", () => ({
   OutputPass: class {},
+}));
+
+vi.mock("three/examples/jsm/postprocessing/SMAAPass.js", () => ({
+  SMAAPass: class {},
 }));

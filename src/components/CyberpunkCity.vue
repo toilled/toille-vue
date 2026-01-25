@@ -53,6 +53,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { SSRPass } from 'three/examples/jsm/postprocessing/SSRPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js';
 import { GameModeManager } from "../game/GameModeManager";
 import { DrivingMode } from "../game/modes/DrivingMode";
 import { DroneMode } from "../game/modes/DroneMode";
@@ -406,6 +407,7 @@ onMounted(() => {
     type: HalfFloatType
   });
   composer = new EffectComposer(renderer, renderTarget);
+  composer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
   const renderPass = new RenderPass(scene, camera);
   composer.addPass(renderPass);
@@ -435,6 +437,12 @@ onMounted(() => {
 
   const outputPass = new OutputPass();
   composer.addPass(outputPass);
+
+  const smaaPass = new SMAAPass(
+    window.innerWidth * renderer.getPixelRatio(),
+    window.innerHeight * renderer.getPixelRatio()
+  );
+  composer.addPass(smaaPass);
 
   // City Builder
   const lbTexture = createLeaderboardTexture();

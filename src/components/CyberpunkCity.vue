@@ -44,8 +44,16 @@ import {
   DoubleSide,
   Group,
   ConeGeometry,
-  Object3D
+  Object3D,
+  HalfFloatType,
+  WebGLRenderTarget
 } from "three";
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { SSRPass } from 'three/examples/jsm/postprocessing/SSRPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js';
 import { GameModeManager } from "../game/GameModeManager";
 import { DrivingMode } from "../game/modes/DrivingMode";
 import { DroneMode } from "../game/modes/DroneMode";
@@ -67,6 +75,7 @@ const canvasContainer = ref<HTMLDivElement | null>(null);
 let scene: Scene;
 let camera: PerspectiveCamera;
 let renderer: WebGLRenderer;
+let composer: EffectComposer;
 let animationId: number;
 let isActive = false;
 
@@ -151,8 +160,8 @@ function updateLeaderboardTexture() {
   } else {
     leaderboard.value.forEach((entry, idx) => {
       ctx.fillStyle = "#ffffff";
-      if (idx === 0) ctx.fillStyle = "#ffff00"; // Gold
-      else if (idx === 1) ctx.fillStyle = "#cccccc"; // Silver
+      if (idx === 0) ctx.fillStyle = "#ffd700"; // Gold
+      else if (idx === 1) ctx.fillStyle = "#c0c0c0"; // Silver
       else if (idx === 2) ctx.fillStyle = "#cd7f32"; // Bronze
 
       // Format: 1. NAME   1000
@@ -265,7 +274,7 @@ function createNavArrow() {
   const cone = new Mesh(
     new ConeGeometry(2, 7.5, 16),
     new MeshBasicMaterial({
-      color: 0xffff00,
+      color: 0x00ff00,
       depthTest: false,
       depthWrite: false,
       transparent: true,
@@ -392,6 +401,48 @@ onMounted(() => {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   canvasContainer.value.appendChild(renderer.domElement);
+
+  // Post Processing
+  const renderTarget = new WebGLRenderTarget(window.innerWidth, window.innerHeight, {
+    type: HalfFloatType
+  });
+  composer = new EffectComposer(renderer, renderTarget);
+  composer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  const renderPass = new RenderPass(scene, camera);
+  composer.addPass(renderPass);
+
+  const ssrPass = new SSRPass({
+    renderer,
+    scene,
+    camera,
+    width: window.innerWidth,
+    height: window.innerHeight,
+    groundReflector: null,
+    selects: null
+  });
+  ssrPass.thickness = 0.018;
+  ssrPass.infiniteThick = false;
+  // @ts-ignore
+  ssrPass.opacity = 1;
+  composer.addPass(ssrPass);
+
+  const bloomPass = new UnrealBloomPass(
+    new Vector2(window.innerWidth, window.innerHeight),
+    1.5,
+    0.4,
+    0.85
+  );
+  composer.addPass(bloomPass);
+
+  const outputPass = new OutputPass();
+  composer.addPass(outputPass);
+
+  const smaaPass = new SMAAPass(
+    window.innerWidth * renderer.getPixelRatio(),
+    window.innerHeight * renderer.getPixelRatio()
+  );
+  composer.addPass(smaaPass);
 
   // City Builder
   const lbTexture = createLeaderboardTexture();
@@ -664,6 +715,7 @@ function onResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
   updateIsMobile();
 }
 
@@ -877,7 +929,7 @@ function animate() {
     }
   }
   
-  renderer.render(scene, camera);
+  composer.render();
 }
 
 let audioCtx: AudioContext | null = null;

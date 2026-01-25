@@ -47,12 +47,34 @@ vi.mock("three", async () => {
     WebGLRenderer: class {
       domElement = document.createElement("canvas");
       shadowMap = { enabled: false, type: 0 };
+      capabilities = { isWebGL2: true, getMaxAnisotropy: vi.fn(() => 8) };
       setSize = vi.fn();
+      getSize = vi.fn((target) => {
+        if (target && target.set) {
+          target.set(1024, 768);
+          return target;
+        }
+        return { width: 1024, height: 768 };
+      });
       setPixelRatio = vi.fn();
+      getPixelRatio = vi.fn(() => 1);
+      getRenderTarget = vi.fn(() => null);
+      setRenderTarget = vi.fn();
+      setClearColor = vi.fn();
+      getClearColor = vi.fn((target) => target || { r: 0, g: 0, b: 0 });
+      getClearAlpha = vi.fn(() => 1);
+      setClearAlpha = vi.fn();
+      autoClear = true;
+      clear = vi.fn();
       render = vi.fn();
       dispose = vi.fn();
       setAnimationLoop = vi.fn();
       constructor(parameters?: any) { }
+    },
+    WebGLRenderTarget: class {
+      constructor() {}
+      setSize() {}
+      dispose() {}
     },
     CylinderGeometry: class {
       parameters: any;
@@ -374,3 +396,37 @@ vi.stubGlobal("AudioContext", class AudioContext {
   sampleRate = 44100;
 });
 vi.stubGlobal("webkitAudioContext", (globalThis as any).AudioContext);
+
+vi.mock("three/examples/jsm/postprocessing/EffectComposer.js", () => ({
+  EffectComposer: class {
+    constructor() {}
+    setSize() {}
+    setPixelRatio() {}
+    render() {}
+    addPass() {}
+  },
+}));
+
+vi.mock("three/examples/jsm/postprocessing/RenderPass.js", () => ({
+  RenderPass: class {},
+}));
+
+vi.mock("three/examples/jsm/postprocessing/UnrealBloomPass.js", () => ({
+  UnrealBloomPass: class {},
+}));
+
+vi.mock("three/examples/jsm/postprocessing/SSRPass.js", () => ({
+  SSRPass: class {
+    thickness = 0;
+    infiniteThick = false;
+    opacity = 0;
+  },
+}));
+
+vi.mock("three/examples/jsm/postprocessing/OutputPass.js", () => ({
+  OutputPass: class {},
+}));
+
+vi.mock("three/examples/jsm/postprocessing/SMAAPass.js", () => ({
+  SMAAPass: class {},
+}));

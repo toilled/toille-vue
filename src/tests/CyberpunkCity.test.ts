@@ -31,8 +31,15 @@ vi.mock('three', () => {
       render: vi.fn(),
       domElement: document.createElement('canvas'),
       setPixelRatio: vi.fn(),
+      dispose: vi.fn(),
+      getPixelRatio: vi.fn(() => 1),
+      capabilities: { isWebGL2: true }
+    })),
+    WebGLRenderTarget: vi.fn(() => ({
+      setSize: vi.fn(),
       dispose: vi.fn()
     })),
+    HalfFloatType: 1016,
     Color: vi.fn(),
     FogExp2: vi.fn(),
     BoxGeometry: vi.fn(() => ({

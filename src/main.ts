@@ -3,6 +3,9 @@ import { createRouter, createWebHistory, createMemoryHistory } from "vue-router"
 import App from "./App.vue";
 import PageContent from "./components/PageContent.vue";
 
+import "./assets/pico.min.css";
+import "./assets/main.css";
+
 /**
  * @file main.ts
  * @description The main entry point for the Vue application.

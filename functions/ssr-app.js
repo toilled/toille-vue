@@ -10501,6 +10501,7 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
     const iconType = ref("");
     const description = ref("Loading weather...");
     const showModal = ref(false);
+    const isMounted = ref(false);
     const hourlyForecast = ref([]);
     const fetchWeather = async () => {
       try {
@@ -10606,47 +10607,52 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
       return computedPoints.value.map((p) => `${p.x},${p.y}`).join(" ");
     });
     onMounted(() => {
+      isMounted.value = true;
       fetchWeather();
     });
     return (_ctx, _push, _parent, _attrs) => {
       _push(`<div${ssrRenderAttrs(mergeProps({
         class: "icon-wrapper",
         title: description.value
-      }, _attrs))} data-v-94148de0>`);
+      }, _attrs))} data-v-26210bdc>`);
       if (iconType.value === "sun") {
-        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-94148de0><circle cx="12" cy="12" r="5" data-v-94148de0></circle><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="black" stroke-width="2" stroke-linecap="round" data-v-94148de0></path></svg>`);
+        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-26210bdc><circle cx="12" cy="12" r="5" data-v-26210bdc></circle><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="black" stroke-width="2" stroke-linecap="round" data-v-26210bdc></path></svg>`);
       } else if (iconType.value === "cloud") {
-        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-94148de0><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" data-v-94148de0></path></svg>`);
+        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-26210bdc><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" data-v-26210bdc></path></svg>`);
       } else if (iconType.value === "rain") {
-        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-94148de0><path d="M16 13c.8 0 1.5.2 2.1.6 1.1 0 2.2 1.3 1.9 2.4-.2 1.1-1.3 1.6-2.4 1.6H7c-1.8 0-3.3-1.2-3.8-2.9-.5-1.7.3-3.6 1.9-4.3.4-2.8 2.8-5 5.7-5 2.1 0 4 .1 5.3 1.7" fill="none" stroke="black" stroke-width="2" data-v-94148de0></path><path d="M8 19v2m4-2v2m4-2v2" stroke="black" stroke-width="2" stroke-linecap="round" data-v-94148de0></path></svg>`);
+        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-26210bdc><path d="M16 13c.8 0 1.5.2 2.1.6 1.1 0 2.2 1.3 1.9 2.4-.2 1.1-1.3 1.6-2.4 1.6H7c-1.8 0-3.3-1.2-3.8-2.9-.5-1.7.3-3.6 1.9-4.3.4-2.8 2.8-5 5.7-5 2.1 0 4 .1 5.3 1.7" fill="none" stroke="black" stroke-width="2" data-v-26210bdc></path><path d="M8 19v2m4-2v2m4-2v2" stroke="black" stroke-width="2" stroke-linecap="round" data-v-26210bdc></path></svg>`);
       } else if (iconType.value === "snow") {
-        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-94148de0><path d="M12 2v20m-8-6 16-8m-16 8 16-8" stroke="black" stroke-width="2" stroke-linecap="round" data-v-94148de0></path><path d="M12 2l-2 3m2-3l2 3m-2 17l-2-3m2 3l2-3M4 16l3 1m-3-1l2-3m14 2l-3 1m3-1l-2-3M4 8l3-1m-3 1l2 3m14-2l-3-1m3 1l-2 3" stroke="black" stroke-width="2" stroke-linecap="round" data-v-94148de0></path></svg>`);
+        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-26210bdc><path d="M12 2v20m-8-6 16-8m-16 8 16-8" stroke="black" stroke-width="2" stroke-linecap="round" data-v-26210bdc></path><path d="M12 2l-2 3m2-3l2 3m-2 17l-2-3m2 3l2-3M4 16l3 1m-3-1l2-3m14 2l-3 1m3-1l-2-3M4 8l3-1m-3 1l2 3m14-2l-3-1m3 1l-2 3" stroke="black" stroke-width="2" stroke-linecap="round" data-v-26210bdc></path></svg>`);
       } else if (iconType.value === "thunder") {
-        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-94148de0><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" data-v-94148de0></path><path d="M13 14l-2 4h3l-1 4" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-v-94148de0></path></svg>`);
+        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-26210bdc><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" data-v-26210bdc></path><path d="M13 14l-2 4h3l-1 4" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-v-26210bdc></path></svg>`);
       } else {
-        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-94148de0><text x="50%" y="75%" text-anchor="middle" font-size="20" font-weight="bold" fill="black" data-v-94148de0>?</text></svg>`);
+        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-26210bdc><text x="50%" y="75%" text-anchor="middle" font-size="20" font-weight="bold" fill="black" data-v-26210bdc>?</text></svg>`);
       }
-      ssrRenderTeleport(_push, (_push2) => {
-        if (showModal.value) {
-          _push2(`<div class="weather-modal-overlay" data-v-94148de0><article class="weather-modal" data-v-94148de0><header class="modal-header" data-v-94148de0><h3 data-v-94148de0>Weather Forecast</h3><button class="close-btn" aria-label="Close" data-v-94148de0>×</button></header><div class="chart-container" data-v-94148de0><svg viewBox="0 0 300 150" class="weather-chart" data-v-94148de0><line x1="0" y1="135" x2="300" y2="135" stroke="#444" stroke-width="1" data-v-94148de0></line><!--[-->`);
-          ssrRenderList(computedPoints.value, (point, index) => {
-            _push2(`<g data-v-94148de0><rect${ssrRenderAttr("x", point.x - 5)}${ssrRenderAttr("y", point.rainY)} width="10"${ssrRenderAttr("height", point.rainHeight)} fill="rgba(0, 100, 255, 0.4)" class="rain-bar" data-v-94148de0></rect>`);
-            if (point.rain > 0) {
-              _push2(`<text${ssrRenderAttr("x", point.x)}${ssrRenderAttr("y", point.rainY - 4)} text-anchor="middle" fill="#3399ff" font-size="9" data-v-94148de0>${ssrInterpolate(point.rain)}mm</text>`);
-            } else {
-              _push2(`<!---->`);
-            }
-            _push2(`</g>`);
-          });
-          _push2(`<!--]--><polyline${ssrRenderAttr("points", graphPoints.value)} fill="none" stroke="#00ff9d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" data-v-94148de0></polyline><!--[-->`);
-          ssrRenderList(computedPoints.value, (point, index) => {
-            _push2(`<g data-v-94148de0><circle${ssrRenderAttr("cx", point.x)}${ssrRenderAttr("cy", point.y)} r="4" fill="#111" stroke="#00ff9d" stroke-width="2" class="data-point" data-v-94148de0></circle><text${ssrRenderAttr("x", point.x)} y="148" text-anchor="middle" fill="#ccc" font-size="10" data-v-94148de0>${ssrInterpolate(point.time)}</text><text${ssrRenderAttr("x", point.x)}${ssrRenderAttr("y", point.y - 10)} text-anchor="middle" fill="#fff" font-size="12" font-weight="bold" data-v-94148de0>${ssrInterpolate(point.temp)}°</text></g>`);
-          });
-          _push2(`<!--]--></svg></div><footer class="modal-footer" data-v-94148de0><small data-v-94148de0>Next 6 hours in Cheltenham</small><div class="legend" data-v-94148de0><span class="legend-item" data-v-94148de0><span class="dot temp" data-v-94148de0></span>Temp</span><span class="legend-item" data-v-94148de0><span class="dot rain" data-v-94148de0></span>Rain</span></div></footer></article></div>`);
-        } else {
-          _push2(`<!---->`);
-        }
-      }, "body", false, _parent);
+      if (isMounted.value) {
+        ssrRenderTeleport(_push, (_push2) => {
+          if (showModal.value) {
+            _push2(`<div class="weather-modal-overlay" data-v-26210bdc><article class="weather-modal" data-v-26210bdc><header class="modal-header" data-v-26210bdc><h3 data-v-26210bdc>Weather Forecast</h3><button class="close-btn" aria-label="Close" data-v-26210bdc>×</button></header><div class="chart-container" data-v-26210bdc><svg viewBox="0 0 300 150" class="weather-chart" data-v-26210bdc><line x1="0" y1="135" x2="300" y2="135" stroke="#444" stroke-width="1" data-v-26210bdc></line><!--[-->`);
+            ssrRenderList(computedPoints.value, (point, index) => {
+              _push2(`<g data-v-26210bdc><rect${ssrRenderAttr("x", point.x - 5)}${ssrRenderAttr("y", point.rainY)} width="10"${ssrRenderAttr("height", point.rainHeight)} fill="rgba(0, 100, 255, 0.4)" class="rain-bar" data-v-26210bdc></rect>`);
+              if (point.rain > 0) {
+                _push2(`<text${ssrRenderAttr("x", point.x)}${ssrRenderAttr("y", point.rainY - 4)} text-anchor="middle" fill="#3399ff" font-size="9" data-v-26210bdc>${ssrInterpolate(point.rain)}mm</text>`);
+              } else {
+                _push2(`<!---->`);
+              }
+              _push2(`</g>`);
+            });
+            _push2(`<!--]--><polyline${ssrRenderAttr("points", graphPoints.value)} fill="none" stroke="#00ff9d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" data-v-26210bdc></polyline><!--[-->`);
+            ssrRenderList(computedPoints.value, (point, index) => {
+              _push2(`<g data-v-26210bdc><circle${ssrRenderAttr("cx", point.x)}${ssrRenderAttr("cy", point.y)} r="4" fill="#111" stroke="#00ff9d" stroke-width="2" class="data-point" data-v-26210bdc></circle><text${ssrRenderAttr("x", point.x)} y="148" text-anchor="middle" fill="#ccc" font-size="10" data-v-26210bdc>${ssrInterpolate(point.time)}</text><text${ssrRenderAttr("x", point.x)}${ssrRenderAttr("y", point.y - 10)} text-anchor="middle" fill="#fff" font-size="12" font-weight="bold" data-v-26210bdc>${ssrInterpolate(point.temp)}°</text></g>`);
+            });
+            _push2(`<!--]--></svg></div><footer class="modal-footer" data-v-26210bdc><small data-v-26210bdc>Next 6 hours in Cheltenham</small><div class="legend" data-v-26210bdc><span class="legend-item" data-v-26210bdc><span class="dot temp" data-v-26210bdc></span>Temp</span><span class="legend-item" data-v-26210bdc><span class="dot rain" data-v-26210bdc></span>Rain</span></div></footer></article></div>`);
+          } else {
+            _push2(`<!---->`);
+          }
+        }, "body", false, _parent);
+      } else {
+        _push(`<!---->`);
+      }
       _push(`</div>`);
     };
   }
@@ -10658,7 +10664,7 @@ _sfc_main$e.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("src/components/WeatherIcon.vue");
   return _sfc_setup$e ? _sfc_setup$e(props, ctx) : void 0;
 };
-const WeatherIcon = /* @__PURE__ */ _export_sfc(_sfc_main$e, [["__scopeId", "data-v-94148de0"]]);
+const WeatherIcon = /* @__PURE__ */ _export_sfc(_sfc_main$e, [["__scopeId", "data-v-26210bdc"]]);
 
 const _sfc_main$d = /* @__PURE__ */ defineComponent({
   __name: "Menu",
@@ -10733,7 +10739,7 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
     onMounted(updateTimes);
     watch(count, updateTimes);
     return (_ctx, _push, _parent, _attrs) => {
-      _push(`<footer${ssrRenderAttrs(_attrs)}><article style="${ssrRenderStyle({ "margin-bottom": "0" })}"><header>Alcohol Checker</header><section class="grid"><button class="outline">Add</button><button class="outline">Subtract</button></section><table class="marginless"><thead><tr><th>Units consumed</th><th>Borderline time</th><th>Safe time</th></tr></thead><tbody><tr><td>${ssrInterpolate(count.value)}</td><td>${ssrInterpolate(limitTime.value)}</td><td>${ssrInterpolate(soberTime.value)}</td></tr></tbody></table></article></footer>`);
+      _push(`<footer${ssrRenderAttrs(mergeProps({ class: "content-container" }, _attrs))}><article class="marginless"><header>Alcohol Checker</header><section class="grid"><button class="outline">Add</button><button class="outline">Subtract</button></section><table class="marginless"><thead><tr><th>Units consumed</th><th>Borderline time</th><th>Safe time</th></tr></thead><tbody><tr><td>${ssrInterpolate(count.value)}</td><td>${ssrInterpolate(limitTime.value)}</td><td>${ssrInterpolate(soberTime.value)}</td></tr></tbody></table></article></footer>`);
     };
   }
 });
@@ -10775,9 +10781,9 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
         class: "content-container"
       }, _attrs))}>`);
       if (activity.value) {
-        _push(`<article title="Click for a new suggestion" style="${ssrRenderStyle({ "margin-bottom": "0" })}"><header><strong> Try this ${ssrInterpolate(activity.value.type)} activity </strong> (The Bored API) </header><p class="marginless">${ssrInterpolate(activity.value.activity)}</p></article>`);
+        _push(`<article title="Click for a new suggestion" class="marginless"><header><strong> Try this ${ssrInterpolate(activity.value.type)} activity </strong> (The Bored API) </header><p class="marginless">${ssrInterpolate(activity.value.activity)}</p></article>`);
       } else {
-        _push(`<article style="${ssrRenderStyle({ "margin-bottom": "0" })}"><header><strong>Try this activity</strong></header><p class="marginless" aria-busy="true"> Loading from The Bored API. </p></article>`);
+        _push(`<article class="marginless"><header><strong>Try this activity</strong></header><p class="marginless" aria-busy="true"> Loading from The Bored API. </p></article>`);
       }
       if (!hideHint.value) {
         _push(`<article style="${ssrRenderStyle({ "padding-top": "0", "margin-top": "0", "margin-bottom": "0" })}"><footer style="${ssrRenderStyle({ "font-style": "oblique", "font-size": "0.8em", "margin-top": "0" })}"> Click to update </footer></article>`);
@@ -10830,9 +10836,9 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
         class: "content-container"
       }, _attrs))}>`);
       if (suggestion.value) {
-        _push(`<article${ssrRenderAttr("title", hoverHintText.value)} style="${ssrRenderStyle({ "margin-bottom": "0" })}"><header><strong>${ssrInterpolate(__props.title)}</strong></header><p class="marginless">${ssrInterpolate(suggestion.value[__props.valueName])}</p></article>`);
+        _push(`<article${ssrRenderAttr("title", hoverHintText.value)} class="marginless"><header><strong>${ssrInterpolate(__props.title)}</strong></header><p class="marginless">${ssrInterpolate(suggestion.value[__props.valueName])}</p></article>`);
       } else {
-        _push(`<article style="${ssrRenderStyle({ "margin-bottom": "0" })}"><header><strong>${ssrInterpolate(__props.title)}</strong></header><p class="marginless" aria-busy="true">${ssrInterpolate(__props.url)} might be down.</p></article>`);
+        _push(`<article class="marginless"><header><strong>${ssrInterpolate(__props.title)}</strong></header><p class="marginless" aria-busy="true">${ssrInterpolate(__props.url)} might be down.</p></article>`);
       }
       if (!hideHint.value) {
         _push(`<article style="${ssrRenderStyle({ "padding-top": "0", "margin-top": "0", "margin-bottom": "0" })}"><footer style="${ssrRenderStyle({ "font-style": "oblique", "font-size": "0.8em", "margin-top": "0" })}"> Click to update </footer></article>`);
@@ -11063,6 +11069,11 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
         }
       });
       window.addEventListener("keydown", handleKeydown);
+    });
+    onErrorCaptured((err) => {
+      console.error("App Error Captured:", err);
+      showSplash.value = false;
+      return true;
     });
     onUnmounted(() => {
       clearTimeout(splashTimeout);
@@ -59199,7 +59210,9 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     }
     const isMobile = ref(false);
     const updateIsMobile = () => {
-      isMobile.value = window.innerWidth <= 768;
+      if (typeof window !== "undefined") {
+        isMobile.value = window.innerWidth <= 768;
+      }
     };
     const controls = ref({
       left: false,
@@ -59786,7 +59799,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       }
     });
     return (_ctx, _push, _parent, _attrs) => {
-      _push(`<!--[--><div id="cyberpunk-city" data-v-3ecf2fb6></div>`);
+      _push(`<!--[--><div id="cyberpunk-city" data-v-d912d79b></div>`);
       _push(ssrRenderComponent(unref(GameUI), {
         isDrivingMode: isDrivingMode.value,
         isGameMode: isGameMode.value,
@@ -59816,7 +59829,7 @@ _sfc_main$4.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("src/components/CyberpunkCity.vue");
   return _sfc_setup$4 ? _sfc_setup$4(props, ctx) : void 0;
 };
-const CyberpunkCity = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-3ecf2fb6"]]);
+const CyberpunkCity = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-d912d79b"]]);
 
 const CyberpunkCity$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,

@@ -160,8 +160,8 @@ function updateLeaderboardTexture() {
   } else {
     leaderboard.value.forEach((entry, idx) => {
       ctx.fillStyle = "#ffffff";
-      if (idx === 0) ctx.fillStyle = "#ffff00"; // Gold
-      else if (idx === 1) ctx.fillStyle = "#cccccc"; // Silver
+      if (idx === 0) ctx.fillStyle = "#ffd700"; // Gold
+      else if (idx === 1) ctx.fillStyle = "#c0c0c0"; // Silver
       else if (idx === 2) ctx.fillStyle = "#cd7f32"; // Bronze
 
       // Format: 1. NAME   1000
@@ -274,7 +274,7 @@ function createNavArrow() {
   const cone = new Mesh(
     new ConeGeometry(2, 7.5, 16),
     new MeshBasicMaterial({
-      color: 0xffff00,
+      color: 0x00ff00,
       depthTest: false,
       depthWrite: false,
       transparent: true,

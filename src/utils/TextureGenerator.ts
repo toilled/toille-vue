@@ -118,32 +118,36 @@ export function createBillboardTextures() {
       ctx.shadowColor = color;
       ctx.shadowBlur = 10;
 
-      if (i === 0) {
-        // Lines
-        ctx.fillRect(15, 15, 80, 5);
-        ctx.fillRect(15, 30, 60, 5);
-        ctx.fillRect(15, 45, 90, 5);
-      } else if (i === 1) {
-        // Circles
-        ctx.beginPath();
-        ctx.arc(32, 32, 20, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = "#000";
-        ctx.beginPath();
-        ctx.arc(32, 32, 10, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = color;
-        ctx.fillRect(64, 20, 40, 24);
-      } else {
-        // Random blocks
-        for (let k = 0; k < 5; k++) {
-          ctx.fillRect(
-            10 + Math.random() * 100,
-            10 + Math.random() * 40,
-            10 + Math.random() * 20,
-            5 + Math.random() * 10,
-          );
-        }
+      switch (i) {
+        case 0:
+          // Lines
+          ctx.fillRect(15, 15, 80, 5);
+          ctx.fillRect(15, 30, 60, 5);
+          ctx.fillRect(15, 45, 90, 5);
+          break;
+        case 1:
+          // Circles
+          ctx.beginPath();
+          ctx.arc(32, 32, 20, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#000";
+          ctx.beginPath();
+          ctx.arc(32, 32, 10, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = color;
+          ctx.fillRect(64, 20, 40, 24);
+          break;
+        default:
+          // Random blocks
+          for (let k = 0; k < 5; k++) {
+            ctx.fillRect(
+              10 + Math.random() * 100,
+              10 + Math.random() * 40,
+              10 + Math.random() * 20,
+              5 + Math.random() * 10,
+            );
+          }
+          break;
       }
     }
     const texture = new CanvasTexture(canvas);
@@ -198,66 +202,66 @@ export function createDroneTexture() {
 }
 
 export function createRoughFloorTexture() {
-    const canvas = document.createElement("canvas");
-    canvas.width = 128;
-    canvas.height = 128;
-    const ctx = canvas.getContext("2d");
-    if (ctx) {
-        // Base dark concrete
-        ctx.fillStyle = "#111111";
-        ctx.fillRect(0, 0, 128, 128);
+  const canvas = document.createElement("canvas");
+  canvas.width = 128;
+  canvas.height = 128;
+  const ctx = canvas.getContext("2d");
+  if (ctx) {
+    // Base dark concrete
+    ctx.fillStyle = "#111111";
+    ctx.fillRect(0, 0, 128, 128);
 
-        // Add random darker/lighter patches - MORE CONTRAST
-        for (let i = 0; i < 20; i++) {
-             const shade = Math.floor(Math.random() * 100); // Increased range 0-100 (was 0-40)
-             ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
-             const w = 20 + Math.random() * 60;
-             const h = 20 + Math.random() * 60;
-             ctx.globalAlpha = 0.4; // Slightly more opaque
-             ctx.fillRect(Math.random() * 128 - 20, Math.random() * 128 - 20, w, h);
-        }
-        ctx.globalAlpha = 1.0;
-
-        // Add noise/cracks (small dots) - BRIGHTER
-        for (let i = 0; i < 400; i++) {
-            const val = Math.floor(Math.random() * 100) + 50; // Brighter dots (50-150)
-            ctx.fillStyle = `rgb(${val}, ${val}, ${val})`;
-            const w = Math.random() * 3 + 1;
-            const h = Math.random() * 3 + 1;
-            ctx.fillRect(Math.random() * 128, Math.random() * 128, w, h);
-        }
-
-        // Add some colored industrial stains (very subtle)
-        const colors = ["#443300", "#003344", "#330033"]; // Slightly vivid
-        for(let i=0; i<5; i++) {
-             ctx.fillStyle = colors[Math.floor(Math.random()*colors.length)];
-             ctx.globalAlpha = 0.3;
-             const w = Math.random() * 30 + 10;
-             const h = Math.random() * 30 + 10;
-             ctx.fillRect(Math.random() * 128, Math.random() * 128, w, h);
-        }
-        ctx.globalAlpha = 1.0;
-
-        // Add detailed lines/wires/cracks
-        ctx.strokeStyle = "#555555"; // Lighter lines
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        for(let i=0; i<10; i++) {
-            ctx.moveTo(Math.random()*128, Math.random()*128);
-            ctx.lineTo(Math.random()*128, Math.random()*128);
-        }
-        ctx.stroke();
-
-        // Add some random larger darker plates
-        ctx.fillStyle = "#000000"; // Pure black for contrast
-        ctx.globalAlpha = 0.6;
-        for(let i=0; i<3; i++) {
-            ctx.fillRect(Math.random()*100, Math.random()*100, Math.random()*40+20, Math.random()*40+20);
-        }
-        ctx.globalAlpha = 1.0;
+    // Add random darker/lighter patches - MORE CONTRAST
+    for (let i = 0; i < 20; i++) {
+      const shade = Math.floor(Math.random() * 100); // Increased range 0-100 (was 0-40)
+      ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
+      const w = 20 + Math.random() * 60;
+      const h = 20 + Math.random() * 60;
+      ctx.globalAlpha = 0.4; // Slightly more opaque
+      ctx.fillRect(Math.random() * 128 - 20, Math.random() * 128 - 20, w, h);
     }
-    const texture = new CanvasTexture(canvas);
-    texture.wrapS = RepeatWrapping;
-    texture.wrapT = RepeatWrapping;
-    return texture;
+    ctx.globalAlpha = 1.0;
+
+    // Add noise/cracks (small dots) - BRIGHTER
+    for (let i = 0; i < 400; i++) {
+      const val = Math.floor(Math.random() * 100) + 50; // Brighter dots (50-150)
+      ctx.fillStyle = `rgb(${val}, ${val}, ${val})`;
+      const w = Math.random() * 3 + 1;
+      const h = Math.random() * 3 + 1;
+      ctx.fillRect(Math.random() * 128, Math.random() * 128, w, h);
+    }
+
+    // Add some colored industrial stains (very subtle)
+    const colors = ["#443300", "#003344", "#330033"]; // Slightly vivid
+    for (let i = 0; i < 5; i++) {
+      ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+      ctx.globalAlpha = 0.3;
+      const w = Math.random() * 30 + 10;
+      const h = Math.random() * 30 + 10;
+      ctx.fillRect(Math.random() * 128, Math.random() * 128, w, h);
+    }
+    ctx.globalAlpha = 1.0;
+
+    // Add detailed lines/wires/cracks
+    ctx.strokeStyle = "#555555"; // Lighter lines
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let i = 0; i < 10; i++) {
+      ctx.moveTo(Math.random() * 128, Math.random() * 128);
+      ctx.lineTo(Math.random() * 128, Math.random() * 128);
+    }
+    ctx.stroke();
+
+    // Add some random larger darker plates
+    ctx.fillStyle = "#000000"; // Pure black for contrast
+    ctx.globalAlpha = 0.6;
+    for (let i = 0; i < 3; i++) {
+      ctx.fillRect(Math.random() * 100, Math.random() * 100, Math.random() * 40 + 20, Math.random() * 40 + 20);
+    }
+    ctx.globalAlpha = 1.0;
+  }
+  const texture = new CanvasTexture(canvas);
+  texture.wrapS = RepeatWrapping;
+  texture.wrapT = RepeatWrapping;
+  return texture;
 }

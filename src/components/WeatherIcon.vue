@@ -230,27 +230,35 @@ const processHourlyData = (hourly: any) => {
 const updateIcon = (code: number, temp: number) => {
   let weatherDesc = '';
 
-  if (code === 0) {
-    iconType.value = 'sun';
-    weatherDesc = 'Clear Sky';
-  } else if ([1, 2, 3].includes(code)) {
-    iconType.value = 'cloud';
-    weatherDesc = 'Partly Cloudy';
-  } else if ([45, 48].includes(code)) {
-    iconType.value = 'cloud';
-    weatherDesc = 'Fog';
-  } else if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) {
-    iconType.value = 'rain';
-    weatherDesc = 'Rain';
-  } else if ([71, 73, 75, 77, 85, 86].includes(code)) {
-    iconType.value = 'snow';
-    weatherDesc = 'Snow';
-  } else if ([95, 96, 99].includes(code)) {
-    iconType.value = 'thunder';
-    weatherDesc = 'Thunderstorm';
-  } else {
-    iconType.value = 'cloud';
-    weatherDesc = 'Unknown';
+  switch (true) {
+    case code === 0:
+      iconType.value = 'sun';
+      weatherDesc = 'Clear Sky';
+      break;
+    case [1, 2, 3].includes(code):
+      iconType.value = 'cloud';
+      weatherDesc = 'Partly Cloudy';
+      break;
+    case [45, 48].includes(code):
+      iconType.value = 'cloud';
+      weatherDesc = 'Fog';
+      break;
+    case [51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code):
+      iconType.value = 'rain';
+      weatherDesc = 'Rain';
+      break;
+    case [71, 73, 75, 77, 85, 86].includes(code):
+      iconType.value = 'snow';
+      weatherDesc = 'Snow';
+      break;
+    case [95, 96, 99].includes(code):
+      iconType.value = 'thunder';
+      weatherDesc = 'Thunderstorm';
+      break;
+    default:
+      iconType.value = 'cloud';
+      weatherDesc = 'Unknown';
+      break;
   }
 
   description.value = `${weatherDesc} (${temp}°C) in Cheltenham, UK`;

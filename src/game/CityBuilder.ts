@@ -221,70 +221,84 @@ export class CityBuilder {
         mainLine.scale.set(w, h, d);
         buildingGroup.add(mainLine);
 
-        if (style === "TIERED") {
-          const tiers = 1 + Math.floor(Math.random() * 2);
-          let currentH = h;
-          let currentW = w;
-          let currentD = d;
+        switch (style) {
+          case "TIERED": {
+            const tiers = 1 + Math.floor(Math.random() * 2);
+            let currentH = h;
+            let currentW = w;
+            let currentD = d;
 
-          for (let t = 0; t < tiers; t++) {
-            const tierH = 20 + Math.random() * 40;
-            currentW *= 0.6 + Math.random() * 0.2;
-            currentD *= 0.6 + Math.random() * 0.2;
+            for (let t = 0; t < tiers; t++) {
+              const tierH = 20 + Math.random() * 40;
+              currentW *= 0.6 + Math.random() * 0.2;
+              currentD *= 0.6 + Math.random() * 0.2;
 
-            const tierBlock = new Mesh(boxGeo, buildingMaterials);
-            tierBlock.scale.set(currentW, tierH, currentD);
-            tierBlock.position.y = currentH;
-            buildingGroup.add(tierBlock);
+              const tierBlock = new Mesh(boxGeo, buildingMaterials);
+              tierBlock.scale.set(currentW, tierH, currentD);
+              tierBlock.position.y = currentH;
+              buildingGroup.add(tierBlock);
 
-            const tierLine = new LineSegments(edgesGeo, topEdgeMat);
-            tierLine.scale.set(currentW, tierH, currentD);
-            tierLine.position.y = currentH;
-            buildingGroup.add(tierLine);
+              const tierLine = new LineSegments(edgesGeo, topEdgeMat);
+              tierLine.scale.set(currentW, tierH, currentD);
+              tierLine.position.y = currentH;
+              buildingGroup.add(tierLine);
 
-            currentH += tierH;
+              currentH += tierH;
+            }
+            break;
           }
-        } else if (style === "SPIRE") {
-          const spireH = h * 0.5 + Math.random() * h;
-          const spireW = w * 0.5;
-          const spireD = d * 0.5;
+          case "SPIRE": {
+            const spireH = h * 0.5 + Math.random() * h;
+            const spireW = w * 0.5;
+            const spireD = d * 0.5;
 
-          const spire = new Mesh(coneGeo, buildingMaterial);
-          spire.scale.set(spireW, spireH, spireD);
-          spire.position.y = h;
-          spire.rotation.y = Math.PI / 4;
-          buildingGroup.add(spire);
+            const spire = new Mesh(coneGeo, buildingMaterial);
+            spire.scale.set(spireW, spireH, spireD);
+            spire.position.y = h;
+            spire.rotation.y = Math.PI / 4;
+            buildingGroup.add(spire);
 
-          const spireLine = new LineSegments(coneEdgesGeo, topEdgeMat);
-          spireLine.scale.set(spireW, spireH, spireD);
-          spireLine.position.y = h;
-          spireLine.rotation.y = Math.PI / 4;
-          buildingGroup.add(spireLine);
-        } else if (style === "GREEBLED") {
-          const count = 4 + Math.floor(Math.random() * 6);
-          for (let g = 0; g < count; g++) {
-            const gw = 5 + Math.random() * 10;
-            const gh = 5 + Math.random() * 20;
-            const gd = 5 + Math.random() * 10;
+            const spireLine = new LineSegments(coneEdgesGeo, topEdgeMat);
+            spireLine.scale.set(spireW, spireH, spireD);
+            spireLine.position.y = h;
+            spireLine.rotation.y = Math.PI / 4;
+            buildingGroup.add(spireLine);
+            break;
+          }
+          case "GREEBLED": {
+            const count = 4 + Math.floor(Math.random() * 6);
+            for (let g = 0; g < count; g++) {
+              const gw = 5 + Math.random() * 10;
+              const gh = 5 + Math.random() * 20;
+              const gd = 5 + Math.random() * 10;
 
-            const gMesh = new Mesh(boxGeo, roofMaterial);
-            gMesh.scale.set(gw, gh, gd);
+              const gMesh = new Mesh(boxGeo, roofMaterial);
+              gMesh.scale.set(gw, gh, gd);
 
-            const face = Math.floor(Math.random() * 4);
-            if (face === 0)
-              gMesh.position.set(0, Math.random() * h, d / 2 + gd / 2);
-            else if (face === 1)
-              gMesh.position.set(0, Math.random() * h, -d / 2 - gd / 2);
-            else if (face === 2)
-              gMesh.position.set(w / 2 + gw / 2, Math.random() * h, 0);
-            else gMesh.position.set(-w / 2 - gw / 2, Math.random() * h, 0);
+              const face = Math.floor(Math.random() * 4);
+              switch (face) {
+                case 0:
+                  gMesh.position.set(0, Math.random() * h, d / 2 + gd / 2);
+                  break;
+                case 1:
+                  gMesh.position.set(0, Math.random() * h, -d / 2 - gd / 2);
+                  break;
+                case 2:
+                  gMesh.position.set(w / 2 + gw / 2, Math.random() * h, 0);
+                  break;
+                default:
+                  gMesh.position.set(-w / 2 - gw / 2, Math.random() * h, 0);
+                  break;
+              }
 
-            buildingGroup.add(gMesh);
+              buildingGroup.add(gMesh);
 
-            const gLine = new LineSegments(edgesGeo, edgeMat2);
-            gLine.scale.set(gw, gh, gd);
-            gLine.position.copy(gMesh.position);
-            buildingGroup.add(gLine);
+              const gLine = new LineSegments(edgesGeo, edgeMat2);
+              gLine.scale.set(gw, gh, gd);
+              gLine.position.copy(gMesh.position);
+              buildingGroup.add(gLine);
+            }
+            break;
           }
         }
 
@@ -310,33 +324,38 @@ export class CityBuilder {
           const face = Math.floor(Math.random() * 4);
           const offset = 1;
 
-          if (face === 0) {
-            billboard.position.set(
-              0,
-              h * (0.5 + Math.random() * 0.3),
-              d / 2 + offset,
-            );
-          } else if (face === 1) {
-            billboard.position.set(
-              0,
-              h * (0.5 + Math.random() * 0.3),
-              -d / 2 - offset,
-            );
-            billboard.rotation.y = Math.PI;
-          } else if (face === 2) {
-            billboard.position.set(
-              w / 2 + offset,
-              h * (0.5 + Math.random() * 0.3),
-              0,
-            );
-            billboard.rotation.y = Math.PI / 2;
-          } else {
-            billboard.position.set(
-              -w / 2 - offset,
-              h * (0.5 + Math.random() * 0.3),
-              0,
-            );
-            billboard.rotation.y = -Math.PI / 2;
+          switch (face) {
+            case 0:
+              billboard.position.set(
+                0,
+                h * (0.5 + Math.random() * 0.3),
+                d / 2 + offset,
+              );
+              break;
+            case 1:
+              billboard.position.set(
+                0,
+                h * (0.5 + Math.random() * 0.3),
+                -d / 2 - offset,
+              );
+              billboard.rotation.y = Math.PI;
+              break;
+            case 2:
+              billboard.position.set(
+                w / 2 + offset,
+                h * (0.5 + Math.random() * 0.3),
+                0,
+              );
+              billboard.rotation.y = Math.PI / 2;
+              break;
+            default:
+              billboard.position.set(
+                -w / 2 - offset,
+                h * (0.5 + Math.random() * 0.3),
+                0,
+              );
+              billboard.rotation.y = -Math.PI / 2;
+              break;
           }
 
           buildingGroup.add(billboard);
@@ -358,28 +377,43 @@ export class CityBuilder {
             const offset = 0.6;
             const yPos = h * 0.7;
 
-            if (i === 0) {
-              lbMesh.position.set(0, yPos, d / 2 + offset);
-              lbMesh.rotation.y = 0;
-            } else if (i === 1) {
-              lbMesh.position.set(0, yPos, -d / 2 - offset);
-              lbMesh.rotation.y = Math.PI;
-            } else if (i === 2) {
-              lbMesh.position.set(w / 2 + offset, yPos, 0);
-              lbMesh.rotation.y = Math.PI / 2;
-            } else {
-              lbMesh.position.set(-w / 2 - offset, yPos, 0);
-              lbMesh.rotation.y = -Math.PI / 2;
+            switch (i) {
+              case 0:
+                lbMesh.position.set(0, yPos, d / 2 + offset);
+                lbMesh.rotation.y = 0;
+                break;
+              case 1:
+                lbMesh.position.set(0, yPos, -d / 2 - offset);
+                lbMesh.rotation.y = Math.PI;
+                break;
+              case 2:
+                lbMesh.position.set(w / 2 + offset, yPos, 0);
+                lbMesh.rotation.y = Math.PI / 2;
+                break;
+              default:
+                lbMesh.position.set(-w / 2 - offset, yPos, 0);
+                lbMesh.rotation.y = -Math.PI / 2;
+                break;
             }
 
             buildingGroup.add(lbMesh);
 
             const spot = new SpotLight(0x00ffcc, 500, 100, 0.6, 0.5, 1);
 
-            if (i === 0) spot.position.set(0, h * 0.9, d + 30);
-            else if (i === 1) spot.position.set(0, h * 0.9, -d - 30);
-            else if (i === 2) spot.position.set(w + 30, h * 0.9, 0);
-            else spot.position.set(-w - 30, h * 0.9, 0);
+            switch (i) {
+              case 0:
+                spot.position.set(0, h * 0.9, d + 30);
+                break;
+              case 1:
+                spot.position.set(0, h * 0.9, -d - 30);
+                break;
+              case 2:
+                spot.position.set(w + 30, h * 0.9, 0);
+                break;
+              default:
+                spot.position.set(-w - 30, h * 0.9, 0);
+                break;
+            }
 
             spot.target = lbMesh;
             buildingGroup.add(spot);

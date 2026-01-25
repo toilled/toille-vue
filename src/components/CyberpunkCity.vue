@@ -150,10 +150,20 @@ function updateLeaderboardTexture() {
     ctx.fillText("Loading...", 256, 250);
   } else {
     leaderboard.value.forEach((entry, idx) => {
-      ctx.fillStyle = "#ffffff";
-      if (idx === 0) ctx.fillStyle = "#ffff00"; // Gold
-      else if (idx === 1) ctx.fillStyle = "#cccccc"; // Silver
-      else if (idx === 2) ctx.fillStyle = "#cd7f32"; // Bronze
+      switch (idx) {
+        case 0:
+          ctx.fillStyle = "#ffff00"; // Gold
+          break;
+        case 1:
+          ctx.fillStyle = "#cccccc"; // Silver
+          break;
+        case 2:
+          ctx.fillStyle = "#cd7f32"; // Bronze
+          break;
+        default:
+          ctx.fillStyle = "#ffffff";
+          break;
+      }
 
       // Format: 1. NAME   1000
       const rank = `${idx + 1}.`;

@@ -125,15 +125,20 @@ function handleKeydown(e: KeyboardEvent) {
     }
   }
 
-  if (e.key === "ArrowRight") {
-    const currentIndex = visiblePages.value.findIndex((page: Page) => page.link === route.path);
-    if (currentIndex !== -1 && currentIndex < visiblePages.value.length - 1) {
-      router.push(visiblePages.value[currentIndex + 1].link);
+  switch (e.key) {
+    case "ArrowRight": {
+      const currentIndex = visiblePages.value.findIndex((page: Page) => page.link === route.path);
+      if (currentIndex !== -1 && currentIndex < visiblePages.value.length - 1) {
+        router.push(visiblePages.value[currentIndex + 1].link);
+      }
+      break;
     }
-  } else if (e.key === "ArrowLeft") {
-    const currentIndex = visiblePages.value.findIndex((page: Page) => page.link === route.path);
-    if (currentIndex > 0) {
-      router.push(visiblePages.value[currentIndex - 1].link);
+    case "ArrowLeft": {
+      const currentIndex = visiblePages.value.findIndex((page: Page) => page.link === route.path);
+      if (currentIndex > 0) {
+        router.push(visiblePages.value[currentIndex - 1].link);
+      }
+      break;
     }
   }
 }
@@ -234,32 +239,39 @@ watch(
 
     let pageTitle;
 
-    if (newPath === '/noughts-and-crosses') {
-      pageTitle = 'Noughts and Crosses';
-    } else if (newPath === '/game') {
-      pageTitle = 'Catch the Button!';
-    } else if (newPath === '/checker') {
-      pageTitle = 'Checker';
-    } else if (newPath === '/ask') {
-      pageTitle = 'Ask Me';
-    } else {
-      let routeName;
-      if (route.params.name) {
-        routeName = route.params.name;
-      } else if (newPath === '/') {
-        routeName = 'home';
-      }
-
-      if (routeName) {
-        let currentPage;
-        if (routeName === 'home') {
-          currentPage = pages.find((page) => page.link === '/');
-        } else {
-          currentPage = pages.find((page) => page.link.slice(1) === routeName);
+    switch (newPath) {
+      case '/noughts-and-crosses':
+        pageTitle = 'Noughts and Crosses';
+        break;
+      case '/game':
+        pageTitle = 'Catch the Button!';
+        break;
+      case '/checker':
+        pageTitle = 'Checker';
+        break;
+      case '/ask':
+        pageTitle = 'Ask Me';
+        break;
+      default: {
+        let routeName;
+        if (route.params.name) {
+          routeName = route.params.name;
+        } else if (newPath === '/') {
+          routeName = 'home';
         }
-        pageTitle = currentPage ? currentPage.title : '404';
-      } else {
-        pageTitle = '404';
+
+        if (routeName) {
+          let currentPage;
+          if (routeName === 'home') {
+            currentPage = pages.find((page) => page.link === '/');
+          } else {
+            currentPage = pages.find((page) => page.link.slice(1) === routeName);
+          }
+          pageTitle = currentPage ? currentPage.title : '404';
+        } else {
+          pageTitle = '404';
+        }
+        break;
       }
     }
 

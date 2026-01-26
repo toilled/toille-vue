@@ -374,6 +374,7 @@ export class CityBuilder {
             });
 
             const lbMesh = new Mesh(lbGeo, lbMat);
+            lbMesh.userData = { isLeaderboard: true };
             const offset = 0.6;
             const yPos = h * 0.7;
 

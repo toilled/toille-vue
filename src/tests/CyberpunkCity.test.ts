@@ -117,7 +117,8 @@ vi.mock('three', () => {
       userData: {},
       add: vi.fn(),
       lookAt: vi.fn(),
-      material: { color: { setHex: vi.fn() } } // Added material.color
+      material: { color: { setHex: vi.fn() } }, // Added material.color
+      traverse: vi.fn()
     })),
     Points: vi.fn(() => ({
       position: { set: vi.fn(), x: 0, y: 0, z: 0 },
@@ -177,7 +178,8 @@ vi.mock('three', () => {
     })),
     Object3D: vi.fn(() => ({
       position: { set: vi.fn(), x: 0, y: 0, z: 0 },
-      add: vi.fn()
+      add: vi.fn(),
+      traverse: vi.fn()
     })),
     Quaternion: vi.fn(() => ({
       setFromEuler: vi.fn(),

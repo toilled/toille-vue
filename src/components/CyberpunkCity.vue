@@ -15,8 +15,10 @@
     :controls="controls"
     :lookControls="lookControls"
     :leaderboard="leaderboard"
+    :showLeaderboard="showLeaderboard"
     @exit-game-mode="exitGameMode"
     @update-leaderboard="updateLeaderboard"
+    @close-leaderboard="showLeaderboard = false"
   />
 </template>
 
@@ -72,6 +74,7 @@ let isActive = false;
 
 let occupiedGrids = new Map<string, { halfW: number; halfD: number }>();
 let cars: Group[] = [];
+let leaderboardMeshes: Mesh[] = [];
 
 let drones: Points;
 let droneTargetPositions: Float32Array;
@@ -101,6 +104,7 @@ let trafficSystem: TrafficSystem;
 let cityBuilder: CityBuilder;
 
 const leaderboard = ref<ScoreEntry[]>([]);
+const showLeaderboard = ref(false);
 
 let leaderboardCanvas: HTMLCanvasElement;
 let leaderboardTexture: CanvasTexture;
@@ -409,6 +413,15 @@ onMounted(() => {
   cityBuilder.buildCity(isMobile.value, lbTexture);
   const buildings = cityBuilder.getBuildings();
   occupiedGrids = cityBuilder.getOccupiedGrids();
+
+  // Extract leaderboard meshes for raycasting
+  buildings.forEach((b) => {
+    b.traverse((c) => {
+      if (c instanceof Mesh && c.userData.isLeaderboard) {
+        leaderboardMeshes.push(c);
+      }
+    });
+  });
 
   // Traffic System
   trafficSystem = new TrafficSystem(scene, CAR_COUNT, occupiedGrids, spawnSparks);
@@ -730,6 +743,14 @@ function onClick(event: MouseEvent) {
       target.userData.currentSpeed = target.userData.speed;
       
       gameModeManager.setMode(new DrivingMode());
+      return;
+    }
+  }
+
+  if (leaderboardMeshes.length > 0) {
+    const lbIntersects = raycaster.intersectObjects(leaderboardMeshes);
+    if (lbIntersects.length > 0) {
+      showLeaderboard.value = true;
       return;
     }
   }

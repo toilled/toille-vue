@@ -452,6 +452,7 @@ function exitGameMode() {
 .lb-row {
   display: flex;
   justify-content: space-between;
+  gap: 20px;
   font-size: 20px;
   color: #fff;
   margin-bottom: 5px;

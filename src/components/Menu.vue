@@ -43,7 +43,7 @@ import { ref } from "vue";
 import MenuItem from "./MenuItem.vue";
 import WeatherIcon from "./WeatherIcon.vue";
 import { Page } from "../interfaces/Page";
-import { CyberpunkAudio } from "../utils/CyberpunkAudio";
+import { cyberpunkAudio } from "../utils/CyberpunkAudio";
 
 /**
  * @file Menu.vue
@@ -66,18 +66,13 @@ const emit = defineEmits<{
 }>();
 
 const soundOn = ref(false);
-let audio: CyberpunkAudio | null = null;
 
 const toggleSound = () => {
-  if (!audio) {
-    audio = new CyberpunkAudio();
-  }
-
   soundOn.value = !soundOn.value;
   if (soundOn.value) {
-    audio.play();
+    cyberpunkAudio.play();
   } else {
-    audio.pause();
+    cyberpunkAudio.pause();
   }
 };
 </script>

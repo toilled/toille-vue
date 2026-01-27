@@ -37,6 +37,7 @@ export class CityBuilder {
   private scene: Scene;
   private buildings: Object3D[] = [];
   private occupiedGrids = new Map<string, { halfW: number; halfD: number }>();
+  private audioMaterials: { [key: string]: MeshStandardMaterial } = {};
 
   constructor(scene: Scene) {
     this.scene = scene;
@@ -48,6 +49,10 @@ export class CityBuilder {
 
   public getOccupiedGrids(): Map<string, { halfW: number; halfD: number }> {
     return this.occupiedGrids;
+  }
+
+  public getAudioMaterials() {
+    return this.audioMaterials;
   }
 
   public buildCity(isMobile: boolean, lbTexture: any) {
@@ -113,20 +118,17 @@ export class CityBuilder {
       metalness: 0.8,
     });
 
+    // Initialize audio materials
+    const audioKeys = ["kick", "snare", "hihat", "bass0", "bass1", "bass2", "bass3", "bass4"];
+    audioKeys.forEach((key) => {
+      this.audioMaterials[key] = buildingMaterial.clone();
+    });
+
     const roofMaterial = new MeshStandardMaterial({
       color: 0x111111,
       roughness: 0.9,
       metalness: 0.1,
     });
-
-    const buildingMaterials = [
-      buildingMaterial,
-      buildingMaterial,
-      roofMaterial,
-      roofMaterial,
-      buildingMaterial,
-      buildingMaterial,
-    ];
 
     const edgeMat1 = new LineBasicMaterial({
       color: 0xff00cc,
@@ -210,7 +212,23 @@ export class CityBuilder {
           else if (r > 0.5) style = "GREEBLED";
         }
 
-        const mainBlock = new Mesh(boxGeo, buildingMaterials);
+        // Select material for this building
+        let selectedMaterial = buildingMaterial;
+        if (!isLeaderboardBuilding) {
+          const channelIndex = Math.floor(Math.random() * audioKeys.length);
+          selectedMaterial = this.audioMaterials[audioKeys[channelIndex]];
+        }
+
+        const thisBuildingMaterials = [
+          selectedMaterial,
+          selectedMaterial,
+          roofMaterial,
+          roofMaterial,
+          selectedMaterial,
+          selectedMaterial,
+        ];
+
+        const mainBlock = new Mesh(boxGeo, thisBuildingMaterials);
         mainBlock.scale.set(w, h, d);
         buildingGroup.add(mainBlock);
 
@@ -233,7 +251,7 @@ export class CityBuilder {
               currentW *= 0.6 + Math.random() * 0.2;
               currentD *= 0.6 + Math.random() * 0.2;
 
-              const tierBlock = new Mesh(boxGeo, buildingMaterials);
+              const tierBlock = new Mesh(boxGeo, thisBuildingMaterials);
               tierBlock.scale.set(currentW, tierH, currentD);
               tierBlock.position.y = currentH;
               buildingGroup.add(tierBlock);
@@ -252,7 +270,7 @@ export class CityBuilder {
             const spireW = w * 0.5;
             const spireD = d * 0.5;
 
-            const spire = new Mesh(coneGeo, buildingMaterial);
+            const spire = new Mesh(coneGeo, selectedMaterial);
             spire.scale.set(spireW, spireH, spireD);
             spire.position.y = h;
             spire.rotation.y = Math.PI / 4;

@@ -2,6 +2,8 @@ interface WindowWithAudioContext extends Window {
   webkitAudioContext?: typeof AudioContext;
 }
 
+type NoteCallback = (type: string, data?: any) => void;
+
 export class CyberpunkAudio {
   private ctx: AudioContext | null = null;
   private isPlaying: boolean = false;
@@ -16,15 +18,34 @@ export class CyberpunkAudio {
   private snarePattern: number[] = [];
   private hiHatPattern: number[] = [];
   private seed: number;
+  private listeners: NoteCallback[] = [];
 
   // Reusable buffers
   private snareBuffer: AudioBuffer | null = null;
   private hiHatBuffer: AudioBuffer | null = null;
 
+  // Note scale
+  private root = 41.2;
+  private scale = [
+    this.root, // I
+    this.root * 1.2, // m3
+    this.root * 1.5, // V
+    this.root * 1.78, // b7
+    this.root * 2, // VIII
+  ];
+
   constructor() {
     this.seed = Date.now();
     this.generateBassPattern();
     this.generateDrumPatterns();
+  }
+
+  public addListener(callback: NoteCallback) {
+    this.listeners.push(callback);
+  }
+
+  public removeListener(callback: NoteCallback) {
+    this.listeners = this.listeners.filter((l) => l !== callback);
   }
 
   // Seeded random number generator (Mulberry32)
@@ -36,63 +57,36 @@ export class CyberpunkAudio {
   }
 
   private generateBassPattern() {
-    // Generate a 128-step bass pattern based on the seed (8 bars)
-    // Root note E1 = 41.20 Hz
-    const root = 41.2;
-    // Cyberpunk/Darkwave scale intervals relative to root (E1)
-    // Minor pentatonic: Root(1), m3(1.2), 4(1.33), 5(1.5), b7(1.78), Octave(2)
-    const scale = [
-      root, // I
-      root * 1.2, // m3 (approx for E -> G)
-      root * 1.5, // V
-      root * 1.78, // b7 (approx for E -> D)
-      root * 2, // VIII
-    ];
-
     this.bassPattern = new Array(128).fill(0);
 
-    // Create a rhythmic motif (2 bars = 32 steps)
-    // We will generate a motif and then repeat it with variations
     const motifLength = 32;
     for (let i = 0; i < 128; i++) {
-      // Quantize to 8th notes (every 2 steps) for a driving feel
       if (i % 2 === 0) {
-        // Determine position in the 2-bar motif
         const motifPos = i % motifLength;
-
-        // Strong beat probability (beats 1 and 3)
         const isStrongBeat = motifPos % 16 === 0;
-        // Off-beat syncopation probability
         const isOffBeat = motifPos % 4 === 2;
 
         let noteProbability = 0.5;
         if (isStrongBeat) noteProbability = 0.9;
         else if (isOffBeat) noteProbability = 0.7;
 
-        // Variation every 4 bars (64 steps)
         const isVariationSection = i >= 64;
         if (isVariationSection && i % 4 === 0) {
-          noteProbability += 0.2; // Busy it up in the second half
+          noteProbability += 0.2;
         }
 
         if (this.random() < noteProbability) {
-          // Select pitch
           const r = this.random();
-          let note;
+          let noteIndex;
           if (isStrongBeat) {
-            // Anchor to root or octave on strong beats
-            note = r > 0.7 ? scale[4] : scale[0];
+            noteIndex = r > 0.7 ? 4 : 0;
           } else {
-            // More freedom on other beats
-            if (r > 0.8)
-              note = scale[3]; // b7
-            else if (r > 0.6)
-              note = scale[2]; // V
-            else if (r > 0.4)
-              note = scale[1]; // m3
-            else note = scale[0]; // I
+            if (r > 0.8) noteIndex = 3;
+            else if (r > 0.6) noteIndex = 2;
+            else if (r > 0.4) noteIndex = 1;
+            else noteIndex = 0;
           }
-          this.bassPattern[i] = note;
+          this.bassPattern[i] = noteIndex + 1; // 1-based index
         }
       }
     }
@@ -103,76 +97,55 @@ export class CyberpunkAudio {
     this.snarePattern = new Array(128).fill(0);
     this.hiHatPattern = new Array(128).fill(0);
 
-    // Iterate by bars (16 steps)
     for (let bar = 0; bar < 8; bar++) {
       const offset = bar * 16;
 
-      // -- Kick Drum --
-      // Always on beat 1 (index 0 relative to bar)
       this.kickPattern[offset + 0] = 1.0;
 
-      // High probability on beat 3 (index 8)
       if (this.random() < 0.9) {
         this.kickPattern[offset + 8] = 1.0;
       }
 
-      // Syncopation / Additional Kicks
-      // e.g., on "and" of 3 (index 10) or "a" of 4 (index 15)
-      // Varies per bar to avoid being too repetitive
       if (this.random() < 0.3) {
-        this.kickPattern[offset + 10] = 0.8; // "and" of 3
+        this.kickPattern[offset + 10] = 0.8;
       }
       if (this.random() < 0.3) {
-        this.kickPattern[offset + 14] = 0.7; // "and" of 4
+        this.kickPattern[offset + 14] = 0.7;
       }
 
-      // Fill variation at end of 4th and 8th bar
       if ((bar + 1) % 4 === 0) {
-        if (this.random() < 0.5) this.kickPattern[offset + 11] = 0.6; // "e" of 3
-        if (this.random() < 0.5) this.kickPattern[offset + 15] = 0.6; // "a" of 4
+        if (this.random() < 0.5) this.kickPattern[offset + 11] = 0.6;
+        if (this.random() < 0.5) this.kickPattern[offset + 15] = 0.6;
       }
 
-      // -- Snare Drum --
-      // Backbeat on 2 and 4 (indices 4 and 12)
       this.snarePattern[offset + 4] = 1.0;
       this.snarePattern[offset + 12] = 1.0;
 
-      // Ghost notes
-      // e.g., on "a" of 2 (index 7) or "e" of 3 (index 9)
-      if (this.random() < 0.4) this.snarePattern[offset + 7] = 0.3; // ghost "a" of 2
-      if (this.random() < 0.3) this.snarePattern[offset + 9] = 0.3; // ghost "e" of 3
-      if (this.random() < 0.3) this.snarePattern[offset + 15] = 0.2; // ghost "a" of 4
+      if (this.random() < 0.4) this.snarePattern[offset + 7] = 0.3;
+      if (this.random() < 0.3) this.snarePattern[offset + 9] = 0.3;
+      if (this.random() < 0.3) this.snarePattern[offset + 15] = 0.2;
 
-      // -- Hi-Hats --
-      // 16th note stream
       for (let i = 0; i < 16; i++) {
         const globalIndex = offset + i;
         const isDownbeat = i % 4 === 0;
-        const isUpbeat = i % 4 === 2; // "and"
+        const isUpbeat = i % 4 === 2;
 
         if (isUpbeat) {
-          // Accented upbeats (techno feel)
           this.hiHatPattern[globalIndex] = 0.8;
         } else if (isDownbeat) {
           this.hiHatPattern[globalIndex] = 0.4;
         } else {
-          // Weaker intermediate 16ths
           this.hiHatPattern[globalIndex] = 0.2;
         }
 
-        // Randomly remove some hi-hats for breathing room
         if (this.random() < 0.1) {
           this.hiHatPattern[globalIndex] = 0;
         }
       }
 
-      // Open Hi-Hat (simulated by longer decay or different gain in playHiHat logic if supported,
-      // but here we just use high velocity for "open" feel or simple accent)
-      // Let's say velocity 1.0 is "Open" or extra loud
       if (this.random() < 0.2) {
-        // Open hat on an upbeat
         const upbeatIndex = offset + 2 + Math.floor(this.random() * 4) * 4;
-        this.hiHatPattern[upbeatIndex] = 1.2; // > 1.0 indicates Open
+        this.hiHatPattern[upbeatIndex] = 1.2;
       }
     }
   }
@@ -192,16 +165,14 @@ export class CyberpunkAudio {
   private createNoiseBuffers() {
     if (!this.ctx) return;
 
-    // Snare Buffer
-    const snareSize = this.ctx.sampleRate * 0.1; // 100ms
+    const snareSize = this.ctx.sampleRate * 0.1;
     this.snareBuffer = this.ctx.createBuffer(1, snareSize, this.ctx.sampleRate);
     const snareData = this.snareBuffer.getChannelData(0);
     for (let i = 0; i < snareSize; i++) {
       snareData[i] = Math.random() * 2 - 1;
     }
 
-    // HiHat Buffer
-    const hatSize = this.ctx.sampleRate * 0.05; // 50ms
+    const hatSize = this.ctx.sampleRate * 0.05;
     this.hiHatBuffer = this.ctx.createBuffer(1, hatSize, this.ctx.sampleRate);
     const hatData = this.hiHatBuffer.getChannelData(0);
     for (let i = 0; i < hatSize; i++) {
@@ -248,7 +219,7 @@ export class CyberpunkAudio {
 
   private nextNote() {
     const secondsPerBeat = 60.0 / this.tempo;
-    this.nextNoteTime += 0.25 * secondsPerBeat; // 16th note
+    this.nextNoteTime += 0.25 * secondsPerBeat;
     this.current16thNote++;
     if (this.current16thNote === 128) {
       this.current16thNote = 0;
@@ -258,28 +229,40 @@ export class CyberpunkAudio {
   private scheduleNote(beatNumber: number, time: number) {
     if (!this.ctx) return;
 
-    // Synth Bass: generated pattern
+    let delay = (time - this.ctx.currentTime) * 1000;
+    if (delay < 0) delay = 0;
+
+    const triggerVisual = (type: string, data?: any) => {
+      setTimeout(() => {
+        this.listeners.forEach((l) => l(type, data));
+      }, delay);
+    };
+
     if (beatNumber % 2 === 0) {
-      const freq = this.bassPattern[beatNumber];
-      if (freq > 0) this.playBass(time, freq);
+      const noteVal = this.bassPattern[beatNumber];
+      if (noteVal > 0) {
+        const noteIndex = noteVal - 1;
+        this.playBass(time, this.scale[noteIndex]);
+        triggerVisual("bass", noteIndex);
+      }
     }
 
-    // Kick
     const kickVel = this.kickPattern[beatNumber];
     if (kickVel > 0) {
       this.playKick(time, kickVel);
+      triggerVisual("kick", kickVel);
     }
 
-    // Snare
     const snareVel = this.snarePattern[beatNumber];
     if (snareVel > 0) {
       this.playSnare(time, snareVel);
+      triggerVisual("snare", snareVel);
     }
 
-    // Hi-hats
     const hatVel = this.hiHatPattern[beatNumber];
     if (hatVel > 0) {
       this.playHiHat(time, hatVel);
+      triggerVisual("hihat", hatVel);
     }
   }
 
@@ -316,7 +299,6 @@ export class CyberpunkAudio {
     osc.frequency.setValueAtTime(150, time);
     osc.frequency.exponentialRampToValueAtTime(40, time + 0.1);
 
-    // Scale gain by velocity
     const peakGain = 0.7 * velocity;
     gain.gain.setValueAtTime(peakGain, time);
     gain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
@@ -339,7 +321,6 @@ export class CyberpunkAudio {
     noiseFilter.frequency.value = 1000;
 
     const noiseGain = this.ctx.createGain();
-    // Scale noise gain
     const peakNoiseGain = 0.4 * velocity;
     noiseGain.gain.setValueAtTime(peakNoiseGain, time);
     noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
@@ -350,13 +331,11 @@ export class CyberpunkAudio {
 
     noise.start(time);
 
-    // Body of snare (osc)
     const osc = this.ctx.createOscillator();
     const oscGain = this.ctx.createGain();
     osc.type = "triangle";
     osc.frequency.setValueAtTime(250, time);
 
-    // Scale osc gain
     const peakOscGain = 0.2 * velocity;
     oscGain.gain.setValueAtTime(peakOscGain, time);
     oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
@@ -379,13 +358,10 @@ export class CyberpunkAudio {
 
     const gain = this.ctx.createGain();
 
-    // Handle Open Hat logic (velocity > 1.0)
     const isOpen = velocity > 1.0;
     const duration = isOpen ? 0.3 : 0.05;
     const actualVelocity = isOpen ? 1.0 : velocity;
 
-    // Base volume scaling (previously accent was 0.15, weak 0.05)
-    // Now we use velocity directly. Let's map 1.0 to ~0.15
     const peakGain = 0.15 * actualVelocity;
 
     gain.gain.setValueAtTime(peakGain, time);
@@ -398,3 +374,5 @@ export class CyberpunkAudio {
     noise.start(time);
   }
 }
+
+export const cyberpunkAudio = new CyberpunkAudio();

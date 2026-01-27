@@ -46,7 +46,8 @@ import {
   DoubleSide,
   Group,
   ConeGeometry,
-  Object3D
+  Object3D,
+  MathUtils
 } from "three";
 import { GameModeManager } from "../game/GameModeManager";
 import { DrivingMode } from "../game/modes/DrivingMode";
@@ -55,6 +56,7 @@ import { ExplorationMode } from "../game/modes/ExplorationMode";
 import { FlyingTourMode } from "../game/modes/FlyingTourMode";
 import { GameContext } from "../game/types";
 import { carAudio } from "../game/audio/CarAudio";
+import { cyberpunkAudio } from "../utils/CyberpunkAudio";
 import { BOUNDS, CELL_SIZE, START_OFFSET, DRONE_COUNT, GRID_SIZE } from "../game/config";
 import { KonamiManager } from "../game/KonamiManager";
 import { GangWarManager } from "../game/GangWarManager";
@@ -554,6 +556,8 @@ onMounted(() => {
     leaderboard.value = scores;
     updateLeaderboardTexture();
   });
+
+  cyberpunkAudio.addListener(onAudioNote);
 });
 
 function onKeyDown(event: KeyboardEvent) {
@@ -801,6 +805,16 @@ function animate() {
   gameModeManager.update(dt, time);
   trafficSystem.update();
 
+  if (cityBuilder) {
+    const materials = cityBuilder.getAudioMaterials();
+    for (const key in materials) {
+      const mat = materials[key];
+      if (mat.emissiveIntensity > 0.2) {
+        mat.emissiveIntensity = MathUtils.lerp(mat.emissiveIntensity, 0.2, 0.1);
+      }
+    }
+  }
+
   if (sparks) {
     const positions = sparks.geometry.attributes.position.array;
     let needsUpdate = false;
@@ -955,7 +969,24 @@ function playPewSound(pos?: Vector3) {
   oscillator.stop(audioCtx.currentTime + 0.2);
 }
 
+function onAudioNote(type: string, data?: any) {
+  if (!cityBuilder) return;
+  const materials = cityBuilder.getAudioMaterials();
+  let key = "";
+  if (type === "bass") {
+    key = `bass${data}`;
+  } else {
+    key = type;
+  }
+  if (materials[key]) {
+    let boost = 2.0;
+    if (type === "hihat") boost = 1.0;
+    materials[key].emissiveIntensity = boost;
+  }
+}
+
 onBeforeUnmount(() => {
+  cyberpunkAudio.removeListener(onAudioNote);
   isActive = false;
   window.removeEventListener("resize", onResize);
   window.removeEventListener("click", onClick);

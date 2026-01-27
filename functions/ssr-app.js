@@ -10552,27 +10552,35 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
     };
     const updateIcon = (code, temp) => {
       let weatherDesc = "";
-      if (code === 0) {
-        iconType.value = "sun";
-        weatherDesc = "Clear Sky";
-      } else if ([1, 2, 3].includes(code)) {
-        iconType.value = "cloud";
-        weatherDesc = "Partly Cloudy";
-      } else if ([45, 48].includes(code)) {
-        iconType.value = "cloud";
-        weatherDesc = "Fog";
-      } else if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) {
-        iconType.value = "rain";
-        weatherDesc = "Rain";
-      } else if ([71, 73, 75, 77, 85, 86].includes(code)) {
-        iconType.value = "snow";
-        weatherDesc = "Snow";
-      } else if ([95, 96, 99].includes(code)) {
-        iconType.value = "thunder";
-        weatherDesc = "Thunderstorm";
-      } else {
-        iconType.value = "cloud";
-        weatherDesc = "Unknown";
+      switch (true) {
+        case code === 0:
+          iconType.value = "sun";
+          weatherDesc = "Clear Sky";
+          break;
+        case [1, 2, 3].includes(code):
+          iconType.value = "cloud";
+          weatherDesc = "Partly Cloudy";
+          break;
+        case [45, 48].includes(code):
+          iconType.value = "cloud";
+          weatherDesc = "Fog";
+          break;
+        case [51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code):
+          iconType.value = "rain";
+          weatherDesc = "Rain";
+          break;
+        case [71, 73, 75, 77, 85, 86].includes(code):
+          iconType.value = "snow";
+          weatherDesc = "Snow";
+          break;
+        case [95, 96, 99].includes(code):
+          iconType.value = "thunder";
+          weatherDesc = "Thunderstorm";
+          break;
+        default:
+          iconType.value = "cloud";
+          weatherDesc = "Unknown";
+          break;
       }
       description.value = `${weatherDesc} (${temp}°C) in Cheltenham, UK`;
     };
@@ -10614,38 +10622,38 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
       _push(`<div${ssrRenderAttrs(mergeProps({
         class: "icon-wrapper",
         title: description.value
-      }, _attrs))} data-v-26210bdc>`);
+      }, _attrs))} data-v-b5b7b94b>`);
       if (iconType.value === "sun") {
-        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-26210bdc><circle cx="12" cy="12" r="5" data-v-26210bdc></circle><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="black" stroke-width="2" stroke-linecap="round" data-v-26210bdc></path></svg>`);
+        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-b5b7b94b><circle cx="12" cy="12" r="5" data-v-b5b7b94b></circle><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="black" stroke-width="2" stroke-linecap="round" data-v-b5b7b94b></path></svg>`);
       } else if (iconType.value === "cloud") {
-        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-26210bdc><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" data-v-26210bdc></path></svg>`);
+        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-b5b7b94b><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" data-v-b5b7b94b></path></svg>`);
       } else if (iconType.value === "rain") {
-        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-26210bdc><path d="M16 13c.8 0 1.5.2 2.1.6 1.1 0 2.2 1.3 1.9 2.4-.2 1.1-1.3 1.6-2.4 1.6H7c-1.8 0-3.3-1.2-3.8-2.9-.5-1.7.3-3.6 1.9-4.3.4-2.8 2.8-5 5.7-5 2.1 0 4 .1 5.3 1.7" fill="none" stroke="black" stroke-width="2" data-v-26210bdc></path><path d="M8 19v2m4-2v2m4-2v2" stroke="black" stroke-width="2" stroke-linecap="round" data-v-26210bdc></path></svg>`);
+        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-b5b7b94b><path d="M16 13c.8 0 1.5.2 2.1.6 1.1 0 2.2 1.3 1.9 2.4-.2 1.1-1.3 1.6-2.4 1.6H7c-1.8 0-3.3-1.2-3.8-2.9-.5-1.7.3-3.6 1.9-4.3.4-2.8 2.8-5 5.7-5 2.1 0 4 .1 5.3 1.7" fill="none" stroke="black" stroke-width="2" data-v-b5b7b94b></path><path d="M8 19v2m4-2v2m4-2v2" stroke="black" stroke-width="2" stroke-linecap="round" data-v-b5b7b94b></path></svg>`);
       } else if (iconType.value === "snow") {
-        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-26210bdc><path d="M12 2v20m-8-6 16-8m-16 8 16-8" stroke="black" stroke-width="2" stroke-linecap="round" data-v-26210bdc></path><path d="M12 2l-2 3m2-3l2 3m-2 17l-2-3m2 3l2-3M4 16l3 1m-3-1l2-3m14 2l-3 1m3-1l-2-3M4 8l3-1m-3 1l2 3m14-2l-3-1m3 1l-2 3" stroke="black" stroke-width="2" stroke-linecap="round" data-v-26210bdc></path></svg>`);
+        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-b5b7b94b><path d="M12 2v20m-8-6 16-8m-16 8 16-8" stroke="black" stroke-width="2" stroke-linecap="round" data-v-b5b7b94b></path><path d="M12 2l-2 3m2-3l2 3m-2 17l-2-3m2 3l2-3M4 16l3 1m-3-1l2-3m14 2l-3 1m3-1l-2-3M4 8l3-1m-3 1l2 3m14-2l-3-1m3 1l-2 3" stroke="black" stroke-width="2" stroke-linecap="round" data-v-b5b7b94b></path></svg>`);
       } else if (iconType.value === "thunder") {
-        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-26210bdc><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" data-v-26210bdc></path><path d="M13 14l-2 4h3l-1 4" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-v-26210bdc></path></svg>`);
+        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-b5b7b94b><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" data-v-b5b7b94b></path><path d="M13 14l-2 4h3l-1 4" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-v-b5b7b94b></path></svg>`);
       } else {
-        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-26210bdc><text x="50%" y="75%" text-anchor="middle" font-size="20" font-weight="bold" fill="black" data-v-26210bdc>?</text></svg>`);
+        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon" data-v-b5b7b94b><text x="50%" y="75%" text-anchor="middle" font-size="20" font-weight="bold" fill="black" data-v-b5b7b94b>?</text></svg>`);
       }
       if (isMounted.value) {
         ssrRenderTeleport(_push, (_push2) => {
           if (showModal.value) {
-            _push2(`<div class="weather-modal-overlay" data-v-26210bdc><article class="weather-modal" data-v-26210bdc><header class="modal-header" data-v-26210bdc><h3 data-v-26210bdc>Weather Forecast</h3><button class="close-btn" aria-label="Close" data-v-26210bdc>×</button></header><div class="chart-container" data-v-26210bdc><svg viewBox="0 0 300 150" class="weather-chart" data-v-26210bdc><line x1="0" y1="135" x2="300" y2="135" stroke="#444" stroke-width="1" data-v-26210bdc></line><!--[-->`);
+            _push2(`<div class="weather-modal-overlay" data-v-b5b7b94b><article class="weather-modal" data-v-b5b7b94b><header class="modal-header" data-v-b5b7b94b><h3 data-v-b5b7b94b>Weather Forecast</h3><button class="close-btn" aria-label="Close" data-v-b5b7b94b>×</button></header><div class="chart-container" data-v-b5b7b94b><svg viewBox="0 0 300 150" class="weather-chart" data-v-b5b7b94b><line x1="0" y1="135" x2="300" y2="135" stroke="#444" stroke-width="1" data-v-b5b7b94b></line><!--[-->`);
             ssrRenderList(computedPoints.value, (point, index) => {
-              _push2(`<g data-v-26210bdc><rect${ssrRenderAttr("x", point.x - 5)}${ssrRenderAttr("y", point.rainY)} width="10"${ssrRenderAttr("height", point.rainHeight)} fill="rgba(0, 100, 255, 0.4)" class="rain-bar" data-v-26210bdc></rect>`);
+              _push2(`<g data-v-b5b7b94b><rect${ssrRenderAttr("x", point.x - 5)}${ssrRenderAttr("y", point.rainY)} width="10"${ssrRenderAttr("height", point.rainHeight)} fill="rgba(0, 100, 255, 0.4)" class="rain-bar" data-v-b5b7b94b></rect>`);
               if (point.rain > 0) {
-                _push2(`<text${ssrRenderAttr("x", point.x)}${ssrRenderAttr("y", point.rainY - 4)} text-anchor="middle" fill="#3399ff" font-size="9" data-v-26210bdc>${ssrInterpolate(point.rain)}mm</text>`);
+                _push2(`<text${ssrRenderAttr("x", point.x)}${ssrRenderAttr("y", point.rainY - 4)} text-anchor="middle" fill="#3399ff" font-size="9" data-v-b5b7b94b>${ssrInterpolate(point.rain)}mm</text>`);
               } else {
                 _push2(`<!---->`);
               }
               _push2(`</g>`);
             });
-            _push2(`<!--]--><polyline${ssrRenderAttr("points", graphPoints.value)} fill="none" stroke="#00ff9d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" data-v-26210bdc></polyline><!--[-->`);
+            _push2(`<!--]--><polyline${ssrRenderAttr("points", graphPoints.value)} fill="none" stroke="#00ff9d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" data-v-b5b7b94b></polyline><!--[-->`);
             ssrRenderList(computedPoints.value, (point, index) => {
-              _push2(`<g data-v-26210bdc><circle${ssrRenderAttr("cx", point.x)}${ssrRenderAttr("cy", point.y)} r="4" fill="#111" stroke="#00ff9d" stroke-width="2" class="data-point" data-v-26210bdc></circle><text${ssrRenderAttr("x", point.x)} y="148" text-anchor="middle" fill="#ccc" font-size="10" data-v-26210bdc>${ssrInterpolate(point.time)}</text><text${ssrRenderAttr("x", point.x)}${ssrRenderAttr("y", point.y - 10)} text-anchor="middle" fill="#fff" font-size="12" font-weight="bold" data-v-26210bdc>${ssrInterpolate(point.temp)}°</text></g>`);
+              _push2(`<g data-v-b5b7b94b><circle${ssrRenderAttr("cx", point.x)}${ssrRenderAttr("cy", point.y)} r="4" fill="#111" stroke="#00ff9d" stroke-width="2" class="data-point" data-v-b5b7b94b></circle><text${ssrRenderAttr("x", point.x)} y="148" text-anchor="middle" fill="#ccc" font-size="10" data-v-b5b7b94b>${ssrInterpolate(point.time)}</text><text${ssrRenderAttr("x", point.x)}${ssrRenderAttr("y", point.y - 10)} text-anchor="middle" fill="#fff" font-size="12" font-weight="bold" data-v-b5b7b94b>${ssrInterpolate(point.temp)}°</text></g>`);
             });
-            _push2(`<!--]--></svg></div><footer class="modal-footer" data-v-26210bdc><small data-v-26210bdc>Next 6 hours in Cheltenham</small><div class="legend" data-v-26210bdc><span class="legend-item" data-v-26210bdc><span class="dot temp" data-v-26210bdc></span>Temp</span><span class="legend-item" data-v-26210bdc><span class="dot rain" data-v-26210bdc></span>Rain</span></div></footer></article></div>`);
+            _push2(`<!--]--></svg></div><footer class="modal-footer" data-v-b5b7b94b><small data-v-b5b7b94b>Next 6 hours in Cheltenham</small><div class="legend" data-v-b5b7b94b><span class="legend-item" data-v-b5b7b94b><span class="dot temp" data-v-b5b7b94b></span>Temp</span><span class="legend-item" data-v-b5b7b94b><span class="dot rain" data-v-b5b7b94b></span>Rain</span></div></footer></article></div>`);
           } else {
             _push2(`<!---->`);
           }
@@ -10664,7 +10672,314 @@ _sfc_main$e.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("src/components/WeatherIcon.vue");
   return _sfc_setup$e ? _sfc_setup$e(props, ctx) : void 0;
 };
-const WeatherIcon = /* @__PURE__ */ _export_sfc(_sfc_main$e, [["__scopeId", "data-v-26210bdc"]]);
+const WeatherIcon = /* @__PURE__ */ _export_sfc(_sfc_main$e, [["__scopeId", "data-v-b5b7b94b"]]);
+
+class CyberpunkAudio {
+  ctx = null;
+  isPlaying = false;
+  nextNoteTime = 0;
+  tempo = 110;
+  lookahead = 25;
+  // ms
+  scheduleAheadTime = 0.1;
+  // s
+  timerID = null;
+  current16thNote = 0;
+  bassPattern = [];
+  kickPattern = [];
+  snarePattern = [];
+  hiHatPattern = [];
+  seed;
+  listeners = [];
+  // Reusable buffers
+  snareBuffer = null;
+  hiHatBuffer = null;
+  // Note scale
+  root = 41.2;
+  scale = [
+    this.root,
+    // I
+    this.root * 1.2,
+    // m3
+    this.root * 1.5,
+    // V
+    this.root * 1.78,
+    // b7
+    this.root * 2
+    // VIII
+  ];
+  constructor() {
+    this.seed = Date.now();
+    this.generateBassPattern();
+    this.generateDrumPatterns();
+  }
+  addListener(callback) {
+    this.listeners.push(callback);
+  }
+  removeListener(callback) {
+    this.listeners = this.listeners.filter((l) => l !== callback);
+  }
+  // Seeded random number generator (Mulberry32)
+  random() {
+    let t = this.seed += 1831565813;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  }
+  generateBassPattern() {
+    this.bassPattern = new Array(128).fill(0);
+    const motifLength = 32;
+    for (let i = 0; i < 128; i++) {
+      if (i % 2 === 0) {
+        const motifPos = i % motifLength;
+        const isStrongBeat = motifPos % 16 === 0;
+        const isOffBeat = motifPos % 4 === 2;
+        let noteProbability = 0.5;
+        if (isStrongBeat) noteProbability = 0.9;
+        else if (isOffBeat) noteProbability = 0.7;
+        const isVariationSection = i >= 64;
+        if (isVariationSection && i % 4 === 0) {
+          noteProbability += 0.2;
+        }
+        if (this.random() < noteProbability) {
+          const r = this.random();
+          let noteIndex;
+          if (isStrongBeat) {
+            noteIndex = r > 0.7 ? 4 : 0;
+          } else {
+            if (r > 0.8) noteIndex = 3;
+            else if (r > 0.6) noteIndex = 2;
+            else if (r > 0.4) noteIndex = 1;
+            else noteIndex = 0;
+          }
+          this.bassPattern[i] = noteIndex + 1;
+        }
+      }
+    }
+  }
+  generateDrumPatterns() {
+    this.kickPattern = new Array(128).fill(0);
+    this.snarePattern = new Array(128).fill(0);
+    this.hiHatPattern = new Array(128).fill(0);
+    for (let bar = 0; bar < 8; bar++) {
+      const offset = bar * 16;
+      this.kickPattern[offset + 0] = 1;
+      if (this.random() < 0.9) {
+        this.kickPattern[offset + 8] = 1;
+      }
+      if (this.random() < 0.3) {
+        this.kickPattern[offset + 10] = 0.8;
+      }
+      if (this.random() < 0.3) {
+        this.kickPattern[offset + 14] = 0.7;
+      }
+      if ((bar + 1) % 4 === 0) {
+        if (this.random() < 0.5) this.kickPattern[offset + 11] = 0.6;
+        if (this.random() < 0.5) this.kickPattern[offset + 15] = 0.6;
+      }
+      this.snarePattern[offset + 4] = 1;
+      this.snarePattern[offset + 12] = 1;
+      if (this.random() < 0.4) this.snarePattern[offset + 7] = 0.3;
+      if (this.random() < 0.3) this.snarePattern[offset + 9] = 0.3;
+      if (this.random() < 0.3) this.snarePattern[offset + 15] = 0.2;
+      for (let i = 0; i < 16; i++) {
+        const globalIndex = offset + i;
+        const isDownbeat = i % 4 === 0;
+        const isUpbeat = i % 4 === 2;
+        if (isUpbeat) {
+          this.hiHatPattern[globalIndex] = 0.8;
+        } else if (isDownbeat) {
+          this.hiHatPattern[globalIndex] = 0.4;
+        } else {
+          this.hiHatPattern[globalIndex] = 0.2;
+        }
+        if (this.random() < 0.1) {
+          this.hiHatPattern[globalIndex] = 0;
+        }
+      }
+      if (this.random() < 0.2) {
+        const upbeatIndex = offset + 2 + Math.floor(this.random() * 4) * 4;
+        this.hiHatPattern[upbeatIndex] = 1.2;
+      }
+    }
+  }
+  initContext() {
+    if (!this.ctx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (AudioContext) {
+        this.ctx = new AudioContext();
+        this.createNoiseBuffers();
+      }
+    }
+  }
+  createNoiseBuffers() {
+    if (!this.ctx) return;
+    const snareSize = this.ctx.sampleRate * 0.1;
+    this.snareBuffer = this.ctx.createBuffer(1, snareSize, this.ctx.sampleRate);
+    const snareData = this.snareBuffer.getChannelData(0);
+    for (let i = 0; i < snareSize; i++) {
+      snareData[i] = Math.random() * 2 - 1;
+    }
+    const hatSize = this.ctx.sampleRate * 0.05;
+    this.hiHatBuffer = this.ctx.createBuffer(1, hatSize, this.ctx.sampleRate);
+    const hatData = this.hiHatBuffer.getChannelData(0);
+    for (let i = 0; i < hatSize; i++) {
+      hatData[i] = Math.random() * 2 - 1;
+    }
+  }
+  play() {
+    this.initContext();
+    if (!this.ctx) return;
+    if (this.ctx.state === "suspended") {
+      this.ctx.resume();
+    }
+    if (!this.isPlaying) {
+      this.isPlaying = true;
+      this.current16thNote = 0;
+      this.nextNoteTime = this.ctx.currentTime;
+      this.scheduler();
+    }
+  }
+  pause() {
+    this.isPlaying = false;
+    if (this.timerID !== null) {
+      window.clearTimeout(this.timerID);
+      this.timerID = null;
+    }
+    if (this.ctx && this.ctx.state === "running") {
+      this.ctx.suspend();
+    }
+  }
+  scheduler() {
+    if (!this.ctx || !this.isPlaying) return;
+    while (this.nextNoteTime < this.ctx.currentTime + this.scheduleAheadTime) {
+      this.scheduleNote(this.current16thNote, this.nextNoteTime);
+      this.nextNote();
+    }
+    this.timerID = window.setTimeout(() => this.scheduler(), this.lookahead);
+  }
+  nextNote() {
+    const secondsPerBeat = 60 / this.tempo;
+    this.nextNoteTime += 0.25 * secondsPerBeat;
+    this.current16thNote++;
+    if (this.current16thNote === 128) {
+      this.current16thNote = 0;
+    }
+  }
+  scheduleNote(beatNumber, time) {
+    if (!this.ctx) return;
+    let delay = (time - this.ctx.currentTime) * 1e3;
+    if (delay < 0) delay = 0;
+    const triggerVisual = (type, data) => {
+      setTimeout(() => {
+        this.listeners.forEach((l) => l(type, data));
+      }, delay);
+    };
+    if (beatNumber % 2 === 0) {
+      const noteVal = this.bassPattern[beatNumber];
+      if (noteVal > 0) {
+        const noteIndex = noteVal - 1;
+        this.playBass(time, this.scale[noteIndex]);
+        triggerVisual("bass", noteIndex);
+      }
+    }
+    const kickVel = this.kickPattern[beatNumber];
+    if (kickVel > 0) {
+      this.playKick(time, kickVel);
+      triggerVisual("kick", kickVel);
+    }
+    const snareVel = this.snarePattern[beatNumber];
+    if (snareVel > 0) {
+      this.playSnare(time, snareVel);
+      triggerVisual("snare", snareVel);
+    }
+    const hatVel = this.hiHatPattern[beatNumber];
+    if (hatVel > 0) {
+      this.playHiHat(time, hatVel);
+      triggerVisual("hihat", hatVel);
+    }
+  }
+  playBass(time, freq) {
+    if (!this.ctx) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    const filter = this.ctx.createBiquadFilter();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(freq, time);
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(200, time);
+    filter.frequency.exponentialRampToValueAtTime(800, time + 0.1);
+    filter.frequency.exponentialRampToValueAtTime(200, time + 0.2);
+    gain.gain.setValueAtTime(0.3, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(time);
+    osc.stop(time + 0.25);
+  }
+  playKick(time, velocity = 1) {
+    if (!this.ctx) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.frequency.setValueAtTime(150, time);
+    osc.frequency.exponentialRampToValueAtTime(40, time + 0.1);
+    const peakGain = 0.7 * velocity;
+    gain.gain.setValueAtTime(peakGain, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(time);
+    osc.stop(time + 0.1);
+  }
+  playSnare(time, velocity = 1) {
+    if (!this.ctx || !this.snareBuffer) return;
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = this.snareBuffer;
+    const noiseFilter = this.ctx.createBiquadFilter();
+    noiseFilter.type = "highpass";
+    noiseFilter.frequency.value = 1e3;
+    const noiseGain = this.ctx.createGain();
+    const peakNoiseGain = 0.4 * velocity;
+    noiseGain.gain.setValueAtTime(peakNoiseGain, time);
+    noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
+    noise.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(this.ctx.destination);
+    noise.start(time);
+    const osc = this.ctx.createOscillator();
+    const oscGain = this.ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(250, time);
+    const peakOscGain = 0.2 * velocity;
+    oscGain.gain.setValueAtTime(peakOscGain, time);
+    oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
+    osc.connect(oscGain);
+    oscGain.connect(this.ctx.destination);
+    osc.start(time);
+    osc.stop(time + 0.1);
+  }
+  playHiHat(time, velocity = 1) {
+    if (!this.ctx || !this.hiHatBuffer) return;
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = this.hiHatBuffer;
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = "highpass";
+    filter.frequency.value = 8e3;
+    const gain = this.ctx.createGain();
+    const isOpen = velocity > 1;
+    const duration = isOpen ? 0.3 : 0.05;
+    const actualVelocity = isOpen ? 1 : velocity;
+    const peakGain = 0.15 * actualVelocity;
+    gain.gain.setValueAtTime(peakGain, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.ctx.destination);
+    noise.start(time);
+  }
+}
+const cyberpunkAudio = new CyberpunkAudio();
 
 const _sfc_main$d = /* @__PURE__ */ defineComponent({
   __name: "Menu",
@@ -10677,24 +10992,24 @@ const _sfc_main$d = /* @__PURE__ */ defineComponent({
   setup(__props, { emit: __emit }) {
     const soundOn = ref(false);
     return (_ctx, _push, _parent, _attrs) => {
-      _push(`<ul${ssrRenderAttrs(_attrs)} data-v-0404480b><!--[-->`);
+      _push(`<ul${ssrRenderAttrs(_attrs)} data-v-b4b61b22><!--[-->`);
       ssrRenderList(__props.pages, (page) => {
         _push(ssrRenderComponent(MenuItem, {
           key: page.link,
           page
         }, null, _parent));
       });
-      _push(`<!--]--><li class="icons-container" data-v-0404480b><div class="icon-wrapper" title="Explore City" data-v-0404480b><img${ssrRenderAttr("src", _imports_0)} alt="Explore City" class="icon" data-v-0404480b></div><div class="icon-wrapper" title="Fly Tour" data-v-0404480b><img${ssrRenderAttr("src", _imports_1)} alt="Fly Tour" class="icon" data-v-0404480b></div><div class="icon-wrapper" title="Toggle Sound" data-v-0404480b>`);
+      _push(`<!--]--><li class="icons-container" data-v-b4b61b22><div class="icon-wrapper" title="Explore City" data-v-b4b61b22><img${ssrRenderAttr("src", _imports_0)} alt="Explore City" class="icon" data-v-b4b61b22></div><div class="icon-wrapper" title="Fly Tour" data-v-b4b61b22><img${ssrRenderAttr("src", _imports_1)} alt="Fly Tour" class="icon" data-v-b4b61b22></div><div class="icon-wrapper" title="Toggle Sound" data-v-b4b61b22>`);
       if (soundOn.value) {
-        _push(`<img${ssrRenderAttr("src", _imports_2)} alt="Toggle sound" class="icon" data-v-0404480b>`);
+        _push(`<img${ssrRenderAttr("src", _imports_2)} alt="Toggle sound" class="icon" data-v-b4b61b22>`);
       } else {
-        _push(`<img${ssrRenderAttr("src", _imports_3)} alt="Toggle sound" class="icon" data-v-0404480b>`);
+        _push(`<img${ssrRenderAttr("src", _imports_3)} alt="Toggle sound" class="icon" data-v-b4b61b22>`);
       }
-      _push(`</div><div class="icon-wrapper" title="Toggle Visibility" data-v-0404480b>`);
+      _push(`</div><div class="icon-wrapper" title="Toggle Visibility" data-v-b4b61b22>`);
       if (__props.contentVisible) {
-        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#000000" class="icon" data-v-0404480b><path d="M12 15a3 3 0 100-6 3 3 0 000 6z" data-v-0404480b></path><path fill-rule="evenodd" d="M1.323 11.447C2.811 6.976 7.028 3.75 12.001 3.75c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113-1.487 4.471-5.705 7.697-10.677 7.697-4.97 0-9.186-3.223-10.675-7.69a1.762 1.762 0 010-1.113zM17.25 12a5.25 5.25 0 11-10.5 0 5.25 5.25 0 0110.5 0z" clip-rule="evenodd" data-v-0404480b></path></svg>`);
+        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#000000" class="icon" data-v-b4b61b22><path d="M12 15a3 3 0 100-6 3 3 0 000 6z" data-v-b4b61b22></path><path fill-rule="evenodd" d="M1.323 11.447C2.811 6.976 7.028 3.75 12.001 3.75c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113-1.487 4.471-5.705 7.697-10.677 7.697-4.97 0-9.186-3.223-10.675-7.69a1.762 1.762 0 010-1.113zM17.25 12a5.25 5.25 0 11-10.5 0 5.25 5.25 0 0110.5 0z" clip-rule="evenodd" data-v-b4b61b22></path></svg>`);
       } else {
-        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#000000" class="icon" data-v-0404480b><path d="M3.53 2.47a.75.75 0 00-1.06 1.06l18 18a.75.75 0 101.06-1.06l-18-18zM22.676 12.553a11.249 11.249 0 01-2.631 4.31l-3.099-3.099a5.25 5.25 0 00-6.71-6.71L7.759 4.577a11.217 11.217 0 014.242-.827c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113z" data-v-0404480b></path><path d="M15.75 12c0 .18-.013.357-.037.53l-4.244-4.243A3.75 3.75 0 0115.75 12zM12.53 15.713l-4.243-4.244a3.75 3.75 0 004.244 4.243z" data-v-0404480b></path><path d="M6.75 12c0-.619.107-1.215.304-1.764l-3.1-3.1a11.25 11.25 0 00-2.63 4.31c-.12.362-.12.752 0 1.114 1.489 4.467 5.704 7.69 10.675 7.69 1.5 0 2.933-.294 4.242-.827l-2.477-2.477A5.25 5.25 0 016.75 12z" data-v-0404480b></path></svg>`);
+        _push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#000000" class="icon" data-v-b4b61b22><path d="M3.53 2.47a.75.75 0 00-1.06 1.06l18 18a.75.75 0 101.06-1.06l-18-18zM22.676 12.553a11.249 11.249 0 01-2.631 4.31l-3.099-3.099a5.25 5.25 0 00-6.71-6.71L7.759 4.577a11.217 11.217 0 014.242-.827c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113z" data-v-b4b61b22></path><path d="M15.75 12c0 .18-.013.357-.037.53l-4.244-4.243A3.75 3.75 0 0115.75 12zM12.53 15.713l-4.243-4.244a3.75 3.75 0 004.244 4.243z" data-v-b4b61b22></path><path d="M6.75 12c0-.619.107-1.215.304-1.764l-3.1-3.1a11.25 11.25 0 00-2.63 4.31c-.12.362-.12.752 0 1.114 1.489 4.467 5.704 7.69 10.675 7.69 1.5 0 2.933-.294 4.242-.827l-2.477-2.477A5.25 5.25 0 016.75 12z" data-v-b4b61b22></path></svg>`);
       }
       _push(`</div>`);
       _push(ssrRenderComponent(WeatherIcon, { class: "icon" }, null, _parent));
@@ -10709,7 +11024,7 @@ _sfc_main$d.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("src/components/Menu.vue");
   return _sfc_setup$d ? _sfc_setup$d(props, ctx) : void 0;
 };
-const Menu = /* @__PURE__ */ _export_sfc(_sfc_main$d, [["__scopeId", "data-v-0404480b"]]);
+const Menu = /* @__PURE__ */ _export_sfc(_sfc_main$d, [["__scopeId", "data-v-b4b61b22"]]);
 
 const _sfc_main$c = /* @__PURE__ */ defineComponent({
   __name: "Checker",
@@ -11002,15 +11317,20 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
           router.push("/hidden");
         }
       }
-      if (e.key === "ArrowRight") {
-        const currentIndex = visiblePages.value.findIndex((page) => page.link === route.path);
-        if (currentIndex !== -1 && currentIndex < visiblePages.value.length - 1) {
-          router.push(visiblePages.value[currentIndex + 1].link);
+      switch (e.key) {
+        case "ArrowRight": {
+          const currentIndex = visiblePages.value.findIndex((page) => page.link === route.path);
+          if (currentIndex !== -1 && currentIndex < visiblePages.value.length - 1) {
+            router.push(visiblePages.value[currentIndex + 1].link);
+          }
+          break;
         }
-      } else if (e.key === "ArrowLeft") {
-        const currentIndex = visiblePages.value.findIndex((page) => page.link === route.path);
-        if (currentIndex > 0) {
-          router.push(visiblePages.value[currentIndex - 1].link);
+        case "ArrowLeft": {
+          const currentIndex = visiblePages.value.findIndex((page) => page.link === route.path);
+          if (currentIndex > 0) {
+            router.push(visiblePages.value[currentIndex - 1].link);
+          }
+          break;
         }
       }
     }
@@ -11088,31 +11408,38 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
           transitionName.value = newPageIndex > oldPageIndex ? "cards" : "cards-reverse";
         }
         let pageTitle;
-        if (newPath === "/noughts-and-crosses") {
-          pageTitle = "Noughts and Crosses";
-        } else if (newPath === "/game") {
-          pageTitle = "Catch the Button!";
-        } else if (newPath === "/checker") {
-          pageTitle = "Checker";
-        } else if (newPath === "/ask") {
-          pageTitle = "Ask Me";
-        } else {
-          let routeName;
-          if (route.params.name) {
-            routeName = route.params.name;
-          } else if (newPath === "/") {
-            routeName = "home";
-          }
-          if (routeName) {
-            let currentPage;
-            if (routeName === "home") {
-              currentPage = pages.find((page) => page.link === "/");
-            } else {
-              currentPage = pages.find((page) => page.link.slice(1) === routeName);
+        switch (newPath) {
+          case "/noughts-and-crosses":
+            pageTitle = "Noughts and Crosses";
+            break;
+          case "/game":
+            pageTitle = "Catch the Button!";
+            break;
+          case "/checker":
+            pageTitle = "Checker";
+            break;
+          case "/ask":
+            pageTitle = "Ask Me";
+            break;
+          default: {
+            let routeName;
+            if (route.params.name) {
+              routeName = route.params.name;
+            } else if (newPath === "/") {
+              routeName = "home";
             }
-            pageTitle = currentPage ? currentPage.title : "404";
-          } else {
-            pageTitle = "404";
+            if (routeName) {
+              let currentPage;
+              if (routeName === "home") {
+                currentPage = pages.find((page) => page.link === "/");
+              } else {
+                currentPage = pages.find((page) => page.link.slice(1) === routeName);
+              }
+              pageTitle = currentPage ? currentPage.title : "404";
+            } else {
+              pageTitle = "404";
+            }
+            break;
           }
         }
         if (typeof document !== "undefined") {
@@ -11226,9 +11553,9 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
   },
   setup(__props) {
     return (_ctx, _push, _parent, _attrs) => {
-      _push(`<p${ssrRenderAttrs(mergeProps({
-        class: { marginless: __props.last }
-      }, _attrs))}>${__props.paragraph ?? ""}</p>`);
+      _push(`<div${ssrRenderAttrs(mergeProps({
+        class: ["text-paragraph", { marginless: __props.last }]
+      }, _attrs))}>${__props.paragraph ?? ""}</div>`);
     };
   }
 });
@@ -12885,6 +13212,8 @@ class EventDispatcher {
 
 const _lut = [ '00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '0a', '0b', '0c', '0d', '0e', '0f', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '1a', '1b', '1c', '1d', '1e', '1f', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '2a', '2b', '2c', '2d', '2e', '2f', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '3a', '3b', '3c', '3d', '3e', '3f', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '4a', '4b', '4c', '4d', '4e', '4f', '50', '51', '52', '53', '54', '55', '56', '57', '58', '59', '5a', '5b', '5c', '5d', '5e', '5f', '60', '61', '62', '63', '64', '65', '66', '67', '68', '69', '6a', '6b', '6c', '6d', '6e', '6f', '70', '71', '72', '73', '74', '75', '76', '77', '78', '79', '7a', '7b', '7c', '7d', '7e', '7f', '80', '81', '82', '83', '84', '85', '86', '87', '88', '89', '8a', '8b', '8c', '8d', '8e', '8f', '90', '91', '92', '93', '94', '95', '96', '97', '98', '99', '9a', '9b', '9c', '9d', '9e', '9f', 'a0', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8', 'a9', 'aa', 'ab', 'ac', 'ad', 'ae', 'af', 'b0', 'b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8', 'b9', 'ba', 'bb', 'bc', 'bd', 'be', 'bf', 'c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'ca', 'cb', 'cc', 'cd', 'ce', 'cf', 'd0', 'd1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd9', 'da', 'db', 'dc', 'dd', 'de', 'df', 'e0', 'e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8', 'e9', 'ea', 'eb', 'ec', 'ed', 'ee', 'ef', 'f0', 'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'fa', 'fb', 'fc', 'fd', 'fe', 'ff' ];
 
+let _seed = 1234567;
+
 
 const DEG2RAD = Math.PI / 180;
 const RAD2DEG = 180 / Math.PI;
@@ -12944,6 +13273,48 @@ function euclideanModulo( n, m ) {
 }
 
 /**
+ * Performs a linear mapping from range `<a1, a2>` to range `<b1, b2>`
+ * for the given value.
+ *
+ * @param {number} x - The value to be mapped.
+ * @param {number} a1 - Minimum value for range A.
+ * @param {number} a2 - Maximum value for range A.
+ * @param {number} b1 - Minimum value for range B.
+ * @param {number} b2 - Maximum value for range B.
+ * @return {number} The mapped value.
+ */
+function mapLinear( x, a1, a2, b1, b2 ) {
+
+	return b1 + ( x - a1 ) * ( b2 - b1 ) / ( a2 - a1 );
+
+}
+
+/**
+ * Returns the percentage in the closed interval `[0, 1]` of the given value
+ * between the start and end point.
+ *
+ * @param {number} x - The start point
+ * @param {number} y - The end point.
+ * @param {number} value - A value between start and end.
+ * @return {number} The interpolation factor.
+ */
+function inverseLerp( x, y, value ) {
+
+	// https://www.gamedev.net/tutorials/programming/general-and-gameplay-programming/inverse-lerp-a-super-useful-yet-often-overlooked-function-r5230/
+
+	if ( x !== y ) {
+
+		return ( value - x ) / ( y - x );
+
+	} else {
+
+		return 0;
+
+	}
+
+}
+
+/**
  * Returns a value linearly interpolated from two known points based on the given interval -
  * `t = 0` will return `x` and `t = 1` will return `y`.
  *
@@ -12955,6 +13326,265 @@ function euclideanModulo( n, m ) {
 function lerp( x, y, t ) {
 
 	return ( 1 - t ) * x + t * y;
+
+}
+
+/**
+ * Smoothly interpolate a number from `x` to `y` in  a spring-like manner using a delta
+ * time to maintain frame rate independent movement. For details, see
+ * [Frame rate independent damping using lerp](http://www.rorydriscoll.com/2016/03/07/frame-rate-independent-damping-using-lerp/).
+ *
+ * @param {number} x - The current point.
+ * @param {number} y - The target point.
+ * @param {number} lambda - A higher lambda value will make the movement more sudden,
+ * and a lower value will make the movement more gradual.
+ * @param {number} dt - Delta time in seconds.
+ * @return {number} The interpolated value.
+ */
+function damp( x, y, lambda, dt ) {
+
+	return lerp( x, y, 1 - Math.exp( - lambda * dt ) );
+
+}
+
+/**
+ * Returns a value that alternates between `0` and the given `length` parameter.
+ *
+ * @param {number} x - The value to pingpong.
+ * @param {number} [length=1] - The positive value the function will pingpong to.
+ * @return {number} The alternated value.
+ */
+function pingpong( x, length = 1 ) {
+
+	// https://www.desmos.com/calculator/vcsjnyz7x4
+
+	return length - Math.abs( euclideanModulo( x, length * 2 ) - length );
+
+}
+
+/**
+ * Returns a value in the range `[0,1]` that represents the percentage that `x` has
+ * moved between `min` and `max`, but smoothed or slowed down the closer `x` is to
+ * the `min` and `max`.
+ *
+ * See [Smoothstep](http://en.wikipedia.org/wiki/Smoothstep) for more details.
+ *
+ * @param {number} x - The value to evaluate based on its position between min and max.
+ * @param {number} min - The min value. Any x value below min will be `0`.
+ * @param {number} max - The max value. Any x value above max will be `1`.
+ * @return {number} The alternated value.
+ */
+function smoothstep( x, min, max ) {
+
+	if ( x <= min ) return 0;
+	if ( x >= max ) return 1;
+
+	x = ( x - min ) / ( max - min );
+
+	return x * x * ( 3 - 2 * x );
+
+}
+
+/**
+ * A [variation on smoothstep](https://en.wikipedia.org/wiki/Smoothstep#Variations)
+ * that has zero 1st and 2nd order derivatives at x=0 and x=1.
+ *
+ * @param {number} x - The value to evaluate based on its position between min and max.
+ * @param {number} min - The min value. Any x value below min will be `0`.
+ * @param {number} max - The max value. Any x value above max will be `1`.
+ * @return {number} The alternated value.
+ */
+function smootherstep( x, min, max ) {
+
+	if ( x <= min ) return 0;
+	if ( x >= max ) return 1;
+
+	x = ( x - min ) / ( max - min );
+
+	return x * x * x * ( x * ( x * 6 - 15 ) + 10 );
+
+}
+
+/**
+ * Returns a random integer from `<low, high>` interval.
+ *
+ * @param {number} low - The lower value boundary.
+ * @param {number} high - The upper value boundary
+ * @return {number} A random integer.
+ */
+function randInt( low, high ) {
+
+	return low + Math.floor( Math.random() * ( high - low + 1 ) );
+
+}
+
+/**
+ * Returns a random float from `<low, high>` interval.
+ *
+ * @param {number} low - The lower value boundary.
+ * @param {number} high - The upper value boundary
+ * @return {number} A random float.
+ */
+function randFloat( low, high ) {
+
+	return low + Math.random() * ( high - low );
+
+}
+
+/**
+ * Returns a random integer from `<-range/2, range/2>` interval.
+ *
+ * @param {number} range - Defines the value range.
+ * @return {number} A random float.
+ */
+function randFloatSpread( range ) {
+
+	return range * ( 0.5 - Math.random() );
+
+}
+
+/**
+ * Returns a deterministic pseudo-random float in the interval `[0, 1]`.
+ *
+ * @param {number} [s] - The integer seed.
+ * @return {number} A random float.
+ */
+function seededRandom( s ) {
+
+	if ( s !== undefined ) _seed = s;
+
+	// Mulberry32 generator
+
+	let t = _seed += 0x6D2B79F5;
+
+	t = Math.imul( t ^ t >>> 15, t | 1 );
+
+	t ^= t + Math.imul( t ^ t >>> 7, t | 61 );
+
+	return ( ( t ^ t >>> 14 ) >>> 0 ) / 4294967296;
+
+}
+
+/**
+ * Converts degrees to radians.
+ *
+ * @param {number} degrees - A value in degrees.
+ * @return {number} The converted value in radians.
+ */
+function degToRad( degrees ) {
+
+	return degrees * DEG2RAD;
+
+}
+
+/**
+ * Converts radians to degrees.
+ *
+ * @param {number} radians - A value in radians.
+ * @return {number} The converted value in degrees.
+ */
+function radToDeg( radians ) {
+
+	return radians * RAD2DEG;
+
+}
+
+/**
+ * Returns `true` if the given number is a power of two.
+ *
+ * @param {number} value - The value to check.
+ * @return {boolean} Whether the given number is a power of two or not.
+ */
+function isPowerOfTwo( value ) {
+
+	return ( value & ( value - 1 ) ) === 0 && value !== 0;
+
+}
+
+/**
+ * Returns the smallest power of two that is greater than or equal to the given number.
+ *
+ * @param {number} value - The value to find a POT for.
+ * @return {number} The smallest power of two that is greater than or equal to the given number.
+ */
+function ceilPowerOfTwo( value ) {
+
+	return Math.pow( 2, Math.ceil( Math.log( value ) / Math.LN2 ) );
+
+}
+
+/**
+ * Returns the largest power of two that is less than or equal to the given number.
+ *
+ * @param {number} value - The value to find a POT for.
+ * @return {number} The largest power of two that is less than or equal to the given number.
+ */
+function floorPowerOfTwo( value ) {
+
+	return Math.pow( 2, Math.floor( Math.log( value ) / Math.LN2 ) );
+
+}
+
+/**
+ * Sets the given quaternion from the [Intrinsic Proper Euler Angles](https://en.wikipedia.org/wiki/Euler_angles)
+ * defined by the given angles and order.
+ *
+ * Rotations are applied to the axes in the order specified by order:
+ * rotation by angle `a` is applied first, then by angle `b`, then by angle `c`.
+ *
+ * @param {Quaternion} q - The quaternion to set.
+ * @param {number} a - The rotation applied to the first axis, in radians.
+ * @param {number} b - The rotation applied to the second axis, in radians.
+ * @param {number} c - The rotation applied to the third axis, in radians.
+ * @param {('XYX'|'XZX'|'YXY'|'YZY'|'ZXZ'|'ZYZ')} order - A string specifying the axes order.
+ */
+function setQuaternionFromProperEuler( q, a, b, c, order ) {
+
+	const cos = Math.cos;
+	const sin = Math.sin;
+
+	const c2 = cos( b / 2 );
+	const s2 = sin( b / 2 );
+
+	const c13 = cos( ( a + c ) / 2 );
+	const s13 = sin( ( a + c ) / 2 );
+
+	const c1_3 = cos( ( a - c ) / 2 );
+	const s1_3 = sin( ( a - c ) / 2 );
+
+	const c3_1 = cos( ( c - a ) / 2 );
+	const s3_1 = sin( ( c - a ) / 2 );
+
+	switch ( order ) {
+
+		case 'XYX':
+			q.set( c2 * s13, s2 * c1_3, s2 * s1_3, c2 * c13 );
+			break;
+
+		case 'YZY':
+			q.set( s2 * s1_3, c2 * s13, s2 * c1_3, c2 * c13 );
+			break;
+
+		case 'ZXZ':
+			q.set( s2 * c1_3, s2 * s1_3, c2 * s13, c2 * c13 );
+			break;
+
+		case 'XZX':
+			q.set( c2 * s13, s2 * s3_1, s2 * c3_1, c2 * c13 );
+			break;
+
+		case 'YXY':
+			q.set( s2 * c3_1, c2 * s13, s2 * s3_1, c2 * c13 );
+			break;
+
+		case 'ZYZ':
+			q.set( s2 * s3_1, s2 * c3_1, c2 * s13, c2 * c13 );
+			break;
+
+		default:
+			warn( 'MathUtils: .setQuaternionFromProperEuler() encountered an unknown order: ' + order );
+
+	}
 
 }
 
@@ -13051,6 +13681,256 @@ function normalize( value, array ) {
 	}
 
 }
+
+/**
+ * @class
+ * @classdesc A collection of math utility functions.
+ * @hideconstructor
+ */
+const MathUtils = {
+	DEG2RAD: DEG2RAD,
+	RAD2DEG: RAD2DEG,
+	/**
+	 * Generate a [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier)
+	 * (universally unique identifier).
+	 *
+	 * @static
+	 * @method
+	 * @return {string} The UUID.
+	 */
+	generateUUID: generateUUID,
+	/**
+	 * Clamps the given value between min and max.
+	 *
+	 * @static
+	 * @method
+	 * @param {number} value - The value to clamp.
+	 * @param {number} min - The min value.
+	 * @param {number} max - The max value.
+	 * @return {number} The clamped value.
+	 */
+	clamp: clamp,
+	/**
+	 * Computes the Euclidean modulo of the given parameters that
+	 * is `( ( n % m ) + m ) % m`.
+	 *
+	 * @static
+	 * @method
+	 * @param {number} n - The first parameter.
+	 * @param {number} m - The second parameter.
+	 * @return {number} The Euclidean modulo.
+	 */
+	euclideanModulo: euclideanModulo,
+	/**
+	 * Performs a linear mapping from range `<a1, a2>` to range `<b1, b2>`
+	 * for the given value.
+	 *
+	 * @static
+	 * @method
+	 * @param {number} x - The value to be mapped.
+	 * @param {number} a1 - Minimum value for range A.
+	 * @param {number} a2 - Maximum value for range A.
+	 * @param {number} b1 - Minimum value for range B.
+	 * @param {number} b2 - Maximum value for range B.
+	 * @return {number} The mapped value.
+	 */
+	mapLinear: mapLinear,
+	/**
+	 * Returns the percentage in the closed interval `[0, 1]` of the given value
+	 * between the start and end point.
+	 *
+	 * @static
+	 * @method
+	 * @param {number} x - The start point
+	 * @param {number} y - The end point.
+	 * @param {number} value - A value between start and end.
+	 * @return {number} The interpolation factor.
+	 */
+	inverseLerp: inverseLerp,
+	/**
+	 * Returns a value linearly interpolated from two known points based on the given interval -
+	 * `t = 0` will return `x` and `t = 1` will return `y`.
+	 *
+	 * @static
+	 * @method
+	 * @param {number} x - The start point
+	 * @param {number} y - The end point.
+	 * @param {number} t - The interpolation factor in the closed interval `[0, 1]`.
+	 * @return {number} The interpolated value.
+	 */
+	lerp: lerp,
+	/**
+	 * Smoothly interpolate a number from `x` to `y` in  a spring-like manner using a delta
+	 * time to maintain frame rate independent movement. For details, see
+	 * [Frame rate independent damping using lerp](http://www.rorydriscoll.com/2016/03/07/frame-rate-independent-damping-using-lerp/).
+	 *
+	 * @static
+	 * @method
+	 * @param {number} x - The current point.
+	 * @param {number} y - The target point.
+	 * @param {number} lambda - A higher lambda value will make the movement more sudden,
+	 * and a lower value will make the movement more gradual.
+	 * @param {number} dt - Delta time in seconds.
+	 * @return {number} The interpolated value.
+	 */
+	damp: damp,
+	/**
+	 * Returns a value that alternates between `0` and the given `length` parameter.
+	 *
+	 * @static
+	 * @method
+	 * @param {number} x - The value to pingpong.
+	 * @param {number} [length=1] - The positive value the function will pingpong to.
+	 * @return {number} The alternated value.
+	 */
+	pingpong: pingpong,
+	/**
+	 * Returns a value in the range `[0,1]` that represents the percentage that `x` has
+	 * moved between `min` and `max`, but smoothed or slowed down the closer `x` is to
+	 * the `min` and `max`.
+	 *
+	 * See [Smoothstep](http://en.wikipedia.org/wiki/Smoothstep) for more details.
+	 *
+	 * @static
+	 * @method
+	 * @param {number} x - The value to evaluate based on its position between min and max.
+	 * @param {number} min - The min value. Any x value below min will be `0`.
+	 * @param {number} max - The max value. Any x value above max will be `1`.
+	 * @return {number} The alternated value.
+	 */
+	smoothstep: smoothstep,
+	/**
+	 * A [variation on smoothstep](https://en.wikipedia.org/wiki/Smoothstep#Variations)
+	 * that has zero 1st and 2nd order derivatives at x=0 and x=1.
+	 *
+	 * @static
+	 * @method
+	 * @param {number} x - The value to evaluate based on its position between min and max.
+	 * @param {number} min - The min value. Any x value below min will be `0`.
+	 * @param {number} max - The max value. Any x value above max will be `1`.
+	 * @return {number} The alternated value.
+	 */
+	smootherstep: smootherstep,
+	/**
+	 * Returns a random integer from `<low, high>` interval.
+	 *
+	 * @static
+	 * @method
+	 * @param {number} low - The lower value boundary.
+	 * @param {number} high - The upper value boundary
+	 * @return {number} A random integer.
+	 */
+	randInt: randInt,
+	/**
+	 * Returns a random float from `<low, high>` interval.
+	 *
+	 * @static
+	 * @method
+	 * @param {number} low - The lower value boundary.
+	 * @param {number} high - The upper value boundary
+	 * @return {number} A random float.
+	 */
+	randFloat: randFloat,
+	/**
+	 * Returns a random integer from `<-range/2, range/2>` interval.
+	 *
+	 * @static
+	 * @method
+	 * @param {number} range - Defines the value range.
+	 * @return {number} A random float.
+	 */
+	randFloatSpread: randFloatSpread,
+	/**
+	 * Returns a deterministic pseudo-random float in the interval `[0, 1]`.
+	 *
+	 * @static
+	 * @method
+	 * @param {number} [s] - The integer seed.
+	 * @return {number} A random float.
+	 */
+	seededRandom: seededRandom,
+	/**
+	 * Converts degrees to radians.
+	 *
+	 * @static
+	 * @method
+	 * @param {number} degrees - A value in degrees.
+	 * @return {number} The converted value in radians.
+	 */
+	degToRad: degToRad,
+	/**
+	 * Converts radians to degrees.
+	 *
+	 * @static
+	 * @method
+	 * @param {number} radians - A value in radians.
+	 * @return {number} The converted value in degrees.
+	 */
+	radToDeg: radToDeg,
+	/**
+	 * Returns `true` if the given number is a power of two.
+	 *
+	 * @static
+	 * @method
+	 * @param {number} value - The value to check.
+	 * @return {boolean} Whether the given number is a power of two or not.
+	 */
+	isPowerOfTwo: isPowerOfTwo,
+	/**
+	 * Returns the smallest power of two that is greater than or equal to the given number.
+	 *
+	 * @static
+	 * @method
+	 * @param {number} value - The value to find a POT for.
+	 * @return {number} The smallest power of two that is greater than or equal to the given number.
+	 */
+	ceilPowerOfTwo: ceilPowerOfTwo,
+	/**
+	 * Returns the largest power of two that is less than or equal to the given number.
+	 *
+	 * @static
+	 * @method
+	 * @param {number} value - The value to find a POT for.
+	 * @return {number} The largest power of two that is less than or equal to the given number.
+	 */
+	floorPowerOfTwo: floorPowerOfTwo,
+	/**
+	 * Sets the given quaternion from the [Intrinsic Proper Euler Angles](https://en.wikipedia.org/wiki/Euler_angles)
+	 * defined by the given angles and order.
+	 *
+	 * Rotations are applied to the axes in the order specified by order:
+	 * rotation by angle `a` is applied first, then by angle `b`, then by angle `c`.
+	 *
+	 * @static
+	 * @method
+	 * @param {Quaternion} q - The quaternion to set.
+	 * @param {number} a - The rotation applied to the first axis, in radians.
+	 * @param {number} b - The rotation applied to the second axis, in radians.
+	 * @param {number} c - The rotation applied to the third axis, in radians.
+	 * @param {('XYX'|'XZX'|'YXY'|'YZY'|'ZXZ'|'ZYZ')} order - A string specifying the axes order.
+	 */
+	setQuaternionFromProperEuler: setQuaternionFromProperEuler,
+	/**
+	 * Normalizes the given value according to the given typed array.
+	 *
+	 * @static
+	 * @method
+	 * @param {number} value - The float value in the range `[0,1]` to normalize.
+	 * @param {TypedArray} array - The typed array that defines the data type of the value.
+	 * @return {number} The normalize value.
+	 */
+	normalize: normalize,
+	/**
+	 * Denormalizes the given value according to the given typed array.
+	 *
+	 * @static
+	 * @method
+	 * @param {number} value - The value to denormalize.
+	 * @param {TypedArray} array - The typed array that defines the data type of the value.
+	 * @return {number} The denormalize (float) value in the range `[0,1]`.
+	 */
+	denormalize: denormalize
+};
 
 /**
  * Class representing a 2D vector. A 2D vector is an ordered pair of numbers
@@ -58286,29 +59166,33 @@ function createBillboardTextures() {
       ctx.fillStyle = color;
       ctx.shadowColor = color;
       ctx.shadowBlur = 10;
-      if (i === 0) {
-        ctx.fillRect(15, 15, 80, 5);
-        ctx.fillRect(15, 30, 60, 5);
-        ctx.fillRect(15, 45, 90, 5);
-      } else if (i === 1) {
-        ctx.beginPath();
-        ctx.arc(32, 32, 20, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = "#000";
-        ctx.beginPath();
-        ctx.arc(32, 32, 10, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = color;
-        ctx.fillRect(64, 20, 40, 24);
-      } else {
-        for (let k = 0; k < 5; k++) {
-          ctx.fillRect(
-            10 + Math.random() * 100,
-            10 + Math.random() * 40,
-            10 + Math.random() * 20,
-            5 + Math.random() * 10
-          );
-        }
+      switch (i) {
+        case 0:
+          ctx.fillRect(15, 15, 80, 5);
+          ctx.fillRect(15, 30, 60, 5);
+          ctx.fillRect(15, 45, 90, 5);
+          break;
+        case 1:
+          ctx.beginPath();
+          ctx.arc(32, 32, 20, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#000";
+          ctx.beginPath();
+          ctx.arc(32, 32, 10, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = color;
+          ctx.fillRect(64, 20, 40, 24);
+          break;
+        default:
+          for (let k = 0; k < 5; k++) {
+            ctx.fillRect(
+              10 + Math.random() * 100,
+              10 + Math.random() * 40,
+              10 + Math.random() * 20,
+              5 + Math.random() * 10
+            );
+          }
+          break;
       }
     }
     const texture = new CanvasTexture(canvas);
@@ -58412,6 +59296,7 @@ class CityBuilder {
   scene;
   buildings = [];
   occupiedGrids = /* @__PURE__ */ new Map();
+  audioMaterials = {};
   constructor(scene) {
     this.scene = scene;
   }
@@ -58420,6 +59305,9 @@ class CityBuilder {
   }
   getOccupiedGrids() {
     return this.occupiedGrids;
+  }
+  getAudioMaterials() {
+    return this.audioMaterials;
   }
   buildCity(isMobile, lbTexture) {
     this.setupLighting();
@@ -58470,19 +59358,15 @@ class CityBuilder {
       roughness: 0.2,
       metalness: 0.8
     });
+    const audioKeys = ["kick", "snare", "hihat", "bass0", "bass1", "bass2", "bass3", "bass4"];
+    audioKeys.forEach((key) => {
+      this.audioMaterials[key] = buildingMaterial.clone();
+    });
     const roofMaterial = new MeshStandardMaterial({
       color: 1118481,
       roughness: 0.9,
       metalness: 0.1
     });
-    const buildingMaterials = [
-      buildingMaterial,
-      buildingMaterial,
-      roofMaterial,
-      roofMaterial,
-      buildingMaterial,
-      buildingMaterial
-    ];
     const edgeMat1 = new LineBasicMaterial({
       color: 16711884,
       transparent: true,
@@ -58553,7 +59437,20 @@ class CityBuilder {
           else if (r > 0.7) style = "TIERED";
           else if (r > 0.5) style = "GREEBLED";
         }
-        const mainBlock = new Mesh(boxGeo, buildingMaterials);
+        let selectedMaterial = buildingMaterial;
+        if (!isLeaderboardBuilding) {
+          const channelIndex = Math.floor(Math.random() * audioKeys.length);
+          selectedMaterial = this.audioMaterials[audioKeys[channelIndex]];
+        }
+        const thisBuildingMaterials = [
+          selectedMaterial,
+          selectedMaterial,
+          roofMaterial,
+          roofMaterial,
+          selectedMaterial,
+          selectedMaterial
+        ];
+        const mainBlock = new Mesh(boxGeo, thisBuildingMaterials);
         mainBlock.scale.set(w, h, d);
         buildingGroup.add(mainBlock);
         const mainLine = new LineSegments(
@@ -58562,60 +59459,74 @@ class CityBuilder {
         );
         mainLine.scale.set(w, h, d);
         buildingGroup.add(mainLine);
-        if (style === "TIERED") {
-          const tiers = 1 + Math.floor(Math.random() * 2);
-          let currentH = h;
-          let currentW = w;
-          let currentD = d;
-          for (let t = 0; t < tiers; t++) {
-            const tierH = 20 + Math.random() * 40;
-            currentW *= 0.6 + Math.random() * 0.2;
-            currentD *= 0.6 + Math.random() * 0.2;
-            const tierBlock = new Mesh(boxGeo, buildingMaterials);
-            tierBlock.scale.set(currentW, tierH, currentD);
-            tierBlock.position.y = currentH;
-            buildingGroup.add(tierBlock);
-            const tierLine = new LineSegments(edgesGeo, topEdgeMat);
-            tierLine.scale.set(currentW, tierH, currentD);
-            tierLine.position.y = currentH;
-            buildingGroup.add(tierLine);
-            currentH += tierH;
+        switch (style) {
+          case "TIERED": {
+            const tiers = 1 + Math.floor(Math.random() * 2);
+            let currentH = h;
+            let currentW = w;
+            let currentD = d;
+            for (let t = 0; t < tiers; t++) {
+              const tierH = 20 + Math.random() * 40;
+              currentW *= 0.6 + Math.random() * 0.2;
+              currentD *= 0.6 + Math.random() * 0.2;
+              const tierBlock = new Mesh(boxGeo, thisBuildingMaterials);
+              tierBlock.scale.set(currentW, tierH, currentD);
+              tierBlock.position.y = currentH;
+              buildingGroup.add(tierBlock);
+              const tierLine = new LineSegments(edgesGeo, topEdgeMat);
+              tierLine.scale.set(currentW, tierH, currentD);
+              tierLine.position.y = currentH;
+              buildingGroup.add(tierLine);
+              currentH += tierH;
+            }
+            break;
           }
-        } else if (style === "SPIRE") {
-          const spireH = h * 0.5 + Math.random() * h;
-          const spireW = w * 0.5;
-          const spireD = d * 0.5;
-          const spire = new Mesh(coneGeo, buildingMaterial);
-          spire.scale.set(spireW, spireH, spireD);
-          spire.position.y = h;
-          spire.rotation.y = Math.PI / 4;
-          buildingGroup.add(spire);
-          const spireLine = new LineSegments(coneEdgesGeo, topEdgeMat);
-          spireLine.scale.set(spireW, spireH, spireD);
-          spireLine.position.y = h;
-          spireLine.rotation.y = Math.PI / 4;
-          buildingGroup.add(spireLine);
-        } else if (style === "GREEBLED") {
-          const count = 4 + Math.floor(Math.random() * 6);
-          for (let g = 0; g < count; g++) {
-            const gw = 5 + Math.random() * 10;
-            const gh = 5 + Math.random() * 20;
-            const gd = 5 + Math.random() * 10;
-            const gMesh = new Mesh(boxGeo, roofMaterial);
-            gMesh.scale.set(gw, gh, gd);
-            const face = Math.floor(Math.random() * 4);
-            if (face === 0)
-              gMesh.position.set(0, Math.random() * h, d / 2 + gd / 2);
-            else if (face === 1)
-              gMesh.position.set(0, Math.random() * h, -d / 2 - gd / 2);
-            else if (face === 2)
-              gMesh.position.set(w / 2 + gw / 2, Math.random() * h, 0);
-            else gMesh.position.set(-w / 2 - gw / 2, Math.random() * h, 0);
-            buildingGroup.add(gMesh);
-            const gLine = new LineSegments(edgesGeo, edgeMat2);
-            gLine.scale.set(gw, gh, gd);
-            gLine.position.copy(gMesh.position);
-            buildingGroup.add(gLine);
+          case "SPIRE": {
+            const spireH = h * 0.5 + Math.random() * h;
+            const spireW = w * 0.5;
+            const spireD = d * 0.5;
+            const spire = new Mesh(coneGeo, selectedMaterial);
+            spire.scale.set(spireW, spireH, spireD);
+            spire.position.y = h;
+            spire.rotation.y = Math.PI / 4;
+            buildingGroup.add(spire);
+            const spireLine = new LineSegments(coneEdgesGeo, topEdgeMat);
+            spireLine.scale.set(spireW, spireH, spireD);
+            spireLine.position.y = h;
+            spireLine.rotation.y = Math.PI / 4;
+            buildingGroup.add(spireLine);
+            break;
+          }
+          case "GREEBLED": {
+            const count = 4 + Math.floor(Math.random() * 6);
+            for (let g = 0; g < count; g++) {
+              const gw = 5 + Math.random() * 10;
+              const gh = 5 + Math.random() * 20;
+              const gd = 5 + Math.random() * 10;
+              const gMesh = new Mesh(boxGeo, roofMaterial);
+              gMesh.scale.set(gw, gh, gd);
+              const face = Math.floor(Math.random() * 4);
+              switch (face) {
+                case 0:
+                  gMesh.position.set(0, Math.random() * h, d / 2 + gd / 2);
+                  break;
+                case 1:
+                  gMesh.position.set(0, Math.random() * h, -d / 2 - gd / 2);
+                  break;
+                case 2:
+                  gMesh.position.set(w / 2 + gw / 2, Math.random() * h, 0);
+                  break;
+                default:
+                  gMesh.position.set(-w / 2 - gw / 2, Math.random() * h, 0);
+                  break;
+              }
+              buildingGroup.add(gMesh);
+              const gLine = new LineSegments(edgesGeo, edgeMat2);
+              gLine.scale.set(gw, gh, gd);
+              gLine.position.copy(gMesh.position);
+              buildingGroup.add(gLine);
+            }
+            break;
           }
         }
         if (style !== "SPIRE" && Math.random() > 0.7) {
@@ -58635,33 +59546,38 @@ class CityBuilder {
           const billboard = new Mesh(bbGeo, bbMat);
           const face = Math.floor(Math.random() * 4);
           const offset = 1;
-          if (face === 0) {
-            billboard.position.set(
-              0,
-              h * (0.5 + Math.random() * 0.3),
-              d / 2 + offset
-            );
-          } else if (face === 1) {
-            billboard.position.set(
-              0,
-              h * (0.5 + Math.random() * 0.3),
-              -d / 2 - offset
-            );
-            billboard.rotation.y = Math.PI;
-          } else if (face === 2) {
-            billboard.position.set(
-              w / 2 + offset,
-              h * (0.5 + Math.random() * 0.3),
-              0
-            );
-            billboard.rotation.y = Math.PI / 2;
-          } else {
-            billboard.position.set(
-              -w / 2 - offset,
-              h * (0.5 + Math.random() * 0.3),
-              0
-            );
-            billboard.rotation.y = -Math.PI / 2;
+          switch (face) {
+            case 0:
+              billboard.position.set(
+                0,
+                h * (0.5 + Math.random() * 0.3),
+                d / 2 + offset
+              );
+              break;
+            case 1:
+              billboard.position.set(
+                0,
+                h * (0.5 + Math.random() * 0.3),
+                -d / 2 - offset
+              );
+              billboard.rotation.y = Math.PI;
+              break;
+            case 2:
+              billboard.position.set(
+                w / 2 + offset,
+                h * (0.5 + Math.random() * 0.3),
+                0
+              );
+              billboard.rotation.y = Math.PI / 2;
+              break;
+            default:
+              billboard.position.set(
+                -w / 2 - offset,
+                h * (0.5 + Math.random() * 0.3),
+                0
+              );
+              billboard.rotation.y = -Math.PI / 2;
+              break;
           }
           buildingGroup.add(billboard);
         }
@@ -58676,27 +59592,43 @@ class CityBuilder {
               color: 16777215
             });
             const lbMesh = new Mesh(lbGeo, lbMat);
+            lbMesh.userData = { isLeaderboard: true };
             const offset = 0.6;
             const yPos = h * 0.7;
-            if (i === 0) {
-              lbMesh.position.set(0, yPos, d / 2 + offset);
-              lbMesh.rotation.y = 0;
-            } else if (i === 1) {
-              lbMesh.position.set(0, yPos, -d / 2 - offset);
-              lbMesh.rotation.y = Math.PI;
-            } else if (i === 2) {
-              lbMesh.position.set(w / 2 + offset, yPos, 0);
-              lbMesh.rotation.y = Math.PI / 2;
-            } else {
-              lbMesh.position.set(-w / 2 - offset, yPos, 0);
-              lbMesh.rotation.y = -Math.PI / 2;
+            switch (i) {
+              case 0:
+                lbMesh.position.set(0, yPos, d / 2 + offset);
+                lbMesh.rotation.y = 0;
+                break;
+              case 1:
+                lbMesh.position.set(0, yPos, -d / 2 - offset);
+                lbMesh.rotation.y = Math.PI;
+                break;
+              case 2:
+                lbMesh.position.set(w / 2 + offset, yPos, 0);
+                lbMesh.rotation.y = Math.PI / 2;
+                break;
+              default:
+                lbMesh.position.set(-w / 2 - offset, yPos, 0);
+                lbMesh.rotation.y = -Math.PI / 2;
+                break;
             }
             buildingGroup.add(lbMesh);
             const spot = new SpotLight(65484, 500, 100, 0.6, 0.5, 1);
-            if (i === 0) spot.position.set(0, h * 0.9, d + 30);
-            else if (i === 1) spot.position.set(0, h * 0.9, -d - 30);
-            else if (i === 2) spot.position.set(w + 30, h * 0.9, 0);
-            else spot.position.set(-w - 30, h * 0.9, 0);
+            switch (i) {
+              case 0:
+                spot.position.set(0, h * 0.9, d + 30);
+                break;
+              case 1:
+                spot.position.set(0, h * 0.9, -d - 30);
+                break;
+              case 2:
+                spot.position.set(w + 30, h * 0.9, 0);
+                break;
+              default:
+                spot.position.set(-w - 30, h * 0.9, 0);
+                break;
+            }
             spot.target = lbMesh;
             buildingGroup.add(spot);
             buildingGroup.add(spot.target);
@@ -59112,6 +60044,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     let isActive = false;
     let occupiedGrids = /* @__PURE__ */ new Map();
     let cars = [];
+    let leaderboardMeshes = [];
     let drones;
     let droneTargetPositions;
     let droneBasePositions;
@@ -59139,6 +60072,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     let trafficSystem;
     let cityBuilder;
     const leaderboard = ref([]);
+    const showLeaderboard = ref(false);
     let leaderboardCanvas;
     let leaderboardTexture;
     function updateLeaderboard(newScores) {
@@ -59173,10 +60107,20 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
         ctx.fillText("Loading...", 256, 250);
       } else {
         leaderboard.value.forEach((entry, idx) => {
-          ctx.fillStyle = "#ffffff";
-          if (idx === 0) ctx.fillStyle = "#ffff00";
-          else if (idx === 1) ctx.fillStyle = "#cccccc";
-          else if (idx === 2) ctx.fillStyle = "#cd7f32";
+          switch (idx) {
+            case 0:
+              ctx.fillStyle = "#ffff00";
+              break;
+            case 1:
+              ctx.fillStyle = "#cccccc";
+              break;
+            case 2:
+              ctx.fillStyle = "#cd7f32";
+              break;
+            default:
+              ctx.fillStyle = "#ffffff";
+              break;
+          }
           const rank = `${idx + 1}.`;
           const name = entry.name.substring(0, 8).toUpperCase();
           const scoreStr = entry.score.toString();
@@ -59357,6 +60301,13 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       cityBuilder.buildCity(isMobile.value, lbTexture);
       const buildings = cityBuilder.getBuildings();
       occupiedGrids = cityBuilder.getOccupiedGrids();
+      buildings.forEach((b) => {
+        b.traverse((c) => {
+          if (c instanceof Mesh && c.userData.isLeaderboard) {
+            leaderboardMeshes.push(c);
+          }
+        });
+      });
       trafficSystem = new TrafficSystem(scene, CAR_COUNT, occupiedGrids, spawnSparks);
       cars = trafficSystem.getCars();
       const droneGeo = new BufferGeometry();
@@ -59462,6 +60413,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
         leaderboard.value = scores;
         updateLeaderboardTexture();
       });
+      cyberpunkAudio.addListener(onAudioNote);
     });
     function onKeyDown(event) {
       if (event.key === "Escape") {
@@ -59621,6 +60573,13 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
           return;
         }
       }
+      if (leaderboardMeshes.length > 0) {
+        const lbIntersects = raycaster.intersectObjects(leaderboardMeshes);
+        if (lbIntersects.length > 0) {
+          showLeaderboard.value = true;
+          return;
+        }
+      }
       if (drones && !isExplorationMode.value) {
         raycaster.params.Points.threshold = 20;
         const intersects = raycaster.intersectObject(drones);
@@ -59656,6 +60615,15 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       gangWarManager.update(dt);
       gameModeManager.update(dt, time);
       trafficSystem.update();
+      if (cityBuilder) {
+        const materials = cityBuilder.getAudioMaterials();
+        for (const key in materials) {
+          const mat = materials[key];
+          if (mat.emissiveIntensity > 0.2) {
+            mat.emissiveIntensity = MathUtils.lerp(mat.emissiveIntensity, 0.2, 0.1);
+          }
+        }
+      }
       if (sparks) {
         const positions = sparks.geometry.attributes.position.array;
         let needsUpdate = false;
@@ -59771,7 +60739,23 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       oscillator.start();
       oscillator.stop(audioCtx.currentTime + 0.2);
     }
+    function onAudioNote(type, data) {
+      if (!cityBuilder) return;
+      const materials = cityBuilder.getAudioMaterials();
+      let key = "";
+      if (type === "bass") {
+        key = `bass${data}`;
+      } else {
+        key = type;
+      }
+      if (materials[key]) {
+        let boost = 2;
+        if (type === "hihat") boost = 1;
+        materials[key].emissiveIntensity = boost;
+      }
+    }
     onBeforeUnmount(() => {
+      cyberpunkAudio.removeListener(onAudioNote);
       isActive = false;
       window.removeEventListener("resize", onResize);
       window.removeEventListener("click", onClick);
@@ -59799,7 +60783,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       }
     });
     return (_ctx, _push, _parent, _attrs) => {
-      _push(`<!--[--><div id="cyberpunk-city" data-v-d912d79b></div>`);
+      _push(`<!--[--><div id="cyberpunk-city" data-v-bbdbfba2></div>`);
       _push(ssrRenderComponent(unref(GameUI), {
         isDrivingMode: isDrivingMode.value,
         isGameMode: isGameMode.value,
@@ -59815,8 +60799,10 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
         controls: controls.value,
         lookControls: lookControls.value,
         leaderboard: leaderboard.value,
+        showLeaderboard: showLeaderboard.value,
         onExitGameMode: exitGameMode,
-        onUpdateLeaderboard: updateLeaderboard
+        onUpdateLeaderboard: updateLeaderboard,
+        onCloseLeaderboard: ($event) => showLeaderboard.value = false
       }, null, _parent));
       _push(`<!--]-->`);
     };
@@ -59829,7 +60815,7 @@ _sfc_main$4.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("src/components/CyberpunkCity.vue");
   return _sfc_setup$4 ? _sfc_setup$4(props, ctx) : void 0;
 };
-const CyberpunkCity = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-d912d79b"]]);
+const CyberpunkCity = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-bbdbfba2"]]);
 
 const CyberpunkCity$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
@@ -60091,9 +61077,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     leaderboard: {
       type: Array,
       required: true
-    }
+    },
+    showLeaderboard: Boolean
   },
-  emits: ["exit-game-mode", "update-leaderboard"],
+  emits: ["exit-game-mode", "update-leaderboard", "close-leaderboard"],
   setup(__props, { emit: __emit }) {
     const props = __props;
     const emit = __emit;
@@ -60109,47 +61096,56 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     return (_ctx, _push, _parent, _attrs) => {
       _push(`<!--[-->`);
       if ((__props.isDrivingMode ? __props.drivingScore : __props.droneScore) > 0) {
-        _push(`<div id="score-counter" data-v-0602d547>SCORE: ${ssrInterpolate(__props.isDrivingMode ? __props.drivingScore : __props.droneScore)}</div>`);
+        _push(`<div id="score-counter" data-v-68b05f92>SCORE: ${ssrInterpolate(__props.isDrivingMode ? __props.drivingScore : __props.droneScore)}</div>`);
       } else {
         _push(`<!---->`);
       }
       if (__props.isDrivingMode) {
-        _push(`<div id="timer-counter" data-v-0602d547> TIME: ${ssrInterpolate(Math.ceil(__props.timeLeft))}</div>`);
+        _push(`<div id="timer-counter" data-v-68b05f92> TIME: ${ssrInterpolate(Math.ceil(__props.timeLeft))}</div>`);
       } else {
         _push(`<!---->`);
       }
       if (__props.isDrivingMode) {
-        _push(`<div id="dist-counter" data-v-0602d547> DIST: ${ssrInterpolate(Math.ceil(__props.distToTarget))}m </div>`);
+        _push(`<div id="dist-counter" data-v-68b05f92> DIST: ${ssrInterpolate(Math.ceil(__props.distToTarget))}m </div>`);
       } else {
         _push(`<!---->`);
       }
       if (__props.isDrivingMode && __props.isGameOver) {
-        _push(`<div id="game-over" data-v-0602d547><div class="game-over-title" data-v-0602d547>GAME OVER</div><div class="final-score" data-v-0602d547>SCORE: ${ssrInterpolate(__props.drivingScore)}</div>`);
+        _push(`<div id="game-over" data-v-68b05f92><div class="game-over-title" data-v-68b05f92>GAME OVER</div><div class="final-score" data-v-68b05f92>SCORE: ${ssrInterpolate(__props.drivingScore)}</div>`);
         if (!isScoreSubmitted.value) {
-          _push(`<div class="score-form" data-v-0602d547><input${ssrRenderAttr("value", playerName.value)} placeholder="ENTER NAME" maxlength="8" class="name-input" autofocus data-v-0602d547><button class="submit-btn" data-v-0602d547>SUBMIT</button></div>`);
+          _push(`<div class="score-form" data-v-68b05f92><input${ssrRenderAttr("value", playerName.value)} placeholder="ENTER NAME" maxlength="8" class="name-input" autofocus data-v-68b05f92><button class="submit-btn" data-v-68b05f92>SUBMIT</button></div>`);
         } else {
           _push(`<!---->`);
         }
-        _push(`<div class="leaderboard" data-v-0602d547><div class="lb-header" data-v-0602d547>TOP DRIVERS</div><!--[-->`);
+        _push(`<div class="leaderboard" data-v-68b05f92><div class="lb-header" data-v-68b05f92>TOP DRIVERS</div><!--[-->`);
         ssrRenderList(__props.leaderboard, (entry, index) => {
-          _push(`<div class="lb-row" data-v-0602d547><span class="lb-name" data-v-0602d547>${ssrInterpolate(index + 1)}. ${ssrInterpolate(entry.name)}</span><span class="lb-score" data-v-0602d547>${ssrInterpolate(entry.score)}</span></div>`);
+          _push(`<div class="lb-row" data-v-68b05f92><span class="lb-name" data-v-68b05f92>${ssrInterpolate(index + 1)}. ${ssrInterpolate(entry.name)}</span><span class="lb-score" data-v-68b05f92>${ssrInterpolate(entry.score)}</span></div>`);
         });
         _push(`<!--]--></div></div>`);
       } else {
         _push(`<!---->`);
       }
+      if (__props.showLeaderboard) {
+        _push(`<div id="leaderboard-modal" data-v-68b05f92><div class="lb-header" data-v-68b05f92>LEADERBOARD</div><!--[-->`);
+        ssrRenderList(__props.leaderboard, (entry, index) => {
+          _push(`<div class="lb-row" data-v-68b05f92><span class="lb-name" data-v-68b05f92>${ssrInterpolate(index + 1)}. ${ssrInterpolate(entry.name)}</span><span class="lb-score" data-v-68b05f92>${ssrInterpolate(entry.score)}</span></div>`);
+        });
+        _push(`<!--]--><button class="close-btn" data-v-68b05f92>CLOSE</button></div>`);
+      } else {
+        _push(`<!---->`);
+      }
       if (__props.isGameMode || __props.isDrivingMode || __props.isExplorationMode || __props.isFlyingTour || __props.isCinematicMode) {
-        _push(`<button id="return-button" data-v-0602d547> RETURN </button>`);
+        _push(`<button id="return-button" data-v-68b05f92> RETURN </button>`);
       } else {
         _push(`<!---->`);
       }
       if (__props.isDrivingMode) {
-        _push(`<div id="driving-controls" data-v-0602d547><div class="control-group left" data-v-0602d547><button class="control-btn" data-v-0602d547> ← </button><button class="control-btn" data-v-0602d547> → </button></div><div class="control-group right" data-v-0602d547><button class="control-btn" data-v-0602d547> BRK </button><button class="control-btn" data-v-0602d547> GAS </button></div></div>`);
+        _push(`<div id="driving-controls" data-v-68b05f92><div class="control-group left" data-v-68b05f92><button class="control-btn" data-v-68b05f92> ← </button><button class="control-btn" data-v-68b05f92> → </button></div><div class="control-group right" data-v-68b05f92><button class="control-btn" data-v-68b05f92> BRK </button><button class="control-btn" data-v-68b05f92> GAS </button></div></div>`);
       } else {
         _push(`<!---->`);
       }
       if (__props.isExplorationMode && __props.isMobile) {
-        _push(`<div id="exploration-controls" data-v-0602d547><div class="control-group left" data-v-0602d547><div class="dpad" data-v-0602d547><button class="dpad-btn up" data-v-0602d547> W </button><button class="dpad-btn left" data-v-0602d547> A </button><button class="dpad-btn right" data-v-0602d547> D </button><button class="dpad-btn down" data-v-0602d547> S </button></div></div><div class="control-group right" data-v-0602d547><div class="dpad" data-v-0602d547><button class="dpad-btn up" data-v-0602d547> ↑ </button><button class="dpad-btn left" data-v-0602d547> ← </button><button class="dpad-btn right" data-v-0602d547> → </button><button class="dpad-btn down" data-v-0602d547> ↓ </button></div></div></div>`);
+        _push(`<div id="exploration-controls" data-v-68b05f92><div class="control-group left" data-v-68b05f92><div class="dpad" data-v-68b05f92><button class="dpad-btn up" data-v-68b05f92> W </button><button class="dpad-btn left" data-v-68b05f92> A </button><button class="dpad-btn right" data-v-68b05f92> D </button><button class="dpad-btn down" data-v-68b05f92> S </button></div></div><div class="control-group right" data-v-68b05f92><div class="dpad" data-v-68b05f92><button class="dpad-btn up" data-v-68b05f92> ↑ </button><button class="dpad-btn left" data-v-68b05f92> ← </button><button class="dpad-btn right" data-v-68b05f92> → </button><button class="dpad-btn down" data-v-68b05f92> ↓ </button></div></div></div>`);
       } else {
         _push(`<!---->`);
       }
@@ -60164,7 +61160,7 @@ _sfc_main.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("src/components/GameUI.vue");
   return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
 };
-const GameUI = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-0602d547"]]);
+const GameUI = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-68b05f92"]]);
 
 const GameUI$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,

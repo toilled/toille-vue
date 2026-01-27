@@ -28,6 +28,7 @@ import { useRoute } from "vue-router";
 import { ScoreService, type ScoreEntry } from "../utils/ScoreService";
 import {
   AdditiveBlending,
+  BoxGeometry,
   BufferAttribute,
   BufferGeometry,
   CanvasTexture,
@@ -61,6 +62,7 @@ import { GangWarManager } from "../game/GangWarManager";
 import { createDroneTexture } from "../utils/TextureGenerator";
 import { CityBuilder } from "../game/CityBuilder";
 import { TrafficSystem } from "../game/TrafficSystem";
+import { musicSystem } from "../game/audio/MusicSystem";
 
 const GameUI = defineAsyncComponent(() => import("./GameUI.vue"));
 
@@ -93,6 +95,8 @@ const activeCar = ref<Group | null>(null);
 let checkpointMesh: Mesh;
 let navArrow: Group;
 let chaseArrow: Group;
+let equalizerGroup: Group;
+const equalizerBars: Mesh[] = [];
 const timeLeft = ref(0);
 const isGameOver = ref(false);
 const lastTime = ref(0);
@@ -507,6 +511,29 @@ onMounted(() => {
   // Initialize Gang Wars
   gangWarManager = new GangWarManager(scene, spawnSparks, playPewSound);
 
+  // Initialize Equalizer
+  equalizerGroup = new Group();
+  const barGeo = new BoxGeometry(20, 100, 20);
+  // Translate geometry so scaling y grows from bottom (0,0,0)
+  barGeo.translate(0, 50, 0);
+
+  const barMat = new MeshBasicMaterial({
+    color: 0x00ffff,
+    transparent: true,
+    opacity: 0.8,
+  });
+
+  for (let i = 0; i < 32; i++) {
+    const bar = new Mesh(barGeo, barMat.clone());
+    // Spread them out
+    bar.position.set((i - 16) * 40, 0, 0);
+    equalizerGroup.add(bar);
+    equalizerBars.push(bar);
+  }
+  // Position high in the sky
+  equalizerGroup.position.set(0, 800, -500);
+  scene.add(equalizerGroup);
+
   createCheckpoint();
   createNavArrow();
   createChaseArrow();
@@ -696,6 +723,8 @@ function onPointerLockChange() {
 function onClick(event: MouseEvent) {
   if (!camera) return;
 
+  musicSystem.start();
+
   gameModeManager.onClick(event);
 
   if (isGameMode.value || isDrivingMode.value) return;
@@ -800,6 +829,26 @@ function animate() {
   gangWarManager.update(dt);
   gameModeManager.update(dt, time);
   trafficSystem.update();
+
+  // Update Equalizer
+  const audioData = musicSystem.getFrequencyData();
+  if (audioData.length > 0 && equalizerBars.length > 0) {
+    for (let i = 0; i < equalizerBars.length; i++) {
+      // Map audio data to bars. data is 0-255.
+      // We have 32 bars. If bin count is > 32, we just take the first 32?
+      // Analyser fftSize 64 -> 32 bins. Perfect.
+      if (i < audioData.length) {
+        const val = audioData[i] / 255.0;
+        // Scale height: Base 0.1, max 5 (height 500)
+        const targetScale = 0.1 + val * 5.0;
+        equalizerBars[i].scale.y += (targetScale - equalizerBars[i].scale.y) * 0.2;
+
+        // Color effect
+        const hue = 0.5 + val * 0.5; // Cyan to Red/Purple
+        (equalizerBars[i].material as MeshBasicMaterial).color.setHSL(hue, 1, 0.5);
+      }
+    }
+  }
 
   if (sparks) {
     const positions = sparks.geometry.attributes.position.array;
@@ -982,6 +1031,7 @@ onBeforeUnmount(() => {
   if (gangWarManager) {
     gangWarManager.dispose();
   }
+  musicSystem.stop();
 });
 </script>
 

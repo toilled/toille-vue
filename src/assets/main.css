@@ -60,9 +60,14 @@ section,
 }
 
 section p,
-.content-container p {
+.content-container p,
+.text-paragraph {
   line-height: 1.2em;
   text-shadow: 0 0 2px #00ffcc;
+}
+
+.text-paragraph {
+  margin-bottom: var(--pico-typography-spacing-vertical, 1rem);
 }
 
 /* Neon buttons/links */

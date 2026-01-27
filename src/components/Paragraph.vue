@@ -1,5 +1,5 @@
 <template>
-  <p :class="{ marginless: last }" v-html="paragraph"></p>
+  <div class="text-paragraph" :class="{ marginless: last }" v-html="paragraph"></div>
 </template>
 
 <script setup lang="ts">

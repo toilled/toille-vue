@@ -358,6 +358,22 @@ vi.stubGlobal("AudioContext", class AudioContext {
   createBufferSource() {
     return { buffer: null, connect: vi.fn(), start: vi.fn(), stop: vi.fn() };
   }
+  createAnalyser() {
+    return {
+      fftSize: 2048,
+      frequencyBinCount: 1024,
+      minDecibels: -100,
+      maxDecibels: -30,
+      smoothingTimeConstant: 0.8,
+      getByteFrequencyData: vi.fn((array: Uint8Array) => {
+        // Fill with some dummy data
+        for (let i = 0; i < array.length; i++) {
+          array[i] = Math.floor(Math.random() * 256);
+        }
+      }),
+      connect: vi.fn(),
+    };
+  }
   resume() {
     this.state = "running";
     return Promise.resolve();

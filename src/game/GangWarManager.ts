@@ -84,8 +84,16 @@ export class GangWarManager {
   arrowGeo: CylinderGeometry;
   arrowMat: MeshBasicMaterial;
 
-  constructor(scene: Scene, spawnSparks: (pos: Vector3) => void, playPewSound: (pos?: Vector3) => void) {
+  occupiedGrids: Map<string, { halfW: number; halfD: number }>;
+
+  constructor(
+    scene: Scene,
+    occupiedGrids: Map<string, { halfW: number; halfD: number }>,
+    spawnSparks: (pos: Vector3) => void,
+    playPewSound: (pos?: Vector3) => void
+  ) {
     this.scene = scene;
+    this.occupiedGrids = occupiedGrids;
     this.spawnSparks = spawnSparks;
     this.playPewSound = playPewSound;
 
@@ -111,19 +119,45 @@ export class GangWarManager {
     const blockX = Math.floor(Math.random() * GRID_SIZE);
     const blockZ = Math.floor(Math.random() * GRID_SIZE);
 
+    // Get building size for this block
+    const key = `${blockX},${blockZ}`;
+    const building = this.occupiedGrids.get(key);
+    // If no building recorded, assume standard block size
+    const halfW = building ? building.halfW : BLOCK_SIZE * 0.45;
+    const halfD = building ? building.halfD : BLOCK_SIZE * 0.45;
+
+    // Cell center
+    const cx = START_OFFSET + blockX * CELL_SIZE;
+    const cz = START_OFFSET + blockZ * CELL_SIZE;
+
     for (let i = 0; i < count; i++) {
-      // Spawn near the block but ensuring not ON the road center
-      // Block center:
-      const cx = START_OFFSET + blockX * CELL_SIZE;
-      const cz = START_OFFSET + blockZ * CELL_SIZE;
+      // Pick a side of the building (North, South, East, West)
+      const side = Math.floor(Math.random() * 4);
+      let x = cx;
+      let z = cz;
 
-      // Random scatter around block center
-      // Block is BLOCK_SIZE wide (approx 150).
-      const offsetX = (Math.random() - 0.5) * (BLOCK_SIZE + ROAD_WIDTH * 0.5);
-      const offsetZ = (Math.random() - 0.5) * (BLOCK_SIZE + ROAD_WIDTH * 0.5);
+      const margin = 5; // Distance away from wall
 
-      const x = cx + offsetX;
-      const z = cz + offsetZ;
+      // Random position along the street for that side
+      switch (side) {
+        case 0: // North (-Z)
+          // z needs to be < cz - halfD
+          z = cz - halfD - margin - Math.random() * 15;
+          x = cx + (Math.random() - 0.5) * CELL_SIZE;
+          break;
+        case 1: // South (+Z)
+          z = cz + halfD + margin + Math.random() * 15;
+          x = cx + (Math.random() - 0.5) * CELL_SIZE;
+          break;
+        case 2: // East (+X)
+          x = cx + halfW + margin + Math.random() * 15;
+          z = cz + (Math.random() - 0.5) * CELL_SIZE;
+          break;
+        case 3: // West (-X)
+          x = cx - halfW - margin - Math.random() * 15;
+          z = cz + (Math.random() - 0.5) * CELL_SIZE;
+          break;
+      }
 
       this.spawnWarrior(x, z, gang);
     }

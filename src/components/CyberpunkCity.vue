@@ -507,7 +507,7 @@ onMounted(() => {
   konamiManager = new KonamiManager(scene);
 
   // Initialize Gang Wars
-  gangWarManager = new GangWarManager(scene, spawnSparks, playPewSound);
+  gangWarManager = new GangWarManager(scene, occupiedGrids, spawnSparks, playPewSound);
 
   createCheckpoint();
   createNavArrow();

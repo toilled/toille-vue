@@ -63,7 +63,9 @@ describe('GangWarManager', () => {
     spawnSparks = vi.fn();
     playPewSound = vi.fn();
 
-    manager = new GangWarManager(scene, spawnSparks, playPewSound);
+    const occupiedGrids = new Map();
+
+    manager = new GangWarManager(scene, occupiedGrids, spawnSparks, playPewSound);
   });
 
   it('should initialize with warriors', () => {

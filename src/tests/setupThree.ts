@@ -83,9 +83,20 @@ vi.mock("three", async () => {
     },
     PlaneGeometry: class {
       parameters: any;
+      attributes: any;
       constructor(width?: number, height?: number) {
         this.parameters = { width, height };
+        this.attributes = {
+          position: {
+            count: 100, // Dummy count
+            getX: vi.fn(() => 0),
+            getY: vi.fn(() => 0),
+            getZ: vi.fn(() => 0),
+            setZ: vi.fn(),
+          }
+        };
       }
+      computeVertexNormals = vi.fn();
       dispose() { }
     },
     BufferGeometry: class {

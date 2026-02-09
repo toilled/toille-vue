@@ -47,7 +47,18 @@ vi.mock('three', () => {
       translate: vi.fn()
     })),
     EdgesGeometry: vi.fn(),
-    PlaneGeometry: vi.fn(),
+    PlaneGeometry: vi.fn(() => ({
+        attributes: {
+            position: {
+                count: 100,
+                getX: vi.fn(() => 0),
+                getY: vi.fn(() => 0),
+                getZ: vi.fn(() => 0),
+                setZ: vi.fn()
+            }
+        },
+        computeVertexNormals: vi.fn()
+    })),
     BufferGeometry: vi.fn(() => ({
       setAttribute: vi.fn(),
       setFromPoints: vi.fn()

@@ -20,6 +20,7 @@ import {
   START_OFFSET,
 } from "./config";
 import { carAudio } from "./audio/CarAudio";
+import { getHeight } from "../utils/HeightMap";
 
 export class TrafficSystem {
   private scene: Scene;
@@ -318,7 +319,8 @@ export class TrafficSystem {
       carGroup.rotation.y = dir === 1 ? 0 : Math.PI;
     }
 
-    carGroup.position.set(x, 1, z);
+    const h = getHeight(x, z);
+    carGroup.position.set(x, h + 1, z);
 
     carGroup.userData.speed = isPolice ? 2.5 + Math.random() * 1.5 : 0.5 + Math.random() * 1.0;
     carGroup.userData.dir = dir;
@@ -447,6 +449,8 @@ export class TrafficSystem {
             if (car.position.z > BOUNDS) car.position.z = -BOUNDS;
             if (car.position.z < -BOUNDS) car.position.z = BOUNDS;
           }
+
+          car.position.y = getHeight(car.position.x, car.position.z) + 1;
         }
       } else {
         // Fading out logic
@@ -455,6 +459,8 @@ export class TrafficSystem {
         } else {
           car.position.z += car.userData.speed * 0.5 * car.userData.dir;
         }
+
+        car.position.y = getHeight(car.position.x, car.position.z) + 1;
 
         car.userData.opacity -= 0.02;
         if (car.userData.opacity <= 0) {

@@ -63,6 +63,7 @@ import { GangWarManager } from "../game/GangWarManager";
 import { createDroneTexture } from "../utils/TextureGenerator";
 import { CityBuilder } from "../game/CityBuilder";
 import { TrafficSystem } from "../game/TrafficSystem";
+import { getHeight } from "../utils/HeightMap";
 
 const GameUI = defineAsyncComponent(() => import("./GameUI.vue"));
 
@@ -343,7 +344,8 @@ function spawnCheckpoint() {
     z = otherCoord;
   }
 
-  checkpointMesh.position.set(x, 0, z);
+  const h = getHeight(x, z);
+  checkpointMesh.position.set(x, h, z);
   checkpointMesh.visible = true;
 }
 
@@ -826,8 +828,10 @@ function animate() {
         positions[i * 3 + 1] += sparkVelocities[i * 3 + 1];
         positions[i * 3 + 2] += sparkVelocities[i * 3 + 2];
 
-        if (positions[i * 3 + 1] < 0) {
-          positions[i * 3 + 1] = 0;
+        const h = getHeight(positions[i * 3], positions[i * 3 + 2]);
+
+        if (positions[i * 3 + 1] < h) {
+          positions[i * 3 + 1] = h;
           sparkVelocities[i * 3 + 1] *= -0.5;
         }
 

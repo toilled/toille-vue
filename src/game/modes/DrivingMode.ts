@@ -2,6 +2,7 @@ import { GameContext, GameMode } from "../types";
 import { carAudio } from "../audio/CarAudio";
 import { BOUNDS, CELL_SIZE, START_OFFSET, GRID_SIZE, CITY_SIZE } from "../config";
 import { Vector3, Group, BoxGeometry, MeshStandardMaterial, Mesh, SpotLight, Object3D } from "three";
+import { getHeight } from "../../utils/HeightMap";
 
 export class DrivingMode implements GameMode {
     context: GameContext | null = null;
@@ -98,7 +99,8 @@ export class DrivingMode implements GameMode {
             // Check dist
             const dist = Math.sqrt((x - player.position.x) ** 2 + (z - player.position.z) ** 2);
             if (dist > 500) {
-                this.redCar.position.set(x, 1, z);
+                const h = getHeight(x, z);
+                this.redCar.position.set(x, h + 1, z);
                 spawned = true;
             }
             attempts++;
@@ -214,6 +216,8 @@ export class DrivingMode implements GameMode {
         car.position.x += Math.sin(car.rotation.y) * speed;
         car.position.z += Math.cos(car.rotation.y) * speed;
 
+        car.position.y = getHeight(car.position.x, car.position.z) + 1;
+
         // Bounds
         if (car.position.x > BOUNDS) car.position.x = -BOUNDS;
         if (car.position.x < -BOUNDS) car.position.x = BOUNDS;
@@ -269,6 +273,8 @@ export class DrivingMode implements GameMode {
         // Move Forward
         this.redCar.position.x += Math.sin(currentRotation) * redSpeed;
         this.redCar.position.z += Math.cos(currentRotation) * redSpeed;
+
+        this.redCar.position.y = getHeight(this.redCar.position.x, this.redCar.position.z) + 1;
 
         // Lateral Movement Logic relative to road
         // Determine primary axis of movement (if cos is high, it's Z axis)

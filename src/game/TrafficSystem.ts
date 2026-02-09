@@ -458,8 +458,8 @@ export class TrafficSystem {
           car.up.set(normal.x, normal.y, normal.z);
           const heading = car.userData.heading ?? 0;
           const lookDist = 5;
-          const targetX = car.position.x - Math.sin(heading) * lookDist;
-          const targetZ = car.position.z - Math.cos(heading) * lookDist;
+          const targetX = car.position.x + Math.sin(heading) * lookDist;
+          const targetZ = car.position.z + Math.cos(heading) * lookDist;
           const targetY = getHeight(targetX, targetZ) + 1;
           car.lookAt(targetX, targetY, targetZ);
         }
@@ -478,8 +478,8 @@ export class TrafficSystem {
         car.up.set(normal.x, normal.y, normal.z);
         const heading = car.userData.heading ?? 0;
         const lookDist = 5;
-        const targetX = car.position.x - Math.sin(heading) * lookDist;
-        const targetZ = car.position.z - Math.cos(heading) * lookDist;
+        const targetX = car.position.x + Math.sin(heading) * lookDist;
+        const targetZ = car.position.z + Math.cos(heading) * lookDist;
         const targetY = getHeight(targetX, targetZ) + 1;
         car.lookAt(targetX, targetY, targetZ);
 

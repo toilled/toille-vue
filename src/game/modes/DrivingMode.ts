@@ -138,8 +138,8 @@ export class DrivingMode implements GameMode {
             const normal = getNormal(car.position.x, car.position.z);
             car.up.set(normal.x, normal.y, normal.z);
             const lookDist = 5;
-            const tx = car.position.x - Math.sin(heading) * lookDist;
-            const tz = car.position.z - Math.cos(heading) * lookDist;
+            const tx = car.position.x + Math.sin(heading) * lookDist;
+            const tz = car.position.z + Math.cos(heading) * lookDist;
             const ty = getHeight(tx, tz) + 1;
             car.lookAt(tx, ty, tz);
 
@@ -243,8 +243,8 @@ export class DrivingMode implements GameMode {
         const normal = getNormal(car.position.x, car.position.z);
         car.up.set(normal.x, normal.y, normal.z);
         const lookDist = 5;
-        const tx = car.position.x - Math.sin(heading) * lookDist;
-        const tz = car.position.z - Math.cos(heading) * lookDist;
+        const tx = car.position.x + Math.sin(heading) * lookDist;
+        const tz = car.position.z + Math.cos(heading) * lookDist;
         const ty = getHeight(tx, tz) + 1;
         car.lookAt(tx, ty, tz);
 
@@ -310,8 +310,8 @@ export class DrivingMode implements GameMode {
         const normal = getNormal(this.redCar.position.x, this.redCar.position.z);
         this.redCar.up.set(normal.x, normal.y, normal.z);
         const lookDist = 5;
-        const tx = this.redCar.position.x - Math.sin(currentRotation) * lookDist;
-        const tz = this.redCar.position.z - Math.cos(currentRotation) * lookDist;
+        const tx = this.redCar.position.x + Math.sin(currentRotation) * lookDist;
+        const tz = this.redCar.position.z + Math.cos(currentRotation) * lookDist;
         const ty = getHeight(tx, tz) + 1;
         this.redCar.lookAt(tx, ty, tz);
 

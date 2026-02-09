@@ -20,7 +20,7 @@ import {
   START_OFFSET,
 } from "./config";
 import { carAudio } from "./audio/CarAudio";
-import { getHeight } from "../utils/HeightMap";
+import { getHeight, getNormal } from "../utils/HeightMap";
 
 export class TrafficSystem {
   private scene: Scene;
@@ -318,6 +318,7 @@ export class TrafficSystem {
       z = (Math.random() - 0.5) * CITY_SIZE;
       carGroup.rotation.y = dir === 1 ? 0 : Math.PI;
     }
+    carGroup.userData.heading = carGroup.rotation.y;
 
     const h = getHeight(x, z);
     carGroup.position.set(x, h + 1, z);
@@ -410,7 +411,7 @@ export class TrafficSystem {
                   car.position.x = roadCenter + newLaneOffset;
                   car.userData.axis = "z";
                   car.userData.dir = newDir;
-                  car.rotation.y = newDir === 1 ? 0 : Math.PI;
+                  car.userData.heading = newDir === 1 ? 0 : Math.PI;
                   car.userData.turnCooldown = 60; // 1 second cooldown
                 }
               }
@@ -440,7 +441,7 @@ export class TrafficSystem {
                   car.position.z = roadCenter + newLaneOffset;
                   car.userData.axis = "x";
                   car.userData.dir = newDir;
-                  car.rotation.y = newDir === 1 ? Math.PI / 2 : -Math.PI / 2;
+                  car.userData.heading = newDir === 1 ? Math.PI / 2 : -Math.PI / 2;
                   car.userData.turnCooldown = 60;
                 }
               }
@@ -451,6 +452,16 @@ export class TrafficSystem {
           }
 
           car.position.y = getHeight(car.position.x, car.position.z) + 1;
+
+          // Apply orientation
+          const normal = getNormal(car.position.x, car.position.z);
+          car.up.set(normal.x, normal.y, normal.z);
+          const heading = car.userData.heading ?? 0;
+          const lookDist = 5;
+          const targetX = car.position.x - Math.sin(heading) * lookDist;
+          const targetZ = car.position.z - Math.cos(heading) * lookDist;
+          const targetY = getHeight(targetX, targetZ) + 1;
+          car.lookAt(targetX, targetY, targetZ);
         }
       } else {
         // Fading out logic
@@ -461,6 +472,16 @@ export class TrafficSystem {
         }
 
         car.position.y = getHeight(car.position.x, car.position.z) + 1;
+
+        // Apply orientation for fading cars too
+        const normal = getNormal(car.position.x, car.position.z);
+        car.up.set(normal.x, normal.y, normal.z);
+        const heading = car.userData.heading ?? 0;
+        const lookDist = 5;
+        const targetX = car.position.x - Math.sin(heading) * lookDist;
+        const targetZ = car.position.z - Math.cos(heading) * lookDist;
+        const targetY = getHeight(targetX, targetZ) + 1;
+        car.lookAt(targetX, targetY, targetZ);
 
         car.userData.opacity -= 0.02;
         if (car.userData.opacity <= 0) {
@@ -513,7 +534,7 @@ export class TrafficSystem {
 
             ai.userData.fading = true;
             ai.userData.dir *= -1;
-            ai.rotation.y += Math.random() - 0.5;
+            ai.userData.heading += Math.random() - 0.5;
             this.spawnSparks(player.position);
             continue;
           }
@@ -526,8 +547,8 @@ export class TrafficSystem {
           carA.userData.dir *= -1;
           carB.userData.dir *= -1;
 
-          carA.rotation.y += Math.random() - 0.5;
-          carB.rotation.y += Math.random() - 0.5;
+          carA.userData.heading += Math.random() - 0.5;
+          carB.userData.heading += Math.random() - 0.5;
         }
       }
     }

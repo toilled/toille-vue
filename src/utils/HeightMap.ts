@@ -88,6 +88,33 @@ export class HeightMap {
 
       return y;
   }
+
+  public getNormal(x: number, z: number): { x: number; y: number; z: number } {
+    const d = 1.0;
+    const hL = this.getHeight(x - d, z);
+    const hR = this.getHeight(x + d, z);
+    const hD = this.getHeight(x, z - d);
+    const hU = this.getHeight(x, z + d);
+
+    // Calculate slopes
+    const dx = (hR - hL) / (2 * d);
+    const dz = (hU - hD) / (2 * d);
+
+    // Normal vector is (-dx, 1, -dz) normalized
+    let nx = -dx;
+    let ny = 1;
+    let nz = -dz;
+
+    const len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+    if (len > 0) {
+      nx /= len;
+      ny /= len;
+      nz /= len;
+    }
+
+    return { x: nx, y: ny, z: nz };
+  }
 }
 
 export const getHeight = (x: number, z: number) => HeightMap.getInstance().getHeight(x, z);
+export const getNormal = (x: number, z: number) => HeightMap.getInstance().getNormal(x, z);

@@ -57944,350 +57944,6 @@ const START_OFFSET = -(GRID_SIZE * CELL_SIZE) / 2 + CELL_SIZE / 2;
 const BOUNDS = GRID_SIZE * CELL_SIZE / 2 + CELL_SIZE;
 const DRONE_COUNT = 300;
 
-class HeightMap {
-  static instance;
-  p = [];
-  constructor() {
-    this.init();
-  }
-  static getInstance() {
-    if (!HeightMap.instance) {
-      HeightMap.instance = new HeightMap();
-    }
-    return HeightMap.instance;
-  }
-  init() {
-    this.p = new Array(512);
-    const permutation = [
-      151,
-      160,
-      137,
-      91,
-      90,
-      15,
-      131,
-      13,
-      201,
-      95,
-      96,
-      53,
-      194,
-      233,
-      7,
-      225,
-      140,
-      36,
-      103,
-      30,
-      69,
-      142,
-      8,
-      99,
-      37,
-      240,
-      21,
-      10,
-      23,
-      190,
-      6,
-      148,
-      247,
-      120,
-      234,
-      75,
-      0,
-      26,
-      197,
-      62,
-      94,
-      252,
-      219,
-      203,
-      117,
-      35,
-      11,
-      32,
-      57,
-      177,
-      33,
-      88,
-      237,
-      149,
-      56,
-      87,
-      174,
-      20,
-      125,
-      136,
-      171,
-      168,
-      68,
-      175,
-      74,
-      165,
-      71,
-      134,
-      139,
-      48,
-      27,
-      166,
-      77,
-      146,
-      158,
-      231,
-      83,
-      111,
-      229,
-      122,
-      60,
-      211,
-      133,
-      230,
-      220,
-      105,
-      92,
-      41,
-      55,
-      46,
-      245,
-      40,
-      244,
-      102,
-      143,
-      54,
-      65,
-      25,
-      63,
-      161,
-      1,
-      216,
-      80,
-      73,
-      209,
-      76,
-      132,
-      187,
-      208,
-      89,
-      18,
-      169,
-      200,
-      196,
-      135,
-      130,
-      116,
-      188,
-      159,
-      86,
-      164,
-      100,
-      109,
-      198,
-      173,
-      186,
-      3,
-      64,
-      52,
-      217,
-      226,
-      250,
-      124,
-      123,
-      5,
-      202,
-      38,
-      147,
-      118,
-      126,
-      255,
-      82,
-      85,
-      212,
-      207,
-      206,
-      59,
-      227,
-      47,
-      16,
-      58,
-      17,
-      182,
-      189,
-      28,
-      42,
-      223,
-      183,
-      170,
-      213,
-      119,
-      248,
-      152,
-      2,
-      44,
-      154,
-      163,
-      70,
-      221,
-      153,
-      101,
-      155,
-      167,
-      43,
-      172,
-      9,
-      129,
-      22,
-      39,
-      253,
-      19,
-      98,
-      108,
-      110,
-      79,
-      113,
-      224,
-      232,
-      178,
-      185,
-      112,
-      104,
-      218,
-      246,
-      97,
-      228,
-      251,
-      34,
-      242,
-      193,
-      238,
-      210,
-      144,
-      12,
-      191,
-      179,
-      162,
-      241,
-      81,
-      51,
-      145,
-      235,
-      249,
-      14,
-      239,
-      107,
-      49,
-      192,
-      214,
-      31,
-      181,
-      199,
-      106,
-      157,
-      184,
-      84,
-      204,
-      176,
-      115,
-      121,
-      50,
-      45,
-      127,
-      4,
-      150,
-      254,
-      138,
-      236,
-      205,
-      93,
-      222,
-      114,
-      67,
-      29,
-      24,
-      72,
-      243,
-      141,
-      128,
-      195,
-      78,
-      66,
-      215,
-      61,
-      156,
-      180
-    ];
-    for (let i = 0; i < 256; i++) this.p[256 + i] = this.p[i] = permutation[i];
-  }
-  fade(t) {
-    return t * t * t * (t * (t * 6 - 15) + 10);
-  }
-  lerp(t, a, b) {
-    return a + t * (b - a);
-  }
-  grad(hash, x, y, z) {
-    const h = hash & 15;
-    const u = h < 8 ? x : y;
-    const v = h < 4 ? y : h === 12 || h === 14 ? x : z;
-    return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
-  }
-  noise(x, y, z) {
-    const X = Math.floor(x) & 255;
-    const Y = Math.floor(y) & 255;
-    const Z = Math.floor(z) & 255;
-    x -= Math.floor(x);
-    y -= Math.floor(y);
-    z -= Math.floor(z);
-    const u = this.fade(x);
-    const v = this.fade(y);
-    const w = this.fade(z);
-    const A = this.p[X] + Y;
-    const AA = this.p[A] + Z;
-    const AB = this.p[A + 1] + Z;
-    const B = this.p[X + 1] + Y;
-    const BA = this.p[B] + Z;
-    const BB = this.p[B + 1] + Z;
-    return this.lerp(
-      w,
-      this.lerp(
-        v,
-        this.lerp(
-          u,
-          this.grad(this.p[AA], x, y, z),
-          this.grad(this.p[BA], x - 1, y, z)
-        ),
-        this.lerp(
-          u,
-          this.grad(this.p[AB], x, y - 1, z),
-          this.grad(this.p[BB], x - 1, y - 1, z)
-        )
-      ),
-      this.lerp(
-        v,
-        this.lerp(
-          u,
-          this.grad(this.p[AA + 1], x, y, z - 1),
-          this.grad(this.p[BA + 1], x - 1, y, z - 1)
-        ),
-        this.lerp(
-          u,
-          this.grad(this.p[AB + 1], x, y - 1, z - 1),
-          this.grad(this.p[BB + 1], x - 1, y - 1, z - 1)
-        )
-      )
-    );
-  }
-  getHeight(x, z) {
-    const scale = 15e-4;
-    const amplitude = 50;
-    let y = 0;
-    y += this.noise(x * scale, z * scale, 0) * amplitude;
-    y += this.noise(x * scale * 2, z * scale * 2, 0) * (amplitude * 0.5);
-    y += this.noise(x * scale * 4, z * scale * 4, 0) * (amplitude * 0.25);
-    return y;
-  }
-}
-const getHeight = (x, z) => HeightMap.getInstance().getHeight(x, z);
-
 class DrivingMode {
   context = null;
   redCar = null;
@@ -58356,8 +58012,7 @@ class DrivingMode {
       }
       const dist = Math.sqrt((x - player.position.x) ** 2 + (z - player.position.z) ** 2);
       if (dist > 500) {
-        const h = getHeight(x, z);
-        this.redCar.position.set(x, h + 1, z);
+        this.redCar.position.set(x, 1, z);
         spawned = true;
       }
       attempts++;
@@ -58446,7 +58101,6 @@ class DrivingMode {
     }
     car.position.x += Math.sin(car.rotation.y) * speed;
     car.position.z += Math.cos(car.rotation.y) * speed;
-    car.position.y = getHeight(car.position.x, car.position.z) + 1;
     if (car.position.x > BOUNDS) car.position.x = -BOUNDS;
     if (car.position.x < -BOUNDS) car.position.x = BOUNDS;
     if (car.position.z > BOUNDS) car.position.z = -BOUNDS;
@@ -58485,7 +58139,6 @@ class DrivingMode {
     const currentRotation = this.redCar.rotation.y;
     this.redCar.position.x += Math.sin(currentRotation) * redSpeed;
     this.redCar.position.z += Math.cos(currentRotation) * redSpeed;
-    this.redCar.position.y = getHeight(this.redCar.position.x, this.redCar.position.z) + 1;
     const isZAxis = Math.abs(Math.cos(currentRotation)) > 0.5;
     const roadHalf = CELL_SIZE / 2;
     const gridX = Math.round((this.redCar.position.x - START_OFFSET - roadHalf) / CELL_SIZE);
@@ -58807,20 +58460,19 @@ class ExplorationMode {
     if (camera.position.x < -BOUNDS) camera.position.x = BOUNDS;
     if (camera.position.z > BOUNDS) camera.position.z = -BOUNDS;
     if (camera.position.z < -BOUNDS) camera.position.z = BOUNDS;
-    const currentGroundH = getHeight(camera.position.x, camera.position.z) + 3;
     if (this.isJumping) {
       camera.position.y += this.velocityY;
       this.velocityY -= this.gravity;
-      if (camera.position.y <= currentGroundH) {
-        camera.position.y = currentGroundH;
+      if (camera.position.y <= this.groundPosition) {
+        camera.position.y = this.groundPosition;
         this.isJumping = false;
         this.velocityY = 0;
       }
     } else {
       if (controls.value.forward || controls.value.backward || controls.value.left || controls.value.right) {
-        camera.position.y = currentGroundH + Math.sin(Date.now() * 0.01) * 0.1;
+        camera.position.y = this.groundPosition + Math.sin(Date.now() * 0.01) * 0.1;
       } else {
-        camera.position.y = currentGroundH;
+        camera.position.y = this.groundPosition;
       }
     }
     const hitDistSq = 15 * 15;
@@ -59185,10 +58837,8 @@ class GangWarManager {
   // Fight Marker
   arrowGeo;
   arrowMat;
-  occupiedGrids;
-  constructor(scene, occupiedGrids, spawnSparks, playPewSound) {
+  constructor(scene, spawnSparks, playPewSound) {
     this.scene = scene;
-    this.occupiedGrids = occupiedGrids;
     this.spawnSparks = spawnSparks;
     this.playPewSound = playPewSound;
     this.arrowGeo = new CylinderGeometry(0, 4, 10, 8);
@@ -59205,35 +58855,13 @@ class GangWarManager {
   spawnGangBatch(gang, count) {
     const blockX = Math.floor(Math.random() * GRID_SIZE);
     const blockZ = Math.floor(Math.random() * GRID_SIZE);
-    const key = `${blockX},${blockZ}`;
-    const building = this.occupiedGrids.get(key);
-    const halfW = building ? building.halfW : BLOCK_SIZE * 0.45;
-    const halfD = building ? building.halfD : BLOCK_SIZE * 0.45;
-    const cx = START_OFFSET + blockX * CELL_SIZE;
-    const cz = START_OFFSET + blockZ * CELL_SIZE;
     for (let i = 0; i < count; i++) {
-      const side = Math.floor(Math.random() * 4);
-      let x = cx;
-      let z = cz;
-      const margin = 5;
-      switch (side) {
-        case 0:
-          z = cz - halfD - margin - Math.random() * 15;
-          x = cx + (Math.random() - 0.5) * CELL_SIZE;
-          break;
-        case 1:
-          z = cz + halfD + margin + Math.random() * 15;
-          x = cx + (Math.random() - 0.5) * CELL_SIZE;
-          break;
-        case 2:
-          x = cx + halfW + margin + Math.random() * 15;
-          z = cz + (Math.random() - 0.5) * CELL_SIZE;
-          break;
-        case 3:
-          x = cx - halfW - margin - Math.random() * 15;
-          z = cz + (Math.random() - 0.5) * CELL_SIZE;
-          break;
-      }
+      const cx = START_OFFSET + blockX * CELL_SIZE;
+      const cz = START_OFFSET + blockZ * CELL_SIZE;
+      const offsetX = (Math.random() - 0.5) * (BLOCK_SIZE + ROAD_WIDTH * 0.5);
+      const offsetZ = (Math.random() - 0.5) * (BLOCK_SIZE + ROAD_WIDTH * 0.5);
+      const x = cx + offsetX;
+      const z = cz + offsetZ;
       this.spawnWarrior(x, z, gang);
     }
   }
@@ -59699,20 +59327,7 @@ class CityBuilder {
   }
   createGround() {
     const groundTexture = createGroundTexture();
-    const planeGeometry = new PlaneGeometry(
-      CITY_SIZE * 2,
-      CITY_SIZE * 2,
-      128,
-      128
-    );
-    const posAttribute = planeGeometry.attributes.position;
-    for (let i = 0; i < posAttribute.count; i++) {
-      const x = posAttribute.getX(i);
-      const y = posAttribute.getY(i);
-      const h = getHeight(x, -y);
-      posAttribute.setZ(i, h);
-    }
-    planeGeometry.computeVertexNormals();
+    const planeGeometry = new PlaneGeometry(CITY_SIZE * 2, CITY_SIZE * 2);
     const repeatCount = CITY_SIZE * 2 / CELL_SIZE;
     groundTexture.repeat.set(repeatCount, repeatCount);
     const planeMaterial = new MeshStandardMaterial({
@@ -59782,8 +59397,6 @@ class CityBuilder {
     for (let x = 0; x < GRID_SIZE; x++) {
       for (let z = 0; z < GRID_SIZE; z++) {
         const isLeaderboardBuilding = x === 5 && z === 5;
-        const xPos = START_OFFSET + x * CELL_SIZE;
-        const zPos = START_OFFSET + z * CELL_SIZE;
         if (!isLeaderboardBuilding && Math.random() > 0.8) {
           const floorSize = BLOCK_SIZE - 2;
           const floorGeo = new PlaneGeometry(floorSize, floorSize);
@@ -59795,12 +59408,17 @@ class CityBuilder {
           });
           const floorMesh = new Mesh(floorGeo, floorMat);
           floorMesh.rotation.x = -Math.PI / 2;
-          const fh = getHeight(xPos, zPos);
-          floorMesh.position.set(xPos, fh + 0.5, zPos);
+          floorMesh.position.set(
+            START_OFFSET + x * CELL_SIZE,
+            0.1,
+            START_OFFSET + z * CELL_SIZE
+          );
           this.scene.add(floorMesh);
           this.buildings.push(floorMesh);
           continue;
         }
+        const xPos = START_OFFSET + x * CELL_SIZE;
+        const zPos = START_OFFSET + z * CELL_SIZE;
         let h = 40 + Math.random() * 120;
         let w = BLOCK_SIZE - 10 - Math.random() * 20;
         let d = BLOCK_SIZE - 10 - Math.random() * 20;
@@ -59810,13 +59428,8 @@ class CityBuilder {
           d = BLOCK_SIZE - 10;
         }
         this.occupiedGrids.set(`${x},${z}`, { halfW: w / 2, halfD: d / 2 });
-        const h1 = getHeight(xPos - w / 2, zPos - d / 2);
-        const h2 = getHeight(xPos + w / 2, zPos - d / 2);
-        const h3 = getHeight(xPos - w / 2, zPos + d / 2);
-        const h4 = getHeight(xPos + w / 2, zPos + d / 2);
-        const minH = Math.min(h1, h2, h3, h4);
         const buildingGroup = new Group();
-        buildingGroup.position.set(xPos, minH, zPos);
+        buildingGroup.position.set(xPos, 0, zPos);
         let style = "SIMPLE";
         if (!isLeaderboardBuilding) {
           const r = Math.random();
@@ -60256,8 +59869,7 @@ class TrafficSystem {
       z = (Math.random() - 0.5) * CITY_SIZE;
       carGroup.rotation.y = dir === 1 ? 0 : Math.PI;
     }
-    const h = getHeight(x, z);
-    carGroup.position.set(x, h + 1, z);
+    carGroup.position.set(x, 1, z);
     carGroup.userData.speed = isPolice ? 2.5 + Math.random() * 1.5 : 0.5 + Math.random() * 1;
     carGroup.userData.dir = dir;
     carGroup.userData.axis = axis;
@@ -60356,7 +59968,6 @@ class TrafficSystem {
             if (car.position.z > BOUNDS) car.position.z = -BOUNDS;
             if (car.position.z < -BOUNDS) car.position.z = BOUNDS;
           }
-          car.position.y = getHeight(car.position.x, car.position.z) + 1;
         }
       } else {
         if (car.userData.axis === "x") {
@@ -60364,7 +59975,6 @@ class TrafficSystem {
         } else {
           car.position.z += car.userData.speed * 0.5 * car.userData.dir;
         }
-        car.position.y = getHeight(car.position.x, car.position.z) + 1;
         car.userData.opacity -= 0.02;
         if (car.userData.opacity <= 0) {
           this.resetCar(car);
@@ -60639,8 +60249,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
         x = roadCoordinate;
         z = otherCoord;
       }
-      const h = getHeight(x, z);
-      checkpointMesh.position.set(x, h, z);
+      checkpointMesh.position.set(x, 0, z);
       checkpointMesh.visible = true;
     }
     function spawnSparks(position) {
@@ -60761,7 +60370,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       sparks.frustumCulled = false;
       scene.add(sparks);
       konamiManager = new KonamiManager(scene);
-      gangWarManager = new GangWarManager(scene, occupiedGrids, spawnSparks, playPewSound);
+      gangWarManager = new GangWarManager(scene, spawnSparks, playPewSound);
       createCheckpoint();
       createNavArrow();
       createChaseArrow();
@@ -61024,9 +60633,8 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             positions[i * 3] += sparkVelocities[i * 3];
             positions[i * 3 + 1] += sparkVelocities[i * 3 + 1];
             positions[i * 3 + 2] += sparkVelocities[i * 3 + 2];
-            const h = getHeight(positions[i * 3], positions[i * 3 + 2]);
-            if (positions[i * 3 + 1] < h) {
-              positions[i * 3 + 1] = h;
+            if (positions[i * 3 + 1] < 0) {
+              positions[i * 3 + 1] = 0;
               sparkVelocities[i * 3 + 1] *= -0.5;
             }
             const ix = Math.round((positions[i * 3] - START_OFFSET) / CELL_SIZE);
@@ -61175,7 +60783,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       }
     });
     return (_ctx, _push, _parent, _attrs) => {
-      _push(`<!--[--><div id="cyberpunk-city" data-v-79d547de></div>`);
+      _push(`<!--[--><div id="cyberpunk-city" data-v-bbdbfba2></div>`);
       _push(ssrRenderComponent(unref(GameUI), {
         isDrivingMode: isDrivingMode.value,
         isGameMode: isGameMode.value,
@@ -61207,7 +60815,7 @@ _sfc_main$4.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("src/components/CyberpunkCity.vue");
   return _sfc_setup$4 ? _sfc_setup$4(props, ctx) : void 0;
 };
-const CyberpunkCity = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-79d547de"]]);
+const CyberpunkCity = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-bbdbfba2"]]);
 
 const CyberpunkCity$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,

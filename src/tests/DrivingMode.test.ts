@@ -27,6 +27,8 @@ describe('DrivingMode Physics', () => {
                     userData: { currentSpeed: 0, isPlayerControlled: false },
                     position: new THREE.Vector3(0, 0, 0),
                     rotation: new THREE.Euler(0, 0, 0),
+                    up: new THREE.Vector3(0, 1, 0),
+                    lookAt: vi.fn(),
                 }
             },
             timeLeft: { value: 30 },
@@ -129,6 +131,7 @@ describe('DrivingMode Physics', () => {
             drivingMode.redCar.rotation.x = 0;
             drivingMode.redCar.rotation.y = 0; // Facing +Z
             drivingMode.redCar.rotation.z = 0;
+            drivingMode.redCar.userData.heading = 0;
         }
 
         // Setup Player to be ahead and to the right
@@ -159,6 +162,7 @@ describe('DrivingMode Physics', () => {
             drivingMode.redCar.rotation.x = 0;
             drivingMode.redCar.rotation.y = 0; // +Z
             drivingMode.redCar.rotation.z = 0;
+            drivingMode.redCar.userData.heading = 0;
         }
 
         // Player to right (+X) at (100, 0, 0)
@@ -167,7 +171,8 @@ describe('DrivingMode Physics', () => {
         drivingMode.update(0.016, 0);
 
         // Should have turned towards +X (Right) -> PI/2
-        expect(drivingMode.redCar!.rotation.y).toBeCloseTo(Math.PI / 2);
+        // We check userData.heading because rotation.y is updated by lookAt which is mocked
+        expect(drivingMode.redCar!.userData.heading).toBeCloseTo(Math.PI / 2);
     });
 });
 

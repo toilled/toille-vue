@@ -10,6 +10,14 @@ vi.mock('vue-router', () => ({
   }))
 }))
 
+vi.stubGlobal("requestAnimationFrame", vi.fn((cb) => setTimeout(cb, 16)));
+vi.stubGlobal("cancelAnimationFrame", vi.fn((id) => clearTimeout(id)));
+vi.stubGlobal("ResizeObserver", class ResizeObserver {
+  observe() { }
+  unobserve() { }
+  disconnect() { }
+});
+
 // Mock Three.js
 vi.mock('three', () => {
   const THREE = {
@@ -109,6 +117,7 @@ vi.mock('three', () => {
         multiplyScalar: vi.fn()
       },
       rotation: { x: 0, y: 0, z: 0 },
+      up: { x: 0, y: 1, z: 0, set: vi.fn(), copy: vi.fn() },
       traverse: vi.fn(),
       userData: {},
       lookAt: vi.fn()
@@ -124,6 +133,7 @@ vi.mock('three', () => {
         add: vi.fn()
       },
       rotation: { x: 0, y: 0, z: 0 },
+      up: { x: 0, y: 1, z: 0, set: vi.fn(), copy: vi.fn() },
       scale: { set: vi.fn() },
       userData: {},
       add: vi.fn(),
@@ -204,6 +214,7 @@ vi.mock('three', () => {
       subVectors: vi.fn(),
       normalize: vi.fn(),
       multiplyScalar: vi.fn(),
+      divideScalar: vi.fn(),
       applyEuler: vi.fn()
     })),
     Vector2: vi.fn(),

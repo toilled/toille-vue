@@ -129,12 +129,13 @@ vi.mock("three", async () => {
         x: 0,
         y: 0,
         z: 0,
-        set: vi.fn(),
-        copy: vi.fn(),
+        set: vi.fn(function(x, y, z) { this.x = x; this.y = y; this.z = z; return this; }),
+        copy: vi.fn(function(v) { this.x = v.x; this.y = v.y; this.z = v.z; return this; }),
         lerp: vi.fn(),
         distanceTo: vi.fn(),
         distanceToSquared: vi.fn(),
       };
+      up = { x: 0, y: 1, z: 0, set: vi.fn(), copy: vi.fn() };
       rotation = { x: 0, y: 0, z: 0, copy: vi.fn() };
       scale = { set: vi.fn() };
       material: any;
@@ -172,11 +173,12 @@ vi.mock("three", async () => {
         x: 0,
         y: 0,
         z: 0,
-        set: vi.fn(),
-        copy: vi.fn(),
+        set: vi.fn(function(x, y, z) { this.x = x; this.y = y; this.z = z; return this; }),
+        copy: vi.fn(function(v) { this.x = v.x; this.y = v.y; this.z = v.z; return this; }),
         distanceTo: vi.fn(),
         distanceToSquared: vi.fn(),
       };
+      up = { x: 0, y: 1, z: 0, set: vi.fn(), copy: vi.fn() };
       rotation = { x: 0, y: 0, z: 0, copy: vi.fn() };
       userData: any = {};
       visible = true;

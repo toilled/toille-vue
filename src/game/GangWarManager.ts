@@ -12,6 +12,7 @@ import {
   Matrix4
 } from "three";
 import { CELL_SIZE, START_OFFSET, GRID_SIZE, ROAD_WIDTH, BLOCK_SIZE } from "./config";
+import { getHeight } from "../utils/HeightMap";
 
 interface GangConfig {
   id: number;
@@ -165,7 +166,8 @@ export class GangWarManager {
 
   spawnWarrior(x: number, z: number, gang: GangConfig) {
     const group = new Group();
-    group.position.set(x, 1.25, z); // 1.25y (half height)
+    const y = getHeight(x, z);
+    group.position.set(x, y + 1.25, z); // 1.25y (half height)
 
     const mat = new MeshBasicMaterial({ color: gang.color });
     const blackMat = new MeshBasicMaterial({ color: 0x111111 });
@@ -305,6 +307,10 @@ export class GangWarManager {
       // Chase
       const dir = targetPos.sub(w.group.position).normalize();
       w.group.position.add(dir.multiplyScalar(w.speed * dt));
+
+      // Update Y
+      const h = getHeight(w.group.position.x, w.group.position.z);
+      w.group.position.y = h + 1.25;
     } else {
       // Shoot
       if (w.cooldown <= 0) {
@@ -365,7 +371,8 @@ export class GangWarManager {
   killWarrior(w: Warrior) {
     w.state = "DEAD";
     w.group.rotation.x = Math.PI / 2; // Fall over
-    w.group.position.y = 0.5;
+    const h = getHeight(w.group.position.x, w.group.position.z);
+    w.group.position.y = h + 0.5;
 
     // We remove them from scene after a while to save memory, or reuse them.
     // For now, let's just leave them as corpses or sink them.

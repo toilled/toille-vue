@@ -32,6 +32,7 @@ import {
   createRoughFloorTexture,
   createWindowTexture,
 } from "../utils/TextureGenerator";
+import { getHeight } from "../utils/HeightMap";
 
 export class CityBuilder {
   private scene: Scene;
@@ -79,7 +80,22 @@ export class CityBuilder {
 
   private createGround() {
     const groundTexture = createGroundTexture();
-    const planeGeometry = new PlaneGeometry(CITY_SIZE * 2, CITY_SIZE * 2);
+    const planeGeometry = new PlaneGeometry(
+      CITY_SIZE * 2,
+      CITY_SIZE * 2,
+      128,
+      128,
+    );
+
+    const posAttribute = planeGeometry.attributes.position;
+    for (let i = 0; i < posAttribute.count; i++) {
+      const x = posAttribute.getX(i);
+      const y = posAttribute.getY(i);
+      // Local y corresponds to world -z after rotation
+      const h = getHeight(x, -y);
+      posAttribute.setZ(i, h);
+    }
+    planeGeometry.computeVertexNormals();
 
     const repeatCount = (CITY_SIZE * 2) / CELL_SIZE;
     groundTexture.repeat.set(repeatCount, repeatCount);
@@ -165,29 +181,13 @@ export class CityBuilder {
       for (let z = 0; z < GRID_SIZE; z++) {
         const isLeaderboardBuilding = x === 5 && z === 5;
 
-        if (!isLeaderboardBuilding && Math.random() > 0.8) {
-          const floorSize = BLOCK_SIZE - 2;
-          const floorGeo = new PlaneGeometry(floorSize, floorSize);
-          const floorMat = new MeshStandardMaterial({
-            color: 0x222222,
-            roughness: 0.9,
-            metalness: 0.1,
-            map: createRoughFloorTexture(),
-          });
-          const floorMesh = new Mesh(floorGeo, floorMat);
-          floorMesh.rotation.x = -Math.PI / 2;
-          floorMesh.position.set(
-            START_OFFSET + x * CELL_SIZE,
-            0.1,
-            START_OFFSET + z * CELL_SIZE,
-          );
-          this.scene.add(floorMesh);
-          this.buildings.push(floorMesh);
-          continue;
-        }
-
         const xPos = START_OFFSET + x * CELL_SIZE;
         const zPos = START_OFFSET + z * CELL_SIZE;
+
+        if (!isLeaderboardBuilding && Math.random() > 0.8) {
+          // No building in this square
+          continue;
+        }
 
         let h = 40 + Math.random() * 120;
         let w = BLOCK_SIZE - 10 - Math.random() * 20;
@@ -201,8 +201,15 @@ export class CityBuilder {
 
         this.occupiedGrids.set(`${x},${z}`, { halfW: w / 2, halfD: d / 2 });
 
+        // Calculate ground height
+        const h1 = getHeight(xPos - w / 2, zPos - d / 2);
+        const h2 = getHeight(xPos + w / 2, zPos - d / 2);
+        const h3 = getHeight(xPos - w / 2, zPos + d / 2);
+        const h4 = getHeight(xPos + w / 2, zPos + d / 2);
+        const minH = Math.min(h1, h2, h3, h4);
+
         const buildingGroup = new Group();
-        buildingGroup.position.set(xPos, 0, zPos);
+        buildingGroup.position.set(xPos, minH, zPos);
 
         let style = "SIMPLE";
         if (!isLeaderboardBuilding) {

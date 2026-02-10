@@ -2,6 +2,7 @@ import { GameContext, GameMode } from "../types";
 import { carAudio } from "../audio/CarAudio";
 import { BOUNDS, CELL_SIZE, START_OFFSET, GRID_SIZE, CITY_SIZE } from "../config";
 import { Vector3, Group, BoxGeometry, MeshStandardMaterial, Mesh, SpotLight, Object3D } from "three";
+import { getHeight, getNormal } from "../../utils/HeightMap";
 
 export class DrivingMode implements GameMode {
     context: GameContext | null = null;
@@ -18,6 +19,11 @@ export class DrivingMode implements GameMode {
         if (context.activeCar.value) {
             context.activeCar.value.userData.isPlayerControlled = true;
             context.activeCar.value.userData.currentSpeed = 0;
+            // Initialize heading if not present
+            if (context.activeCar.value.userData.heading === undefined) {
+                context.activeCar.value.userData.heading = context.activeCar.value.rotation.y;
+            }
+
             context.timeLeft.value = 30;
             context.isGameOver.value = false;
             context.spawnCheckpoint();
@@ -88,17 +94,18 @@ export class DrivingMode implements GameMode {
             if (axis === 'x') {
                 z = roadCoordinate; // Road runs x-axis
                 x = otherCoord;
-                this.redCar.rotation.y = Math.random() > 0.5 ? Math.PI / 2 : -Math.PI / 2;
+                this.redCar.userData.heading = Math.random() > 0.5 ? Math.PI / 2 : -Math.PI / 2;
             } else {
                 x = roadCoordinate; // Road runs z-axis
                 z = otherCoord;
-                this.redCar.rotation.y = Math.random() > 0.5 ? 0 : Math.PI;
+                this.redCar.userData.heading = Math.random() > 0.5 ? 0 : Math.PI;
             }
 
             // Check dist
             const dist = Math.sqrt((x - player.position.x) ** 2 + (z - player.position.z) ** 2);
             if (dist > 500) {
-                this.redCar.position.set(x, 1, z);
+                const h = getHeight(x, z);
+                this.redCar.position.set(x, h + 1, z);
                 spawned = true;
             }
             attempts++;
@@ -120,11 +127,24 @@ export class DrivingMode implements GameMode {
             carAudio.update(car.userData.currentSpeed);
 
             const speed = car.userData.currentSpeed;
-            car.position.x += Math.sin(car.rotation.y) * speed;
-            car.position.z += Math.cos(car.rotation.y) * speed;
+            // Use heading
+            const heading = car.userData.heading ?? car.rotation.y;
+            car.position.x += Math.sin(heading) * speed;
+            car.position.z += Math.cos(heading) * speed;
+
+            car.position.y = getHeight(car.position.x, car.position.z) + 1;
+
+            // Apply orientation
+            const normal = getNormal(car.position.x, car.position.z);
+            car.up.set(normal.x, normal.y, normal.z);
+            const lookDist = 5;
+            const tx = car.position.x + Math.sin(heading) * lookDist;
+            const tz = car.position.z + Math.cos(heading) * lookDist;
+            const ty = getHeight(tx, tz) + 1;
+            car.lookAt(tx, ty, tz);
 
             // Still follow camera
-            const angle = car.rotation.y;
+            const angle = heading;
             const dist = 40;
             const height = 20;
             const targetX = car.position.x - Math.sin(angle) * dist;
@@ -207,12 +227,26 @@ export class DrivingMode implements GameMode {
         if (Math.abs(speed) > 0.1) {
             const dir = speed > 0 ? 1 : -1;
             const turnSpeed = 0.04 / (Math.sqrt(Math.abs(speed)) + 1);
-            if (controls.value.left) car.rotation.y += turnSpeed * dir;
-            if (controls.value.right) car.rotation.y -= turnSpeed * dir;
+            // Update userData.heading instead of rotation.y
+            if (controls.value.left) car.userData.heading += turnSpeed * dir;
+            if (controls.value.right) car.userData.heading -= turnSpeed * dir;
         }
 
-        car.position.x += Math.sin(car.rotation.y) * speed;
-        car.position.z += Math.cos(car.rotation.y) * speed;
+        const heading = car.userData.heading ?? car.rotation.y;
+
+        car.position.x += Math.sin(heading) * speed;
+        car.position.z += Math.cos(heading) * speed;
+
+        car.position.y = getHeight(car.position.x, car.position.z) + 1;
+
+        // Apply orientation
+        const normal = getNormal(car.position.x, car.position.z);
+        car.up.set(normal.x, normal.y, normal.z);
+        const lookDist = 5;
+        const tx = car.position.x + Math.sin(heading) * lookDist;
+        const tz = car.position.z + Math.cos(heading) * lookDist;
+        const ty = getHeight(tx, tz) + 1;
+        car.lookAt(tx, ty, tz);
 
         // Bounds
         if (car.position.x > BOUNDS) car.position.x = -BOUNDS;
@@ -244,7 +278,7 @@ export class DrivingMode implements GameMode {
         }
 
         // Camera Follow
-        const angle = car.rotation.y;
+        const angle = heading;
         const dist = 40;
         const height = 20;
         const targetX = car.position.x - Math.sin(angle) * dist;
@@ -264,11 +298,22 @@ export class DrivingMode implements GameMode {
         if (!this.redCar) return;
 
         const redSpeed = this.redCarSpeed;
-        const currentRotation = this.redCar.rotation.y;
+        const currentRotation = this.redCar.userData.heading ?? 0;
 
         // Move Forward
         this.redCar.position.x += Math.sin(currentRotation) * redSpeed;
         this.redCar.position.z += Math.cos(currentRotation) * redSpeed;
+
+        this.redCar.position.y = getHeight(this.redCar.position.x, this.redCar.position.z) + 1;
+
+        // Apply Orientation
+        const normal = getNormal(this.redCar.position.x, this.redCar.position.z);
+        this.redCar.up.set(normal.x, normal.y, normal.z);
+        const lookDist = 5;
+        const tx = this.redCar.position.x + Math.sin(currentRotation) * lookDist;
+        const tz = this.redCar.position.z + Math.cos(currentRotation) * lookDist;
+        const ty = getHeight(tx, tz) + 1;
+        this.redCar.lookAt(tx, ty, tz);
 
         // Lateral Movement Logic relative to road
         // Determine primary axis of movement (if cos is high, it's Z axis)
@@ -334,11 +379,11 @@ export class DrivingMode implements GameMode {
         if (longDist < 5 && latDist < 25) {
             const directions = [0, Math.PI / 2, Math.PI, -Math.PI / 2];
 
-            let bestDir = this.redCar.rotation.y;
+            let bestDir = this.redCar.userData.heading ?? 0;
             let minDst = Infinity;
 
-            const curDirX = Math.sin(this.redCar.rotation.y);
-            const curDirZ = Math.cos(this.redCar.rotation.y);
+            const curDirX = Math.sin(bestDir);
+            const curDirZ = Math.cos(bestDir);
 
             for (const dir of directions) {
                 const dx = Math.sin(dir);
@@ -360,7 +405,7 @@ export class DrivingMode implements GameMode {
             }
 
             // Apply turn
-            this.redCar.rotation.y = bestDir;
+            this.redCar.userData.heading = bestDir;
 
             // Push car forward in new direction to clear intersection trigger
             this.redCar.position.x += Math.sin(bestDir) * 6;

@@ -2,6 +2,7 @@ import { GameContext, GameMode } from "../types";
 import { carAudio } from "../audio/CarAudio";
 import { BOUNDS, CELL_SIZE, START_OFFSET } from "../config";
 import { Vector3, Euler, Quaternion } from "three";
+import { getHeight } from "../../utils/HeightMap";
 
 export class ExplorationMode implements GameMode {
     context: GameContext | null = null;
@@ -116,20 +117,22 @@ export class ExplorationMode implements GameMode {
         if (camera.position.z > BOUNDS) camera.position.z = -BOUNDS;
         if (camera.position.z < -BOUNDS) camera.position.z = BOUNDS;
 
+        const currentGroundH = getHeight(camera.position.x, camera.position.z) + 3;
+
         // Jump & Bobbing
         if (this.isJumping) {
             camera.position.y += this.velocityY;
             this.velocityY -= this.gravity;
-            if (camera.position.y <= this.groundPosition) {
-                camera.position.y = this.groundPosition;
+            if (camera.position.y <= currentGroundH) {
+                camera.position.y = currentGroundH;
                 this.isJumping = false;
                 this.velocityY = 0;
             }
         } else {
             if (controls.value.forward || controls.value.backward || controls.value.left || controls.value.right) {
-                camera.position.y = this.groundPosition + Math.sin(Date.now() * 0.01) * 0.1;
+                camera.position.y = currentGroundH + Math.sin(Date.now() * 0.01) * 0.1;
             } else {
-                camera.position.y = this.groundPosition;
+                camera.position.y = currentGroundH;
             }
         }
 

@@ -185,22 +185,7 @@ export class CityBuilder {
         const zPos = START_OFFSET + z * CELL_SIZE;
 
         if (!isLeaderboardBuilding && Math.random() > 0.8) {
-          const floorSize = BLOCK_SIZE - 2;
-          const floorGeo = new PlaneGeometry(floorSize, floorSize);
-          const floorMat = new MeshStandardMaterial({
-            color: 0x222222,
-            roughness: 0.9,
-            metalness: 0.1,
-            map: createRoughFloorTexture(),
-          });
-          const floorMesh = new Mesh(floorGeo, floorMat);
-          floorMesh.rotation.x = -Math.PI / 2;
-
-          const fh = getHeight(xPos, zPos);
-          floorMesh.position.set(xPos, fh + 0.5, zPos);
-
-          this.scene.add(floorMesh);
-          this.buildings.push(floorMesh);
+          // No building in this square
           continue;
         }
 

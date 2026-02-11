@@ -47,8 +47,11 @@ vi.mock("three", async () => {
     WebGLRenderer: class {
       domElement = document.createElement("canvas");
       shadowMap = { enabled: false, type: 0 };
+      toneMapping = 0;
+      toneMappingExposure = 1;
       setSize = vi.fn();
       setPixelRatio = vi.fn();
+      getPixelRatio = vi.fn(() => 1);
       render = vi.fn();
       dispose = vi.fn();
       setAnimationLoop = vi.fn();
@@ -59,6 +62,7 @@ vi.mock("three", async () => {
       constructor() { }
       translate() { }
       rotateX = vi.fn();
+      rotateZ = vi.fn();
       dispose() { }
     },
     SphereGeometry: class {
@@ -319,8 +323,46 @@ vi.mock("three", async () => {
       addEventListener() { }
       removeEventListener() { }
     },
+    HemisphereLight: class {
+      position = { set: vi.fn(), copy: vi.fn() };
+      isObject3D = true;
+      constructor() { }
+      add() { }
+      remove() { }
+      removeFromParent() { }
+      dispose() { }
+    },
+    PCFSoftShadowMap: 2,
+    ACESFilmicToneMapping: 4,
   };
 });
+
+vi.mock("three/examples/jsm/postprocessing/EffectComposer", () => ({
+  EffectComposer: class {
+    constructor() {}
+    addPass = vi.fn();
+    render = vi.fn();
+    setSize = vi.fn();
+  }
+}));
+
+vi.mock("three/examples/jsm/postprocessing/RenderPass", () => ({
+  RenderPass: class {
+    constructor() {}
+  }
+}));
+
+vi.mock("three/examples/jsm/postprocessing/UnrealBloomPass", () => ({
+  UnrealBloomPass: class {
+    constructor() {}
+  }
+}));
+
+vi.mock("three/examples/jsm/postprocessing/OutputPass", () => ({
+  OutputPass: class {
+    constructor() {}
+  }
+}));
 
 vi.stubGlobal("requestAnimationFrame", vi.fn((cb) => setTimeout(cb, 16)));
 vi.stubGlobal("cancelAnimationFrame", vi.fn((id) => clearTimeout(id)));

@@ -36489,6 +36489,45 @@ class SphereGeometry extends BufferGeometry {
 }
 
 /**
+ * This class works just like {@link ShaderMaterial}, except that definitions
+ * of built-in uniforms and attributes are not automatically prepended to the
+ * GLSL shader code.
+ *
+ * `RawShaderMaterial` can only be used with {@link WebGLRenderer}.
+ *
+ * @augments ShaderMaterial
+ */
+class RawShaderMaterial extends ShaderMaterial {
+
+	/**
+	 * Constructs a new raw shader material.
+	 *
+	 * @param {Object} [parameters] - An object with one or more properties
+	 * defining the material's appearance. Any property of the material
+	 * (including any property from inherited materials) can be passed
+	 * in here. Color values can be passed any type of value accepted
+	 * by {@link Color#set}.
+	 */
+	constructor( parameters ) {
+
+		super( parameters );
+
+		/**
+		 * This flag can be used for type testing.
+		 *
+		 * @type {boolean}
+		 * @readonly
+		 * @default true
+		 */
+		this.isRawShaderMaterial = true;
+
+		this.type = 'RawShaderMaterial';
+
+	}
+
+}
+
+/**
  * A standard physically based material, using Metallic-Roughness workflow.
  *
  * Physically based rendering (PBR) has recently become the standard in many
@@ -36907,392 +36946,6 @@ class MeshStandardMaterial extends Material {
 }
 
 /**
- * A material for non-shiny surfaces, without specular highlights.
- *
- * The material uses a non-physically based [Lambertian](https://en.wikipedia.org/wiki/Lambertian_reflectance)
- * model for calculating reflectance. This can simulate some surfaces (such
- * as untreated wood or stone) well, but cannot simulate shiny surfaces with
- * specular highlights (such as varnished wood). `MeshLambertMaterial` uses per-fragment
- * shading.
- *
- * Due to the simplicity of the reflectance and illumination models,
- * performance will be greater when using this material over the
- * {@link MeshPhongMaterial}, {@link MeshStandardMaterial} or
- * {@link MeshPhysicalMaterial}, at the cost of some graphical accuracy.
- *
- * @augments Material
- * @demo scenes/material-browser.html#MeshLambertMaterial
- */
-class MeshLambertMaterial extends Material {
-
-	/**
-	 * Constructs a new mesh lambert material.
-	 *
-	 * @param {Object} [parameters] - An object with one or more properties
-	 * defining the material's appearance. Any property of the material
-	 * (including any property from inherited materials) can be passed
-	 * in here. Color values can be passed any type of value accepted
-	 * by {@link Color#set}.
-	 */
-	constructor( parameters ) {
-
-		super();
-
-		/**
-		 * This flag can be used for type testing.
-		 *
-		 * @type {boolean}
-		 * @readonly
-		 * @default true
-		 */
-		this.isMeshLambertMaterial = true;
-
-		this.type = 'MeshLambertMaterial';
-
-		/**
-		 * Color of the material.
-		 *
-		 * @type {Color}
-		 * @default (1,1,1)
-		 */
-		this.color = new Color( 0xffffff ); // diffuse
-
-		/**
-		 * The color map. May optionally include an alpha channel, typically combined
-		 * with {@link Material#transparent} or {@link Material#alphaTest}. The texture map
-		 * color is modulated by the diffuse `color`.
-		 *
-		 * @type {?Texture}
-		 * @default null
-		 */
-		this.map = null;
-
-		/**
-		 * The light map. Requires a second set of UVs.
-		 *
-		 * @type {?Texture}
-		 * @default null
-		 */
-		this.lightMap = null;
-
-		/**
-		 * Intensity of the baked light.
-		 *
-		 * @type {number}
-		 * @default 1
-		 */
-		this.lightMapIntensity = 1.0;
-
-		/**
-		 * The red channel of this texture is used as the ambient occlusion map.
-		 * Requires a second set of UVs.
-		 *
-		 * @type {?Texture}
-		 * @default null
-		 */
-		this.aoMap = null;
-
-		/**
-		 * Intensity of the ambient occlusion effect. Range is `[0,1]`, where `0`
-		 * disables ambient occlusion. Where intensity is `1` and the AO map's
-		 * red channel is also `1`, ambient light is fully occluded on a surface.
-		 *
-		 * @type {number}
-		 * @default 1
-		 */
-		this.aoMapIntensity = 1.0;
-
-		/**
-		 * Emissive (light) color of the material, essentially a solid color
-		 * unaffected by other lighting.
-		 *
-		 * @type {Color}
-		 * @default (0,0,0)
-		 */
-		this.emissive = new Color( 0x000000 );
-
-		/**
-		 * Intensity of the emissive light. Modulates the emissive color.
-		 *
-		 * @type {number}
-		 * @default 1
-		 */
-		this.emissiveIntensity = 1.0;
-
-		/**
-		 * Set emissive (glow) map. The emissive map color is modulated by the
-		 * emissive color and the emissive intensity. If you have an emissive map,
-		 * be sure to set the emissive color to something other than black.
-		 *
-		 * @type {?Texture}
-		 * @default null
-		 */
-		this.emissiveMap = null;
-
-		/**
-		 * The texture to create a bump map. The black and white values map to the
-		 * perceived depth in relation to the lights. Bump doesn't actually affect
-		 * the geometry of the object, only the lighting. If a normal map is defined
-		 * this will be ignored.
-		 *
-		 * @type {?Texture}
-		 * @default null
-		 */
-		this.bumpMap = null;
-
-		/**
-		 * How much the bump map affects the material. Typical range is `[0,1]`.
-		 *
-		 * @type {number}
-		 * @default 1
-		 */
-		this.bumpScale = 1;
-
-		/**
-		 * The texture to create a normal map. The RGB values affect the surface
-		 * normal for each pixel fragment and change the way the color is lit. Normal
-		 * maps do not change the actual shape of the surface, only the lighting. In
-		 * case the material has a normal map authored using the left handed
-		 * convention, the `y` component of `normalScale` should be negated to compensate
-		 * for the different handedness.
-		 *
-		 * @type {?Texture}
-		 * @default null
-		 */
-		this.normalMap = null;
-
-		/**
-		 * The type of normal map.
-		 *
-		 * @type {(TangentSpaceNormalMap|ObjectSpaceNormalMap)}
-		 * @default TangentSpaceNormalMap
-		 */
-		this.normalMapType = TangentSpaceNormalMap;
-
-		/**
-		 * How much the normal map affects the material. Typical value range is `[0,1]`.
-		 *
-		 * @type {Vector2}
-		 * @default (1,1)
-		 */
-		this.normalScale = new Vector2( 1, 1 );
-
-		/**
-		 * The displacement map affects the position of the mesh's vertices. Unlike
-		 * other maps which only affect the light and shade of the material the
-		 * displaced vertices can cast shadows, block other objects, and otherwise
-		 * act as real geometry. The displacement texture is an image where the value
-		 * of each pixel (white being the highest) is mapped against, and
-		 * repositions, the vertices of the mesh.
-		 *
-		 * @type {?Texture}
-		 * @default null
-		 */
-		this.displacementMap = null;
-
-		/**
-		 * How much the displacement map affects the mesh (where black is no
-		 * displacement, and white is maximum displacement). Without a displacement
-		 * map set, this value is not applied.
-		 *
-		 * @type {number}
-		 * @default 0
-		 */
-		this.displacementScale = 1;
-
-		/**
-		 * The offset of the displacement map's values on the mesh's vertices.
-		 * The bias is added to the scaled sample of the displacement map.
-		 * Without a displacement map set, this value is not applied.
-		 *
-		 * @type {number}
-		 * @default 0
-		 */
-		this.displacementBias = 0;
-
-		/**
-		 * Specular map used by the material.
-		 *
-		 * @type {?Texture}
-		 * @default null
-		 */
-		this.specularMap = null;
-
-		/**
-		 * The alpha map is a grayscale texture that controls the opacity across the
-		 * surface (black: fully transparent; white: fully opaque).
-		 *
-		 * Only the color of the texture is used, ignoring the alpha channel if one
-		 * exists. For RGB and RGBA textures, the renderer will use the green channel
-		 * when sampling this texture due to the extra bit of precision provided for
-		 * green in DXT-compressed and uncompressed RGB 565 formats. Luminance-only and
-		 * luminance/alpha textures will also still work as expected.
-		 *
-		 * @type {?Texture}
-		 * @default null
-		 */
-		this.alphaMap = null;
-
-		/**
-		 * The environment map.
-		 *
-		 * @type {?Texture}
-		 * @default null
-		 */
-		this.envMap = null;
-
-		/**
-		 * The rotation of the environment map in radians.
-		 *
-		 * @type {Euler}
-		 * @default (0,0,0)
-		 */
-		this.envMapRotation = new Euler();
-
-		/**
-		 * How to combine the result of the surface's color with the environment map, if any.
-		 *
-		 * When set to `MixOperation`, the {@link MeshBasicMaterial#reflectivity} is used to
-		 * blend between the two colors.
-		 *
-		 * @type {(MultiplyOperation|MixOperation|AddOperation)}
-		 * @default MultiplyOperation
-		 */
-		this.combine = MultiplyOperation;
-
-		/**
-		 * How much the environment map affects the surface.
-		 * The valid range is between `0` (no reflections) and `1` (full reflections).
-		 *
-		 * @type {number}
-		 * @default 1
-		 */
-		this.reflectivity = 1;
-
-		/**
-		 * The index of refraction (IOR) of air (approximately 1) divided by the
-		 * index of refraction of the material. It is used with environment mapping
-		 * modes {@link CubeRefractionMapping} and {@link EquirectangularRefractionMapping}.
-		 * The refraction ratio should not exceed `1`.
-		 *
-		 * @type {number}
-		 * @default 0.98
-		 */
-		this.refractionRatio = 0.98;
-
-		/**
-		 * Renders the geometry as a wireframe.
-		 *
-		 * @type {boolean}
-		 * @default false
-		 */
-		this.wireframe = false;
-
-		/**
-		 * Controls the thickness of the wireframe.
-		 *
-		 * Can only be used with {@link SVGRenderer}.
-		 *
-		 * @type {number}
-		 * @default 1
-		 */
-		this.wireframeLinewidth = 1;
-
-		/**
-		 * Defines appearance of wireframe ends.
-		 *
-		 * Can only be used with {@link SVGRenderer}.
-		 *
-		 * @type {('round'|'bevel'|'miter')}
-		 * @default 'round'
-		 */
-		this.wireframeLinecap = 'round';
-
-		/**
-		 * Defines appearance of wireframe joints.
-		 *
-		 * Can only be used with {@link SVGRenderer}.
-		 *
-		 * @type {('round'|'bevel'|'miter')}
-		 * @default 'round'
-		 */
-		this.wireframeLinejoin = 'round';
-
-		/**
-		 * Whether the material is rendered with flat shading or not.
-		 *
-		 * @type {boolean}
-		 * @default false
-		 */
-		this.flatShading = false;
-
-		/**
-		 * Whether the material is affected by fog or not.
-		 *
-		 * @type {boolean}
-		 * @default true
-		 */
-		this.fog = true;
-
-		this.setValues( parameters );
-
-	}
-
-	copy( source ) {
-
-		super.copy( source );
-
-		this.color.copy( source.color );
-
-		this.map = source.map;
-
-		this.lightMap = source.lightMap;
-		this.lightMapIntensity = source.lightMapIntensity;
-
-		this.aoMap = source.aoMap;
-		this.aoMapIntensity = source.aoMapIntensity;
-
-		this.emissive.copy( source.emissive );
-		this.emissiveMap = source.emissiveMap;
-		this.emissiveIntensity = source.emissiveIntensity;
-
-		this.bumpMap = source.bumpMap;
-		this.bumpScale = source.bumpScale;
-
-		this.normalMap = source.normalMap;
-		this.normalMapType = source.normalMapType;
-		this.normalScale.copy( source.normalScale );
-
-		this.displacementMap = source.displacementMap;
-		this.displacementScale = source.displacementScale;
-		this.displacementBias = source.displacementBias;
-
-		this.specularMap = source.specularMap;
-
-		this.alphaMap = source.alphaMap;
-
-		this.envMap = source.envMap;
-		this.envMapRotation.copy( source.envMapRotation );
-		this.combine = source.combine;
-		this.reflectivity = source.reflectivity;
-		this.refractionRatio = source.refractionRatio;
-
-		this.wireframe = source.wireframe;
-		this.wireframeLinewidth = source.wireframeLinewidth;
-		this.wireframeLinecap = source.wireframeLinecap;
-		this.wireframeLinejoin = source.wireframeLinejoin;
-
-		this.flatShading = source.flatShading;
-
-		this.fog = source.fog;
-
-		return this;
-
-	}
-
-}
-
-/**
  * A material for drawing geometry by depth. Depth is based off of the camera
  * near and far plane. White is nearest, black is farthest.
  *
@@ -37638,6 +37291,67 @@ class Light extends Object3D {
 		if ( this.target !== undefined ) data.object.target = this.target.uuid;
 
 		return data;
+
+	}
+
+}
+
+/**
+ * A light source positioned directly above the scene, with color fading from
+ * the sky color to the ground color.
+ *
+ * This light cannot be used to cast shadows.
+ *
+ * ```js
+ * const light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
+ * scene.add( light );
+ * ```
+ *
+ * @augments Light
+ */
+class HemisphereLight extends Light {
+
+	/**
+	 * Constructs a new hemisphere light.
+	 *
+	 * @param {(number|Color|string)} [skyColor=0xffffff] - The light's sky color.
+	 * @param {(number|Color|string)} [groundColor=0xffffff] - The light's ground color.
+	 * @param {number} [intensity=1] - The light's strength/intensity.
+	 */
+	constructor( skyColor, groundColor, intensity ) {
+
+		super( skyColor, intensity );
+
+		/**
+		 * This flag can be used for type testing.
+		 *
+		 * @type {boolean}
+		 * @readonly
+		 * @default true
+		 */
+		this.isHemisphereLight = true;
+
+		this.type = 'HemisphereLight';
+
+		this.position.copy( Object3D.DEFAULT_UP );
+		this.updateMatrix();
+
+		/**
+		 * The light's ground color.
+		 *
+		 * @type {Color}
+		 */
+		this.groundColor = new Color( groundColor );
+
+	}
+
+	copy( source, recursive ) {
+
+		super.copy( source, recursive );
+
+		this.groundColor.copy( source.groundColor );
+
+		return this;
 
 	}
 
@@ -38802,45 +38516,6 @@ class DirectionalLight extends Light {
 }
 
 /**
- * This light globally illuminates all objects in the scene equally.
- *
- * It cannot be used to cast shadows as it does not have a direction.
- *
- * ```js
- * const light = new THREE.AmbientLight( 0x404040 ); // soft white light
- * scene.add( light );
- * ```
- *
- * @augments Light
- */
-class AmbientLight extends Light {
-
-	/**
-	 * Constructs a new ambient light.
-	 *
-	 * @param {(number|Color|string)} [color=0xffffff] - The light's color.
-	 * @param {number} [intensity=1] - The light's strength/intensity.
-	 */
-	constructor( color, intensity ) {
-
-		super( color, intensity );
-
-		/**
-		 * This flag can be used for type testing.
-		 *
-		 * @type {boolean}
-		 * @readonly
-		 * @default true
-		 */
-		this.isAmbientLight = true;
-
-		this.type = 'AmbientLight';
-
-	}
-
-}
-
-/**
  * This type of camera can be used in order to efficiently render a scene with a
  * predefined set of cameras. This is an important performance aspect for
  * rendering VR scenes.
@@ -38886,6 +38561,133 @@ class ArrayCamera extends PerspectiveCamera {
 		 * @type {Array<PerspectiveCamera>}
 		 */
 		this.cameras = array;
+
+	}
+
+}
+
+/**
+ * Class for keeping track of time.
+ */
+class Clock {
+
+	/**
+	 * Constructs a new clock.
+	 *
+	 * @param {boolean} [autoStart=true] - Whether to automatically start the clock when
+	 * `getDelta()` is called for the first time.
+	 */
+	constructor( autoStart = true ) {
+
+		/**
+		 * If set to `true`, the clock starts automatically when `getDelta()` is called
+		 * for the first time.
+		 *
+		 * @type {boolean}
+		 * @default true
+		 */
+		this.autoStart = autoStart;
+
+		/**
+		 * Holds the time at which the clock's `start()` method was last called.
+		 *
+		 * @type {number}
+		 * @default 0
+		 */
+		this.startTime = 0;
+
+		/**
+		 * Holds the time at which the clock's `start()`, `getElapsedTime()` or
+		 * `getDelta()` methods were last called.
+		 *
+		 * @type {number}
+		 * @default 0
+		 */
+		this.oldTime = 0;
+
+		/**
+		 * Keeps track of the total time that the clock has been running.
+		 *
+		 * @type {number}
+		 * @default 0
+		 */
+		this.elapsedTime = 0;
+
+		/**
+		 * Whether the clock is running or not.
+		 *
+		 * @type {boolean}
+		 * @default true
+		 */
+		this.running = false;
+
+	}
+
+	/**
+	 * Starts the clock. When `autoStart` is set to `true`, the method is automatically
+	 * called by the class.
+	 */
+	start() {
+
+		this.startTime = performance.now();
+
+		this.oldTime = this.startTime;
+		this.elapsedTime = 0;
+		this.running = true;
+
+	}
+
+	/**
+	 * Stops the clock.
+	 */
+	stop() {
+
+		this.getElapsedTime();
+		this.running = false;
+		this.autoStart = false;
+
+	}
+
+	/**
+	 * Returns the elapsed time in seconds.
+	 *
+	 * @return {number} The elapsed time.
+	 */
+	getElapsedTime() {
+
+		this.getDelta();
+		return this.elapsedTime;
+
+	}
+
+	/**
+	 * Returns the delta time in seconds.
+	 *
+	 * @return {number} The delta time.
+	 */
+	getDelta() {
+
+		let diff = 0;
+
+		if ( this.autoStart && ! this.running ) {
+
+			this.start();
+			return 0;
+
+		}
+
+		if ( this.running ) {
+
+			const newTime = performance.now();
+
+			diff = ( newTime - this.oldTime ) / 1000;
+			this.oldTime = newTime;
+
+			this.elapsedTime += diff;
+
+		}
+
+		return diff;
 
 	}
 
@@ -57818,6 +57620,1851 @@ class WebGLRenderer {
 
 }
 
+/**
+ * @module CopyShader
+ * @three_import import { CopyShader } from 'three/addons/shaders/CopyShader.js';
+ */
+
+/**
+ * Full-screen copy shader pass.
+ *
+ * @constant
+ * @type {ShaderMaterial~Shader}
+ */
+const CopyShader = {
+
+	name: 'CopyShader',
+
+	uniforms: {
+
+		'tDiffuse': { value: null },
+		'opacity': { value: 1.0 }
+
+	},
+
+	vertexShader: /* glsl */`
+
+		varying vec2 vUv;
+
+		void main() {
+
+			vUv = uv;
+			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+
+		}`,
+
+	fragmentShader: /* glsl */`
+
+		uniform float opacity;
+
+		uniform sampler2D tDiffuse;
+
+		varying vec2 vUv;
+
+		void main() {
+
+			vec4 texel = texture2D( tDiffuse, vUv );
+			gl_FragColor = opacity * texel;
+
+
+		}`
+
+};
+
+/**
+ * Abstract base class for all post processing passes.
+ *
+ * This module is only relevant for post processing with {@link WebGLRenderer}.
+ *
+ * @abstract
+ * @three_import import { Pass } from 'three/addons/postprocessing/Pass.js';
+ */
+class Pass {
+
+	/**
+	 * Constructs a new pass.
+	 */
+	constructor() {
+
+		/**
+		 * This flag can be used for type testing.
+		 *
+		 * @type {boolean}
+		 * @readonly
+		 * @default true
+		 */
+		this.isPass = true;
+
+		/**
+		 * If set to `true`, the pass is processed by the composer.
+		 *
+		 * @type {boolean}
+		 * @default true
+		 */
+		this.enabled = true;
+
+		/**
+		 * If set to `true`, the pass indicates to swap read and write buffer after rendering.
+		 *
+		 * @type {boolean}
+		 * @default true
+		 */
+		this.needsSwap = true;
+
+		/**
+		 * If set to `true`, the pass clears its buffer before rendering
+		 *
+		 * @type {boolean}
+		 * @default false
+		 */
+		this.clear = false;
+
+		/**
+		 * If set to `true`, the result of the pass is rendered to screen. The last pass in the composers
+		 * pass chain gets automatically rendered to screen, no matter how this property is configured.
+		 *
+		 * @type {boolean}
+		 * @default false
+		 */
+		this.renderToScreen = false;
+
+	}
+
+	/**
+	 * Sets the size of the pass.
+	 *
+	 * @abstract
+	 * @param {number} width - The width to set.
+	 * @param {number} height - The height to set.
+	 */
+	setSize( /* width, height */ ) {}
+
+	/**
+	 * This method holds the render logic of a pass. It must be implemented in all derived classes.
+	 *
+	 * @abstract
+	 * @param {WebGLRenderer} renderer - The renderer.
+	 * @param {WebGLRenderTarget} writeBuffer - The write buffer. This buffer is intended as the rendering
+	 * destination for the pass.
+	 * @param {WebGLRenderTarget} readBuffer - The read buffer. The pass can access the result from the
+	 * previous pass from this buffer.
+	 * @param {number} deltaTime - The delta time in seconds.
+	 * @param {boolean} maskActive - Whether masking is active or not.
+	 */
+	render( /* renderer, writeBuffer, readBuffer, deltaTime, maskActive */ ) {
+
+		console.error( 'THREE.Pass: .render() must be implemented in derived pass.' );
+
+	}
+
+	/**
+	 * Frees the GPU-related resources allocated by this instance. Call this
+	 * method whenever the pass is no longer used in your app.
+	 *
+	 * @abstract
+	 */
+	dispose() {}
+
+}
+
+// Helper for passes that need to fill the viewport with a single quad.
+
+const _camera = new OrthographicCamera( -1, 1, 1, -1, 0, 1 );
+
+// https://github.com/mrdoob/three.js/pull/21358
+
+class FullscreenTriangleGeometry extends BufferGeometry {
+
+	constructor() {
+
+		super();
+
+		this.setAttribute( 'position', new Float32BufferAttribute( [ -1, 3, 0, -1, -1, 0, 3, -1, 0 ], 3 ) );
+		this.setAttribute( 'uv', new Float32BufferAttribute( [ 0, 2, 0, 0, 2, 0 ], 2 ) );
+
+	}
+
+}
+
+const _geometry = new FullscreenTriangleGeometry();
+
+
+/**
+ * This module is a helper for passes which need to render a full
+ * screen effect which is quite common in context of post processing.
+ *
+ * The intended usage is to reuse a single full screen quad for rendering
+ * subsequent passes by just reassigning the `material` reference.
+ *
+ * This module can only be used with {@link WebGLRenderer}.
+ *
+ * @augments Mesh
+ * @three_import import { FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
+ */
+class FullScreenQuad {
+
+	/**
+	 * Constructs a new full screen quad.
+	 *
+	 * @param {?Material} material - The material to render te full screen quad with.
+	 */
+	constructor( material ) {
+
+		this._mesh = new Mesh( _geometry, material );
+
+	}
+
+	/**
+	 * Frees the GPU-related resources allocated by this instance. Call this
+	 * method whenever the instance is no longer used in your app.
+	 */
+	dispose() {
+
+		this._mesh.geometry.dispose();
+
+	}
+
+	/**
+	 * Renders the full screen quad.
+	 *
+	 * @param {WebGLRenderer} renderer - The renderer.
+	 */
+	render( renderer ) {
+
+		renderer.render( this._mesh, _camera );
+
+	}
+
+	/**
+	 * The quad's material.
+	 *
+	 * @type {?Material}
+	 */
+	get material() {
+
+		return this._mesh.material;
+
+	}
+
+	set material( value ) {
+
+		this._mesh.material = value;
+
+	}
+
+}
+
+/**
+ * This pass can be used to create a post processing effect
+ * with a raw GLSL shader object. Useful for implementing custom
+ * effects.
+ *
+ * ```js
+ * const fxaaPass = new ShaderPass( FXAAShader );
+ * composer.addPass( fxaaPass );
+ * ```
+ *
+ * @augments Pass
+ * @three_import import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+ */
+class ShaderPass extends Pass {
+
+	/**
+	 * Constructs a new shader pass.
+	 *
+	 * @param {Object|ShaderMaterial} [shader] - A shader object holding vertex and fragment shader as well as
+	 * defines and uniforms. It's also valid to pass a custom shader material.
+	 * @param {string} [textureID='tDiffuse'] - The name of the texture uniform that should sample
+	 * the read buffer.
+	 */
+	constructor( shader, textureID = 'tDiffuse' ) {
+
+		super();
+
+		/**
+		 * The name of the texture uniform that should sample the read buffer.
+		 *
+		 * @type {string}
+		 * @default 'tDiffuse'
+		 */
+		this.textureID = textureID;
+
+		/**
+		 * The pass uniforms.
+		 *
+		 * @type {?Object}
+		 */
+		this.uniforms = null;
+
+		/**
+		 * The pass material.
+		 *
+		 * @type {?ShaderMaterial}
+		 */
+		this.material = null;
+
+		if ( shader instanceof ShaderMaterial ) {
+
+			this.uniforms = shader.uniforms;
+
+			this.material = shader;
+
+		} else if ( shader ) {
+
+			this.uniforms = UniformsUtils.clone( shader.uniforms );
+
+			this.material = new ShaderMaterial( {
+
+				name: ( shader.name !== undefined ) ? shader.name : 'unspecified',
+				defines: Object.assign( {}, shader.defines ),
+				uniforms: this.uniforms,
+				vertexShader: shader.vertexShader,
+				fragmentShader: shader.fragmentShader
+
+			} );
+
+		}
+
+		// internals
+
+		this._fsQuad = new FullScreenQuad( this.material );
+
+	}
+
+	/**
+	 * Performs the shader pass.
+	 *
+	 * @param {WebGLRenderer} renderer - The renderer.
+	 * @param {WebGLRenderTarget} writeBuffer - The write buffer. This buffer is intended as the rendering
+	 * destination for the pass.
+	 * @param {WebGLRenderTarget} readBuffer - The read buffer. The pass can access the result from the
+	 * previous pass from this buffer.
+	 * @param {number} deltaTime - The delta time in seconds.
+	 * @param {boolean} maskActive - Whether masking is active or not.
+	 */
+	render( renderer, writeBuffer, readBuffer /*, deltaTime, maskActive */ ) {
+
+		if ( this.uniforms[ this.textureID ] ) {
+
+			this.uniforms[ this.textureID ].value = readBuffer.texture;
+
+		}
+
+		this._fsQuad.material = this.material;
+
+		if ( this.renderToScreen ) {
+
+			renderer.setRenderTarget( null );
+			this._fsQuad.render( renderer );
+
+		} else {
+
+			renderer.setRenderTarget( writeBuffer );
+			// TODO: Avoid using autoClear properties, see https://github.com/mrdoob/three.js/pull/15571#issuecomment-465669600
+			if ( this.clear ) renderer.clear( renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil );
+			this._fsQuad.render( renderer );
+
+		}
+
+	}
+
+	/**
+	 * Frees the GPU-related resources allocated by this instance. Call this
+	 * method whenever the pass is no longer used in your app.
+	 */
+	dispose() {
+
+		this.material.dispose();
+
+		this._fsQuad.dispose();
+
+	}
+
+}
+
+/**
+ * This pass can be used to define a mask during post processing.
+ * Meaning only areas of subsequent post processing are affected
+ * which lie in the masking area of this pass. Internally, the masking
+ * is implemented with the stencil buffer.
+ *
+ * ```js
+ * const maskPass = new MaskPass( scene, camera );
+ * composer.addPass( maskPass );
+ * ```
+ *
+ * @augments Pass
+ * @three_import import { MaskPass } from 'three/addons/postprocessing/MaskPass.js';
+ */
+class MaskPass extends Pass {
+
+	/**
+	 * Constructs a new mask pass.
+	 *
+	 * @param {Scene} scene - The 3D objects in this scene will define the mask.
+	 * @param {Camera} camera - The camera.
+	 */
+	constructor( scene, camera ) {
+
+		super();
+
+		/**
+		 * The scene that defines the mask.
+		 *
+		 * @type {Scene}
+		 */
+		this.scene = scene;
+
+		/**
+		 * The camera.
+		 *
+		 * @type {Camera}
+		 */
+		this.camera = camera;
+
+		/**
+		 * Overwritten to perform a clear operation by default.
+		 *
+		 * @type {boolean}
+		 * @default true
+		 */
+		this.clear = true;
+
+		/**
+		 * Overwritten to disable the swap.
+		 *
+		 * @type {boolean}
+		 * @default false
+		 */
+		this.needsSwap = false;
+
+		/**
+		 * Whether to inverse the mask or not.
+		 *
+		 * @type {boolean}
+		 * @default false
+		 */
+		this.inverse = false;
+
+	}
+
+	/**
+	 * Performs a mask pass with the configured scene and camera.
+	 *
+	 * @param {WebGLRenderer} renderer - The renderer.
+	 * @param {WebGLRenderTarget} writeBuffer - The write buffer. This buffer is intended as the rendering
+	 * destination for the pass.
+	 * @param {WebGLRenderTarget} readBuffer - The read buffer. The pass can access the result from the
+	 * previous pass from this buffer.
+	 * @param {number} deltaTime - The delta time in seconds.
+	 * @param {boolean} maskActive - Whether masking is active or not.
+	 */
+	render( renderer, writeBuffer, readBuffer /*, deltaTime, maskActive */ ) {
+
+		const context = renderer.getContext();
+		const state = renderer.state;
+
+		// don't update color or depth
+
+		state.buffers.color.setMask( false );
+		state.buffers.depth.setMask( false );
+
+		// lock buffers
+
+		state.buffers.color.setLocked( true );
+		state.buffers.depth.setLocked( true );
+
+		// set up stencil
+
+		let writeValue, clearValue;
+
+		if ( this.inverse ) {
+
+			writeValue = 0;
+			clearValue = 1;
+
+		} else {
+
+			writeValue = 1;
+			clearValue = 0;
+
+		}
+
+		state.buffers.stencil.setTest( true );
+		state.buffers.stencil.setOp( context.REPLACE, context.REPLACE, context.REPLACE );
+		state.buffers.stencil.setFunc( context.ALWAYS, writeValue, 0xffffffff );
+		state.buffers.stencil.setClear( clearValue );
+		state.buffers.stencil.setLocked( true );
+
+		// draw into the stencil buffer
+
+		renderer.setRenderTarget( readBuffer );
+		if ( this.clear ) renderer.clear();
+		renderer.render( this.scene, this.camera );
+
+		renderer.setRenderTarget( writeBuffer );
+		if ( this.clear ) renderer.clear();
+		renderer.render( this.scene, this.camera );
+
+		// unlock color and depth buffer and make them writable for subsequent rendering/clearing
+
+		state.buffers.color.setLocked( false );
+		state.buffers.depth.setLocked( false );
+
+		state.buffers.color.setMask( true );
+		state.buffers.depth.setMask( true );
+
+		// only render where stencil is set to 1
+
+		state.buffers.stencil.setLocked( false );
+		state.buffers.stencil.setFunc( context.EQUAL, 1, 0xffffffff ); // draw if == 1
+		state.buffers.stencil.setOp( context.KEEP, context.KEEP, context.KEEP );
+		state.buffers.stencil.setLocked( true );
+
+	}
+
+}
+
+/**
+ * This pass can be used to clear a mask previously defined with {@link MaskPass}.
+ *
+ * ```js
+ * const clearPass = new ClearMaskPass();
+ * composer.addPass( clearPass );
+ * ```
+ *
+ * @augments Pass
+ */
+class ClearMaskPass extends Pass {
+
+	/**
+	 * Constructs a new clear mask pass.
+	 */
+	constructor() {
+
+		super();
+
+		/**
+		 * Overwritten to disable the swap.
+		 *
+		 * @type {boolean}
+		 * @default false
+		 */
+		this.needsSwap = false;
+
+	}
+
+	/**
+	 * Performs the clear of the currently defined mask.
+	 *
+	 * @param {WebGLRenderer} renderer - The renderer.
+	 * @param {WebGLRenderTarget} writeBuffer - The write buffer. This buffer is intended as the rendering
+	 * destination for the pass.
+	 * @param {WebGLRenderTarget} readBuffer - The read buffer. The pass can access the result from the
+	 * previous pass from this buffer.
+	 * @param {number} deltaTime - The delta time in seconds.
+	 * @param {boolean} maskActive - Whether masking is active or not.
+	 */
+	render( renderer /*, writeBuffer, readBuffer, deltaTime, maskActive */ ) {
+
+		renderer.state.buffers.stencil.setLocked( false );
+		renderer.state.buffers.stencil.setTest( false );
+
+	}
+
+}
+
+/**
+ * Used to implement post-processing effects in three.js.
+ * The class manages a chain of post-processing passes to produce the final visual result.
+ * Post-processing passes are executed in order of their addition/insertion.
+ * The last pass is automatically rendered to screen.
+ *
+ * This module can only be used with {@link WebGLRenderer}.
+ *
+ * ```js
+ * const composer = new EffectComposer( renderer );
+ *
+ * // adding some passes
+ * const renderPass = new RenderPass( scene, camera );
+ * composer.addPass( renderPass );
+ *
+ * const glitchPass = new GlitchPass();
+ * composer.addPass( glitchPass );
+ *
+ * const outputPass = new OutputPass()
+ * composer.addPass( outputPass );
+ *
+ * function animate() {
+ *
+ * 	composer.render(); // instead of renderer.render()
+ *
+ * }
+ * ```
+ *
+ * @three_import import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+ */
+class EffectComposer {
+
+	/**
+	 * Constructs a new effect composer.
+	 *
+	 * @param {WebGLRenderer} renderer - The renderer.
+	 * @param {WebGLRenderTarget} [renderTarget] - This render target and a clone will
+	 * be used as the internal read and write buffers. If not given, the composer creates
+	 * the buffers automatically.
+	 */
+	constructor( renderer, renderTarget ) {
+
+		/**
+		 * The renderer.
+		 *
+		 * @type {WebGLRenderer}
+		 */
+		this.renderer = renderer;
+
+		this._pixelRatio = renderer.getPixelRatio();
+
+		if ( renderTarget === undefined ) {
+
+			const size = renderer.getSize( new Vector2() );
+			this._width = size.width;
+			this._height = size.height;
+
+			renderTarget = new WebGLRenderTarget( this._width * this._pixelRatio, this._height * this._pixelRatio, { type: HalfFloatType } );
+			renderTarget.texture.name = 'EffectComposer.rt1';
+
+		} else {
+
+			this._width = renderTarget.width;
+			this._height = renderTarget.height;
+
+		}
+
+		this.renderTarget1 = renderTarget;
+		this.renderTarget2 = renderTarget.clone();
+		this.renderTarget2.texture.name = 'EffectComposer.rt2';
+
+		/**
+		 * A reference to the internal write buffer. Passes usually write
+		 * their result into this buffer.
+		 *
+		 * @type {WebGLRenderTarget}
+		 */
+		this.writeBuffer = this.renderTarget1;
+
+		/**
+		 * A reference to the internal read buffer. Passes usually read
+		 * the previous render result from this buffer.
+		 *
+		 * @type {WebGLRenderTarget}
+		 */
+		this.readBuffer = this.renderTarget2;
+
+		/**
+		 * Whether the final pass is rendered to the screen (default framebuffer) or not.
+		 *
+		 * @type {boolean}
+		 * @default true
+		 */
+		this.renderToScreen = true;
+
+		/**
+		 * An array representing the (ordered) chain of post-processing passes.
+		 *
+		 * @type {Array<Pass>}
+		 */
+		this.passes = [];
+
+		/**
+		 * A copy pass used for internal swap operations.
+		 *
+		 * @private
+		 * @type {ShaderPass}
+		 */
+		this.copyPass = new ShaderPass( CopyShader );
+		this.copyPass.material.blending = NoBlending;
+
+		/**
+		 * The internal clock for managing time data.
+		 *
+		 * @private
+		 * @type {Clock}
+		 */
+		this.clock = new Clock();
+
+	}
+
+	/**
+	 * Swaps the internal read/write buffers.
+	 */
+	swapBuffers() {
+
+		const tmp = this.readBuffer;
+		this.readBuffer = this.writeBuffer;
+		this.writeBuffer = tmp;
+
+	}
+
+	/**
+	 * Adds the given pass to the pass chain.
+	 *
+	 * @param {Pass} pass - The pass to add.
+	 */
+	addPass( pass ) {
+
+		this.passes.push( pass );
+		pass.setSize( this._width * this._pixelRatio, this._height * this._pixelRatio );
+
+	}
+
+	/**
+	 * Inserts the given pass at a given index.
+	 *
+	 * @param {Pass} pass - The pass to insert.
+	 * @param {number} index - The index into the pass chain.
+	 */
+	insertPass( pass, index ) {
+
+		this.passes.splice( index, 0, pass );
+		pass.setSize( this._width * this._pixelRatio, this._height * this._pixelRatio );
+
+	}
+
+	/**
+	 * Removes the given pass from the pass chain.
+	 *
+	 * @param {Pass} pass - The pass to remove.
+	 */
+	removePass( pass ) {
+
+		const index = this.passes.indexOf( pass );
+
+		if ( index !== -1 ) {
+
+			this.passes.splice( index, 1 );
+
+		}
+
+	}
+
+	/**
+	 * Returns `true` if the pass for the given index is the last enabled pass in the pass chain.
+	 *
+	 * @param {number} passIndex - The pass index.
+	 * @return {boolean} Whether the pass for the given index is the last pass in the pass chain.
+	 */
+	isLastEnabledPass( passIndex ) {
+
+		for ( let i = passIndex + 1; i < this.passes.length; i ++ ) {
+
+			if ( this.passes[ i ].enabled ) {
+
+				return false;
+
+			}
+
+		}
+
+		return true;
+
+	}
+
+	/**
+	 * Executes all enabled post-processing passes in order to produce the final frame.
+	 *
+	 * @param {number} deltaTime - The delta time in seconds. If not given, the composer computes
+	 * its own time delta value.
+	 */
+	render( deltaTime ) {
+
+		// deltaTime value is in seconds
+
+		if ( deltaTime === undefined ) {
+
+			deltaTime = this.clock.getDelta();
+
+		}
+
+		const currentRenderTarget = this.renderer.getRenderTarget();
+
+		let maskActive = false;
+
+		for ( let i = 0, il = this.passes.length; i < il; i ++ ) {
+
+			const pass = this.passes[ i ];
+
+			if ( pass.enabled === false ) continue;
+
+			pass.renderToScreen = ( this.renderToScreen && this.isLastEnabledPass( i ) );
+			pass.render( this.renderer, this.writeBuffer, this.readBuffer, deltaTime, maskActive );
+
+			if ( pass.needsSwap ) {
+
+				if ( maskActive ) {
+
+					const context = this.renderer.getContext();
+					const stencil = this.renderer.state.buffers.stencil;
+
+					//context.stencilFunc( context.NOTEQUAL, 1, 0xffffffff );
+					stencil.setFunc( context.NOTEQUAL, 1, 0xffffffff );
+
+					this.copyPass.render( this.renderer, this.writeBuffer, this.readBuffer, deltaTime );
+
+					//context.stencilFunc( context.EQUAL, 1, 0xffffffff );
+					stencil.setFunc( context.EQUAL, 1, 0xffffffff );
+
+				}
+
+				this.swapBuffers();
+
+			}
+
+			if ( MaskPass !== undefined ) {
+
+				if ( pass instanceof MaskPass ) {
+
+					maskActive = true;
+
+				} else if ( pass instanceof ClearMaskPass ) {
+
+					maskActive = false;
+
+				}
+
+			}
+
+		}
+
+		this.renderer.setRenderTarget( currentRenderTarget );
+
+	}
+
+	/**
+	 * Resets the internal state of the EffectComposer.
+	 *
+	 * @param {WebGLRenderTarget} [renderTarget] - This render target has the same purpose like
+	 * the one from the constructor. If set, it is used to setup the read and write buffers.
+	 */
+	reset( renderTarget ) {
+
+		if ( renderTarget === undefined ) {
+
+			const size = this.renderer.getSize( new Vector2() );
+			this._pixelRatio = this.renderer.getPixelRatio();
+			this._width = size.width;
+			this._height = size.height;
+
+			renderTarget = this.renderTarget1.clone();
+			renderTarget.setSize( this._width * this._pixelRatio, this._height * this._pixelRatio );
+
+		}
+
+		this.renderTarget1.dispose();
+		this.renderTarget2.dispose();
+		this.renderTarget1 = renderTarget;
+		this.renderTarget2 = renderTarget.clone();
+
+		this.writeBuffer = this.renderTarget1;
+		this.readBuffer = this.renderTarget2;
+
+	}
+
+	/**
+	 * Resizes the internal read and write buffers as well as all passes. Similar to {@link WebGLRenderer#setSize},
+	 * this method honors the current pixel ration.
+	 *
+	 * @param {number} width - The width in logical pixels.
+	 * @param {number} height - The height in logical pixels.
+	 */
+	setSize( width, height ) {
+
+		this._width = width;
+		this._height = height;
+
+		const effectiveWidth = this._width * this._pixelRatio;
+		const effectiveHeight = this._height * this._pixelRatio;
+
+		this.renderTarget1.setSize( effectiveWidth, effectiveHeight );
+		this.renderTarget2.setSize( effectiveWidth, effectiveHeight );
+
+		for ( let i = 0; i < this.passes.length; i ++ ) {
+
+			this.passes[ i ].setSize( effectiveWidth, effectiveHeight );
+
+		}
+
+	}
+
+	/**
+	 * Sets device pixel ratio. This is usually used for HiDPI device to prevent blurring output.
+	 * Setting the pixel ratio will automatically resize the composer.
+	 *
+	 * @param {number} pixelRatio - The pixel ratio to set.
+	 */
+	setPixelRatio( pixelRatio ) {
+
+		this._pixelRatio = pixelRatio;
+
+		this.setSize( this._width, this._height );
+
+	}
+
+	/**
+	 * Frees the GPU-related resources allocated by this instance. Call this
+	 * method whenever the composer is no longer used in your app.
+	 */
+	dispose() {
+
+		this.renderTarget1.dispose();
+		this.renderTarget2.dispose();
+
+		this.copyPass.dispose();
+
+	}
+
+}
+
+/**
+ * This class represents a render pass. It takes a camera and a scene and produces
+ * a beauty pass for subsequent post processing effects.
+ *
+ * ```js
+ * const renderPass = new RenderPass( scene, camera );
+ * composer.addPass( renderPass );
+ * ```
+ *
+ * @augments Pass
+ * @three_import import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+ */
+class RenderPass extends Pass {
+
+	/**
+	 * Constructs a new render pass.
+	 *
+	 * @param {Scene} scene - The scene to render.
+	 * @param {Camera} camera - The camera.
+	 * @param {?Material} [overrideMaterial=null] - The override material. If set, this material is used
+	 * for all objects in the scene.
+	 * @param {?(number|Color|string)} [clearColor=null] - The clear color of the render pass.
+	 * @param {?number} [clearAlpha=null] - The clear alpha of the render pass.
+	 */
+	constructor( scene, camera, overrideMaterial = null, clearColor = null, clearAlpha = null ) {
+
+		super();
+
+		/**
+		 * The scene to render.
+		 *
+		 * @type {Scene}
+		 */
+		this.scene = scene;
+
+		/**
+		 * The camera.
+		 *
+		 * @type {Camera}
+		 */
+		this.camera = camera;
+
+		/**
+		 * The override material. If set, this material is used
+		 * for all objects in the scene.
+		 *
+		 * @type {?Material}
+		 * @default null
+		 */
+		this.overrideMaterial = overrideMaterial;
+
+		/**
+		 * The clear color of the render pass.
+		 *
+		 * @type {?(number|Color|string)}
+		 * @default null
+		 */
+		this.clearColor = clearColor;
+
+		/**
+		 * The clear alpha of the render pass.
+		 *
+		 * @type {?number}
+		 * @default null
+		 */
+		this.clearAlpha = clearAlpha;
+
+		/**
+		 * Overwritten to perform a clear operation by default.
+		 *
+		 * @type {boolean}
+		 * @default true
+		 */
+		this.clear = true;
+
+		/**
+		 * If set to `true`, only the depth can be cleared when `clear` is to `false`.
+		 *
+		 * @type {boolean}
+		 * @default false
+		 */
+		this.clearDepth = false;
+
+		/**
+		 * Overwritten to disable the swap.
+		 *
+		 * @type {boolean}
+		 * @default false
+		 */
+		this.needsSwap = false;
+		this._oldClearColor = new Color();
+
+	}
+
+	/**
+	 * Performs a beauty pass with the configured scene and camera.
+	 *
+	 * @param {WebGLRenderer} renderer - The renderer.
+	 * @param {WebGLRenderTarget} writeBuffer - The write buffer. This buffer is intended as the rendering
+	 * destination for the pass.
+	 * @param {WebGLRenderTarget} readBuffer - The read buffer. The pass can access the result from the
+	 * previous pass from this buffer.
+	 * @param {number} deltaTime - The delta time in seconds.
+	 * @param {boolean} maskActive - Whether masking is active or not.
+	 */
+	render( renderer, writeBuffer, readBuffer /*, deltaTime, maskActive */ ) {
+
+		const oldAutoClear = renderer.autoClear;
+		renderer.autoClear = false;
+
+		let oldClearAlpha, oldOverrideMaterial;
+
+		if ( this.overrideMaterial !== null ) {
+
+			oldOverrideMaterial = this.scene.overrideMaterial;
+
+			this.scene.overrideMaterial = this.overrideMaterial;
+
+		}
+
+		if ( this.clearColor !== null ) {
+
+			renderer.getClearColor( this._oldClearColor );
+			renderer.setClearColor( this.clearColor, renderer.getClearAlpha() );
+
+		}
+
+		if ( this.clearAlpha !== null ) {
+
+			oldClearAlpha = renderer.getClearAlpha();
+			renderer.setClearAlpha( this.clearAlpha );
+
+		}
+
+		if ( this.clearDepth == true ) {
+
+			renderer.clearDepth();
+
+		}
+
+		renderer.setRenderTarget( this.renderToScreen ? null : readBuffer );
+
+		if ( this.clear === true ) {
+
+			// TODO: Avoid using autoClear properties, see https://github.com/mrdoob/three.js/pull/15571#issuecomment-465669600
+			renderer.clear( renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil );
+
+		}
+
+		renderer.render( this.scene, this.camera );
+
+		// restore
+
+		if ( this.clearColor !== null ) {
+
+			renderer.setClearColor( this._oldClearColor );
+
+		}
+
+		if ( this.clearAlpha !== null ) {
+
+			renderer.setClearAlpha( oldClearAlpha );
+
+		}
+
+		if ( this.overrideMaterial !== null ) {
+
+			this.scene.overrideMaterial = oldOverrideMaterial;
+
+		}
+
+		renderer.autoClear = oldAutoClear;
+
+	}
+
+}
+
+/**
+ * @module LuminosityHighPassShader
+ * @three_import import { LuminosityHighPassShader } from 'three/addons/shaders/LuminosityHighPassShader.js';
+ */
+
+/**
+ * Luminosity high pass shader.
+ *
+ * @constant
+ * @type {ShaderMaterial~Shader}
+ */
+const LuminosityHighPassShader = {
+
+	uniforms: {
+
+		'tDiffuse': { value: null },
+		'luminosityThreshold': { value: 1.0 },
+		'smoothWidth': { value: 1.0 },
+		'defaultColor': { value: new Color( 0x000000 ) },
+		'defaultOpacity': { value: 0.0 }
+
+	},
+
+	vertexShader: /* glsl */`
+
+		varying vec2 vUv;
+
+		void main() {
+
+			vUv = uv;
+
+			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+
+		}`,
+
+	fragmentShader: /* glsl */`
+
+		uniform sampler2D tDiffuse;
+		uniform vec3 defaultColor;
+		uniform float defaultOpacity;
+		uniform float luminosityThreshold;
+		uniform float smoothWidth;
+
+		varying vec2 vUv;
+
+		void main() {
+
+			vec4 texel = texture2D( tDiffuse, vUv );
+
+			float v = luminance( texel.xyz );
+
+			vec4 outputColor = vec4( defaultColor.rgb, defaultOpacity );
+
+			float alpha = smoothstep( luminosityThreshold, luminosityThreshold + smoothWidth, v );
+
+			gl_FragColor = mix( outputColor, texel, alpha );
+
+		}`
+
+};
+
+/**
+ * This pass is inspired by the bloom pass of Unreal Engine. It creates a
+ * mip map chain of bloom textures and blurs them with different radii. Because
+ * of the weighted combination of mips, and because larger blurs are done on
+ * higher mips, this effect provides good quality and performance.
+ *
+ * When using this pass, tone mapping must be enabled in the renderer settings.
+ *
+ * Reference:
+ * - [Bloom in Unreal Engine](https://docs.unrealengine.com/latest/INT/Engine/Rendering/PostProcessEffects/Bloom/)
+ *
+ * ```js
+ * const resolution = new THREE.Vector2( window.innerWidth, window.innerHeight );
+ * const bloomPass = new UnrealBloomPass( resolution, 1.5, 0.4, 0.85 );
+ * composer.addPass( bloomPass );
+ * ```
+ *
+ * @augments Pass
+ * @three_import import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+ */
+class UnrealBloomPass extends Pass {
+
+	/**
+	 * Constructs a new Unreal Bloom pass.
+	 *
+	 * @param {Vector2} [resolution] - The effect's resolution.
+	 * @param {number} [strength=1] - The Bloom strength.
+	 * @param {number} radius - The Bloom radius.
+	 * @param {number} threshold - The luminance threshold limits which bright areas contribute to the Bloom effect.
+	 */
+	constructor( resolution, strength = 1, radius, threshold ) {
+
+		super();
+
+		/**
+		 * The Bloom strength.
+		 *
+		 * @type {number}
+		 * @default 1
+		 */
+		this.strength = strength;
+
+		/**
+		 * The Bloom radius.
+		 *
+		 * @type {number}
+		 */
+		this.radius = radius;
+
+		/**
+		 * The luminance threshold limits which bright areas contribute to the Bloom effect.
+		 *
+		 * @type {number}
+		 */
+		this.threshold = threshold;
+
+		/**
+		 * The effect's resolution.
+		 *
+		 * @type {Vector2}
+		 * @default (256,256)
+		 */
+		this.resolution = ( resolution !== undefined ) ? new Vector2( resolution.x, resolution.y ) : new Vector2( 256, 256 );
+
+		/**
+		 * The effect's clear color
+		 *
+		 * @type {Color}
+		 * @default (0,0,0)
+		 */
+		this.clearColor = new Color( 0, 0, 0 );
+
+		/**
+		 * Overwritten to disable the swap.
+		 *
+		 * @type {boolean}
+		 * @default false
+		 */
+		this.needsSwap = false;
+
+		// internals
+
+		// render targets
+		this.renderTargetsHorizontal = [];
+		this.renderTargetsVertical = [];
+		this.nMips = 5;
+		let resx = Math.round( this.resolution.x / 2 );
+		let resy = Math.round( this.resolution.y / 2 );
+
+		this.renderTargetBright = new WebGLRenderTarget( resx, resy, { type: HalfFloatType } );
+		this.renderTargetBright.texture.name = 'UnrealBloomPass.bright';
+		this.renderTargetBright.texture.generateMipmaps = false;
+
+		for ( let i = 0; i < this.nMips; i ++ ) {
+
+			const renderTargetHorizontal = new WebGLRenderTarget( resx, resy, { type: HalfFloatType } );
+
+			renderTargetHorizontal.texture.name = 'UnrealBloomPass.h' + i;
+			renderTargetHorizontal.texture.generateMipmaps = false;
+
+			this.renderTargetsHorizontal.push( renderTargetHorizontal );
+
+			const renderTargetVertical = new WebGLRenderTarget( resx, resy, { type: HalfFloatType } );
+
+			renderTargetVertical.texture.name = 'UnrealBloomPass.v' + i;
+			renderTargetVertical.texture.generateMipmaps = false;
+
+			this.renderTargetsVertical.push( renderTargetVertical );
+
+			resx = Math.round( resx / 2 );
+
+			resy = Math.round( resy / 2 );
+
+		}
+
+		// luminosity high pass material
+
+		const highPassShader = LuminosityHighPassShader;
+		this.highPassUniforms = UniformsUtils.clone( highPassShader.uniforms );
+
+		this.highPassUniforms[ 'luminosityThreshold' ].value = threshold;
+		this.highPassUniforms[ 'smoothWidth' ].value = 0.01;
+
+		this.materialHighPassFilter = new ShaderMaterial( {
+			uniforms: this.highPassUniforms,
+			vertexShader: highPassShader.vertexShader,
+			fragmentShader: highPassShader.fragmentShader
+		} );
+
+		// gaussian blur materials
+
+		this.separableBlurMaterials = [];
+		// These sizes have been changed to account for the altered coefficients-calculation to avoid blockiness,
+		// while retaining the same blur-strength. For details see https://github.com/mrdoob/three.js/pull/31528
+		const kernelSizeArray = [ 6, 10, 14, 18, 22 ];
+		resx = Math.round( this.resolution.x / 2 );
+		resy = Math.round( this.resolution.y / 2 );
+
+		for ( let i = 0; i < this.nMips; i ++ ) {
+
+			this.separableBlurMaterials.push( this._getSeparableBlurMaterial( kernelSizeArray[ i ] ) );
+
+			this.separableBlurMaterials[ i ].uniforms[ 'invSize' ].value = new Vector2( 1 / resx, 1 / resy );
+
+			resx = Math.round( resx / 2 );
+
+			resy = Math.round( resy / 2 );
+
+		}
+
+		// composite material
+
+		this.compositeMaterial = this._getCompositeMaterial( this.nMips );
+		this.compositeMaterial.uniforms[ 'blurTexture1' ].value = this.renderTargetsVertical[ 0 ].texture;
+		this.compositeMaterial.uniforms[ 'blurTexture2' ].value = this.renderTargetsVertical[ 1 ].texture;
+		this.compositeMaterial.uniforms[ 'blurTexture3' ].value = this.renderTargetsVertical[ 2 ].texture;
+		this.compositeMaterial.uniforms[ 'blurTexture4' ].value = this.renderTargetsVertical[ 3 ].texture;
+		this.compositeMaterial.uniforms[ 'blurTexture5' ].value = this.renderTargetsVertical[ 4 ].texture;
+		this.compositeMaterial.uniforms[ 'bloomStrength' ].value = strength;
+		this.compositeMaterial.uniforms[ 'bloomRadius' ].value = 0.1;
+
+		const bloomFactors = [ 1.0, 0.8, 0.6, 0.4, 0.2 ];
+		this.compositeMaterial.uniforms[ 'bloomFactors' ].value = bloomFactors;
+		this.bloomTintColors = [ new Vector3( 1, 1, 1 ), new Vector3( 1, 1, 1 ), new Vector3( 1, 1, 1 ), new Vector3( 1, 1, 1 ), new Vector3( 1, 1, 1 ) ];
+		this.compositeMaterial.uniforms[ 'bloomTintColors' ].value = this.bloomTintColors;
+
+		// blend material
+
+		this.copyUniforms = UniformsUtils.clone( CopyShader.uniforms );
+
+		this.blendMaterial = new ShaderMaterial( {
+			uniforms: this.copyUniforms,
+			vertexShader: CopyShader.vertexShader,
+			fragmentShader: CopyShader.fragmentShader,
+			blending: AdditiveBlending,
+			depthTest: false,
+			depthWrite: false,
+			transparent: true
+		} );
+
+		this._oldClearColor = new Color();
+		this._oldClearAlpha = 1;
+
+		this._basic = new MeshBasicMaterial();
+
+		this._fsQuad = new FullScreenQuad( null );
+
+	}
+
+	/**
+	 * Frees the GPU-related resources allocated by this instance. Call this
+	 * method whenever the pass is no longer used in your app.
+	 */
+	dispose() {
+
+		for ( let i = 0; i < this.renderTargetsHorizontal.length; i ++ ) {
+
+			this.renderTargetsHorizontal[ i ].dispose();
+
+		}
+
+		for ( let i = 0; i < this.renderTargetsVertical.length; i ++ ) {
+
+			this.renderTargetsVertical[ i ].dispose();
+
+		}
+
+		this.renderTargetBright.dispose();
+
+		//
+
+		for ( let i = 0; i < this.separableBlurMaterials.length; i ++ ) {
+
+			this.separableBlurMaterials[ i ].dispose();
+
+		}
+
+		this.compositeMaterial.dispose();
+		this.blendMaterial.dispose();
+		this._basic.dispose();
+
+		//
+
+		this._fsQuad.dispose();
+
+	}
+
+	/**
+	 * Sets the size of the pass.
+	 *
+	 * @param {number} width - The width to set.
+	 * @param {number} height - The height to set.
+	 */
+	setSize( width, height ) {
+
+		let resx = Math.round( width / 2 );
+		let resy = Math.round( height / 2 );
+
+		this.renderTargetBright.setSize( resx, resy );
+
+		for ( let i = 0; i < this.nMips; i ++ ) {
+
+			this.renderTargetsHorizontal[ i ].setSize( resx, resy );
+			this.renderTargetsVertical[ i ].setSize( resx, resy );
+
+			this.separableBlurMaterials[ i ].uniforms[ 'invSize' ].value = new Vector2( 1 / resx, 1 / resy );
+
+			resx = Math.round( resx / 2 );
+			resy = Math.round( resy / 2 );
+
+		}
+
+	}
+
+	/**
+	 * Performs the Bloom pass.
+	 *
+	 * @param {WebGLRenderer} renderer - The renderer.
+	 * @param {WebGLRenderTarget} writeBuffer - The write buffer. This buffer is intended as the rendering
+	 * destination for the pass.
+	 * @param {WebGLRenderTarget} readBuffer - The read buffer. The pass can access the result from the
+	 * previous pass from this buffer.
+	 * @param {number} deltaTime - The delta time in seconds.
+	 * @param {boolean} maskActive - Whether masking is active or not.
+	 */
+	render( renderer, writeBuffer, readBuffer, deltaTime, maskActive ) {
+
+		renderer.getClearColor( this._oldClearColor );
+		this._oldClearAlpha = renderer.getClearAlpha();
+		const oldAutoClear = renderer.autoClear;
+		renderer.autoClear = false;
+
+		renderer.setClearColor( this.clearColor, 0 );
+
+		if ( maskActive ) renderer.state.buffers.stencil.setTest( false );
+
+		// Render input to screen
+
+		if ( this.renderToScreen ) {
+
+			this._fsQuad.material = this._basic;
+			this._basic.map = readBuffer.texture;
+
+			renderer.setRenderTarget( null );
+			renderer.clear();
+			this._fsQuad.render( renderer );
+
+		}
+
+		// 1. Extract Bright Areas
+
+		this.highPassUniforms[ 'tDiffuse' ].value = readBuffer.texture;
+		this.highPassUniforms[ 'luminosityThreshold' ].value = this.threshold;
+		this._fsQuad.material = this.materialHighPassFilter;
+
+		renderer.setRenderTarget( this.renderTargetBright );
+		renderer.clear();
+		this._fsQuad.render( renderer );
+
+		// 2. Blur All the mips progressively
+
+		let inputRenderTarget = this.renderTargetBright;
+
+		for ( let i = 0; i < this.nMips; i ++ ) {
+
+			this._fsQuad.material = this.separableBlurMaterials[ i ];
+
+			this.separableBlurMaterials[ i ].uniforms[ 'colorTexture' ].value = inputRenderTarget.texture;
+			this.separableBlurMaterials[ i ].uniforms[ 'direction' ].value = UnrealBloomPass.BlurDirectionX;
+			renderer.setRenderTarget( this.renderTargetsHorizontal[ i ] );
+			renderer.clear();
+			this._fsQuad.render( renderer );
+
+			this.separableBlurMaterials[ i ].uniforms[ 'colorTexture' ].value = this.renderTargetsHorizontal[ i ].texture;
+			this.separableBlurMaterials[ i ].uniforms[ 'direction' ].value = UnrealBloomPass.BlurDirectionY;
+			renderer.setRenderTarget( this.renderTargetsVertical[ i ] );
+			renderer.clear();
+			this._fsQuad.render( renderer );
+
+			inputRenderTarget = this.renderTargetsVertical[ i ];
+
+		}
+
+		// Composite All the mips
+
+		this._fsQuad.material = this.compositeMaterial;
+		this.compositeMaterial.uniforms[ 'bloomStrength' ].value = this.strength;
+		this.compositeMaterial.uniforms[ 'bloomRadius' ].value = this.radius;
+		this.compositeMaterial.uniforms[ 'bloomTintColors' ].value = this.bloomTintColors;
+
+		renderer.setRenderTarget( this.renderTargetsHorizontal[ 0 ] );
+		renderer.clear();
+		this._fsQuad.render( renderer );
+
+		// Blend it additively over the input texture
+
+		this._fsQuad.material = this.blendMaterial;
+		this.copyUniforms[ 'tDiffuse' ].value = this.renderTargetsHorizontal[ 0 ].texture;
+
+		if ( maskActive ) renderer.state.buffers.stencil.setTest( true );
+
+		if ( this.renderToScreen ) {
+
+			renderer.setRenderTarget( null );
+			this._fsQuad.render( renderer );
+
+		} else {
+
+			renderer.setRenderTarget( readBuffer );
+			this._fsQuad.render( renderer );
+
+		}
+
+		// Restore renderer settings
+
+		renderer.setClearColor( this._oldClearColor, this._oldClearAlpha );
+		renderer.autoClear = oldAutoClear;
+
+	}
+
+	// internals
+
+	_getSeparableBlurMaterial( kernelRadius ) {
+
+		const coefficients = [];
+		const sigma = kernelRadius / 3;
+
+		for ( let i = 0; i < kernelRadius; i ++ ) {
+
+			coefficients.push( 0.39894 * Math.exp( -0.5 * i * i / ( sigma * sigma ) ) / sigma );
+
+		}
+
+		return new ShaderMaterial( {
+
+			defines: {
+				'KERNEL_RADIUS': kernelRadius
+			},
+
+			uniforms: {
+				'colorTexture': { value: null },
+				'invSize': { value: new Vector2( 0.5, 0.5 ) }, // inverse texture size
+				'direction': { value: new Vector2( 0.5, 0.5 ) },
+				'gaussianCoefficients': { value: coefficients } // precomputed Gaussian coefficients
+			},
+
+			vertexShader:
+				`varying vec2 vUv;
+				void main() {
+					vUv = uv;
+					gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+				}`,
+
+			fragmentShader:
+				`#include <common>
+				varying vec2 vUv;
+				uniform sampler2D colorTexture;
+				uniform vec2 invSize;
+				uniform vec2 direction;
+				uniform float gaussianCoefficients[KERNEL_RADIUS];
+
+				void main() {
+					float weightSum = gaussianCoefficients[0];
+					vec3 diffuseSum = texture2D( colorTexture, vUv ).rgb * weightSum;
+					for( int i = 1; i < KERNEL_RADIUS; i ++ ) {
+						float x = float(i);
+						float w = gaussianCoefficients[i];
+						vec2 uvOffset = direction * invSize * x;
+						vec3 sample1 = texture2D( colorTexture, vUv + uvOffset ).rgb;
+						vec3 sample2 = texture2D( colorTexture, vUv - uvOffset ).rgb;
+						diffuseSum += ( sample1 + sample2 ) * w;
+					}
+					gl_FragColor = vec4( diffuseSum, 1.0 );
+				}`
+		} );
+
+	}
+
+	_getCompositeMaterial( nMips ) {
+
+		return new ShaderMaterial( {
+
+			defines: {
+				'NUM_MIPS': nMips
+			},
+
+			uniforms: {
+				'blurTexture1': { value: null },
+				'blurTexture2': { value: null },
+				'blurTexture3': { value: null },
+				'blurTexture4': { value: null },
+				'blurTexture5': { value: null },
+				'bloomStrength': { value: 1.0 },
+				'bloomFactors': { value: null },
+				'bloomTintColors': { value: null },
+				'bloomRadius': { value: 0.0 }
+			},
+
+			vertexShader:
+				`varying vec2 vUv;
+				void main() {
+					vUv = uv;
+					gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+				}`,
+
+			fragmentShader:
+				`varying vec2 vUv;
+				uniform sampler2D blurTexture1;
+				uniform sampler2D blurTexture2;
+				uniform sampler2D blurTexture3;
+				uniform sampler2D blurTexture4;
+				uniform sampler2D blurTexture5;
+				uniform float bloomStrength;
+				uniform float bloomRadius;
+				uniform float bloomFactors[NUM_MIPS];
+				uniform vec3 bloomTintColors[NUM_MIPS];
+
+				float lerpBloomFactor(const in float factor) {
+					float mirrorFactor = 1.2 - factor;
+					return mix(factor, mirrorFactor, bloomRadius);
+				}
+
+				void main() {
+					gl_FragColor = bloomStrength * ( lerpBloomFactor(bloomFactors[0]) * vec4(bloomTintColors[0], 1.0) * texture2D(blurTexture1, vUv) +
+						lerpBloomFactor(bloomFactors[1]) * vec4(bloomTintColors[1], 1.0) * texture2D(blurTexture2, vUv) +
+						lerpBloomFactor(bloomFactors[2]) * vec4(bloomTintColors[2], 1.0) * texture2D(blurTexture3, vUv) +
+						lerpBloomFactor(bloomFactors[3]) * vec4(bloomTintColors[3], 1.0) * texture2D(blurTexture4, vUv) +
+						lerpBloomFactor(bloomFactors[4]) * vec4(bloomTintColors[4], 1.0) * texture2D(blurTexture5, vUv) );
+				}`
+		} );
+
+	}
+
+}
+
+UnrealBloomPass.BlurDirectionX = new Vector2( 1.0, 0.0 );
+UnrealBloomPass.BlurDirectionY = new Vector2( 0.0, 1.0 );
+
+/**
+ * @module OutputShader
+ * @three_import import { OutputShader } from 'three/addons/shaders/OutputShader.js';
+ */
+
+/**
+ * Performs tone mapping and color space conversion for
+ * FX workflows.
+ *
+ * Used by {@link OutputPass}.
+ *
+ * @constant
+ * @type {ShaderMaterial~Shader}
+ */
+const OutputShader = {
+
+	name: 'OutputShader',
+
+	uniforms: {
+
+		'tDiffuse': { value: null },
+		'toneMappingExposure': { value: 1 }
+
+	},
+
+	vertexShader: /* glsl */`
+		precision highp float;
+
+		uniform mat4 modelViewMatrix;
+		uniform mat4 projectionMatrix;
+
+		attribute vec3 position;
+		attribute vec2 uv;
+
+		varying vec2 vUv;
+
+		void main() {
+
+			vUv = uv;
+			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+
+		}`,
+
+	fragmentShader: /* glsl */`
+
+		precision highp float;
+
+		uniform sampler2D tDiffuse;
+
+		#include <tonemapping_pars_fragment>
+		#include <colorspace_pars_fragment>
+
+		varying vec2 vUv;
+
+		void main() {
+
+			gl_FragColor = texture2D( tDiffuse, vUv );
+
+			// tone mapping
+
+			#ifdef LINEAR_TONE_MAPPING
+
+				gl_FragColor.rgb = LinearToneMapping( gl_FragColor.rgb );
+
+			#elif defined( REINHARD_TONE_MAPPING )
+
+				gl_FragColor.rgb = ReinhardToneMapping( gl_FragColor.rgb );
+
+			#elif defined( CINEON_TONE_MAPPING )
+
+				gl_FragColor.rgb = CineonToneMapping( gl_FragColor.rgb );
+
+			#elif defined( ACES_FILMIC_TONE_MAPPING )
+
+				gl_FragColor.rgb = ACESFilmicToneMapping( gl_FragColor.rgb );
+
+			#elif defined( AGX_TONE_MAPPING )
+
+				gl_FragColor.rgb = AgXToneMapping( gl_FragColor.rgb );
+
+			#elif defined( NEUTRAL_TONE_MAPPING )
+
+				gl_FragColor.rgb = NeutralToneMapping( gl_FragColor.rgb );
+
+			#elif defined( CUSTOM_TONE_MAPPING )
+
+				gl_FragColor.rgb = CustomToneMapping( gl_FragColor.rgb );
+
+			#endif
+
+			// color space
+
+			#ifdef SRGB_TRANSFER
+
+				gl_FragColor = sRGBTransferOETF( gl_FragColor );
+
+			#endif
+
+		}`
+
+};
+
+/**
+ * This pass is responsible for including tone mapping and color space conversion
+ * into your pass chain. In most cases, this pass should be included at the end
+ * of each pass chain. If a pass requires sRGB input (e.g. like FXAA), the pass
+ * must follow `OutputPass` in the pass chain.
+ *
+ * The tone mapping and color space settings are extracted from the renderer.
+ *
+ * ```js
+ * const outputPass = new OutputPass();
+ * composer.addPass( outputPass );
+ * ```
+ *
+ * @augments Pass
+ * @three_import import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+ */
+class OutputPass extends Pass {
+
+	/**
+	 * Constructs a new output pass.
+	 */
+	constructor() {
+
+		super();
+
+		/**
+		 * The pass uniforms.
+		 *
+		 * @type {Object}
+		 */
+		this.uniforms = UniformsUtils.clone( OutputShader.uniforms );
+
+		/**
+		 * The pass material.
+		 *
+		 * @type {RawShaderMaterial}
+		 */
+		this.material = new RawShaderMaterial( {
+			name: OutputShader.name,
+			uniforms: this.uniforms,
+			vertexShader: OutputShader.vertexShader,
+			fragmentShader: OutputShader.fragmentShader
+		} );
+
+		// internals
+
+		this._fsQuad = new FullScreenQuad( this.material );
+
+		this._outputColorSpace = null;
+		this._toneMapping = null;
+
+	}
+
+	/**
+	 * Performs the output pass.
+	 *
+	 * @param {WebGLRenderer} renderer - The renderer.
+	 * @param {WebGLRenderTarget} writeBuffer - The write buffer. This buffer is intended as the rendering
+	 * destination for the pass.
+	 * @param {WebGLRenderTarget} readBuffer - The read buffer. The pass can access the result from the
+	 * previous pass from this buffer.
+	 * @param {number} deltaTime - The delta time in seconds.
+	 * @param {boolean} maskActive - Whether masking is active or not.
+	 */
+	render( renderer, writeBuffer, readBuffer/*, deltaTime, maskActive */ ) {
+
+		this.uniforms[ 'tDiffuse' ].value = readBuffer.texture;
+		this.uniforms[ 'toneMappingExposure' ].value = renderer.toneMappingExposure;
+
+		// rebuild defines if required
+
+		if ( this._outputColorSpace !== renderer.outputColorSpace || this._toneMapping !== renderer.toneMapping ) {
+
+			this._outputColorSpace = renderer.outputColorSpace;
+			this._toneMapping = renderer.toneMapping;
+
+			this.material.defines = {};
+
+			if ( ColorManagement.getTransfer( this._outputColorSpace ) === SRGBTransfer ) this.material.defines.SRGB_TRANSFER = '';
+
+			if ( this._toneMapping === LinearToneMapping ) this.material.defines.LINEAR_TONE_MAPPING = '';
+			else if ( this._toneMapping === ReinhardToneMapping ) this.material.defines.REINHARD_TONE_MAPPING = '';
+			else if ( this._toneMapping === CineonToneMapping ) this.material.defines.CINEON_TONE_MAPPING = '';
+			else if ( this._toneMapping === ACESFilmicToneMapping ) this.material.defines.ACES_FILMIC_TONE_MAPPING = '';
+			else if ( this._toneMapping === AgXToneMapping ) this.material.defines.AGX_TONE_MAPPING = '';
+			else if ( this._toneMapping === NeutralToneMapping ) this.material.defines.NEUTRAL_TONE_MAPPING = '';
+			else if ( this._toneMapping === CustomToneMapping ) this.material.defines.CUSTOM_TONE_MAPPING = '';
+
+			this.material.needsUpdate = true;
+
+		}
+
+		//
+
+		if ( this.renderToScreen === true ) {
+
+			renderer.setRenderTarget( null );
+			this._fsQuad.render( renderer );
+
+		} else {
+
+			renderer.setRenderTarget( writeBuffer );
+			if ( this.clear ) renderer.clear( renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil );
+			this._fsQuad.render( renderer );
+
+		}
+
+	}
+
+	/**
+	 * Frees the GPU-related resources allocated by this instance. Call this
+	 * method whenever the pass is no longer used in your app.
+	 */
+	dispose() {
+
+		this.material.dispose();
+		this._fsQuad.dispose();
+
+	}
+
+}
+
 class GameModeManager {
   currentMode = null;
   context;
@@ -57944,6 +59591,370 @@ const START_OFFSET = -(GRID_SIZE * CELL_SIZE) / 2 + CELL_SIZE / 2;
 const BOUNDS = GRID_SIZE * CELL_SIZE / 2 + CELL_SIZE;
 const DRONE_COUNT = 300;
 
+class HeightMap {
+  static instance;
+  p = [];
+  constructor() {
+    this.init();
+  }
+  static getInstance() {
+    if (!HeightMap.instance) {
+      HeightMap.instance = new HeightMap();
+    }
+    return HeightMap.instance;
+  }
+  init() {
+    this.p = new Array(512);
+    const permutation = [
+      151,
+      160,
+      137,
+      91,
+      90,
+      15,
+      131,
+      13,
+      201,
+      95,
+      96,
+      53,
+      194,
+      233,
+      7,
+      225,
+      140,
+      36,
+      103,
+      30,
+      69,
+      142,
+      8,
+      99,
+      37,
+      240,
+      21,
+      10,
+      23,
+      190,
+      6,
+      148,
+      247,
+      120,
+      234,
+      75,
+      0,
+      26,
+      197,
+      62,
+      94,
+      252,
+      219,
+      203,
+      117,
+      35,
+      11,
+      32,
+      57,
+      177,
+      33,
+      88,
+      237,
+      149,
+      56,
+      87,
+      174,
+      20,
+      125,
+      136,
+      171,
+      168,
+      68,
+      175,
+      74,
+      165,
+      71,
+      134,
+      139,
+      48,
+      27,
+      166,
+      77,
+      146,
+      158,
+      231,
+      83,
+      111,
+      229,
+      122,
+      60,
+      211,
+      133,
+      230,
+      220,
+      105,
+      92,
+      41,
+      55,
+      46,
+      245,
+      40,
+      244,
+      102,
+      143,
+      54,
+      65,
+      25,
+      63,
+      161,
+      1,
+      216,
+      80,
+      73,
+      209,
+      76,
+      132,
+      187,
+      208,
+      89,
+      18,
+      169,
+      200,
+      196,
+      135,
+      130,
+      116,
+      188,
+      159,
+      86,
+      164,
+      100,
+      109,
+      198,
+      173,
+      186,
+      3,
+      64,
+      52,
+      217,
+      226,
+      250,
+      124,
+      123,
+      5,
+      202,
+      38,
+      147,
+      118,
+      126,
+      255,
+      82,
+      85,
+      212,
+      207,
+      206,
+      59,
+      227,
+      47,
+      16,
+      58,
+      17,
+      182,
+      189,
+      28,
+      42,
+      223,
+      183,
+      170,
+      213,
+      119,
+      248,
+      152,
+      2,
+      44,
+      154,
+      163,
+      70,
+      221,
+      153,
+      101,
+      155,
+      167,
+      43,
+      172,
+      9,
+      129,
+      22,
+      39,
+      253,
+      19,
+      98,
+      108,
+      110,
+      79,
+      113,
+      224,
+      232,
+      178,
+      185,
+      112,
+      104,
+      218,
+      246,
+      97,
+      228,
+      251,
+      34,
+      242,
+      193,
+      238,
+      210,
+      144,
+      12,
+      191,
+      179,
+      162,
+      241,
+      81,
+      51,
+      145,
+      235,
+      249,
+      14,
+      239,
+      107,
+      49,
+      192,
+      214,
+      31,
+      181,
+      199,
+      106,
+      157,
+      184,
+      84,
+      204,
+      176,
+      115,
+      121,
+      50,
+      45,
+      127,
+      4,
+      150,
+      254,
+      138,
+      236,
+      205,
+      93,
+      222,
+      114,
+      67,
+      29,
+      24,
+      72,
+      243,
+      141,
+      128,
+      195,
+      78,
+      66,
+      215,
+      61,
+      156,
+      180
+    ];
+    for (let i = 0; i < 256; i++) this.p[256 + i] = this.p[i] = permutation[i];
+  }
+  fade(t) {
+    return t * t * t * (t * (t * 6 - 15) + 10);
+  }
+  lerp(t, a, b) {
+    return a + t * (b - a);
+  }
+  grad(hash, x, y, z) {
+    const h = hash & 15;
+    const u = h < 8 ? x : y;
+    const v = h < 4 ? y : h === 12 || h === 14 ? x : z;
+    return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+  }
+  noise(x, y, z) {
+    const X = Math.floor(x) & 255;
+    const Y = Math.floor(y) & 255;
+    const Z = Math.floor(z) & 255;
+    x -= Math.floor(x);
+    y -= Math.floor(y);
+    z -= Math.floor(z);
+    const u = this.fade(x);
+    const v = this.fade(y);
+    const w = this.fade(z);
+    const A = this.p[X] + Y;
+    const AA = this.p[A] + Z;
+    const AB = this.p[A + 1] + Z;
+    const B = this.p[X + 1] + Y;
+    const BA = this.p[B] + Z;
+    const BB = this.p[B + 1] + Z;
+    return this.lerp(
+      w,
+      this.lerp(
+        v,
+        this.lerp(
+          u,
+          this.grad(this.p[AA], x, y, z),
+          this.grad(this.p[BA], x - 1, y, z)
+        ),
+        this.lerp(
+          u,
+          this.grad(this.p[AB], x, y - 1, z),
+          this.grad(this.p[BB], x - 1, y - 1, z)
+        )
+      ),
+      this.lerp(
+        v,
+        this.lerp(
+          u,
+          this.grad(this.p[AA + 1], x, y, z - 1),
+          this.grad(this.p[BA + 1], x - 1, y, z - 1)
+        ),
+        this.lerp(
+          u,
+          this.grad(this.p[AB + 1], x, y - 1, z - 1),
+          this.grad(this.p[BB + 1], x - 1, y - 1, z - 1)
+        )
+      )
+    );
+  }
+  getHeight(x, z) {
+    const scale = 15e-4;
+    const amplitude = 50;
+    let y = 0;
+    y += this.noise(x * scale, z * scale, 0) * amplitude;
+    y += this.noise(x * scale * 2, z * scale * 2, 0) * (amplitude * 0.5);
+    y += this.noise(x * scale * 4, z * scale * 4, 0) * (amplitude * 0.25);
+    return y;
+  }
+  getNormal(x, z) {
+    const d = 1;
+    const hL = this.getHeight(x - d, z);
+    const hR = this.getHeight(x + d, z);
+    const hD = this.getHeight(x, z - d);
+    const hU = this.getHeight(x, z + d);
+    const dx = (hR - hL) / (2 * d);
+    const dz = (hU - hD) / (2 * d);
+    let nx = -dx;
+    let ny = 1;
+    let nz = -dz;
+    const len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+    if (len > 0) {
+      nx /= len;
+      ny /= len;
+      nz /= len;
+    }
+    return { x: nx, y: ny, z: nz };
+  }
+}
+const getHeight = (x, z) => HeightMap.getInstance().getHeight(x, z);
+const getNormal = (x, z) => HeightMap.getInstance().getNormal(x, z);
+
 class DrivingMode {
   context = null;
   redCar = null;
@@ -57955,6 +59966,9 @@ class DrivingMode {
     if (context.activeCar.value) {
       context.activeCar.value.userData.isPlayerControlled = true;
       context.activeCar.value.userData.currentSpeed = 0;
+      if (context.activeCar.value.userData.heading === void 0) {
+        context.activeCar.value.userData.heading = context.activeCar.value.rotation.y;
+      }
       context.timeLeft.value = 30;
       context.isGameOver.value = false;
       context.spawnCheckpoint();
@@ -58004,15 +60018,16 @@ class DrivingMode {
       if (axis === "x") {
         z = roadCoordinate;
         x = otherCoord;
-        this.redCar.rotation.y = Math.random() > 0.5 ? Math.PI / 2 : -Math.PI / 2;
+        this.redCar.userData.heading = Math.random() > 0.5 ? Math.PI / 2 : -Math.PI / 2;
       } else {
         x = roadCoordinate;
         z = otherCoord;
-        this.redCar.rotation.y = Math.random() > 0.5 ? 0 : Math.PI;
+        this.redCar.userData.heading = Math.random() > 0.5 ? 0 : Math.PI;
       }
       const dist = Math.sqrt((x - player.position.x) ** 2 + (z - player.position.z) ** 2);
       if (dist > 500) {
-        this.redCar.position.set(x, 1, z);
+        const h = getHeight(x, z);
+        this.redCar.position.set(x, h + 1, z);
         spawned = true;
       }
       attempts++;
@@ -58028,9 +60043,18 @@ class DrivingMode {
       if (Math.abs(car.userData.currentSpeed) < 0.01) car.userData.currentSpeed = 0;
       carAudio.update(car.userData.currentSpeed);
       const speed2 = car.userData.currentSpeed;
-      car.position.x += Math.sin(car.rotation.y) * speed2;
-      car.position.z += Math.cos(car.rotation.y) * speed2;
-      const angle2 = car.rotation.y;
+      const heading2 = car.userData.heading ?? car.rotation.y;
+      car.position.x += Math.sin(heading2) * speed2;
+      car.position.z += Math.cos(heading2) * speed2;
+      car.position.y = getHeight(car.position.x, car.position.z) + 1;
+      const normal2 = getNormal(car.position.x, car.position.z);
+      car.up.set(normal2.x, normal2.y, normal2.z);
+      const lookDist2 = 5;
+      const tx2 = car.position.x + Math.sin(heading2) * lookDist2;
+      const tz2 = car.position.z + Math.cos(heading2) * lookDist2;
+      const ty2 = getHeight(tx2, tz2) + 1;
+      car.lookAt(tx2, ty2, tz2);
+      const angle2 = heading2;
       const dist2 = 40;
       const height2 = 20;
       const targetX2 = car.position.x - Math.sin(angle2) * dist2;
@@ -58050,9 +60074,9 @@ class DrivingMode {
     } else {
       const cx = car.position.x;
       const cz = car.position.z;
-      const tx = checkpointMesh.position.x;
-      const tz = checkpointMesh.position.z;
-      const distSq = (cx - tx) ** 2 + (cz - tz) ** 2;
+      const tx2 = checkpointMesh.position.x;
+      const tz2 = checkpointMesh.position.z;
+      const distSq = (cx - tx2) ** 2 + (cz - tz2) ** 2;
       distToTarget.value = Math.sqrt(distSq);
       if (distSq < 20 * 20) {
         drivingScore.value += 500;
@@ -58096,11 +60120,20 @@ class DrivingMode {
     if (Math.abs(speed) > 0.1) {
       const dir = speed > 0 ? 1 : -1;
       const turnSpeed = 0.04 / (Math.sqrt(Math.abs(speed)) + 1);
-      if (controls.value.left) car.rotation.y += turnSpeed * dir;
-      if (controls.value.right) car.rotation.y -= turnSpeed * dir;
+      if (controls.value.left) car.userData.heading += turnSpeed * dir;
+      if (controls.value.right) car.userData.heading -= turnSpeed * dir;
     }
-    car.position.x += Math.sin(car.rotation.y) * speed;
-    car.position.z += Math.cos(car.rotation.y) * speed;
+    const heading = car.userData.heading ?? car.rotation.y;
+    car.position.x += Math.sin(heading) * speed;
+    car.position.z += Math.cos(heading) * speed;
+    car.position.y = getHeight(car.position.x, car.position.z) + 1;
+    const normal = getNormal(car.position.x, car.position.z);
+    car.up.set(normal.x, normal.y, normal.z);
+    const lookDist = 5;
+    const tx = car.position.x + Math.sin(heading) * lookDist;
+    const tz = car.position.z + Math.cos(heading) * lookDist;
+    const ty = getHeight(tx, tz) + 1;
+    car.lookAt(tx, ty, tz);
     if (car.position.x > BOUNDS) car.position.x = -BOUNDS;
     if (car.position.x < -BOUNDS) car.position.x = BOUNDS;
     if (car.position.z > BOUNDS) car.position.z = -BOUNDS;
@@ -58121,7 +60154,7 @@ class DrivingMode {
         spawnSparks(car.position);
       }
     }
-    const angle = car.rotation.y;
+    const angle = heading;
     const dist = 40;
     const height = 20;
     const targetX = car.position.x - Math.sin(angle) * dist;
@@ -58136,9 +60169,17 @@ class DrivingMode {
   updateRedCar(playerCar) {
     if (!this.redCar) return;
     const redSpeed = this.redCarSpeed;
-    const currentRotation = this.redCar.rotation.y;
+    const currentRotation = this.redCar.userData.heading ?? 0;
     this.redCar.position.x += Math.sin(currentRotation) * redSpeed;
     this.redCar.position.z += Math.cos(currentRotation) * redSpeed;
+    this.redCar.position.y = getHeight(this.redCar.position.x, this.redCar.position.z) + 1;
+    const normal = getNormal(this.redCar.position.x, this.redCar.position.z);
+    this.redCar.up.set(normal.x, normal.y, normal.z);
+    const lookDist = 5;
+    const tx = this.redCar.position.x + Math.sin(currentRotation) * lookDist;
+    const tz = this.redCar.position.z + Math.cos(currentRotation) * lookDist;
+    const ty = getHeight(tx, tz) + 1;
+    this.redCar.lookAt(tx, ty, tz);
     const isZAxis = Math.abs(Math.cos(currentRotation)) > 0.5;
     const roadHalf = CELL_SIZE / 2;
     const gridX = Math.round((this.redCar.position.x - START_OFFSET - roadHalf) / CELL_SIZE);
@@ -58179,10 +60220,10 @@ class DrivingMode {
     }
     if (longDist < 5 && latDist < 25) {
       const directions = [0, Math.PI / 2, Math.PI, -Math.PI / 2];
-      let bestDir = this.redCar.rotation.y;
+      let bestDir = this.redCar.userData.heading ?? 0;
       let minDst = Infinity;
-      const curDirX = Math.sin(this.redCar.rotation.y);
-      const curDirZ = Math.cos(this.redCar.rotation.y);
+      const curDirX = Math.sin(bestDir);
+      const curDirZ = Math.cos(bestDir);
       for (const dir of directions) {
         const dx = Math.sin(dir);
         const dz = Math.cos(dir);
@@ -58196,7 +60237,7 @@ class DrivingMode {
           bestDir = dir;
         }
       }
-      this.redCar.rotation.y = bestDir;
+      this.redCar.userData.heading = bestDir;
       this.redCar.position.x += Math.sin(bestDir) * 6;
       this.redCar.position.z += Math.cos(bestDir) * 6;
     }
@@ -58460,19 +60501,20 @@ class ExplorationMode {
     if (camera.position.x < -BOUNDS) camera.position.x = BOUNDS;
     if (camera.position.z > BOUNDS) camera.position.z = -BOUNDS;
     if (camera.position.z < -BOUNDS) camera.position.z = BOUNDS;
+    const currentGroundH = getHeight(camera.position.x, camera.position.z) + 3;
     if (this.isJumping) {
       camera.position.y += this.velocityY;
       this.velocityY -= this.gravity;
-      if (camera.position.y <= this.groundPosition) {
-        camera.position.y = this.groundPosition;
+      if (camera.position.y <= currentGroundH) {
+        camera.position.y = currentGroundH;
         this.isJumping = false;
         this.velocityY = 0;
       }
     } else {
       if (controls.value.forward || controls.value.backward || controls.value.left || controls.value.right) {
-        camera.position.y = this.groundPosition + Math.sin(Date.now() * 0.01) * 0.1;
+        camera.position.y = currentGroundH + Math.sin(Date.now() * 0.01) * 0.1;
       } else {
-        camera.position.y = this.groundPosition;
+        camera.position.y = currentGroundH;
       }
     }
     const hitDistSq = 15 * 15;
@@ -58837,8 +60879,10 @@ class GangWarManager {
   // Fight Marker
   arrowGeo;
   arrowMat;
-  constructor(scene, spawnSparks, playPewSound) {
+  occupiedGrids;
+  constructor(scene, occupiedGrids, spawnSparks, playPewSound) {
     this.scene = scene;
+    this.occupiedGrids = occupiedGrids;
     this.spawnSparks = spawnSparks;
     this.playPewSound = playPewSound;
     this.arrowGeo = new CylinderGeometry(0, 4, 10, 8);
@@ -58855,19 +60899,42 @@ class GangWarManager {
   spawnGangBatch(gang, count) {
     const blockX = Math.floor(Math.random() * GRID_SIZE);
     const blockZ = Math.floor(Math.random() * GRID_SIZE);
+    const key = `${blockX},${blockZ}`;
+    const building = this.occupiedGrids.get(key);
+    const halfW = building ? building.halfW : BLOCK_SIZE * 0.45;
+    const halfD = building ? building.halfD : BLOCK_SIZE * 0.45;
+    const cx = START_OFFSET + blockX * CELL_SIZE;
+    const cz = START_OFFSET + blockZ * CELL_SIZE;
     for (let i = 0; i < count; i++) {
-      const cx = START_OFFSET + blockX * CELL_SIZE;
-      const cz = START_OFFSET + blockZ * CELL_SIZE;
-      const offsetX = (Math.random() - 0.5) * (BLOCK_SIZE + ROAD_WIDTH * 0.5);
-      const offsetZ = (Math.random() - 0.5) * (BLOCK_SIZE + ROAD_WIDTH * 0.5);
-      const x = cx + offsetX;
-      const z = cz + offsetZ;
+      const side = Math.floor(Math.random() * 4);
+      let x = cx;
+      let z = cz;
+      const margin = 5;
+      switch (side) {
+        case 0:
+          z = cz - halfD - margin - Math.random() * 15;
+          x = cx + (Math.random() - 0.5) * CELL_SIZE;
+          break;
+        case 1:
+          z = cz + halfD + margin + Math.random() * 15;
+          x = cx + (Math.random() - 0.5) * CELL_SIZE;
+          break;
+        case 2:
+          x = cx + halfW + margin + Math.random() * 15;
+          z = cz + (Math.random() - 0.5) * CELL_SIZE;
+          break;
+        case 3:
+          x = cx - halfW - margin - Math.random() * 15;
+          z = cz + (Math.random() - 0.5) * CELL_SIZE;
+          break;
+      }
       this.spawnWarrior(x, z, gang);
     }
   }
   spawnWarrior(x, z, gang) {
     const group = new Group();
-    group.position.set(x, 1.25, z);
+    const y = getHeight(x, z);
+    group.position.set(x, y + 1.25, z);
     const mat = new MeshBasicMaterial({ color: gang.color });
     const blackMat = new MeshBasicMaterial({ color: 1118481 });
     const body = new Mesh(this.bodyGeo, blackMat);
@@ -58961,6 +61028,8 @@ class GangWarManager {
     if (distSq > shootRange * shootRange) {
       const dir = targetPos.sub(w.group.position).normalize();
       w.group.position.add(dir.multiplyScalar(w.speed * dt));
+      const h = getHeight(w.group.position.x, w.group.position.z);
+      w.group.position.y = h + 1.25;
     } else {
       if (w.cooldown <= 0) {
         this.shoot(w, w.target);
@@ -59005,7 +61074,8 @@ class GangWarManager {
   killWarrior(w) {
     w.state = "DEAD";
     w.group.rotation.x = Math.PI / 2;
-    w.group.position.y = 0.5;
+    const h = getHeight(w.group.position.x, w.group.position.z);
+    w.group.position.y = h + 0.5;
   }
   checkReinforcements() {
     const counts = /* @__PURE__ */ new Map();
@@ -59238,59 +61308,6 @@ function createDroneTexture() {
   const texture = new CanvasTexture(canvas);
   return texture;
 }
-function createRoughFloorTexture() {
-  const canvas = document.createElement("canvas");
-  canvas.width = 128;
-  canvas.height = 128;
-  const ctx = canvas.getContext("2d");
-  if (ctx) {
-    ctx.fillStyle = "#111111";
-    ctx.fillRect(0, 0, 128, 128);
-    for (let i = 0; i < 20; i++) {
-      const shade = Math.floor(Math.random() * 100);
-      ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
-      const w = 20 + Math.random() * 60;
-      const h = 20 + Math.random() * 60;
-      ctx.globalAlpha = 0.4;
-      ctx.fillRect(Math.random() * 128 - 20, Math.random() * 128 - 20, w, h);
-    }
-    ctx.globalAlpha = 1;
-    for (let i = 0; i < 400; i++) {
-      const val = Math.floor(Math.random() * 100) + 50;
-      ctx.fillStyle = `rgb(${val}, ${val}, ${val})`;
-      const w = Math.random() * 3 + 1;
-      const h = Math.random() * 3 + 1;
-      ctx.fillRect(Math.random() * 128, Math.random() * 128, w, h);
-    }
-    const colors = ["#443300", "#003344", "#330033"];
-    for (let i = 0; i < 5; i++) {
-      ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
-      ctx.globalAlpha = 0.3;
-      const w = Math.random() * 30 + 10;
-      const h = Math.random() * 30 + 10;
-      ctx.fillRect(Math.random() * 128, Math.random() * 128, w, h);
-    }
-    ctx.globalAlpha = 1;
-    ctx.strokeStyle = "#555555";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (let i = 0; i < 10; i++) {
-      ctx.moveTo(Math.random() * 128, Math.random() * 128);
-      ctx.lineTo(Math.random() * 128, Math.random() * 128);
-    }
-    ctx.stroke();
-    ctx.fillStyle = "#000000";
-    ctx.globalAlpha = 0.6;
-    for (let i = 0; i < 3; i++) {
-      ctx.fillRect(Math.random() * 100, Math.random() * 100, Math.random() * 40 + 20, Math.random() * 40 + 20);
-    }
-    ctx.globalAlpha = 1;
-  }
-  const texture = new CanvasTexture(canvas);
-  texture.wrapS = RepeatWrapping;
-  texture.wrapT = RepeatWrapping;
-  return texture;
-}
 
 class CityBuilder {
   scene;
@@ -59316,18 +61333,52 @@ class CityBuilder {
     this.scene.fog = new FogExp2(328976, isMobile ? 57e-5 : 1e-3);
   }
   setupLighting() {
-    const ambientLight = new AmbientLight(16777215, 0.2);
-    this.scene.add(ambientLight);
-    const dirLight = new DirectionalLight(16711884, 0.5);
-    dirLight.position.set(100, 200, 100);
+    const hemiLight = new HemisphereLight(16777215, 4473924, 0.4);
+    hemiLight.position.set(0, 500, 0);
+    this.scene.add(hemiLight);
+    const dirLight = new DirectionalLight(16711884, 1.5);
+    dirLight.position.set(100, 300, 100);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 2048;
+    dirLight.shadow.mapSize.height = 2048;
+    dirLight.shadow.camera.near = 10;
+    dirLight.shadow.camera.far = 1e3;
+    dirLight.shadow.camera.left = -500;
+    dirLight.shadow.camera.right = 500;
+    dirLight.shadow.camera.top = 500;
+    dirLight.shadow.camera.bottom = -500;
+    dirLight.shadow.bias = -5e-4;
     this.scene.add(dirLight);
-    const dirLight2 = new DirectionalLight(52479, 0.5);
-    dirLight2.position.set(-100, 200, -100);
+    const dirLight2 = new DirectionalLight(52479, 1.5);
+    dirLight2.position.set(-100, 300, -100);
+    dirLight2.castShadow = true;
+    dirLight2.shadow.mapSize.width = 2048;
+    dirLight2.shadow.mapSize.height = 2048;
+    dirLight2.shadow.camera.near = 10;
+    dirLight2.shadow.camera.far = 1e3;
+    dirLight2.shadow.camera.left = -500;
+    dirLight2.shadow.camera.right = 500;
+    dirLight2.shadow.camera.top = 500;
+    dirLight2.shadow.camera.bottom = -500;
+    dirLight2.shadow.bias = -5e-4;
     this.scene.add(dirLight2);
   }
   createGround() {
     const groundTexture = createGroundTexture();
-    const planeGeometry = new PlaneGeometry(CITY_SIZE * 2, CITY_SIZE * 2);
+    const planeGeometry = new PlaneGeometry(
+      CITY_SIZE * 2,
+      CITY_SIZE * 2,
+      128,
+      128
+    );
+    const posAttribute = planeGeometry.attributes.position;
+    for (let i = 0; i < posAttribute.count; i++) {
+      const x = posAttribute.getX(i);
+      const y = posAttribute.getY(i);
+      const h = getHeight(x, -y);
+      posAttribute.setZ(i, h);
+    }
+    planeGeometry.computeVertexNormals();
     const repeatCount = CITY_SIZE * 2 / CELL_SIZE;
     groundTexture.repeat.set(repeatCount, repeatCount);
     const planeMaterial = new MeshStandardMaterial({
@@ -59341,6 +61392,7 @@ class CityBuilder {
     const plane = new Mesh(planeGeometry, planeMaterial);
     plane.rotation.x = -Math.PI / 2;
     plane.position.y = -0.5;
+    plane.receiveShadow = true;
     this.scene.add(plane);
   }
   createBuildings(lbTexture) {
@@ -59397,28 +61449,11 @@ class CityBuilder {
     for (let x = 0; x < GRID_SIZE; x++) {
       for (let z = 0; z < GRID_SIZE; z++) {
         const isLeaderboardBuilding = x === 5 && z === 5;
-        if (!isLeaderboardBuilding && Math.random() > 0.8) {
-          const floorSize = BLOCK_SIZE - 2;
-          const floorGeo = new PlaneGeometry(floorSize, floorSize);
-          const floorMat = new MeshStandardMaterial({
-            color: 2236962,
-            roughness: 0.9,
-            metalness: 0.1,
-            map: createRoughFloorTexture()
-          });
-          const floorMesh = new Mesh(floorGeo, floorMat);
-          floorMesh.rotation.x = -Math.PI / 2;
-          floorMesh.position.set(
-            START_OFFSET + x * CELL_SIZE,
-            0.1,
-            START_OFFSET + z * CELL_SIZE
-          );
-          this.scene.add(floorMesh);
-          this.buildings.push(floorMesh);
-          continue;
-        }
         const xPos = START_OFFSET + x * CELL_SIZE;
         const zPos = START_OFFSET + z * CELL_SIZE;
+        if (!isLeaderboardBuilding && Math.random() > 0.8) {
+          continue;
+        }
         let h = 40 + Math.random() * 120;
         let w = BLOCK_SIZE - 10 - Math.random() * 20;
         let d = BLOCK_SIZE - 10 - Math.random() * 20;
@@ -59428,8 +61463,13 @@ class CityBuilder {
           d = BLOCK_SIZE - 10;
         }
         this.occupiedGrids.set(`${x},${z}`, { halfW: w / 2, halfD: d / 2 });
+        const h1 = getHeight(xPos - w / 2, zPos - d / 2);
+        const h2 = getHeight(xPos + w / 2, zPos - d / 2);
+        const h3 = getHeight(xPos - w / 2, zPos + d / 2);
+        const h4 = getHeight(xPos + w / 2, zPos + d / 2);
+        const minH = Math.min(h1, h2, h3, h4);
         const buildingGroup = new Group();
-        buildingGroup.position.set(xPos, 0, zPos);
+        buildingGroup.position.set(xPos, minH, zPos);
         let style = "SIMPLE";
         if (!isLeaderboardBuilding) {
           const r = Math.random();
@@ -59452,6 +61492,8 @@ class CityBuilder {
         ];
         const mainBlock = new Mesh(boxGeo, thisBuildingMaterials);
         mainBlock.scale.set(w, h, d);
+        mainBlock.castShadow = true;
+        mainBlock.receiveShadow = true;
         buildingGroup.add(mainBlock);
         const mainLine = new LineSegments(
           edgesGeo,
@@ -59472,6 +61514,8 @@ class CityBuilder {
               const tierBlock = new Mesh(boxGeo, thisBuildingMaterials);
               tierBlock.scale.set(currentW, tierH, currentD);
               tierBlock.position.y = currentH;
+              tierBlock.castShadow = true;
+              tierBlock.receiveShadow = true;
               buildingGroup.add(tierBlock);
               const tierLine = new LineSegments(edgesGeo, topEdgeMat);
               tierLine.scale.set(currentW, tierH, currentD);
@@ -59489,6 +61533,8 @@ class CityBuilder {
             spire.scale.set(spireW, spireH, spireD);
             spire.position.y = h;
             spire.rotation.y = Math.PI / 4;
+            spire.castShadow = true;
+            spire.receiveShadow = true;
             buildingGroup.add(spire);
             const spireLine = new LineSegments(coneEdgesGeo, topEdgeMat);
             spireLine.scale.set(spireW, spireH, spireD);
@@ -59505,6 +61551,8 @@ class CityBuilder {
               const gd = 5 + Math.random() * 10;
               const gMesh = new Mesh(boxGeo, roofMaterial);
               gMesh.scale.set(gw, gh, gd);
+              gMesh.castShadow = true;
+              gMesh.receiveShadow = true;
               const face = Math.floor(Math.random() * 4);
               switch (face) {
                 case 0:
@@ -59661,10 +61709,13 @@ class TrafficSystem {
     const carGeo = new BoxGeometry(4, 2, 8);
     const tailLightGeo = new BoxGeometry(0.5, 0.5, 0.1);
     const headLightGeo = new BoxGeometry(0.5, 0.5, 0.1);
-    const carBodyMat1 = new MeshLambertMaterial({ color: 2236962 });
-    const carBodyMat2 = new MeshLambertMaterial({ color: 328965 });
-    const carBodyMat3 = new MeshLambertMaterial({ color: 1118481 });
-    const policeBodyMat = new MeshLambertMaterial({ color: 15658734 });
+    const wheelGeo = new CylinderGeometry(0.8, 0.8, 0.5, 16);
+    wheelGeo.rotateZ(Math.PI / 2);
+    const carBodyMat1 = new MeshStandardMaterial({ color: 2236962, roughness: 0.3, metalness: 0.7 });
+    const carBodyMat2 = new MeshStandardMaterial({ color: 328965, roughness: 0.3, metalness: 0.7 });
+    const carBodyMat3 = new MeshStandardMaterial({ color: 1118481, roughness: 0.3, metalness: 0.7 });
+    const policeBodyMat = new MeshStandardMaterial({ color: 15658734, roughness: 0.2, metalness: 0.5 });
+    const wheelMat = new MeshStandardMaterial({ color: 1118481, roughness: 0.9, metalness: 0.1 });
     const lightBarGeo = new BoxGeometry(2, 0.5, 0.5);
     const lightBarMat = new MeshBasicMaterial({ color: 0 });
     const underglowGeo = new PlaneGeometry(5, 9);
@@ -59705,7 +61756,28 @@ class TrafficSystem {
       const carGroup = new Group();
       const carBody = new Mesh(carGeo, bodyMat);
       carBody.userData.originalOpacity = 1;
+      carBody.castShadow = true;
       carGroup.add(carBody);
+      const w1 = new Mesh(wheelGeo, wheelMat);
+      w1.position.set(2, -0.5, 2.5);
+      w1.userData.originalOpacity = 1;
+      w1.castShadow = true;
+      carGroup.add(w1);
+      const w2 = new Mesh(wheelGeo, wheelMat);
+      w2.position.set(-2, -0.5, 2.5);
+      w2.userData.originalOpacity = 1;
+      w2.castShadow = true;
+      carGroup.add(w2);
+      const w3 = new Mesh(wheelGeo, wheelMat);
+      w3.position.set(2, -0.5, -2.5);
+      w3.userData.originalOpacity = 1;
+      w3.castShadow = true;
+      carGroup.add(w3);
+      const w4 = new Mesh(wheelGeo, wheelMat);
+      w4.position.set(-2, -0.5, -2.5);
+      w4.userData.originalOpacity = 1;
+      w4.castShadow = true;
+      carGroup.add(w4);
       if (isPolice) {
         const lb = new Mesh(lightBarGeo, lightBarMat);
         lb.position.set(0, 1.25, 0);
@@ -59869,7 +61941,9 @@ class TrafficSystem {
       z = (Math.random() - 0.5) * CITY_SIZE;
       carGroup.rotation.y = dir === 1 ? 0 : Math.PI;
     }
-    carGroup.position.set(x, 1, z);
+    carGroup.userData.heading = carGroup.rotation.y;
+    const h = getHeight(x, z);
+    carGroup.position.set(x, h + 1, z);
     carGroup.userData.speed = isPolice ? 2.5 + Math.random() * 1.5 : 0.5 + Math.random() * 1;
     carGroup.userData.dir = dir;
     carGroup.userData.axis = axis;
@@ -59938,7 +62012,7 @@ class TrafficSystem {
                   car.position.x = roadCenter + newLaneOffset;
                   car.userData.axis = "z";
                   car.userData.dir = newDir;
-                  car.rotation.y = newDir === 1 ? 0 : Math.PI;
+                  car.userData.heading = newDir === 1 ? 0 : Math.PI;
                   car.userData.turnCooldown = 60;
                 }
               }
@@ -59960,7 +62034,7 @@ class TrafficSystem {
                   car.position.z = roadCenter + newLaneOffset;
                   car.userData.axis = "x";
                   car.userData.dir = newDir;
-                  car.rotation.y = newDir === 1 ? Math.PI / 2 : -Math.PI / 2;
+                  car.userData.heading = newDir === 1 ? Math.PI / 2 : -Math.PI / 2;
                   car.userData.turnCooldown = 60;
                 }
               }
@@ -59968,6 +62042,15 @@ class TrafficSystem {
             if (car.position.z > BOUNDS) car.position.z = -BOUNDS;
             if (car.position.z < -BOUNDS) car.position.z = BOUNDS;
           }
+          car.position.y = getHeight(car.position.x, car.position.z) + 1;
+          const normal = getNormal(car.position.x, car.position.z);
+          car.up.set(normal.x, normal.y, normal.z);
+          const heading = car.userData.heading ?? 0;
+          const lookDist = 5;
+          const targetX = car.position.x + Math.sin(heading) * lookDist;
+          const targetZ = car.position.z + Math.cos(heading) * lookDist;
+          const targetY = getHeight(targetX, targetZ) + 1;
+          car.lookAt(targetX, targetY, targetZ);
         }
       } else {
         if (car.userData.axis === "x") {
@@ -59975,6 +62058,15 @@ class TrafficSystem {
         } else {
           car.position.z += car.userData.speed * 0.5 * car.userData.dir;
         }
+        car.position.y = getHeight(car.position.x, car.position.z) + 1;
+        const normal = getNormal(car.position.x, car.position.z);
+        car.up.set(normal.x, normal.y, normal.z);
+        const heading = car.userData.heading ?? 0;
+        const lookDist = 5;
+        const targetX = car.position.x + Math.sin(heading) * lookDist;
+        const targetZ = car.position.z + Math.cos(heading) * lookDist;
+        const targetY = getHeight(targetX, targetZ) + 1;
+        car.lookAt(targetX, targetY, targetZ);
         car.userData.opacity -= 0.02;
         if (car.userData.opacity <= 0) {
           this.resetCar(car);
@@ -60011,7 +62103,7 @@ class TrafficSystem {
             player.position.z += (player.position.z - ai.position.z) * 0.5;
             ai.userData.fading = true;
             ai.userData.dir *= -1;
-            ai.rotation.y += Math.random() - 0.5;
+            ai.userData.heading += Math.random() - 0.5;
             this.spawnSparks(player.position);
             continue;
           }
@@ -60020,8 +62112,8 @@ class TrafficSystem {
           carB.userData.fading = true;
           carA.userData.dir *= -1;
           carB.userData.dir *= -1;
-          carA.rotation.y += Math.random() - 0.5;
-          carB.rotation.y += Math.random() - 0.5;
+          carA.userData.heading += Math.random() - 0.5;
+          carB.userData.heading += Math.random() - 0.5;
         }
       }
     }
@@ -60040,6 +62132,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     let scene;
     let camera;
     let renderer;
+    let composer;
     let animationId;
     let isActive = false;
     let occupiedGrids = /* @__PURE__ */ new Map();
@@ -60249,7 +62342,8 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
         x = roadCoordinate;
         z = otherCoord;
       }
-      checkpointMesh.position.set(x, 0, z);
+      const h = getHeight(x, z);
+      checkpointMesh.position.set(x, h, z);
       checkpointMesh.visible = true;
     }
     function spawnSparks(position) {
@@ -60292,10 +62386,24 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       );
       camera.position.set(0, 250, 600);
       camera.lookAt(0, 0, 0);
-      renderer = new WebGLRenderer({ antialias: true, alpha: false });
+      renderer = new WebGLRenderer({ antialias: false, alpha: false });
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = PCFSoftShadowMap;
+      renderer.toneMapping = ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.2;
       canvasContainer.value.appendChild(renderer.domElement);
+      const renderScene = new RenderPass(scene, camera);
+      const bloomPass = new UnrealBloomPass(new Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+      bloomPass.threshold = 0.2;
+      bloomPass.strength = 1.5;
+      bloomPass.radius = 0.8;
+      const outputPass = new OutputPass();
+      composer = new EffectComposer(renderer);
+      composer.addPass(renderScene);
+      composer.addPass(bloomPass);
+      composer.addPass(outputPass);
       const lbTexture = createLeaderboardTexture();
       cityBuilder = new CityBuilder(scene);
       cityBuilder.buildCity(isMobile.value, lbTexture);
@@ -60370,7 +62478,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       sparks.frustumCulled = false;
       scene.add(sparks);
       konamiManager = new KonamiManager(scene);
-      gangWarManager = new GangWarManager(scene, spawnSparks, playPewSound);
+      gangWarManager = new GangWarManager(scene, occupiedGrids, spawnSparks, playPewSound);
       createCheckpoint();
       createNavArrow();
       createChaseArrow();
@@ -60526,6 +62634,9 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
+      if (composer) {
+        composer.setSize(window.innerWidth, window.innerHeight);
+      }
       updateIsMobile();
     }
     function onPointerLockChange() {
@@ -60633,8 +62744,9 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             positions[i * 3] += sparkVelocities[i * 3];
             positions[i * 3 + 1] += sparkVelocities[i * 3 + 1];
             positions[i * 3 + 2] += sparkVelocities[i * 3 + 2];
-            if (positions[i * 3 + 1] < 0) {
-              positions[i * 3 + 1] = 0;
+            const h = getHeight(positions[i * 3], positions[i * 3 + 2]);
+            if (positions[i * 3 + 1] < h) {
+              positions[i * 3 + 1] = h;
               sparkVelocities[i * 3 + 1] *= -0.5;
             }
             const ix = Math.round((positions[i * 3] - START_OFFSET) / CELL_SIZE);
@@ -60706,7 +62818,11 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
           camera.lookAt(currentLookAt);
         }
       }
-      renderer.render(scene, camera);
+      if (composer) {
+        composer.render();
+      } else {
+        renderer.render(scene, camera);
+      }
     }
     let audioCtx = null;
     function playPewSound(pos) {
@@ -60783,7 +62899,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       }
     });
     return (_ctx, _push, _parent, _attrs) => {
-      _push(`<!--[--><div id="cyberpunk-city" data-v-bbdbfba2></div>`);
+      _push(`<!--[--><div id="cyberpunk-city" data-v-8926f51f></div>`);
       _push(ssrRenderComponent(unref(GameUI), {
         isDrivingMode: isDrivingMode.value,
         isGameMode: isGameMode.value,
@@ -60815,7 +62931,7 @@ _sfc_main$4.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("src/components/CyberpunkCity.vue");
   return _sfc_setup$4 ? _sfc_setup$4(props, ctx) : void 0;
 };
-const CyberpunkCity = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-bbdbfba2"]]);
+const CyberpunkCity = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-8926f51f"]]);
 
 const CyberpunkCity$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,

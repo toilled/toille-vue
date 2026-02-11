@@ -3,6 +3,33 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import CyberpunkCity from '../components/CyberpunkCity.vue'
 import * as THREE from 'three'
 
+vi.mock("three/examples/jsm/postprocessing/EffectComposer", () => ({
+  EffectComposer: class {
+    constructor() {}
+    addPass = vi.fn();
+    render = vi.fn();
+    setSize = vi.fn();
+  }
+}));
+
+vi.mock("three/examples/jsm/postprocessing/RenderPass", () => ({
+  RenderPass: class {
+    constructor() {}
+  }
+}));
+
+vi.mock("three/examples/jsm/postprocessing/UnrealBloomPass", () => ({
+  UnrealBloomPass: class {
+    constructor() {}
+  }
+}));
+
+vi.mock("three/examples/jsm/postprocessing/OutputPass", () => ({
+  OutputPass: class {
+    constructor() {}
+  }
+}));
+
 // Mock useRoute
 vi.mock('vue-router', () => ({
   useRoute: vi.fn(() => ({
@@ -39,7 +66,10 @@ vi.mock('three', () => {
       render: vi.fn(),
       domElement: document.createElement('canvas'),
       setPixelRatio: vi.fn(),
-      dispose: vi.fn()
+      dispose: vi.fn(),
+      shadowMap: { enabled: false, type: 0 },
+      toneMapping: 0,
+      toneMappingExposure: 1
     })),
     Color: vi.fn(),
     FogExp2: vi.fn(),
@@ -48,6 +78,7 @@ vi.mock('three', () => {
     })),
     CylinderGeometry: vi.fn(() => ({
       rotateX: vi.fn(),
+      rotateZ: vi.fn(),
       translate: vi.fn()
     })),
     SphereGeometry: vi.fn(),
@@ -182,6 +213,10 @@ vi.mock('three', () => {
       randFloat: vi.fn(() => 100)
     },
     AmbientLight: vi.fn(),
+    HemisphereLight: vi.fn(() => ({
+      position: { set: vi.fn() },
+      add: vi.fn()
+    })),
     PointLight: vi.fn(() => ({
       position: { set: vi.fn(), x: 0, y: 0, z: 0 },
       userData: {},
@@ -189,7 +224,13 @@ vi.mock('three', () => {
       color: { getHex: vi.fn() }
     })),
     DirectionalLight: vi.fn(() => ({
-      position: { set: vi.fn(), x: 0, y: 0, z: 0 }
+      position: { set: vi.fn(), x: 0, y: 0, z: 0 },
+      castShadow: false,
+      shadow: {
+        mapSize: { width: 1024, height: 1024 },
+        camera: { near: 0, far: 0, left: 0, right: 0, top: 0, bottom: 0 },
+        bias: 0
+      }
     })),
     SpotLight: vi.fn(() => ({
       position: { set: vi.fn(), x: 0, y: 0, z: 0 },
@@ -225,6 +266,8 @@ vi.mock('three', () => {
       params: { Points: { threshold: 1 } }
     })),
     AdditiveBlending: 2000,
+    PCFSoftShadowMap: 1,
+    ACESFilmicToneMapping: 1,
     Euler: vi.fn(() => ({
       set: vi.fn(),
       copy: vi.fn()

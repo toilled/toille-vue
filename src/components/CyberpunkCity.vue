@@ -47,8 +47,14 @@ import {
   Group,
   ConeGeometry,
   Object3D,
-  MathUtils
+  MathUtils,
+  PCFSoftShadowMap,
+  ACESFilmicToneMapping
 } from "three";
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass';
 import { GameModeManager } from "../game/GameModeManager";
 import { DrivingMode } from "../game/modes/DrivingMode";
 import { DroneMode } from "../game/modes/DroneMode";
@@ -72,6 +78,7 @@ const canvasContainer = ref<HTMLDivElement | null>(null);
 let scene: Scene;
 let camera: PerspectiveCamera;
 let renderer: WebGLRenderer;
+let composer: EffectComposer;
 let animationId: number;
 let isActive = false;
 
@@ -406,10 +413,29 @@ onMounted(() => {
   camera.lookAt(0, 0, 0);
 
   // Renderer setup
-  renderer = new WebGLRenderer({ antialias: true, alpha: false });
+  renderer = new WebGLRenderer({ antialias: false, alpha: false });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = PCFSoftShadowMap;
+  renderer.toneMapping = ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.2;
   canvasContainer.value.appendChild(renderer.domElement);
+
+  // Post Processing
+  const renderScene = new RenderPass(scene, camera);
+
+  const bloomPass = new UnrealBloomPass(new Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+  bloomPass.threshold = 0.2;
+  bloomPass.strength = 1.5;
+  bloomPass.radius = 0.8;
+
+  const outputPass = new OutputPass();
+
+  composer = new EffectComposer(renderer);
+  composer.addPass(renderScene);
+  composer.addPass(bloomPass);
+  composer.addPass(outputPass);
 
   // City Builder
   const lbTexture = createLeaderboardTexture();
@@ -693,6 +719,9 @@ function onResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  if (composer) {
+    composer.setSize(window.innerWidth, window.innerHeight);
+  }
   updateIsMobile();
 }
 
@@ -926,7 +955,11 @@ function animate() {
     }
   }
   
-  renderer.render(scene, camera);
+  if (composer) {
+    composer.render();
+  } else {
+    renderer.render(scene, camera);
+  }
 }
 
 let audioCtx: AudioContext | null = null;

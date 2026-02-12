@@ -284,6 +284,10 @@ watch(
 </script>
 
 <style>
+.title {
+  margin-bottom: 0;
+}
+
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.5s ease;

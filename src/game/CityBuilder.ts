@@ -17,6 +17,7 @@ import {
   Scene,
   SpotLight,
   ConeGeometry,
+  HemisphereLight,
 } from "three";
 import {
   BLOCK_SIZE,
@@ -66,15 +67,36 @@ export class CityBuilder {
   }
 
   private setupLighting() {
-    const ambientLight = new AmbientLight(0xffffff, 0.2);
-    this.scene.add(ambientLight);
+    const hemiLight = new HemisphereLight(0xffffff, 0x444444, 0.4);
+    hemiLight.position.set(0, 500, 0);
+    this.scene.add(hemiLight);
 
-    const dirLight = new DirectionalLight(0xff00cc, 0.5);
-    dirLight.position.set(100, 200, 100);
+    const dirLight = new DirectionalLight(0xff00cc, 1.5);
+    dirLight.position.set(100, 300, 100);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 2048;
+    dirLight.shadow.mapSize.height = 2048;
+    dirLight.shadow.camera.near = 10;
+    dirLight.shadow.camera.far = 1000;
+    dirLight.shadow.camera.left = -500;
+    dirLight.shadow.camera.right = 500;
+    dirLight.shadow.camera.top = 500;
+    dirLight.shadow.camera.bottom = -500;
+    dirLight.shadow.bias = -0.0005;
     this.scene.add(dirLight);
 
-    const dirLight2 = new DirectionalLight(0x00ccff, 0.5);
-    dirLight2.position.set(-100, 200, -100);
+    const dirLight2 = new DirectionalLight(0x00ccff, 1.5);
+    dirLight2.position.set(-100, 300, -100);
+    dirLight2.castShadow = true;
+    dirLight2.shadow.mapSize.width = 2048;
+    dirLight2.shadow.mapSize.height = 2048;
+    dirLight2.shadow.camera.near = 10;
+    dirLight2.shadow.camera.far = 1000;
+    dirLight2.shadow.camera.left = -500;
+    dirLight2.shadow.camera.right = 500;
+    dirLight2.shadow.camera.top = 500;
+    dirLight2.shadow.camera.bottom = -500;
+    dirLight2.shadow.bias = -0.0005;
     this.scene.add(dirLight2);
   }
 
@@ -112,6 +134,7 @@ export class CityBuilder {
     const plane = new Mesh(planeGeometry, planeMaterial);
     plane.rotation.x = -Math.PI / 2;
     plane.position.y = -0.5;
+    plane.receiveShadow = true;
     this.scene.add(plane);
   }
 
@@ -237,6 +260,8 @@ export class CityBuilder {
 
         const mainBlock = new Mesh(boxGeo, thisBuildingMaterials);
         mainBlock.scale.set(w, h, d);
+        mainBlock.castShadow = true;
+        mainBlock.receiveShadow = true;
         buildingGroup.add(mainBlock);
 
         const mainLine = new LineSegments(
@@ -261,6 +286,8 @@ export class CityBuilder {
               const tierBlock = new Mesh(boxGeo, thisBuildingMaterials);
               tierBlock.scale.set(currentW, tierH, currentD);
               tierBlock.position.y = currentH;
+              tierBlock.castShadow = true;
+              tierBlock.receiveShadow = true;
               buildingGroup.add(tierBlock);
 
               const tierLine = new LineSegments(edgesGeo, topEdgeMat);
@@ -281,6 +308,8 @@ export class CityBuilder {
             spire.scale.set(spireW, spireH, spireD);
             spire.position.y = h;
             spire.rotation.y = Math.PI / 4;
+            spire.castShadow = true;
+            spire.receiveShadow = true;
             buildingGroup.add(spire);
 
             const spireLine = new LineSegments(coneEdgesGeo, topEdgeMat);
@@ -299,6 +328,8 @@ export class CityBuilder {
 
               const gMesh = new Mesh(boxGeo, roofMaterial);
               gMesh.scale.set(gw, gh, gd);
+              gMesh.castShadow = true;
+              gMesh.receiveShadow = true;
 
               const face = Math.floor(Math.random() * 4);
               switch (face) {

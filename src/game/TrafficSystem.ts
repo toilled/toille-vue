@@ -4,12 +4,14 @@ import {
   Mesh,
   MeshBasicMaterial,
   MeshLambertMaterial,
+  MeshStandardMaterial,
   Object3D,
   PlaneGeometry,
   Scene,
   SpotLight,
   DoubleSide,
   PointLight,
+  CylinderGeometry,
 } from "three";
 import {
   BOUNDS,
@@ -50,11 +52,15 @@ export class TrafficSystem {
     const carGeo = new BoxGeometry(4, 2, 8);
     const tailLightGeo = new BoxGeometry(0.5, 0.5, 0.1);
     const headLightGeo = new BoxGeometry(0.5, 0.5, 0.1);
+    const wheelGeo = new CylinderGeometry(0.8, 0.8, 0.5, 16);
+    wheelGeo.rotateZ(Math.PI / 2);
 
-    const carBodyMat1 = new MeshLambertMaterial({ color: 0x222222 });
-    const carBodyMat2 = new MeshLambertMaterial({ color: 0x050505 });
-    const carBodyMat3 = new MeshLambertMaterial({ color: 0x111111 });
-    const policeBodyMat = new MeshLambertMaterial({ color: 0xeeeeee }); // White-ish
+    const carBodyMat1 = new MeshStandardMaterial({ color: 0x222222, roughness: 0.3, metalness: 0.7 });
+    const carBodyMat2 = new MeshStandardMaterial({ color: 0x050505, roughness: 0.3, metalness: 0.7 });
+    const carBodyMat3 = new MeshStandardMaterial({ color: 0x111111, roughness: 0.3, metalness: 0.7 });
+    const policeBodyMat = new MeshStandardMaterial({ color: 0xeeeeee, roughness: 0.2, metalness: 0.5 }); // White-ish
+
+    const wheelMat = new MeshStandardMaterial({ color: 0x111111, roughness: 0.9, metalness: 0.1 });
 
     const lightBarGeo = new BoxGeometry(2, 0.5, 0.5);
     const lightBarMat = new MeshBasicMaterial({ color: 0x000000 });
@@ -110,7 +116,33 @@ export class TrafficSystem {
 
       const carBody = new Mesh(carGeo, bodyMat);
       carBody.userData.originalOpacity = 1.0;
+      carBody.castShadow = true;
       carGroup.add(carBody);
+
+      // Wheels
+      const w1 = new Mesh(wheelGeo, wheelMat);
+      w1.position.set(2, -0.5, 2.5);
+      w1.userData.originalOpacity = 1.0;
+      w1.castShadow = true;
+      carGroup.add(w1);
+
+      const w2 = new Mesh(wheelGeo, wheelMat);
+      w2.position.set(-2, -0.5, 2.5);
+      w2.userData.originalOpacity = 1.0;
+      w2.castShadow = true;
+      carGroup.add(w2);
+
+      const w3 = new Mesh(wheelGeo, wheelMat);
+      w3.position.set(2, -0.5, -2.5);
+      w3.userData.originalOpacity = 1.0;
+      w3.castShadow = true;
+      carGroup.add(w3);
+
+      const w4 = new Mesh(wheelGeo, wheelMat);
+      w4.position.set(-2, -0.5, -2.5);
+      w4.userData.originalOpacity = 1.0;
+      w4.castShadow = true;
+      carGroup.add(w4);
 
       if (isPolice) {
         // Police Light Bar
@@ -120,7 +152,7 @@ export class TrafficSystem {
         carGroup.add(lb);
 
         // Flashing Lights
-        const flIntensity = 200;
+        const flIntensity = 80;
         const flDist = 100;
 
         const redLight = new PointLight(0xff0000, flIntensity, flDist);
@@ -198,7 +230,7 @@ export class TrafficSystem {
 
   public addLightsToCar(car: Group) {
     const hlColor = 0xffffaa;
-    const hlIntensity = 2000;
+    const hlIntensity = 800;
     const hlDist = 800;
     const hlAngle = Math.PI / 4.5;
     const hlPenumbra = 0.2;
@@ -242,7 +274,7 @@ export class TrafficSystem {
     car.add(hl2);
 
     const tlColor = 0xff0000;
-    const tlIntensity = 150;
+    const tlIntensity = 50;
     const tlDist = 50;
     const tlAngle = Math.PI / 2.5;
 

@@ -21,7 +21,7 @@ export default defineConfig({
     },
   },
   define: {
-      // Basic polyfills for libraries that might expect them
-      'process.env.NODE_ENV': JSON.stringify('production'),
+    // Basic polyfills for libraries that might expect them
+    'process.env.NODE_ENV': JSON.stringify('production'),
   }
 });

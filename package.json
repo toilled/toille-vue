@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "bun run build:client && bun run build:server",
     "build:client": "vite build --outDir dist",
-    "build:server": "vite build --config vite.config.ssr.ts --ssr",
+    "build:server": "vite build --config vite.config.ssr.ts --ssr && find functions -maxdepth 1 -type f \\( -name '*.png' -o -name '*.svg' -o -name '*.ico' -o -name '*.xml' -o -name '*.txt' -o -name '*.webmanifest' \\) -delete",
     "serve": "vite preview",
     "pages:dev": "mv wrangler.toml wrangler.toml.bak && wrangler pages dev --d1 DB=toille-vue-db -- bun run dev; mv wrangler.toml.bak wrangler.toml",
     "db:init": "wrangler d1 execute toille-vue-db --local --file=./schema.sql",

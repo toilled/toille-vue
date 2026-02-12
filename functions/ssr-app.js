@@ -3418,7 +3418,7 @@ const publicPropertiesMap = (
       queueJob(i.update);
     }),
     $nextTick: (i) => i.n || (i.n = nextTick.bind(i.proxy)),
-    $watch: (i) => instanceWatch.bind(i)
+    $watch: (i) => instanceWatch.bind(i) 
   })
 );
 const hasSetupBinding = (state, key) => state !== EMPTY_OBJ && !state.__isScriptSetup && hasOwn(state, key);
@@ -11583,7 +11583,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
       return pages[0];
     });
     return (_ctx, _push, _parent, _attrs) => {
-      _push(`<main${ssrRenderAttrs(_attrs)}><section><header><h2 class="title">`);
+      _push(`<main${ssrRenderAttrs(_attrs)}><section><article class="marginless"><header><h2 class="title">`);
       if (page.value) {
         _push(`<!--[-->${ssrInterpolate(page.value.title)} `);
         if (showHint.value) {
@@ -11612,7 +11612,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
           last: true
         }, null, _parent));
       }
-      _push(`</section></main>`);
+      _push(`</article></section></main>`);
     };
   }
 });
@@ -62295,7 +62295,8 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       const cone = new Mesh(
         new ConeGeometry(2, 7.5, 16),
         new MeshBasicMaterial({
-          color: 16776960,
+          color: 8947712,
+          // Reduced brightness to avoid bloom
           depthTest: false,
           depthWrite: false,
           transparent: true,
@@ -62899,7 +62900,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       }
     });
     return (_ctx, _push, _parent, _attrs) => {
-      _push(`<!--[--><div id="cyberpunk-city" data-v-e6303613></div>`);
+      _push(`<!--[--><div id="cyberpunk-city" data-v-6c88b08b></div>`);
       _push(ssrRenderComponent(unref(GameUI), {
         isDrivingMode: isDrivingMode.value,
         isGameMode: isGameMode.value,
@@ -62931,7 +62932,7 @@ _sfc_main$4.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("src/components/CyberpunkCity.vue");
   return _sfc_setup$4 ? _sfc_setup$4(props, ctx) : void 0;
 };
-const CyberpunkCity = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-e6303613"]]);
+const CyberpunkCity = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-6c88b08b"]]);
 
 const CyberpunkCity$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,

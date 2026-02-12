@@ -426,8 +426,8 @@ onMounted(() => {
   const renderScene = new RenderPass(scene, camera);
 
   const bloomPass = new UnrealBloomPass(new Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-  bloomPass.threshold = 0.2;
-  bloomPass.strength = 1.5;
+  bloomPass.threshold = 0.5;
+  bloomPass.strength = 1.0;
   bloomPass.radius = 0.8;
 
   const outputPass = new OutputPass();

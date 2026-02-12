@@ -152,7 +152,7 @@ export class TrafficSystem {
         carGroup.add(lb);
 
         // Flashing Lights
-        const flIntensity = 200;
+        const flIntensity = 80;
         const flDist = 100;
 
         const redLight = new PointLight(0xff0000, flIntensity, flDist);
@@ -230,7 +230,7 @@ export class TrafficSystem {
 
   public addLightsToCar(car: Group) {
     const hlColor = 0xffffaa;
-    const hlIntensity = 2000;
+    const hlIntensity = 800;
     const hlDist = 800;
     const hlAngle = Math.PI / 4.5;
     const hlPenumbra = 0.2;
@@ -274,7 +274,7 @@ export class TrafficSystem {
     car.add(hl2);
 
     const tlColor = 0xff0000;
-    const tlIntensity = 150;
+    const tlIntensity = 50;
     const tlDist = 50;
     const tlAngle = Math.PI / 2.5;
 

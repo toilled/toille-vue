@@ -61783,7 +61783,7 @@ class TrafficSystem {
         lb.position.set(0, 1.25, 0);
         lb.userData.originalOpacity = 1;
         carGroup.add(lb);
-        const flIntensity = 200;
+        const flIntensity = 80;
         const flDist = 100;
         const redLight = new PointLight(16711680, flIntensity, flDist);
         redLight.position.set(-0.8, 1.5, 0);
@@ -61846,7 +61846,7 @@ class TrafficSystem {
   }
   addLightsToCar(car) {
     const hlColor = 16777130;
-    const hlIntensity = 2e3;
+    const hlIntensity = 800;
     const hlDist = 800;
     const hlAngle = Math.PI / 4.5;
     const hlPenumbra = 0.2;
@@ -61883,7 +61883,7 @@ class TrafficSystem {
     hl2.userData.isCarLight = true;
     car.add(hl2);
     const tlColor = 16711680;
-    const tlIntensity = 150;
+    const tlIntensity = 50;
     const tlDist = 50;
     const tlAngle = Math.PI / 2.5;
     const tl1 = new SpotLight(tlColor, tlIntensity, tlDist, tlAngle, 0.5, 1);
@@ -62396,8 +62396,8 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       canvasContainer.value.appendChild(renderer.domElement);
       const renderScene = new RenderPass(scene, camera);
       const bloomPass = new UnrealBloomPass(new Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-      bloomPass.threshold = 0.2;
-      bloomPass.strength = 1.5;
+      bloomPass.threshold = 0.5;
+      bloomPass.strength = 1;
       bloomPass.radius = 0.8;
       const outputPass = new OutputPass();
       composer = new EffectComposer(renderer);
@@ -62899,7 +62899,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       }
     });
     return (_ctx, _push, _parent, _attrs) => {
-      _push(`<!--[--><div id="cyberpunk-city" data-v-8926f51f></div>`);
+      _push(`<!--[--><div id="cyberpunk-city" data-v-e6303613></div>`);
       _push(ssrRenderComponent(unref(GameUI), {
         isDrivingMode: isDrivingMode.value,
         isGameMode: isGameMode.value,
@@ -62931,7 +62931,7 @@ _sfc_main$4.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("src/components/CyberpunkCity.vue");
   return _sfc_setup$4 ? _sfc_setup$4(props, ctx) : void 0;
 };
-const CyberpunkCity = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-8926f51f"]]);
+const CyberpunkCity = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-e6303613"]]);
 
 const CyberpunkCity$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,

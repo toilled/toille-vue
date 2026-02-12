@@ -289,7 +289,7 @@ function createNavArrow() {
   const cone = new Mesh(
     new ConeGeometry(2, 7.5, 16),
     new MeshBasicMaterial({
-      color: 0xffff00,
+      color: 0x888800, // Reduced brightness to avoid bloom
       depthTest: false,
       depthWrite: false,
       transparent: true,

@@ -1,42 +1,44 @@
 <template>
   <main>
     <section>
-      <header>
-        <h2 class="title" @mousedown="handleMouseDown">
-          <template v-if="page">
-            {{ page.title }}
-          <Transition name="fade">
-            <span
-              v-if="showHint"
-              style="
-                font-weight: 100;
-                font-style: italic;
-                font-size: 0.6em;
-                vertical-align: middle;
-              "
-            >
-              - Nothing here
-            </span>
-          </Transition>
+      <article class="marginless">
+        <header>
+          <h2 class="title" @mousedown="handleMouseDown">
+            <template v-if="page">
+              {{ page.title }}
+              <Transition name="fade">
+                <span
+                  v-if="showHint"
+                  style="
+                    font-weight: 100;
+                    font-style: italic;
+                    font-size: 0.6em;
+                    vertical-align: middle;
+                  "
+                >
+                  - Nothing here
+                </span>
+              </Transition>
+            </template>
+            <template v-else> 404 - Page not found </template>
+          </h2>
+        </header>
+        <template v-if="page">
+          <Paragraph
+            v-for="(paragraph, index) in page.body"
+            :key="index"
+            :paragraph="paragraph"
+            :last="index + 1 === page.body.length"
+          />
         </template>
-        <template v-else> 404 - Page not found </template>
-      </h2>
-    </header>
-    <template v-if="page">
-      <Paragraph
-        v-for="(paragraph, index) in page.body"
-        :key="index"
-        :paragraph="paragraph"
-        :last="index + 1 === page.body.length"
-      />
-    </template>
-    <template v-else>
-      <Paragraph
-        :paragraph="`The page <strong>${route.params.name}</strong> does not exist!`"
-        :last="true"
-      />
-    </template>
-  </section>
+        <template v-else>
+          <Paragraph
+            :paragraph="`The page <strong>${route.params.name}</strong> does not exist!`"
+            :last="true"
+          />
+        </template>
+      </article>
+    </section>
   </main>
 </template>
 

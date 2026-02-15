@@ -257,6 +257,10 @@ const pointer = new Vector2();
 let sparks: Points;
 const sparkCount = 2000;
 const sparkPositions = new Float32Array(sparkCount * 3);
+// Initialize sparks off-screen
+for (let i = 0; i < sparkCount; i++) {
+  sparkPositions[i * 3 + 1] = -99999;
+}
 const sparkVelocities = new Float32Array(sparkCount * 3);
 const sparkLifetimes = new Float32Array(sparkCount); // 0 = dead, 1 = full life
 

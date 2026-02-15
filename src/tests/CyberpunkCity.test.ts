@@ -334,4 +334,32 @@ describe('CyberpunkCity.vue', () => {
     // Verification of cleanup would depend on implementation details,
     // but ensuring no errors on unmount is a good basic check.
   })
+
+  it('initializes spark positions off-screen', () => {
+    wrapper = mount(CyberpunkCity)
+
+    const calls = (THREE.BufferAttribute as any).mock.calls;
+    let sparksCallFound = false;
+
+    for (const call of calls) {
+        const array = call[0];
+        const itemSize = call[1];
+
+        // Check if this is the sparks array (length 6000)
+        // sparkCount is 2000, so array length is 6000
+        if (array.length === 6000 && itemSize === 3) {
+            sparksCallFound = true;
+            // Verify Y coordinate is off-screen
+            // x, y, z. So index 1 is y.
+            // Check first particle
+            expect(array[1]).toBeLessThan(-9000);
+            // Check second particle
+            expect(array[4]).toBeLessThan(-9000);
+            // Check last particle
+            expect(array[5998]).toBeLessThan(-9000);
+        }
+    }
+
+    expect(sparksCallFound).toBe(true);
+  })
 })

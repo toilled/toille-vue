@@ -62,6 +62,7 @@ export class CityBuilder {
     this.setupLighting();
     this.createGround();
     this.createDesert();
+    this.createSandDrifts();
     this.createRuins();
     this.createBuildings(lbTexture);
 
@@ -142,6 +143,69 @@ export class CityBuilder {
     this.scene.add(plane);
   }
 
+  private createSandDrifts() {
+    // Add transparent sand drift planes at the edges of the city to blend
+    const driftGeo = new PlaneGeometry(200, 200, 16, 16);
+
+    // Deform drifts slightly
+    const pos = driftGeo.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+        const z = pos.getZ(i);
+        pos.setZ(i, z + Math.random() * 5);
+    }
+    driftGeo.computeVertexNormals();
+
+    const driftMat = new MeshStandardMaterial({
+        color: 0xC2B280,
+        transparent: true,
+        opacity: 0.6,
+        roughness: 1.0,
+        side: DoubleSide,
+    });
+
+    const count = 40;
+    const cityHalfSize = CITY_SIZE / 2;
+
+    for (let i = 0; i < count; i++) {
+        const drift = new Mesh(driftGeo, driftMat);
+
+        // Position along the perimeter
+        const side = Math.floor(Math.random() * 4);
+        let x = 0, z = 0;
+        const offset = Math.random() * 200 - 100; // Drift in/out slightly
+
+        switch (side) {
+            case 0: // North
+                x = (Math.random() - 0.5) * CITY_SIZE;
+                z = -cityHalfSize + offset;
+                break;
+            case 1: // South
+                x = (Math.random() - 0.5) * CITY_SIZE;
+                z = cityHalfSize + offset;
+                break;
+            case 2: // East
+                x = cityHalfSize + offset;
+                z = (Math.random() - 0.5) * CITY_SIZE;
+                break;
+            case 3: // West
+                x = -cityHalfSize + offset;
+                z = (Math.random() - 0.5) * CITY_SIZE;
+                break;
+        }
+
+        const h = getHeight(x, z);
+        drift.position.set(x, h + 1, z);
+        drift.rotation.x = -Math.PI / 2;
+        drift.rotation.z = Math.random() * Math.PI;
+
+        // Scale randomly
+        const s = 0.5 + Math.random() * 1.0;
+        drift.scale.set(s, s, s);
+
+        this.scene.add(drift);
+    }
+  }
+
   private createDesert() {
     const sandTexture = createSandTexture();
     const size = CITY_SIZE * 4;
@@ -159,7 +223,8 @@ export class CityBuilder {
       // Local y corresponds to world -z after rotation
       const h = getHeight(x, -y);
       // Place slightly below city ground to avoid z-fighting in flat areas
-      posAttribute.setZ(i, h - 0.5);
+      // Raise slightly at the edges (if h > 0) to cover the seam
+      posAttribute.setZ(i, h - 0.5 + (Math.abs(h) > 1 ? 0.5 : 0));
     }
     planeGeometry.computeVertexNormals();
 

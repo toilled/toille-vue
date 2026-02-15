@@ -61228,6 +61228,14 @@ function createGroundTexture() {
     for (let i = 0; i < 100; i++) {
       ctx.fillRect(Math.random() * 512, Math.random() * 512, 2, 2);
     }
+    ctx.fillStyle = "#C2B280";
+    ctx.globalAlpha = 0.05;
+    for (let i = 0; i < 5e3; i++) {
+      const x = Math.random() * 512;
+      const y = Math.random() * 512;
+      ctx.fillRect(x, y, 2, 2);
+    }
+    ctx.globalAlpha = 1;
   }
   const texture = new CanvasTexture(canvas);
   texture.wrapS = RepeatWrapping;
@@ -61434,6 +61442,7 @@ class CityBuilder {
     this.setupLighting();
     this.createGround();
     this.createDesert();
+    this.createSandDrifts();
     this.createRuins();
     this.createBuildings(lbTexture);
     this.scene.fog = new FogExp2(328976, isMobile ? 57e-5 : 1e-3);
@@ -61501,6 +61510,55 @@ class CityBuilder {
     plane.receiveShadow = true;
     this.scene.add(plane);
   }
+  createSandDrifts() {
+    const driftGeo = new PlaneGeometry(200, 200, 16, 16);
+    const pos = driftGeo.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      const z = pos.getZ(i);
+      pos.setZ(i, z + Math.random() * 5);
+    }
+    driftGeo.computeVertexNormals();
+    const driftMat = new MeshStandardMaterial({
+      color: 12759680,
+      transparent: true,
+      opacity: 0.6,
+      roughness: 1,
+      side: DoubleSide
+    });
+    const count = 40;
+    const cityHalfSize = CITY_SIZE / 2;
+    for (let i = 0; i < count; i++) {
+      const drift = new Mesh(driftGeo, driftMat);
+      const side = Math.floor(Math.random() * 4);
+      let x = 0, z = 0;
+      const offset = Math.random() * 200 - 100;
+      switch (side) {
+        case 0:
+          x = (Math.random() - 0.5) * CITY_SIZE;
+          z = -cityHalfSize + offset;
+          break;
+        case 1:
+          x = (Math.random() - 0.5) * CITY_SIZE;
+          z = cityHalfSize + offset;
+          break;
+        case 2:
+          x = cityHalfSize + offset;
+          z = (Math.random() - 0.5) * CITY_SIZE;
+          break;
+        case 3:
+          x = -cityHalfSize + offset;
+          z = (Math.random() - 0.5) * CITY_SIZE;
+          break;
+      }
+      const h = getHeight(x, z);
+      drift.position.set(x, h + 1, z);
+      drift.rotation.x = -Math.PI / 2;
+      drift.rotation.z = Math.random() * Math.PI;
+      const s = 0.5 + Math.random() * 1;
+      drift.scale.set(s, s, s);
+      this.scene.add(drift);
+    }
+  }
   createDesert() {
     const sandTexture = createSandTexture();
     const size = CITY_SIZE * 4;
@@ -61515,7 +61573,7 @@ class CityBuilder {
       const x = posAttribute.getX(i);
       const y = posAttribute.getY(i);
       const h = getHeight(x, -y);
-      posAttribute.setZ(i, h - 0.5);
+      posAttribute.setZ(i, h - 0.5 + (Math.abs(h) > 1 ? 0.5 : 0));
     }
     planeGeometry.computeVertexNormals();
     const repeatCount = size / 512;

@@ -83,6 +83,17 @@ export function createGroundTexture() {
     for (let i = 0; i < 100; i++) {
       ctx.fillRect(Math.random() * 512, Math.random() * 512, 2, 2);
     }
+
+    // Add sand/dust overlay to make it blend better with desert
+    ctx.fillStyle = "#C2B280";
+    ctx.globalAlpha = 0.05; // Very subtle
+    for (let i = 0; i < 5000; i++) {
+        const x = Math.random() * 512;
+        const y = Math.random() * 512;
+        // Concentrate slightly more near edges? No, uniform is fine for now
+        ctx.fillRect(x, y, 2, 2);
+    }
+    ctx.globalAlpha = 1.0;
   }
   const texture = new CanvasTexture(canvas);
   texture.wrapS = RepeatWrapping;

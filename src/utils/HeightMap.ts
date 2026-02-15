@@ -1,3 +1,5 @@
+import { CITY_SIZE } from "../game/config";
+
 export class HeightMap {
   private static instance: HeightMap;
   private p: number[] = [];
@@ -85,6 +87,33 @@ export class HeightMap {
       y += this.noise(x * scale, z * scale, 0) * amplitude;
       y += this.noise(x * scale * 2, z * scale * 2, 0) * (amplitude * 0.5);
       y += this.noise(x * scale * 4, z * scale * 4, 0) * (amplitude * 0.25);
+
+      // Desert Hills Logic
+      const dist = Math.sqrt(x * x + z * z);
+      const cityRadius = CITY_SIZE / 2 - 200; // Start transitioning before the exact edge
+
+      if (dist > cityRadius) {
+          const hillScale = 0.0006;
+          const hillAmp = 500;
+
+          let hillY = 0;
+          // Offset noise so it doesn't align exactly with ground
+          hillY += this.noise(x * hillScale + 100, z * hillScale + 100, 0) * hillAmp;
+          hillY += this.noise(x * hillScale * 2, z * hillScale * 2, 0) * (hillAmp * 0.5);
+
+          // Make sure hills are positive relative to base
+          hillY = Math.abs(hillY);
+
+          // Blend factor
+          const transitionWidth = 600;
+          let alpha = (dist - cityRadius) / transitionWidth;
+          alpha = Math.min(Math.max(alpha, 0), 1);
+
+          // Smooth step
+          alpha = alpha * alpha * (3 - 2 * alpha);
+
+          y += (hillY + 80) * alpha; // Add 80 base height to lift desert up
+      }
 
       return y;
   }

@@ -32,4 +32,11 @@ describe('HeightMap', () => {
         const length = Math.sqrt(n.x * n.x + n.y * n.y + n.z * n.z);
         expect(Math.abs(length - 1)).toBeLessThan(0.001);
     });
+
+    it('should be higher outside the city', () => {
+        const cityH = Math.abs(getHeight(0, 0));
+        // CITY_SIZE is 2000. Outside is > 1000.
+        const desertH = getHeight(2500, 0);
+        expect(desertH).toBeGreaterThan(cityH + 40);
+    });
 });

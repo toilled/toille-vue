@@ -38,6 +38,10 @@ export class KonamiManager {
         this.scene = scene;
 
         this.fwPositions = new Float32Array(this.fireworkCount * 3);
+        // Initialize fireworks off-screen
+        for (let i = 0; i < this.fireworkCount; i++) {
+            this.fwPositions[i * 3 + 1] = -99999;
+        }
         this.fwColors = new Float32Array(this.fireworkCount * 3);
         this.fwVelocities = new Float32Array(this.fireworkCount * 3);
         this.fwLifetimes = new Float32Array(this.fireworkCount);

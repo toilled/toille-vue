@@ -59588,7 +59588,7 @@ const ROAD_WIDTH = 40;
 const CELL_SIZE = BLOCK_SIZE + ROAD_WIDTH;
 const GRID_SIZE = Math.floor(CITY_SIZE / CELL_SIZE);
 const START_OFFSET = -(GRID_SIZE * CELL_SIZE) / 2 + CELL_SIZE / 2;
-const BOUNDS = GRID_SIZE * CELL_SIZE / 2 + CELL_SIZE;
+const BOUNDS = GRID_SIZE * CELL_SIZE / 2;
 const DRONE_COUNT = 300;
 
 class HeightMap {
@@ -59930,8 +59930,8 @@ class HeightMap {
     y += this.noise(x * scale, z * scale, 0) * amplitude;
     y += this.noise(x * scale * 2, z * scale * 2, 0) * (amplitude * 0.5);
     y += this.noise(x * scale * 4, z * scale * 4, 0) * (amplitude * 0.25);
-    const dist = Math.sqrt(x * x + z * z);
-    const cityRadius = CITY_SIZE / 2 - 200;
+    const dist = Math.max(Math.abs(x), Math.abs(z));
+    const cityRadius = CITY_SIZE / 2 - 50;
     if (dist > cityRadius) {
       const hillScale = 6e-4;
       const hillAmp = 500;

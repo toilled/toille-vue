@@ -89,8 +89,9 @@ export class HeightMap {
       y += this.noise(x * scale * 4, z * scale * 4, 0) * (amplitude * 0.25);
 
       // Desert Hills Logic
-      const dist = Math.sqrt(x * x + z * z);
-      const cityRadius = CITY_SIZE / 2 - 200; // Start transitioning before the exact edge
+      // Use square distance (Chebyshev) to match city grid layout
+      const dist = Math.max(Math.abs(x), Math.abs(z));
+      const cityRadius = CITY_SIZE / 2 - 50;
 
       if (dist > cityRadius) {
           const hillScale = 0.0006;

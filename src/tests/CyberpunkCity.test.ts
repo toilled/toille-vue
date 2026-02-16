@@ -1,6 +1,6 @@
-import { mount, VueWrapper } from '@vue/test-utils'
+import { render } from '@testing-library/svelte'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import CyberpunkCity from '../components/CyberpunkCity.vue'
+import CyberpunkCity from '../components/CyberpunkCity.svelte'
 import * as THREE from 'three'
 
 vi.mock("three/examples/jsm/postprocessing/EffectComposer", () => ({
@@ -30,12 +30,9 @@ vi.mock("three/examples/jsm/postprocessing/OutputPass", () => ({
   }
 }));
 
-// Mock useRoute
-vi.mock('vue-router', () => ({
-  useRoute: vi.fn(() => ({
-    path: '/'
-  }))
-}))
+vi.mock('../router', () => ({
+  path: { subscribe: (fn: any) => { fn('/'); return () => {}; } }
+}));
 
 vi.stubGlobal("requestAnimationFrame", vi.fn((cb) => setTimeout(cb, 16)));
 vi.stubGlobal("cancelAnimationFrame", vi.fn((id) => clearTimeout(id)));
@@ -131,8 +128,8 @@ vi.mock('three', () => {
         set: vi.fn(),
         x: 0, y: 0, z: 0,
         copy: vi.fn(),
-        distanceToSquared: vi.fn(() => 100), // Added
-        distanceTo: vi.fn(() => 10), // Added
+        distanceToSquared: vi.fn(() => 100),
+        distanceTo: vi.fn(() => 10),
         clone: vi.fn(() => ({
             add: vi.fn(function() { return this; }),
             sub: vi.fn(function() { return this; }),
@@ -159,7 +156,7 @@ vi.mock('three', () => {
         set: vi.fn(),
         x: 0, y: 0, z: 0,
         distanceToSquared: vi.fn(),
-        copy: vi.fn(), // Added copy
+        copy: vi.fn(),
         clone: vi.fn(() => ({ sub: vi.fn(), normalize: vi.fn(), add: vi.fn() })),
         add: vi.fn()
       },
@@ -169,7 +166,7 @@ vi.mock('three', () => {
       userData: {},
       add: vi.fn(),
       lookAt: vi.fn(),
-      material: { color: { setHex: vi.fn() } }, // Added material.color
+      material: { color: { setHex: vi.fn() } },
       traverse: vi.fn()
     })),
     Points: vi.fn(() => ({
@@ -177,11 +174,11 @@ vi.mock('three', () => {
       geometry: {
         attributes: {
           position: {
-            array: new Float32Array(3000), // Mock size
+            array: new Float32Array(6000), // sparkCount * 3
             needsUpdate: false
           },
           color: {
-            array: new Float32Array(3000),
+            array: new Float32Array(6000),
             needsUpdate: false,
             setXYZ: vi.fn()
           }
@@ -276,14 +273,10 @@ vi.mock('three', () => {
   return THREE
 })
 
-describe('CyberpunkCity.vue', () => {
-  let wrapper: VueWrapper
-
+describe('CyberpunkCity.svelte', () => {
   beforeEach(() => {
-    // Reset mocks
     vi.clearAllMocks()
 
-    // Mock canvas context
     const mockContext = {
       fillStyle: '',
       strokeStyle: '',
@@ -306,37 +299,27 @@ describe('CyberpunkCity.vue', () => {
     } as unknown as CanvasRenderingContext2D;
 
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(mockContext as any);
-
-  })
-
-  afterEach(() => {
-    if (wrapper) {
-      wrapper.unmount()
-    }
   })
 
   it('renders correctly', () => {
-    wrapper = mount(CyberpunkCity)
-    expect(wrapper.exists()).toBe(true)
-    expect(wrapper.find('div').exists()).toBe(true)
+    const { container } = render(CyberpunkCity)
+    expect(container.querySelector('div')).toBeTruthy()
   })
 
   it('initializes Three.js scene on mount', () => {
-    wrapper = mount(CyberpunkCity)
+    render(CyberpunkCity)
     expect(THREE.Scene).toHaveBeenCalled()
     expect(THREE.PerspectiveCamera).toHaveBeenCalled()
     expect(THREE.WebGLRenderer).toHaveBeenCalled()
   })
 
   it('cleans up on unmount', () => {
-    wrapper = mount(CyberpunkCity)
-    wrapper.unmount()
-    // Verification of cleanup would depend on implementation details,
-    // but ensuring no errors on unmount is a good basic check.
+    const { unmount } = render(CyberpunkCity)
+    unmount()
   })
 
   it('initializes spark positions off-screen', () => {
-    wrapper = mount(CyberpunkCity)
+    render(CyberpunkCity)
 
     const calls = (THREE.BufferAttribute as any).mock.calls;
     let sparksCallFound = false;
@@ -345,17 +328,10 @@ describe('CyberpunkCity.vue', () => {
         const array = call[0];
         const itemSize = call[1];
 
-        // Check if this is the sparks array (length 6000)
-        // sparkCount is 2000, so array length is 6000
         if (array.length === 6000 && itemSize === 3) {
             sparksCallFound = true;
-            // Verify Y coordinate is off-screen
-            // x, y, z. So index 1 is y.
-            // Check first particle
             expect(array[1]).toBeLessThan(-9000);
-            // Check second particle
             expect(array[4]).toBeLessThan(-9000);
-            // Check last particle
             expect(array[5998]).toBeLessThan(-9000);
         }
     }

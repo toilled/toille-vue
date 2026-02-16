@@ -1,53 +1,22 @@
-import { ref } from 'vue';
+import { writable, get } from 'svelte/store';
 
 export function useNoughtsAndCrosses() {
-  const board = ref<string[]>(Array(9).fill(''));
-  const currentPlayer = ref('X');
-  const winner = ref<string | null>(null);
+  const board = writable<string[]>(Array(9).fill(''));
+  const currentPlayer = writable('X');
+  const winner = writable<string | null>(null);
 
-  const makeMove = (index: number) => {
-    if (board.value[index] || winner.value) return;
-
-    board.value[index] = currentPlayer.value;
-    if (checkWinner(board.value, currentPlayer.value)) {
-      winner.value = currentPlayer.value;
-      return;
-    }
-    if (board.value.every(cell => cell)) {
-      winner.value = 'draw';
-      return;
-    }
-
-    currentPlayer.value = 'O';
-    computerMove();
+  const checkWinner = (board: string[], player: string) => {
+    const winConditions = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8],
+      [0, 3, 6], [1, 4, 7], [2, 5, 8],
+      [0, 4, 8], [2, 4, 6],
+    ];
+    return winConditions.some(combination =>
+      combination.every(index => board[index] === player)
+    );
   };
 
-  const computerMove = () => {
-    let bestScore = -Infinity;
-    let move;
-    for (let i = 0; i < 9; i++) {
-      if (board.value[i] === '') {
-        const newBoard = [...board.value];
-        newBoard[i] = 'O';
-        const score = minimax(newBoard, 0, false);
-        if (score > bestScore) {
-          bestScore = score;
-          move = i;
-        }
-      }
-    }
-
-    board.value[move] = 'O';
-    if (checkWinner(board.value, 'O')) {
-      winner.value = 'O';
-    } else if (board.value.every(cell => cell)) {
-      winner.value = 'draw';
-    }
-
-    currentPlayer.value = 'X';
-  };
-
-  const minimax = (board: string[], depth: number, isMaximizing: boolean) => {
+  const minimax = (board: string[], depth: number, isMaximizing: boolean): number => {
     if (checkWinner(board, 'O')) return 10 - depth;
     if (checkWinner(board, 'X')) return depth - 10;
     if (board.every(cell => cell)) return 0;
@@ -77,21 +46,64 @@ export function useNoughtsAndCrosses() {
     }
   };
 
-  const checkWinner = (board: string[], player: string) => {
-    const winConditions = [
-      [0, 1, 2], [3, 4, 5], [6, 7, 8],
-      [0, 3, 6], [1, 4, 7], [2, 5, 8],
-      [0, 4, 8], [2, 4, 6],
-    ];
-    return winConditions.some(combination =>
-      combination.every(index => board[index] === player)
-    );
+  const computerMove = () => {
+    let bestScore = -Infinity;
+    let move = -1;
+    const b = get(board);
+
+    for (let i = 0; i < 9; i++) {
+      if (b[i] === '') {
+        const newBoard = [...b];
+        newBoard[i] = 'O';
+        const score = minimax(newBoard, 0, false);
+        if (score > bestScore) {
+          bestScore = score;
+          move = i;
+        }
+      }
+    }
+
+    if (move !== -1) {
+        b[move] = 'O';
+        board.set(b);
+
+        if (checkWinner(b, 'O')) {
+          winner.set('O');
+        } else if (b.every(cell => cell)) {
+          winner.set('draw');
+        }
+
+        currentPlayer.set('X');
+    }
+  };
+
+  const makeMove = (index: number) => {
+    const b = get(board);
+    const w = get(winner);
+    const cp = get(currentPlayer);
+
+    if (b[index] || w) return;
+
+    b[index] = cp;
+    board.set(b);
+
+    if (checkWinner(b, cp)) {
+      winner.set(cp);
+      return;
+    }
+    if (b.every(cell => cell)) {
+      winner.set('draw');
+      return;
+    }
+
+    currentPlayer.set('O');
+    setTimeout(computerMove, 500); // Add small delay for realism/UI update
   };
 
   const resetGame = () => {
-    board.value = Array(9).fill('');
-    currentPlayer.value = 'X';
-    winner.value = null;
+    board.set(Array(9).fill(''));
+    currentPlayer.set('X');
+    winner.set(null);
   };
 
   return {

@@ -1,14 +1,8 @@
-<template>
-  <div class="splash-screen">
-    <div class="glitch" data-text="INITIALIZING...">INITIALIZING...</div>
-  </div>
-</template>
+<div class="splash-screen">
+  <div class="glitch" data-text="INITIALIZING...">INITIALIZING...</div>
+</div>
 
-<script setup lang="ts">
-// No script needed for this simple component
-</script>
-
-<style scoped>
+<style>
 .splash-screen {
   position: fixed;
   top: 0;

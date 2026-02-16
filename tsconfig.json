@@ -1,18 +1,20 @@
 {
+  "extends": "@tsconfig/svelte/tsconfig.json",
   "compilerOptions": {
-    "strict": true,
     "target": "ESNext",
+    "useDefineForClassFields": true,
     "module": "ESNext",
-    "moduleResolution": "bundler",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "jsx": "preserve",
-    "types": [
-      "vite/client"
-    ],
-    "noEmit": true,
-    "isolatedModules": true,
     "resolveJsonModule": true,
-    "skipLibCheck": true
-  }
+    "allowJs": true,
+    "checkJs": true,
+    "isolatedModules": true,
+    "moduleResolution": "bundler",
+    "types": ["vite/client", "svelte", "vitest/globals"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.js", "src/**/*.svelte"]
 }

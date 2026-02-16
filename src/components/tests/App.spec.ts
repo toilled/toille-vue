@@ -1,19 +1,8 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { mount } from "@vue/test-utils";
-import App from "../../App.vue";
-import { createRouter, createMemoryHistory } from "vue-router";
-import flushPromises from "flush-promises";
-
-const createTestRouter = () => {
-  return createRouter({
-    history: createMemoryHistory(),
-    routes: [
-      { path: "/", component: { template: "Home" } },
-      { path: "/:name", component: { template: "Page" } },
-      { path: "/:pathMatch(.*)*", component: { template: "NotFound" } },
-    ],
-  });
-};
+import { render, fireEvent, waitFor } from "@testing-library/svelte";
+import App from "../../App.svelte";
+import { path } from "../../router";
+import { tick } from "svelte";
 
 vi.mock("../../configs/pages.json", () => ({
   default: [
@@ -29,181 +18,102 @@ vi.mock("../../configs/titles.json", () => ({
   },
 }));
 
-describe("App.vue", () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let wrapper: any;
-
+describe("App.svelte", () => {
   beforeEach(() => {
-    const mockWeatherData = {
-      current_weather: {
-        weathercode: 0,
-        temperature: 10,
-      },
-      hourly: {
-        time: [
-          "2023-10-27T00:00",
-          "2023-10-27T01:00",
-          "2023-10-27T02:00",
-          "2023-10-27T03:00",
-          "2023-10-27T04:00",
-          "2023-10-27T05:00",
-        ],
-        temperature_2m: [10, 11, 12, 13, 14, 15],
-        rain: [0, 0, 0, 0, 0, 0],
-      },
-    };
-
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve(mockWeatherData),
-      headers: {
-        get: vi.fn(),
-      },
+      json: () => Promise.resolve({}),
+      headers: { get: vi.fn() },
     });
-
     vi.stubGlobal("fetch", mockFetch);
+    path.set("/");
   });
 
   afterEach(() => {
-    if (wrapper) {
-      wrapper.unmount();
-    }
     vi.unstubAllGlobals();
   });
 
   it("renders the main components", async () => {
-    const router = createTestRouter();
-    router.push("/");
-    await router.isReady();
-    wrapper = mount(App, {
-      global: {
-        plugins: [router],
-        stubs: {
-          "router-view": true,
-          Starfield: true,
-        },
-      },
-    });
-    await flushPromises();
-    expect(wrapper.findComponent({ name: "Title" }).exists()).toBe(true);
-    expect(wrapper.findComponent({ name: "Menu" }).exists()).toBe(true);
-    expect(wrapper.find("router-view-stub").exists()).toBe(true);
+    const { getByText, container } = render(App);
+    await tick();
+    expect(getByText("Main Title")).toBeTruthy();
+    expect(getByText("Main Subtitle")).toBeTruthy();
+    expect(container.querySelector(".menu-item")).toBeTruthy();
   });
 
   it("toggles the Activity component", async () => {
-    const router = createTestRouter();
-    router.push("/");
-    await router.isReady();
-    wrapper = mount(App, {
-      global: {
-        plugins: [router],
-        stubs: {
-          Starfield: true,
-        },
-      },
+    const { getByText, queryByText } = render(App);
+    const title = getByText("Main Title");
+
+    expect(queryByText("Try this")).toBeFalsy();
+
+    await fireEvent.mouseDown(title);
+    await tick();
+
+    await waitFor(() => {
+        expect(queryByText("The Bored API")).toBeTruthy();
     });
-    await flushPromises();
-    const title = wrapper.findComponent({ name: "Title" });
-    await title.vm.$emit("activity");
-    await flushPromises();
-    expect(wrapper.vm.activity).toBe(true);
-    await title.vm.$emit("activity");
-    await flushPromises();
-    expect(wrapper.vm.activity).toBe(false);
   });
 
   it("toggles the Suggestion component", async () => {
-    const router = createTestRouter();
-    router.push("/");
-    await router.isReady();
-    wrapper = mount(App, {
-      global: {
-        plugins: [router],
-        stubs: {
-          Starfield: true,
-        },
-      },
-    });
-    await flushPromises();
-    const title = wrapper.findComponent({ name: "Title" });
-    await title.vm.$emit("joke");
-    await flushPromises();
-    expect(wrapper.vm.joke).toBe(true);
-    await title.vm.$emit("joke");
-    await flushPromises();
-    expect(wrapper.vm.joke).toBe(false);
+    const { getByText, queryByText } = render(App);
+    const subtitle = getByText("Main Subtitle");
+
+    expect(queryByText("Have a laugh!")).toBeFalsy();
+
+    await fireEvent.mouseDown(subtitle);
+    await tick();
+
+    expect(queryByText("Have a laugh!")).toBeTruthy();
   });
 
   it("toggles the Checker component", async () => {
-    const router = createTestRouter();
-    router.push("/");
-    await router.isReady();
     vi.useFakeTimers();
-    wrapper = mount(App, {
-      global: {
-        plugins: [router],
-        stubs: {
-          Starfield: true,
-        },
-      },
-    });
-    await flushPromises();
-    vi.advanceTimersByTime(2000);
-    await flushPromises();
-    const footer = wrapper.find("footer");
-    await footer.trigger("click");
-    await flushPromises();
-    expect(wrapper.findComponent({ name: "Checker" }).exists()).toBe(true);
+    const { getByText, container } = render(App);
+
+    vi.advanceTimersByTime(2100);
+    await tick();
+
+    // Check if hint is visible first
+    const footer = getByText("The titles might be clickable...");
+    await fireEvent.click(footer);
+    await tick();
+
+    expect(getByText("Alcohol Checker")).toBeTruthy();
     vi.useRealTimers();
   });
 
   it("shows and hides the hint", async () => {
-    const router = createTestRouter();
-    router.push("/");
-    await router.isReady();
     vi.useFakeTimers();
-    wrapper = mount(App, {
-      global: {
-        plugins: [router],
-        stubs: {
-          Starfield: true,
-          TypingText: true,
-        },
-      },
-    });
-    await flushPromises();
-    expect(wrapper.findComponent({ name: "TypingText" }).exists()).toBe(false);
-    vi.advanceTimersByTime(2000);
-    await flushPromises();
-    expect(wrapper.findComponent({ name: "TypingText" }).exists()).toBe(true);
-    vi.advanceTimersByTime(3000);
-    await flushPromises();
-    expect(wrapper.findComponent({ name: "TypingText" }).exists()).toBe(false);
+    const { queryByText } = render(App);
+
+    expect(queryByText("The titles might be clickable...")).toBeFalsy();
+
+    // Show hint
+    vi.advanceTimersByTime(2100);
+    await tick();
+    expect(queryByText("The titles might be clickable...")).toBeTruthy();
+
+    // Hide hint
+    vi.advanceTimersByTime(3100); // 2100 + 3100 > 5000
+    await tick();
+    expect(queryByText("The titles might be clickable...")).toBeFalsy();
     vi.useRealTimers();
   });
 
   it("updates the document title on route change", async () => {
-    const router = createTestRouter();
-    router.push("/");
-    await router.isReady();
-    wrapper = mount(App, {
-      global: {
-        plugins: [router],
-        stubs: {
-          "router-view": true,
-          Starfield: true,
-        },
-      },
-    });
-    await flushPromises();
+    render(App);
+    await tick();
     expect(document.title).toBe("Elliot > Home");
 
-    await router.push("/about");
-    await flushPromises();
+    path.set("/about");
+    await tick();
+    await new Promise(r => setTimeout(r, 0));
     expect(document.title).toBe("Elliot > About Me");
 
-    await router.push("/non-existent-page");
-    await flushPromises();
+    path.set("/non-existent-page");
+    await tick();
+    await new Promise(r => setTimeout(r, 0));
     expect(document.title).toBe("Elliot > 404");
   });
 });

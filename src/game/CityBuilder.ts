@@ -151,19 +151,19 @@ export class CityBuilder {
     const pos = driftGeo.attributes.position;
     for (let i = 0; i < pos.count; i++) {
         const z = pos.getZ(i);
-        pos.setZ(i, z + Math.random() * 5);
+        pos.setZ(i, z + Math.random() * 8); // Increased deformation
     }
     driftGeo.computeVertexNormals();
 
     const driftMat = new MeshStandardMaterial({
         color: 0xC2B280,
         transparent: true,
-        opacity: 0.6,
+        opacity: 0.8, // Increased opacity to hide the edge
         roughness: 1.0,
         side: DoubleSide,
     });
 
-    const count = 40;
+    const count = 200; // Increased count
     const cityHalfSize = CITY_SIZE / 2;
 
     for (let i = 0; i < count; i++) {
@@ -172,7 +172,8 @@ export class CityBuilder {
         // Position along the perimeter
         const side = Math.floor(Math.random() * 4);
         let x = 0, z = 0;
-        const offset = Math.random() * 200 - 100; // Drift in/out slightly
+        // Widen the offset range to create a more jagged edge
+        const offset = Math.random() * 300 - 150;
 
         switch (side) {
             case 0: // North
@@ -194,12 +195,13 @@ export class CityBuilder {
         }
 
         const h = getHeight(x, z);
-        drift.position.set(x, h + 1, z);
+        // Raise higher to cover road edges
+        drift.position.set(x, h + 2, z);
         drift.rotation.x = -Math.PI / 2;
         drift.rotation.z = Math.random() * Math.PI;
 
         // Scale randomly
-        const s = 0.5 + Math.random() * 1.0;
+        const s = 0.8 + Math.random() * 1.5; // Larger scale
         drift.scale.set(s, s, s);
 
         this.scene.add(drift);

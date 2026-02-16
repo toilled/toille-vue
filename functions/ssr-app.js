@@ -61515,23 +61515,24 @@ class CityBuilder {
     const pos = driftGeo.attributes.position;
     for (let i = 0; i < pos.count; i++) {
       const z = pos.getZ(i);
-      pos.setZ(i, z + Math.random() * 5);
+      pos.setZ(i, z + Math.random() * 8);
     }
     driftGeo.computeVertexNormals();
     const driftMat = new MeshStandardMaterial({
       color: 12759680,
       transparent: true,
-      opacity: 0.6,
+      opacity: 0.8,
+      // Increased opacity to hide the edge
       roughness: 1,
       side: DoubleSide
     });
-    const count = 40;
+    const count = 200;
     const cityHalfSize = CITY_SIZE / 2;
     for (let i = 0; i < count; i++) {
       const drift = new Mesh(driftGeo, driftMat);
       const side = Math.floor(Math.random() * 4);
       let x = 0, z = 0;
-      const offset = Math.random() * 200 - 100;
+      const offset = Math.random() * 300 - 150;
       switch (side) {
         case 0:
           x = (Math.random() - 0.5) * CITY_SIZE;
@@ -61551,10 +61552,10 @@ class CityBuilder {
           break;
       }
       const h = getHeight(x, z);
-      drift.position.set(x, h + 1, z);
+      drift.position.set(x, h + 2, z);
       drift.rotation.x = -Math.PI / 2;
       drift.rotation.z = Math.random() * Math.PI;
-      const s = 0.5 + Math.random() * 1;
+      const s = 0.8 + Math.random() * 1.5;
       drift.scale.set(s, s, s);
       this.scene.add(drift);
     }

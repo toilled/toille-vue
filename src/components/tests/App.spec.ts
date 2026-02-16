@@ -46,7 +46,6 @@ describe("App.svelte", () => {
   });
 
   it("toggles the Activity component", async () => {
-    // Override fetch for this test
     const mockActivity = { type: "education", activity: "Learn something new" };
     vi.stubGlobal("fetch", vi.fn((url) => {
         if (typeof url === 'string' && url.includes('bored')) {
@@ -114,23 +113,7 @@ describe("App.svelte", () => {
     vi.useFakeTimers();
     render(App);
 
-    // Helper to check for the specific footer with text
-    const getFooter = () => {
-        // The footer might be rendered but empty/different.
-        // We look for the footer that contains the TypingText component
-        // or just the footer.content-container that IS NOT the Checker or Activity or Suggestion.
-        // But App.svelte logic:
-        // {#if noFootersShowing && showHint && isContentVisible}
-        //    <footer ...><TypingText ... /></footer>
-        // {/if}
-        // So checking if that specific footer exists is correct.
-        // However, other components (Activity, Suggestion, Checker) also use footer.content-container?
-        // Let's check App.svelte template again.
-        // Yes: Activity uses footer.content-container. Suggestion uses footer.content-container. Checker uses footer.content-container.
-        // But in this test, activity, joke, checker are false. So those footers shouldn't be there.
-        return document.querySelector('footer.content-container');
-    };
-
+    const getFooter = () => document.querySelector('footer.content-container');
     expect(getFooter()).toBeFalsy();
 
     // Show hint: 2000ms
@@ -139,21 +122,14 @@ describe("App.svelte", () => {
     expect(getFooter()).toBeTruthy();
 
     // Hide hint: 5000ms total.
-    // The previous failure showed the footer still existing.
-    // Svelte transition might keep it in DOM.
-    // We need to advance enough time for transition (fade) to complete.
-    // Default fade is 400ms?
-    // Let's advance way more.
-    vi.advanceTimersByTime(5000);
+    // Advance significantly to ensure transitions complete (default fade 400ms)
+    // 2100 + 4000 = 6100 > 5000 + 400
+    vi.advanceTimersByTime(4000);
     await tick();
 
-    // If it's still there, maybe `showHint` didn't flip back to false?
-    // hintTimeout2 = setTimeout(() => showHint = false, 5000);
-    // This is 5000ms from mount.
-    // We advanced 2100.
-    // We need to advance another 2900 to reach 5000.
-    // Plus transition time.
-    // So 2100 + 5000 = 7100 total from start. Should be enough.
+    // Run any pending timers (Svelte transitions might use RAF or setTimeout)
+    vi.runAllTimers();
+    await tick();
 
     expect(getFooter()).toBeFalsy();
     vi.useRealTimers();

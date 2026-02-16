@@ -59588,7 +59588,7 @@ const ROAD_WIDTH = 40;
 const CELL_SIZE = BLOCK_SIZE + ROAD_WIDTH;
 const GRID_SIZE = Math.floor(CITY_SIZE / CELL_SIZE);
 const START_OFFSET = -(GRID_SIZE * CELL_SIZE) / 2 + CELL_SIZE / 2;
-const BOUNDS = GRID_SIZE * CELL_SIZE / 2 + CELL_SIZE;
+const BOUNDS = GRID_SIZE * CELL_SIZE / 2;
 const DRONE_COUNT = 300;
 
 class HeightMap {
@@ -59930,6 +59930,21 @@ class HeightMap {
     y += this.noise(x * scale, z * scale, 0) * amplitude;
     y += this.noise(x * scale * 2, z * scale * 2, 0) * (amplitude * 0.5);
     y += this.noise(x * scale * 4, z * scale * 4, 0) * (amplitude * 0.25);
+    const dist = Math.max(Math.abs(x), Math.abs(z));
+    const cityRadius = CITY_SIZE / 2 - 50;
+    if (dist > cityRadius) {
+      const hillScale = 6e-4;
+      const hillAmp = 500;
+      let hillY = 0;
+      hillY += this.noise(x * hillScale + 100, z * hillScale + 100, 0) * hillAmp;
+      hillY += this.noise(x * hillScale * 2, z * hillScale * 2, 0) * (hillAmp * 0.5);
+      hillY = Math.abs(hillY);
+      const transitionWidth = 600;
+      let alpha = (dist - cityRadius) / transitionWidth;
+      alpha = Math.min(Math.max(alpha, 0), 1);
+      alpha = alpha * alpha * (3 - 2 * alpha);
+      y += (hillY + 80) * alpha;
+    }
     return y;
   }
   getNormal(x, z) {
@@ -60672,6 +60687,9 @@ class KonamiManager {
   constructor(scene) {
     this.scene = scene;
     this.fwPositions = new Float32Array(this.fireworkCount * 3);
+    for (let i = 0; i < this.fireworkCount; i++) {
+      this.fwPositions[i * 3 + 1] = -99999;
+    }
     this.fwColors = new Float32Array(this.fireworkCount * 3);
     this.fwVelocities = new Float32Array(this.fireworkCount * 3);
     this.fwLifetimes = new Float32Array(this.fireworkCount);
@@ -61210,6 +61228,14 @@ function createGroundTexture() {
     for (let i = 0; i < 100; i++) {
       ctx.fillRect(Math.random() * 512, Math.random() * 512, 2, 2);
     }
+    ctx.fillStyle = "#C2B280";
+    ctx.globalAlpha = 0.05;
+    for (let i = 0; i < 5e3; i++) {
+      const x = Math.random() * 512;
+      const y = Math.random() * 512;
+      ctx.fillRect(x, y, 2, 2);
+    }
+    ctx.globalAlpha = 1;
   }
   const texture = new CanvasTexture(canvas);
   texture.wrapS = RepeatWrapping;
@@ -61308,6 +61334,92 @@ function createDroneTexture() {
   const texture = new CanvasTexture(canvas);
   return texture;
 }
+function createRoughFloorTexture() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 128;
+  canvas.height = 128;
+  const ctx = canvas.getContext("2d");
+  if (ctx) {
+    ctx.fillStyle = "#111111";
+    ctx.fillRect(0, 0, 128, 128);
+    for (let i = 0; i < 20; i++) {
+      const shade = Math.floor(Math.random() * 100);
+      ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
+      const w = 20 + Math.random() * 60;
+      const h = 20 + Math.random() * 60;
+      ctx.globalAlpha = 0.4;
+      ctx.fillRect(Math.random() * 128 - 20, Math.random() * 128 - 20, w, h);
+    }
+    ctx.globalAlpha = 1;
+    for (let i = 0; i < 400; i++) {
+      const val = Math.floor(Math.random() * 100) + 50;
+      ctx.fillStyle = `rgb(${val}, ${val}, ${val})`;
+      const w = Math.random() * 3 + 1;
+      const h = Math.random() * 3 + 1;
+      ctx.fillRect(Math.random() * 128, Math.random() * 128, w, h);
+    }
+    const colors = ["#443300", "#003344", "#330033"];
+    for (let i = 0; i < 5; i++) {
+      ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+      ctx.globalAlpha = 0.3;
+      const w = Math.random() * 30 + 10;
+      const h = Math.random() * 30 + 10;
+      ctx.fillRect(Math.random() * 128, Math.random() * 128, w, h);
+    }
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = "#555555";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let i = 0; i < 10; i++) {
+      ctx.moveTo(Math.random() * 128, Math.random() * 128);
+      ctx.lineTo(Math.random() * 128, Math.random() * 128);
+    }
+    ctx.stroke();
+    ctx.fillStyle = "#000000";
+    ctx.globalAlpha = 0.6;
+    for (let i = 0; i < 3; i++) {
+      ctx.fillRect(Math.random() * 100, Math.random() * 100, Math.random() * 40 + 20, Math.random() * 40 + 20);
+    }
+    ctx.globalAlpha = 1;
+  }
+  const texture = new CanvasTexture(canvas);
+  texture.wrapS = RepeatWrapping;
+  texture.wrapT = RepeatWrapping;
+  return texture;
+}
+function createSandTexture() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext("2d");
+  if (ctx) {
+    ctx.fillStyle = "#C2B280";
+    ctx.fillRect(0, 0, 512, 512);
+    for (let i = 0; i < 2e4; i++) {
+      const shade = Math.floor(Math.random() * 60) - 30;
+      const r = Math.max(0, Math.min(255, 194 + shade));
+      const g = Math.max(0, Math.min(255, 178 + shade));
+      const b = Math.max(0, Math.min(255, 128 + shade));
+      ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.5)`;
+      const w = Math.random() * 3 + 1;
+      const h = Math.random() * 3 + 1;
+      ctx.fillRect(Math.random() * 512, Math.random() * 512, w, h);
+    }
+    for (let i = 0; i < 50; i++) {
+      ctx.fillStyle = Math.random() > 0.5 ? "#A09060" : "#E0D0A0";
+      ctx.globalAlpha = 0.2;
+      const w = Math.random() * 100 + 20;
+      const h = Math.random() * 100 + 20;
+      ctx.fillRect(Math.random() * 512, Math.random() * 512, w, h);
+    }
+    ctx.globalAlpha = 1;
+  }
+  const texture = new CanvasTexture(canvas);
+  texture.wrapS = RepeatWrapping;
+  texture.wrapT = RepeatWrapping;
+  texture.magFilter = NearestFilter;
+  return texture;
+}
 
 class CityBuilder {
   scene;
@@ -61329,6 +61441,9 @@ class CityBuilder {
   buildCity(isMobile, lbTexture) {
     this.setupLighting();
     this.createGround();
+    this.createDesert();
+    this.createSandDrifts();
+    this.createRuins();
     this.createBuildings(lbTexture);
     this.scene.fog = new FogExp2(328976, isMobile ? 57e-5 : 1e-3);
   }
@@ -61366,10 +61481,10 @@ class CityBuilder {
   createGround() {
     const groundTexture = createGroundTexture();
     const planeGeometry = new PlaneGeometry(
-      CITY_SIZE * 2,
-      CITY_SIZE * 2,
-      128,
-      128
+      CITY_SIZE,
+      CITY_SIZE,
+      64,
+      64
     );
     const posAttribute = planeGeometry.attributes.position;
     for (let i = 0; i < posAttribute.count; i++) {
@@ -61379,7 +61494,7 @@ class CityBuilder {
       posAttribute.setZ(i, h);
     }
     planeGeometry.computeVertexNormals();
-    const repeatCount = CITY_SIZE * 2 / CELL_SIZE;
+    const repeatCount = CITY_SIZE / CELL_SIZE;
     groundTexture.repeat.set(repeatCount, repeatCount);
     const planeMaterial = new MeshStandardMaterial({
       color: 16777215,
@@ -61387,13 +61502,125 @@ class CityBuilder {
       roughness: 0.8,
       metalness: 0.2
     });
-    const offset = -CITY_SIZE / CELL_SIZE;
+    const offset = -repeatCount / 2;
     groundTexture.offset.set(offset, offset);
     const plane = new Mesh(planeGeometry, planeMaterial);
     plane.rotation.x = -Math.PI / 2;
     plane.position.y = -0.5;
     plane.receiveShadow = true;
     this.scene.add(plane);
+  }
+  createSandDrifts() {
+    const driftGeo = new PlaneGeometry(200, 200, 16, 16);
+    const pos = driftGeo.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      const z = pos.getZ(i);
+      pos.setZ(i, z + Math.random() * 8);
+    }
+    driftGeo.computeVertexNormals();
+    const driftMat = new MeshStandardMaterial({
+      color: 12759680,
+      transparent: true,
+      opacity: 0.8,
+      // Increased opacity to hide the edge
+      roughness: 1,
+      side: DoubleSide
+    });
+    const count = 200;
+    const cityHalfSize = CITY_SIZE / 2;
+    for (let i = 0; i < count; i++) {
+      const drift = new Mesh(driftGeo, driftMat);
+      const side = Math.floor(Math.random() * 4);
+      let x = 0, z = 0;
+      const offset = Math.random() * 300 - 150;
+      switch (side) {
+        case 0:
+          x = (Math.random() - 0.5) * CITY_SIZE;
+          z = -cityHalfSize + offset;
+          break;
+        case 1:
+          x = (Math.random() - 0.5) * CITY_SIZE;
+          z = cityHalfSize + offset;
+          break;
+        case 2:
+          x = cityHalfSize + offset;
+          z = (Math.random() - 0.5) * CITY_SIZE;
+          break;
+        case 3:
+          x = -cityHalfSize + offset;
+          z = (Math.random() - 0.5) * CITY_SIZE;
+          break;
+      }
+      const h = getHeight(x, z);
+      drift.position.set(x, h + 2, z);
+      drift.rotation.x = -Math.PI / 2;
+      drift.rotation.z = Math.random() * Math.PI;
+      const s = 0.8 + Math.random() * 1.5;
+      drift.scale.set(s, s, s);
+      this.scene.add(drift);
+    }
+  }
+  createDesert() {
+    const sandTexture = createSandTexture();
+    const size = CITY_SIZE * 4;
+    const planeGeometry = new PlaneGeometry(
+      size,
+      size,
+      256,
+      256
+    );
+    const posAttribute = planeGeometry.attributes.position;
+    for (let i = 0; i < posAttribute.count; i++) {
+      const x = posAttribute.getX(i);
+      const y = posAttribute.getY(i);
+      const h = getHeight(x, -y);
+      posAttribute.setZ(i, h - 0.5 + (Math.abs(h) > 1 ? 0.5 : 0));
+    }
+    planeGeometry.computeVertexNormals();
+    const repeatCount = size / 512;
+    sandTexture.repeat.set(repeatCount, repeatCount);
+    const planeMaterial = new MeshStandardMaterial({
+      color: 16777215,
+      map: sandTexture,
+      roughness: 0.9,
+      metalness: 0
+    });
+    const plane = new Mesh(planeGeometry, planeMaterial);
+    plane.rotation.x = -Math.PI / 2;
+    plane.position.y = -1;
+    plane.receiveShadow = true;
+    this.scene.add(plane);
+  }
+  createRuins() {
+    const ruinsCount = 150;
+    const ruinsTexture = createRoughFloorTexture();
+    const ruinsMat = new MeshStandardMaterial({
+      map: ruinsTexture,
+      color: 11184810,
+      roughness: 0.9
+    });
+    const geo = new BoxGeometry(1, 1, 1);
+    for (let i = 0; i < ruinsCount; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const minR = CITY_SIZE / 2 + 100;
+      const maxR = CITY_SIZE * 1.8;
+      const r = minR + Math.random() * (maxR - minR);
+      const x = Math.cos(angle) * r;
+      const z = Math.sin(angle) * r;
+      const h = getHeight(x, z);
+      const sW = 10 + Math.random() * 40;
+      const sH = 10 + Math.random() * 60;
+      const sD = 10 + Math.random() * 40;
+      const mesh = new Mesh(geo, ruinsMat);
+      mesh.position.set(x, h + sH / 2 - 5, z);
+      mesh.scale.set(sW, sH, sD);
+      mesh.rotation.y = Math.random() * Math.PI;
+      mesh.rotation.x = (Math.random() - 0.5) * 0.5;
+      mesh.rotation.z = (Math.random() - 0.5) * 0.5;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      this.scene.add(mesh);
+    }
   }
   createBuildings(lbTexture) {
     const windowTexture = createWindowTexture();
@@ -62269,6 +62496,9 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     const pointer = new Vector2();
     let sparks;
     const sparkPositions = new Float32Array(sparkCount * 3);
+    for (let i = 0; i < sparkCount; i++) {
+      sparkPositions[i * 3 + 1] = -99999;
+    }
     const sparkVelocities = new Float32Array(sparkCount * 3);
     const sparkLifetimes = new Float32Array(sparkCount);
     const route = useRoute();
@@ -62900,7 +63130,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       }
     });
     return (_ctx, _push, _parent, _attrs) => {
-      _push(`<!--[--><div id="cyberpunk-city" data-v-6c88b08b></div>`);
+      _push(`<!--[--><div id="cyberpunk-city" data-v-04c905b8></div>`);
       _push(ssrRenderComponent(unref(GameUI), {
         isDrivingMode: isDrivingMode.value,
         isGameMode: isGameMode.value,
@@ -62932,7 +63162,7 @@ _sfc_main$4.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("src/components/CyberpunkCity.vue");
   return _sfc_setup$4 ? _sfc_setup$4(props, ctx) : void 0;
 };
-const CyberpunkCity = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-6c88b08b"]]);
+const CyberpunkCity = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-04c905b8"]]);
 
 const CyberpunkCity$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,

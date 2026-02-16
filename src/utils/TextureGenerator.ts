@@ -83,6 +83,17 @@ export function createGroundTexture() {
     for (let i = 0; i < 100; i++) {
       ctx.fillRect(Math.random() * 512, Math.random() * 512, 2, 2);
     }
+
+    // Add sand/dust overlay to make it blend better with desert
+    ctx.fillStyle = "#C2B280";
+    ctx.globalAlpha = 0.05; // Very subtle
+    for (let i = 0; i < 5000; i++) {
+        const x = Math.random() * 512;
+        const y = Math.random() * 512;
+        // Concentrate slightly more near edges? No, uniform is fine for now
+        ctx.fillRect(x, y, 2, 2);
+    }
+    ctx.globalAlpha = 1.0;
   }
   const texture = new CanvasTexture(canvas);
   texture.wrapS = RepeatWrapping;
@@ -263,5 +274,46 @@ export function createRoughFloorTexture() {
   const texture = new CanvasTexture(canvas);
   texture.wrapS = RepeatWrapping;
   texture.wrapT = RepeatWrapping;
+  return texture;
+}
+
+export function createSandTexture() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext("2d");
+  if (ctx) {
+    // Base sand color (yellowish-brown)
+    ctx.fillStyle = "#C2B280";
+    ctx.fillRect(0, 0, 512, 512);
+
+    // Add noise
+    for (let i = 0; i < 20000; i++) {
+      const shade = Math.floor(Math.random() * 60) - 30;
+      // Base is roughly 194, 178, 128
+      const r = Math.max(0, Math.min(255, 194 + shade));
+      const g = Math.max(0, Math.min(255, 178 + shade));
+      const b = Math.max(0, Math.min(255, 128 + shade));
+
+      ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.5)`;
+      const w = Math.random() * 3 + 1;
+      const h = Math.random() * 3 + 1;
+      ctx.fillRect(Math.random() * 512, Math.random() * 512, w, h);
+    }
+
+    // Add some larger patches/dunes shading
+    for (let i = 0; i < 50; i++) {
+      ctx.fillStyle = Math.random() > 0.5 ? "#A09060" : "#E0D0A0";
+      ctx.globalAlpha = 0.2;
+      const w = Math.random() * 100 + 20;
+      const h = Math.random() * 100 + 20;
+      ctx.fillRect(Math.random() * 512, Math.random() * 512, w, h);
+    }
+    ctx.globalAlpha = 1.0;
+  }
+  const texture = new CanvasTexture(canvas);
+  texture.wrapS = RepeatWrapping;
+  texture.wrapT = RepeatWrapping;
+  texture.magFilter = NearestFilter;
   return texture;
 }

@@ -32,6 +32,7 @@ import {
   createGroundTexture,
   createRoughFloorTexture,
   createWindowTexture,
+  createSandTexture,
 } from "../utils/TextureGenerator";
 import { getHeight } from "../utils/HeightMap";
 
@@ -60,6 +61,9 @@ export class CityBuilder {
   public buildCity(isMobile: boolean, lbTexture: any) {
     this.setupLighting();
     this.createGround();
+    this.createDesert();
+    this.createSandDrifts();
+    this.createRuins();
     this.createBuildings(lbTexture);
 
     // Setup Fog
@@ -102,11 +106,12 @@ export class CityBuilder {
 
   private createGround() {
     const groundTexture = createGroundTexture();
+    // Reduce size to match city bounds so roads don't extend into desert
     const planeGeometry = new PlaneGeometry(
-      CITY_SIZE * 2,
-      CITY_SIZE * 2,
-      128,
-      128,
+      CITY_SIZE,
+      CITY_SIZE,
+      64,
+      64,
     );
 
     const posAttribute = planeGeometry.attributes.position;
@@ -119,7 +124,7 @@ export class CityBuilder {
     }
     planeGeometry.computeVertexNormals();
 
-    const repeatCount = (CITY_SIZE * 2) / CELL_SIZE;
+    const repeatCount = CITY_SIZE / CELL_SIZE;
     groundTexture.repeat.set(repeatCount, repeatCount);
 
     const planeMaterial = new MeshStandardMaterial({
@@ -129,13 +134,161 @@ export class CityBuilder {
       metalness: 0.2,
     });
 
-    const offset = -CITY_SIZE / CELL_SIZE;
+    const offset = -repeatCount / 2;
     groundTexture.offset.set(offset, offset);
     const plane = new Mesh(planeGeometry, planeMaterial);
     plane.rotation.x = -Math.PI / 2;
     plane.position.y = -0.5;
     plane.receiveShadow = true;
     this.scene.add(plane);
+  }
+
+  private createSandDrifts() {
+    // Add transparent sand drift planes at the edges of the city to blend
+    const driftGeo = new PlaneGeometry(200, 200, 16, 16);
+
+    // Deform drifts slightly
+    const pos = driftGeo.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+        const z = pos.getZ(i);
+        pos.setZ(i, z + Math.random() * 8); // Increased deformation
+    }
+    driftGeo.computeVertexNormals();
+
+    const driftMat = new MeshStandardMaterial({
+        color: 0xC2B280,
+        transparent: true,
+        opacity: 0.8, // Increased opacity to hide the edge
+        roughness: 1.0,
+        side: DoubleSide,
+    });
+
+    const count = 200; // Increased count
+    const cityHalfSize = CITY_SIZE / 2;
+
+    for (let i = 0; i < count; i++) {
+        const drift = new Mesh(driftGeo, driftMat);
+
+        // Position along the perimeter
+        const side = Math.floor(Math.random() * 4);
+        let x = 0, z = 0;
+        // Widen the offset range to create a more jagged edge
+        const offset = Math.random() * 300 - 150;
+
+        switch (side) {
+            case 0: // North
+                x = (Math.random() - 0.5) * CITY_SIZE;
+                z = -cityHalfSize + offset;
+                break;
+            case 1: // South
+                x = (Math.random() - 0.5) * CITY_SIZE;
+                z = cityHalfSize + offset;
+                break;
+            case 2: // East
+                x = cityHalfSize + offset;
+                z = (Math.random() - 0.5) * CITY_SIZE;
+                break;
+            case 3: // West
+                x = -cityHalfSize + offset;
+                z = (Math.random() - 0.5) * CITY_SIZE;
+                break;
+        }
+
+        const h = getHeight(x, z);
+        // Raise higher to cover road edges
+        drift.position.set(x, h + 2, z);
+        drift.rotation.x = -Math.PI / 2;
+        drift.rotation.z = Math.random() * Math.PI;
+
+        // Scale randomly
+        const s = 0.8 + Math.random() * 1.5; // Larger scale
+        drift.scale.set(s, s, s);
+
+        this.scene.add(drift);
+    }
+  }
+
+  private createDesert() {
+    const sandTexture = createSandTexture();
+    const size = CITY_SIZE * 4;
+    const planeGeometry = new PlaneGeometry(
+      size,
+      size,
+      256,
+      256,
+    );
+
+    const posAttribute = planeGeometry.attributes.position;
+    for (let i = 0; i < posAttribute.count; i++) {
+      const x = posAttribute.getX(i);
+      const y = posAttribute.getY(i);
+      // Local y corresponds to world -z after rotation
+      const h = getHeight(x, -y);
+      // Place slightly below city ground to avoid z-fighting in flat areas
+      // Raise slightly at the edges (if h > 0) to cover the seam
+      posAttribute.setZ(i, h - 0.5 + (Math.abs(h) > 1 ? 0.5 : 0));
+    }
+    planeGeometry.computeVertexNormals();
+
+    const repeatCount = size / 512;
+    sandTexture.repeat.set(repeatCount, repeatCount);
+
+    const planeMaterial = new MeshStandardMaterial({
+      color: 0xffffff,
+      map: sandTexture,
+      roughness: 0.9,
+      metalness: 0.0,
+    });
+
+    const plane = new Mesh(planeGeometry, planeMaterial);
+    plane.rotation.x = -Math.PI / 2;
+    plane.position.y = -1.0;
+    plane.receiveShadow = true;
+    this.scene.add(plane);
+  }
+
+  private createRuins() {
+    const ruinsCount = 150;
+    const ruinsTexture = createRoughFloorTexture();
+
+    const ruinsMat = new MeshStandardMaterial({
+        map: ruinsTexture,
+        color: 0xaaaaaa,
+        roughness: 0.9,
+    });
+
+    const geo = new BoxGeometry(1, 1, 1);
+
+    for (let i = 0; i < ruinsCount; i++) {
+        // Random position in annulus outside city
+        const angle = Math.random() * Math.PI * 2;
+        const minR = CITY_SIZE / 2 + 100;
+        const maxR = CITY_SIZE * 1.8;
+        const r = minR + Math.random() * (maxR - minR);
+
+        const x = Math.cos(angle) * r;
+        const z = Math.sin(angle) * r;
+
+        const h = getHeight(x, z);
+
+        const sW = 10 + Math.random() * 40;
+        const sH = 10 + Math.random() * 60;
+        const sD = 10 + Math.random() * 40;
+
+        const mesh = new Mesh(geo, ruinsMat);
+        // Position slightly embedded in ground
+        mesh.position.set(x, h + sH/2 - 5, z);
+        mesh.scale.set(sW, sH, sD);
+
+        mesh.rotation.y = Math.random() * Math.PI;
+        // Add random tilt
+        mesh.rotation.x = (Math.random() - 0.5) * 0.5;
+        mesh.rotation.z = (Math.random() - 0.5) * 0.5;
+
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        this.scene.add(mesh);
+    }
   }
 
   private createBuildings(lbTexture: any) {

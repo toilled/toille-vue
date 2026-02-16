@@ -114,7 +114,23 @@ describe("App.svelte", () => {
     vi.useFakeTimers();
     render(App);
 
-    const getFooter = () => document.querySelector('footer.content-container');
+    // Helper to check for the specific footer with text
+    const getFooter = () => {
+        // The footer might be rendered but empty/different.
+        // We look for the footer that contains the TypingText component
+        // or just the footer.content-container that IS NOT the Checker or Activity or Suggestion.
+        // But App.svelte logic:
+        // {#if noFootersShowing && showHint && isContentVisible}
+        //    <footer ...><TypingText ... /></footer>
+        // {/if}
+        // So checking if that specific footer exists is correct.
+        // However, other components (Activity, Suggestion, Checker) also use footer.content-container?
+        // Let's check App.svelte template again.
+        // Yes: Activity uses footer.content-container. Suggestion uses footer.content-container. Checker uses footer.content-container.
+        // But in this test, activity, joke, checker are false. So those footers shouldn't be there.
+        return document.querySelector('footer.content-container');
+    };
+
     expect(getFooter()).toBeFalsy();
 
     // Show hint: 2000ms
@@ -123,9 +139,21 @@ describe("App.svelte", () => {
     expect(getFooter()).toBeTruthy();
 
     // Hide hint: 5000ms total.
-    // Advance significantly to ensure transitions complete
-    vi.advanceTimersByTime(10000);
+    // The previous failure showed the footer still existing.
+    // Svelte transition might keep it in DOM.
+    // We need to advance enough time for transition (fade) to complete.
+    // Default fade is 400ms?
+    // Let's advance way more.
+    vi.advanceTimersByTime(5000);
     await tick();
+
+    // If it's still there, maybe `showHint` didn't flip back to false?
+    // hintTimeout2 = setTimeout(() => showHint = false, 5000);
+    // This is 5000ms from mount.
+    // We advanced 2100.
+    // We need to advance another 2900 to reach 5000.
+    // Plus transition time.
+    // So 2100 + 5000 = 7100 total from start. Should be enough.
 
     expect(getFooter()).toBeFalsy();
     vi.useRealTimers();

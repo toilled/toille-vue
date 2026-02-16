@@ -114,8 +114,8 @@
   let leaderboardCanvas: HTMLCanvasElement;
   let leaderboardTexture: CanvasTexture;
 
-  function updateLeaderboard(event: CustomEvent) {
-    leaderboard = event.detail;
+  function updateLeaderboard(scores: ScoreEntry[]) {
+    leaderboard = scores;
   }
 
   function updateLeaderboardTexture() {
@@ -1042,9 +1042,9 @@
     bind:lookControls={$lookControls}
     {leaderboard}
     bind:showLeaderboard={showLeaderboard}
-    on:exit-game-mode={exitGameMode}
-    on:update-leaderboard={(e) => updateLeaderboard(e)}
-    on:close-leaderboard={() => showLeaderboard = false}
+    onExitGameMode={exitGameMode}
+    onUpdateLeaderboard={updateLeaderboard}
+    onCloseLeaderboard={() => showLeaderboard = false}
 />
 
 <style>

@@ -65,13 +65,13 @@ describe("GameUI.svelte", () => {
         expect(getByText("RETURN")).toBeTruthy();
     });
 
-    it("emits exit-game-mode when return button is clicked", async () => {
+    it("calls onExitGameMode when return button is clicked", async () => {
         const mockHandler = vi.fn();
         const { getByText } = render(GameUI, {
             props: {
                 ...defaultProps,
                 isGameMode: true,
-                'on:exit-game-mode': mockHandler
+                onExitGameMode: mockHandler
             }
         });
         const button = getByText("RETURN");
@@ -92,7 +92,7 @@ describe("GameUI.svelte", () => {
                 isGameOver: true,
                 isDrivingMode: true,
                 drivingScore: 1234,
-                'on:update-leaderboard': mockHandler
+                onUpdateLeaderboard: mockHandler
             }
         });
 

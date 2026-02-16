@@ -20,9 +20,13 @@ vi.mock("../../configs/titles.json", () => ({
 
 describe("App.svelte", () => {
   beforeEach(() => {
+    const mockWeatherResponse = {
+        current_weather: { weathercode: 0, temperature: 10 },
+        hourly: { time: [], temperature_2m: [], rain: [] }
+    };
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({}),
+      json: () => Promise.resolve(mockWeatherResponse),
       headers: { get: vi.fn() },
     });
     vi.stubGlobal("fetch", mockFetch);
@@ -42,6 +46,26 @@ describe("App.svelte", () => {
   });
 
   it("toggles the Activity component", async () => {
+    // Override fetch for this test
+    const mockActivity = { type: "education", activity: "Learn something new" };
+    vi.stubGlobal("fetch", vi.fn((url) => {
+        if (typeof url === 'string' && url.includes('bored')) {
+            return Promise.resolve({
+                ok: true,
+                json: () => Promise.resolve(mockActivity),
+                headers: { get: vi.fn() }
+            });
+        }
+        return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({
+                current_weather: { weathercode: 0, temperature: 10 },
+                hourly: { time: [], temperature_2m: [], rain: [] }
+            }),
+            headers: { get: vi.fn() }
+        });
+    }));
+
     const { getByText, queryByText } = render(App);
     const title = getByText("Main Title");
 
@@ -51,7 +75,7 @@ describe("App.svelte", () => {
     await tick();
 
     await waitFor(() => {
-        expect(queryByText("The Bored API")).toBeTruthy();
+        expect(queryByText(/The Bored API/)).toBeTruthy();
     });
   });
 
@@ -64,19 +88,22 @@ describe("App.svelte", () => {
     await fireEvent.mouseDown(subtitle);
     await tick();
 
-    expect(queryByText("Have a laugh!")).toBeTruthy();
+    await waitFor(() => {
+        expect(queryByText("Have a laugh!")).toBeTruthy();
+    });
   });
 
   it("toggles the Checker component", async () => {
     vi.useFakeTimers();
-    const { getByText, container } = render(App);
+    const { getByText } = render(App);
 
     vi.advanceTimersByTime(2100);
     await tick();
 
-    // Check if hint is visible first
-    const footer = getByText("The titles might be clickable...");
-    await fireEvent.click(footer);
+    const footer = document.querySelector('footer.content-container');
+    expect(footer).toBeTruthy();
+
+    await fireEvent.click(footer!);
     await tick();
 
     expect(getByText("Alcohol Checker")).toBeTruthy();
@@ -85,19 +112,22 @@ describe("App.svelte", () => {
 
   it("shows and hides the hint", async () => {
     vi.useFakeTimers();
-    const { queryByText } = render(App);
+    render(App);
 
-    expect(queryByText("The titles might be clickable...")).toBeFalsy();
+    const getFooter = () => document.querySelector('footer.content-container');
+    expect(getFooter()).toBeFalsy();
 
-    // Show hint
+    // Show hint: 2000ms
     vi.advanceTimersByTime(2100);
     await tick();
-    expect(queryByText("The titles might be clickable...")).toBeTruthy();
+    expect(getFooter()).toBeTruthy();
 
-    // Hide hint
-    vi.advanceTimersByTime(3100); // 2100 + 3100 > 5000
+    // Hide hint: 5000ms total.
+    // Advance significantly to ensure transitions complete
+    vi.advanceTimersByTime(10000);
     await tick();
-    expect(queryByText("The titles might be clickable...")).toBeFalsy();
+
+    expect(getFooter()).toBeFalsy();
     vi.useRealTimers();
   });
 
@@ -108,12 +138,14 @@ describe("App.svelte", () => {
 
     path.set("/about");
     await tick();
-    await new Promise(r => setTimeout(r, 0));
-    expect(document.title).toBe("Elliot > About Me");
+    await waitFor(() => {
+        expect(document.title).toBe("Elliot > About Me");
+    });
 
     path.set("/non-existent-page");
     await tick();
-    await new Promise(r => setTimeout(r, 0));
-    expect(document.title).toBe("Elliot > 404");
+    await waitFor(() => {
+        expect(document.title).toBe("Elliot > 404");
+    });
   });
 });

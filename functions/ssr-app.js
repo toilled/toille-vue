@@ -10145,6 +10145,12 @@ function GameUI($$renderer, $$props) {
 		let lookControls = $$props['lookControls'];
 		let leaderboard = fallback($$props['leaderboard'], () => [], true);
 		let showLeaderboard = fallback($$props['showLeaderboard'], false);
+
+		// Callback props for actions
+		let onExitGameMode = fallback($$props['onExitGameMode'], undefined);
+
+		let onUpdateLeaderboard = fallback($$props['onUpdateLeaderboard'], undefined);
+		let onCloseLeaderboard = fallback($$props['onCloseLeaderboard'], undefined);
 		const dispatch = createEventDispatcher();
 		let playerName = "";
 		let isScoreSubmitted = false;
@@ -10153,7 +10159,7 @@ function GameUI($$renderer, $$props) {
 			isScoreSubmitted = false;
 
 			ScoreService.getTopScores().then((scores) => {
-				dispatch("update-leaderboard", scores);
+				if (onUpdateLeaderboard) onUpdateLeaderboard(scores); else dispatch("update-leaderboard", scores);
 			});
 		}
 
@@ -10264,7 +10270,10 @@ function GameUI($$renderer, $$props) {
 			controls,
 			lookControls,
 			leaderboard,
-			showLeaderboard
+			showLeaderboard,
+			onExitGameMode,
+			onUpdateLeaderboard,
+			onCloseLeaderboard
 		});
 	});
 }
@@ -10298,6 +10307,10 @@ function CyberpunkCity($$renderer, $$props) {
 		let trafficSystem;
 		let leaderboard = [];
 		let showLeaderboard = false;
+
+		function updateLeaderboard(scores) {
+			leaderboard = scores;
+		}
 
 		new Vector3(0, 0, 0);
 		new Raycaster();
@@ -10448,6 +10461,9 @@ function CyberpunkCity($$renderer, $$props) {
 				timeLeft: store_get($$store_subs ??= {}, '$timeLeft', timeLeft),
 				distToTarget: store_get($$store_subs ??= {}, '$distToTarget', distToTarget),
 				leaderboard,
+				onExitGameMode: exitGameMode,
+				onUpdateLeaderboard: updateLeaderboard,
+				onCloseLeaderboard: () => showLeaderboard = false,
 				get controls() {
 					return store_get($$store_subs ??= {}, '$controls', controls);
 				},

@@ -20,6 +20,11 @@
   export let leaderboard: ScoreEntry[] = [];
   export let showLeaderboard = false;
 
+  // Callback props for actions
+  export let onExitGameMode: (() => void) | undefined = undefined;
+  export let onUpdateLeaderboard: ((scores: ScoreEntry[]) => void) | undefined = undefined;
+  export let onCloseLeaderboard: (() => void) | undefined = undefined;
+
   const dispatch = createEventDispatcher();
 
   let playerName = "";
@@ -29,7 +34,8 @@
   $: if (isGameOver && isDrivingMode) {
       isScoreSubmitted = false;
       ScoreService.getTopScores().then(scores => {
-          dispatch("update-leaderboard", scores);
+          if (onUpdateLeaderboard) onUpdateLeaderboard(scores);
+          else dispatch("update-leaderboard", scores);
       });
   }
 
@@ -39,11 +45,13 @@
     const finalScore = isDrivingMode ? drivingScore : (droneScore || 0);
     const newScores = await ScoreService.submitScore(nameUpper, finalScore || 0);
     isScoreSubmitted = true;
-    dispatch("update-leaderboard", newScores);
+    if (onUpdateLeaderboard) onUpdateLeaderboard(newScores);
+    else dispatch("update-leaderboard", newScores);
   }
 
   function exitGameMode() {
-      dispatch("exit-game-mode");
+      if (onExitGameMode) onExitGameMode();
+      else dispatch("exit-game-mode");
   }
 </script>
 
@@ -104,7 +112,7 @@
         <span class="lb-score">{entry.score}</span>
       </div>
     {/each}
-    <button class="close-btn" on:click={() => dispatch('close-leaderboard')}>CLOSE</button>
+    <button class="close-btn" on:click={() => onCloseLeaderboard ? onCloseLeaderboard() : dispatch('close-leaderboard')}>CLOSE</button>
   </div>
 {/if}
 

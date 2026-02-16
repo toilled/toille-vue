@@ -1,27 +1,21 @@
-<template>
-  <li class="menu-item">
-    <router-link :to="page.link" @mousedown.prevent>{{ page.name }}</router-link>
-  </li>
-</template>
+<script lang="ts">
+  import { path, navigate } from '../router';
 
-<script setup lang="ts">
-import { Page } from "../interfaces/Page";
-
-/**
- * @file MenuItem.vue
- * @description A component that displays a single menu item as a router link.
- */
-
-/**
- * @props {Object}
- * @property {Page} page - The page object containing the link and name for the menu item.
- */
-defineProps<{
-  page: Page;
-}>();
+  export let page: { link: string; name: string };
 </script>
 
-<style scoped>
+<li class="menu-item">
+  <a
+    href={page.link}
+    class:router-link-active={$path === page.link}
+    on:click|preventDefault={() => navigate(page.link)}
+    on:mousedown|preventDefault
+  >
+    {page.name}
+  </a>
+</li>
+
+<style>
 .menu-item {
   margin: 10px 0;
 }
@@ -37,7 +31,8 @@ defineProps<{
 }
 
 /* Hover Effect: Subtle Space Glow */
-.can-hover .menu-item a:hover {
+/* Using :global to access body class */
+:global(.can-hover) .menu-item a:hover {
   background: rgba(20, 30, 60, 0.6); /* Deep space blue/purple */
   box-shadow: 0 0 15px rgba(100, 149, 237, 0.5), /* Cornflower blue glow */
               0 0 5px rgba(255, 255, 255, 0.2); /* Inner white hint */

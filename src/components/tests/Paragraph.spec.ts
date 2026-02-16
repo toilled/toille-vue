@@ -1,46 +1,40 @@
 import { describe, it, expect } from "vitest";
-import { mount } from "@vue/test-utils";
-import Paragraph from "../Paragraph.vue";
+import { render } from "@testing-library/svelte";
+import Paragraph from "../Paragraph.svelte";
 
-describe("Paragraph.vue", () => {
+describe("Paragraph.svelte", () => {
   it("renders the paragraph content", () => {
-    const wrapper = mount(Paragraph, {
-      props: {
+    const { getByText } = render(Paragraph, {
         paragraph: "This is a test paragraph.",
         last: false,
-      },
     });
-    expect(wrapper.text()).toContain("This is a test paragraph.");
+    expect(getByText("This is a test paragraph.")).toBeTruthy();
   });
 
   it('applies the "marginless" class when `last` is true', () => {
-    const wrapper = mount(Paragraph, {
-      props: {
+    const { container } = render(Paragraph, {
         paragraph: "This is the last paragraph.",
         last: true,
-      },
     });
-    expect(wrapper.classes()).toContain("marginless");
+    const div = container.querySelector('div');
+    expect(div?.classList.contains("marginless")).toBe(true);
   });
 
   it('does not apply the "marginless" class when `last` is false', () => {
-    const wrapper = mount(Paragraph, {
-      props: {
+    const { container } = render(Paragraph, {
         paragraph: "This is not the last paragraph.",
         last: false,
-      },
     });
-    expect(wrapper.classes()).not.toContain("marginless");
+    const div = container.querySelector('div');
+    expect(div?.classList.contains("marginless")).toBe(false);
   });
 
   it("renders HTML content correctly", () => {
-    const wrapper = mount(Paragraph, {
-      props: {
+    const { container } = render(Paragraph, {
         paragraph: "<strong>Bold text</strong>",
         last: false,
-      },
     });
-    expect(wrapper.find("strong").exists()).toBe(true);
-    expect(wrapper.text()).toContain("Bold text");
+    expect(container.querySelector("strong")).toBeTruthy();
+    expect(container.textContent).toContain("Bold text");
   });
 });

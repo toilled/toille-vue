@@ -1,72 +1,150 @@
-<template>
-  <div v-if="(isDrivingMode ? drivingScore : droneScore) > 0" id="score-counter">SCORE: {{ isDrivingMode ? drivingScore : droneScore }}</div>
-  <div v-if="isDrivingMode" id="timer-counter">
-    TIME: {{ Math.ceil(timeLeft) }}
-  </div>
-  <div v-if="isDrivingMode" id="dist-counter">
-    DIST: {{ Math.ceil(distToTarget) }}m
-  </div>
-  <div v-if="isDrivingMode && isGameOver" id="game-over">
-    <div class="game-over-title">GAME OVER</div>
-    <div class="final-score">SCORE: {{ drivingScore }}</div>
+<script lang="ts">
+  import { createEventDispatcher } from 'svelte';
+  import { ScoreService } from '../utils/ScoreService';
+  import type { ScoreEntry } from '../utils/ScoreService';
+  import type { Controls, LookControls } from '../game/types';
 
-    <div v-if="!isScoreSubmitted" class="score-form">
-      <input
-        v-model="playerName"
-        placeholder="ENTER NAME"
-        maxlength="8"
-        @keyup.enter="submitHighScore"
-        class="name-input"
-        autofocus
-      />
-      <button @click="submitHighScore" class="submit-btn">SUBMIT</button>
-    </div>
+  export let isDrivingMode = false;
+  export let isGameMode = false;
+  export let isExplorationMode = false;
+  export let isFlyingTour = false;
+  export let isCinematicMode = false;
+  export let isGameOver = false;
+  export let isMobile = false;
+  export let drivingScore = 0;
+  export let droneScore = 0;
+  export let timeLeft = 0;
+  export let distToTarget = 0;
+  export let controls: Controls;
+  export let lookControls: LookControls;
+  export let leaderboard: ScoreEntry[] = [];
+  export let showLeaderboard = false;
+
+  // Callback props for actions
+  export let onExitGameMode: (() => void) | undefined = undefined;
+  export let onUpdateLeaderboard: ((scores: ScoreEntry[]) => void) | undefined = undefined;
+  export let onCloseLeaderboard: (() => void) | undefined = undefined;
+
+  const dispatch = createEventDispatcher();
+
+  let playerName = "";
+  let isScoreSubmitted = false;
+
+  // React to game over
+  $: if (isGameOver && isDrivingMode) {
+      isScoreSubmitted = false;
+      ScoreService.getTopScores().then(scores => {
+          if (onUpdateLeaderboard) onUpdateLeaderboard(scores);
+          else dispatch("update-leaderboard", scores);
+      });
+  }
+
+  async function submitHighScore() {
+    if (!playerName.trim()) return;
+    const nameUpper = playerName.trim().toUpperCase();
+    const finalScore = isDrivingMode ? drivingScore : (droneScore || 0);
+    const newScores = await ScoreService.submitScore(nameUpper, finalScore || 0);
+    isScoreSubmitted = true;
+    if (onUpdateLeaderboard) onUpdateLeaderboard(newScores);
+    else dispatch("update-leaderboard", newScores);
+  }
+
+  function exitGameMode() {
+      if (onExitGameMode) onExitGameMode();
+      else dispatch("exit-game-mode");
+  }
+</script>
+
+{#if (isDrivingMode ? drivingScore : droneScore) > 0}
+  <div id="score-counter">SCORE: {isDrivingMode ? drivingScore : droneScore}</div>
+{/if}
+
+{#if isDrivingMode}
+  <div id="timer-counter">
+    TIME: {Math.ceil(timeLeft)}
+  </div>
+  <div id="dist-counter">
+    DIST: {Math.ceil(distToTarget)}m
+  </div>
+{/if}
+
+{#if isDrivingMode && isGameOver}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <div id="game-over">
+    <div class="game-over-title">GAME OVER</div>
+    <div class="final-score">SCORE: {drivingScore}</div>
+
+    {#if !isScoreSubmitted}
+      <div class="score-form">
+        <input
+          bind:value={playerName}
+          placeholder="ENTER NAME"
+          maxlength="8"
+          on:keyup={(e) => e.key === 'Enter' && submitHighScore()}
+          class="name-input"
+          autofocus
+        />
+        <button on:click={submitHighScore} class="submit-btn">SUBMIT</button>
+      </div>
+    {/if}
 
     <div class="leaderboard">
       <div class="lb-header">TOP DRIVERS</div>
-      <div v-for="(entry, index) in leaderboard" :key="index" class="lb-row">
-        <span class="lb-name">{{ index + 1 }}. {{ entry.name }}</span>
-        <span class="lb-score">{{ entry.score }}</span>
-      </div>
+      {#each leaderboard as entry, index}
+        <div class="lb-row">
+          <span class="lb-name">{index + 1}. {entry.name}</span>
+          <span class="lb-score">{entry.score}</span>
+        </div>
+      {/each}
     </div>
   </div>
+{/if}
 
-  <div v-if="showLeaderboard" id="leaderboard-modal">
+{#if showLeaderboard}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <div id="leaderboard-modal">
     <div class="lb-header">LEADERBOARD</div>
-    <div v-for="(entry, index) in leaderboard" :key="index" class="lb-row">
-      <span class="lb-name">{{ index + 1 }}. {{ entry.name }}</span>
-      <span class="lb-score">{{ entry.score }}</span>
-    </div>
-    <button class="close-btn" @click="$emit('close-leaderboard')">CLOSE</button>
+    {#each leaderboard as entry, index}
+      <div class="lb-row">
+        <span class="lb-name">{index + 1}. {entry.name}</span>
+        <span class="lb-score">{entry.score}</span>
+      </div>
+    {/each}
+    <button class="close-btn" on:click={() => onCloseLeaderboard ? onCloseLeaderboard() : dispatch('close-leaderboard')}>CLOSE</button>
   </div>
+{/if}
 
+{#if isGameMode || isDrivingMode || isExplorationMode || isFlyingTour || isCinematicMode}
   <button
-    v-if="isGameMode || isDrivingMode || isExplorationMode || isFlyingTour || isCinematicMode"
     id="return-button"
-    @click="exitGameMode"
+    on:click={exitGameMode}
   >
     RETURN
   </button>
+{/if}
 
-  <div v-if="isDrivingMode" id="driving-controls">
+{#if isDrivingMode}
+  <div id="driving-controls">
     <div class="control-group left">
       <button
         class="control-btn"
-        @mousedown="controls.left = true"
-        @mouseup="controls.left = false"
-        @mouseleave="controls.left = false"
-        @touchstart.prevent="controls.left = true"
-        @touchend.prevent="controls.left = false"
+        on:mousedown={() => controls.left = true}
+        on:mouseup={() => controls.left = false}
+        on:mouseleave={() => controls.left = false}
+        on:touchstart|preventDefault={() => controls.left = true}
+        on:touchend|preventDefault={() => controls.left = false}
       >
         ←
       </button>
       <button
         class="control-btn"
-        @mousedown="controls.right = true"
-        @mouseup="controls.right = false"
-        @mouseleave="controls.right = false"
-        @touchstart.prevent="controls.right = true"
-        @touchend.prevent="controls.right = false"
+        on:mousedown={() => controls.right = true}
+        on:mouseup={() => controls.right = false}
+        on:mouseleave={() => controls.right = false}
+        on:touchstart|preventDefault={() => controls.right = true}
+        on:touchend|preventDefault={() => controls.right = false}
       >
         →
       </button>
@@ -74,55 +152,57 @@
     <div class="control-group right">
       <button
         class="control-btn"
-        @mousedown="controls.backward = true"
-        @mouseup="controls.backward = false"
-        @mouseleave="controls.backward = false"
-        @touchstart.prevent="controls.backward = true"
-        @touchend.prevent="controls.backward = false"
+        on:mousedown={() => controls.backward = true}
+        on:mouseup={() => controls.backward = false}
+        on:mouseleave={() => controls.backward = false}
+        on:touchstart|preventDefault={() => controls.backward = true}
+        on:touchend|preventDefault={() => controls.backward = false}
       >
         BRK
       </button>
       <button
         class="control-btn"
-        @mousedown="controls.forward = true"
-        @mouseup="controls.forward = false"
-        @mouseleave="controls.forward = false"
-        @touchstart.prevent="controls.forward = true"
-        @touchend.prevent="controls.forward = false"
+        on:mousedown={() => controls.forward = true}
+        on:mouseup={() => controls.forward = false}
+        on:mouseleave={() => controls.forward = false}
+        on:touchstart|preventDefault={() => controls.forward = true}
+        on:touchend|preventDefault={() => controls.forward = false}
       >
         GAS
       </button>
     </div>
   </div>
+{/if}
 
-  <div v-if="isExplorationMode && isMobile" id="exploration-controls">
+{#if isExplorationMode && isMobile}
+  <div id="exploration-controls">
     <div class="control-group left">
       <div class="dpad">
         <button
           class="dpad-btn up"
-          @touchstart.prevent="controls.forward = true"
-          @touchend.prevent="controls.forward = false"
+          on:touchstart|preventDefault={() => controls.forward = true}
+          on:touchend|preventDefault={() => controls.forward = false}
         >
           W
         </button>
         <button
           class="dpad-btn left"
-          @touchstart.prevent="controls.left = true"
-          @touchend.prevent="controls.left = false"
+          on:touchstart|preventDefault={() => controls.left = true}
+          on:touchend|preventDefault={() => controls.left = false}
         >
           A
         </button>
         <button
           class="dpad-btn right"
-          @touchstart.prevent="controls.right = true"
-          @touchend.prevent="controls.right = false"
+          on:touchstart|preventDefault={() => controls.right = true}
+          on:touchend|preventDefault={() => controls.right = false}
         >
           D
         </button>
         <button
           class="dpad-btn down"
-          @touchstart.prevent="controls.backward = true"
-          @touchend.prevent="controls.backward = false"
+          on:touchstart|preventDefault={() => controls.backward = true}
+          on:touchend|preventDefault={() => controls.backward = false}
         >
           S
         </button>
@@ -132,101 +212,38 @@
       <div class="dpad">
         <button
           class="dpad-btn up"
-          @touchstart.prevent="lookControls.up = true"
-          @touchend.prevent="lookControls.up = false"
+          on:touchstart|preventDefault={() => lookControls.up = true}
+          on:touchend|preventDefault={() => lookControls.up = false}
         >
           ↑
         </button>
         <button
           class="dpad-btn left"
-          @touchstart.prevent="lookControls.left = true"
-          @touchend.prevent="lookControls.left = false"
+          on:touchstart|preventDefault={() => lookControls.left = true}
+          on:touchend|preventDefault={() => lookControls.left = false}
         >
           ←
         </button>
         <button
           class="dpad-btn right"
-          @touchstart.prevent="lookControls.right = true"
-          @touchend.prevent="lookControls.right = false"
+          on:touchstart|preventDefault={() => lookControls.right = true}
+          on:touchend|preventDefault={() => lookControls.right = false}
         >
           →
         </button>
         <button
           class="dpad-btn down"
-          @touchstart.prevent="lookControls.down = true"
-          @touchend.prevent="lookControls.down = false"
+          on:touchstart|preventDefault={() => lookControls.down = true}
+          on:touchend|preventDefault={() => lookControls.down = false}
         >
           ↓
         </button>
       </div>
     </div>
   </div>
-</template>
+{/if}
 
-<script setup lang="ts">
-import { ref, watch, PropType } from "vue";
-import { ScoreService, type ScoreEntry } from "../utils/ScoreService";
-import { Controls, LookControls } from "../game/types";
-
-const props = defineProps({
-    isDrivingMode: Boolean,
-    isGameMode: Boolean,
-    isExplorationMode: Boolean,
-    isFlyingTour: Boolean,
-    isCinematicMode: Boolean,
-    isGameOver: Boolean,
-    isMobile: Boolean,
-    drivingScore: Number,
-    droneScore: Number,
-    timeLeft: Number,
-    distToTarget: Number,
-    controls: {
-        type: Object as PropType<Controls>,
-        required: true
-    },
-    lookControls: {
-        type: Object as PropType<LookControls>,
-        required: true
-    },
-    leaderboard: {
-        type: Array as PropType<ScoreEntry[]>,
-        required: true
-    },
-    showLeaderboard: Boolean
-});
-
-const emit = defineEmits(["exit-game-mode", "update-leaderboard", "close-leaderboard"]);
-
-const playerName = ref("");
-const isScoreSubmitted = ref(false);
-
-watch(() => props.isGameOver, async (val) => {
-  if (val && props.isDrivingMode) {
-    isScoreSubmitted.value = false;
-    // We expect the parent to refresh leaderboard on game over if needed, or we just display what we have.
-    // If we want fresh scores on game over, we should emit or fetch.
-    // Let's assume parent passes fresh prop or we fetch here and emit up.
-    // But better to let parent handle data.
-    const scores = await ScoreService.getTopScores();
-    emit("update-leaderboard", scores);
-  }
-});
-
-async function submitHighScore() {
-  if (!playerName.value.trim()) return;
-  const nameUpper = playerName.value.trim().toUpperCase();
-  const finalScore = props.isDrivingMode ? props.drivingScore : (props.droneScore || 0);
-  const newScores = await ScoreService.submitScore(nameUpper, finalScore || 0);
-  isScoreSubmitted.value = true;
-  emit("update-leaderboard", newScores);
-}
-
-function exitGameMode() {
-    emit("exit-game-mode");
-}
-</script>
-
-<style scoped>
+<style>
 #score-counter {
   position: fixed;
   bottom: 20px;

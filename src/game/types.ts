@@ -1,5 +1,5 @@
 import { Scene, PerspectiveCamera, WebGLRenderer, Group, Points, Vector3 } from "three";
-import { Ref } from "vue";
+import { Ref } from "../utils/Ref";
 
 export interface Controls {
     left: boolean;
@@ -26,7 +26,7 @@ export interface GameContext {
     occupiedGrids: Map<string, { halfW: number; halfD: number }>;
 
     // State
-    score: Ref<number>; // Kept for backward compatibility or computed
+    score: Ref<number>;
     droneScore: Ref<number>;
     drivingScore: Ref<number>;
     timeLeft: Ref<number>;
@@ -45,7 +45,7 @@ export interface GameContext {
     spawnCheckpoint: () => void;
 
     // Shared Objects
-    checkpointMesh: any; // Mesh but typing might differ
+    checkpointMesh: any;
     navArrow: Group;
     chaseArrow: Group;
 }

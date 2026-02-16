@@ -373,6 +373,17 @@ vi.stubGlobal("ResizeObserver", class ResizeObserver {
   disconnect() { }
 });
 
+// Polyfill Element.animate
+Element.prototype.animate = vi.fn().mockReturnValue({
+  finished: Promise.resolve(),
+  cancel: vi.fn(),
+  play: vi.fn(),
+  pause: vi.fn(),
+  reverse: vi.fn(),
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+});
+
 vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({
   json: () => Promise.resolve({}),
   text: () => Promise.resolve(""),

@@ -1,14 +1,11 @@
-import { renderToString } from "@vue/server-renderer";
-import { createApp } from "./main";
+import { render as svelteRender } from 'svelte/server';
+import { createApp } from './main';
+import { setPath } from './router';
 
 export async function render(url: string) {
-  const { app, router } = createApp();
+    const { App } = createApp();
+    setPath(url);
 
-  await router.push(url);
-  await router.isReady();
-
-  const ctx = {};
-  const html = await renderToString(app, ctx);
-
-  return html;
+    const { html } = svelteRender(App);
+    return html;
 }

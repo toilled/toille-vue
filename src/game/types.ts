@@ -19,6 +19,7 @@ export interface GameContext {
     scene: Scene;
     camera: PerspectiveCamera;
     renderer: WebGLRenderer;
+    composer: any;
 
     // Game Objects
     cars: Group[];

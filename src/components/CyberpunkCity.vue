@@ -40,7 +40,6 @@ import {
   Vector2,
   Vector3,
   WebGLRenderer,
-  WebGLRenderTarget,
   CylinderGeometry,
   MeshBasicMaterial,
   Mesh,
@@ -130,15 +129,9 @@ function updateLeaderboardTexture() {
   const ctx = leaderboardCanvas.getContext("2d");
   if (!ctx) return;
 
-  // Reset transform to identity
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-
   // Background
   ctx.fillStyle = "#100010";
-  ctx.fillRect(0, 0, 1024, 1024);
-
-  // Scale everything by 2
-  ctx.scale(2, 2);
+  ctx.fillRect(0, 0, 512, 512);
 
   // Border
   ctx.strokeStyle = "#00ffcc";
@@ -220,8 +213,8 @@ watch(leaderboard, () => {
 
 function createLeaderboardTexture() {
   leaderboardCanvas = document.createElement("canvas");
-  leaderboardCanvas.width = 1024;
-  leaderboardCanvas.height = 1024;
+  leaderboardCanvas.width = 512;
+  leaderboardCanvas.height = 512;
   leaderboardTexture = new CanvasTexture(leaderboardCanvas);
   leaderboardTexture.anisotropy = 16;
   
@@ -443,11 +436,7 @@ onMounted(() => {
 
   const outputPass = new OutputPass();
 
-  const renderTarget = new WebGLRenderTarget(window.innerWidth, window.innerHeight, {
-    samples: 4
-  });
-
-  composer = new EffectComposer(renderer, renderTarget);
+  composer = new EffectComposer(renderer);
   composer.addPass(renderScene);
   composer.addPass(bloomPass);
   composer.addPass(outputPass);

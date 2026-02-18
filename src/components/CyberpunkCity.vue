@@ -83,7 +83,7 @@ let composer: EffectComposer;
 let animationId: number;
 let isActive = false;
 
-let occupiedGrids = new Map<string, { halfW: number; halfD: number }>();
+let occupiedGrids = new Map<string, { halfW: number; halfD: number; isRound?: boolean }>();
 let cars: Group[] = [];
 let leaderboardMeshes: Mesh[] = [];
 

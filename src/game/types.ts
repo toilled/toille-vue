@@ -23,7 +23,7 @@ export interface GameContext {
     // Game Objects
     cars: Group[];
     drones: Points | undefined;
-    occupiedGrids: Map<string, { halfW: number; halfD: number }>;
+    occupiedGrids: Map<string, { halfW: number; halfD: number; isRound?: boolean }>;
 
     // State
     score: Ref<number>; // Kept for backward compatibility or computed

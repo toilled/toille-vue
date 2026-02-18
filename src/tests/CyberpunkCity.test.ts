@@ -71,6 +71,12 @@ vi.mock('three', () => {
       toneMapping: 0,
       toneMappingExposure: 1
     })),
+    WebGLRenderTarget: vi.fn(() => ({
+      texture: {},
+      setSize: vi.fn(),
+      dispose: vi.fn(),
+      samples: 0
+    })),
     Color: vi.fn(() => ({
       setHSL: vi.fn(function() { return this; }),
       setHex: vi.fn(),

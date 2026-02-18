@@ -40,6 +40,7 @@ import {
   Vector2,
   Vector3,
   WebGLRenderer,
+  WebGLRenderTarget,
   CylinderGeometry,
   MeshBasicMaterial,
   Mesh,
@@ -436,7 +437,11 @@ onMounted(() => {
 
   const outputPass = new OutputPass();
 
-  composer = new EffectComposer(renderer);
+  const renderTarget = new WebGLRenderTarget(window.innerWidth, window.innerHeight, {
+    samples: 4
+  });
+
+  composer = new EffectComposer(renderer, renderTarget);
   composer.addPass(renderScene);
   composer.addPass(bloomPass);
   composer.addPass(outputPass);

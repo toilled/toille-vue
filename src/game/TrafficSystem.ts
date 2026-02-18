@@ -1,18 +1,4 @@
-import {
-  BoxGeometry,
-  Group,
-  Mesh,
-  MeshBasicMaterial,
-  MeshLambertMaterial,
-  MeshStandardMaterial,
-  Object3D,
-  PlaneGeometry,
-  Scene,
-  SpotLight,
-  DoubleSide,
-  PointLight,
-  CylinderGeometry,
-} from "three";
+import { Group, Mesh, MeshBasicMaterial, PointLight, Scene, Object3D, SpotLight } from "three";
 import {
   BOUNDS,
   CELL_SIZE,
@@ -23,6 +9,7 @@ import {
 } from "./config";
 import { carAudio } from "./audio/CarAudio";
 import { getHeight, getNormal } from "../utils/HeightMap";
+import { CarFactory } from "./CarFactory";
 
 export class TrafficSystem {
   private scene: Scene;
@@ -30,6 +17,7 @@ export class TrafficSystem {
   private carCount: number;
   private occupiedGrids: Map<string, { halfW: number; halfD: number; isRound?: boolean }>;
   private spawnSparks: (pos: any) => void;
+  private carFactory: CarFactory;
 
   constructor(
     scene: Scene,
@@ -41,6 +29,7 @@ export class TrafficSystem {
     this.carCount = carCount;
     this.occupiedGrids = occupiedGrids;
     this.spawnSparks = spawnSparks;
+    this.carFactory = new CarFactory();
     this.initCars();
   }
 
@@ -49,215 +38,14 @@ export class TrafficSystem {
   }
 
   private initCars() {
-    const carGeo = new BoxGeometry(4, 2, 8);
-    const truckCabGeo = new BoxGeometry(5, 4, 6);
-    const truckTrailerGeo = new BoxGeometry(5.5, 6, 12);
-
-    const tailLightGeo = new BoxGeometry(0.5, 0.5, 0.1);
-    const headLightGeo = new BoxGeometry(0.5, 0.5, 0.1);
-    const wheelGeo = new CylinderGeometry(0.8, 0.8, 0.5, 16);
-    wheelGeo.rotateZ(Math.PI / 2);
-
-    const carBodyMat1 = new MeshStandardMaterial({ color: 0x222222, roughness: 0.3, metalness: 0.7 });
-    const carBodyMat2 = new MeshStandardMaterial({ color: 0x050505, roughness: 0.3, metalness: 0.7 });
-    const carBodyMat3 = new MeshStandardMaterial({ color: 0x111111, roughness: 0.3, metalness: 0.7 });
-    const policeBodyMat = new MeshStandardMaterial({ color: 0xeeeeee, roughness: 0.2, metalness: 0.5 }); // White-ish
-
-    const wheelMat = new MeshStandardMaterial({ color: 0x111111, roughness: 0.9, metalness: 0.1 });
-
-    const lightBarGeo = new BoxGeometry(2, 0.5, 0.5);
-    const lightBarMat = new MeshBasicMaterial({ color: 0x000000 });
-
-    const underglowGeo = new PlaneGeometry(5, 9);
-    const underglowMat1 = new MeshBasicMaterial({
-      color: 0xff00cc,
-      opacity: 0.5,
-      transparent: true,
-      side: DoubleSide,
-    });
-    const underglowMat2 = new MeshBasicMaterial({
-      color: 0x00ccff,
-      opacity: 0.5,
-      transparent: true,
-      side: DoubleSide,
-    });
-
-    const tailLightMat = new MeshBasicMaterial({ color: 0xff0000 });
-    const headLightMat = new MeshBasicMaterial({ color: 0xffffaa });
-
-    const hitboxGeo = new BoxGeometry(20, 20, 30);
-    const hitboxMat = new MeshBasicMaterial({
-      color: 0xff0000,
-      transparent: true,
-      opacity: 0,
-      depthWrite: false,
-      visible: true,
-    });
-
     const policeCount = 3;
-    const totalCars = this.carCount + policeCount; // Add police cars on top of count
+    const totalCars = this.carCount + policeCount;
 
     for (let i = 0; i < totalCars; i++) {
-      const isPolice = i >= this.carCount; // Last few are police
-      const isTruck = !isPolice && Math.random() < 0.15;
-      let bodyMat;
+      const isPolice = i >= this.carCount;
+      const carGroup = this.carFactory.createCar(isPolice);
 
-      if (isPolice) {
-        bodyMat = policeBodyMat.clone();
-      } else {
-        const isSpecial = Math.random() > 0.8;
-        bodyMat = (
-          isSpecial
-            ? carBodyMat1
-            : Math.random() > 0.5
-            ? carBodyMat2
-            : carBodyMat3
-        ).clone();
-      }
-      bodyMat.transparent = true;
-
-      const carGroup = new Group();
-
-      if (isTruck) {
-        const cab = new Mesh(truckCabGeo, bodyMat);
-        cab.position.set(0, 1.5, 5);
-        cab.userData.originalOpacity = 1.0;
-        cab.castShadow = true;
-        carGroup.add(cab);
-
-        const trailer = new Mesh(truckTrailerGeo, bodyMat);
-        trailer.position.set(0, 2.5, -4);
-        trailer.userData.originalOpacity = 1.0;
-        trailer.castShadow = true;
-        carGroup.add(trailer);
-
-        // Truck Wheels
-        const positions = [
-             [2.5, -0.5, 7], [-2.5, -0.5, 7], // Front
-             [2.8, -0.5, 0], [-2.8, -0.5, 0], // Middle
-             [2.8, -0.5, -8], [-2.8, -0.5, -8] // Rear
-        ];
-
-        positions.forEach(pos => {
-            const w = new Mesh(wheelGeo, wheelMat);
-            w.position.set(pos[0], pos[1], pos[2]);
-            w.userData.originalOpacity = 1.0;
-            w.castShadow = true;
-            carGroup.add(w);
-        });
-
-        carGroup.userData.isTruck = true;
-      } else {
-        const carBody = new Mesh(carGeo, bodyMat);
-        carBody.userData.originalOpacity = 1.0;
-        carBody.castShadow = true;
-        carGroup.add(carBody);
-
-        // Wheels
-        const w1 = new Mesh(wheelGeo, wheelMat);
-        w1.position.set(2, -0.5, 2.5);
-        w1.userData.originalOpacity = 1.0;
-        w1.castShadow = true;
-        carGroup.add(w1);
-
-        const w2 = new Mesh(wheelGeo, wheelMat);
-        w2.position.set(-2, -0.5, 2.5);
-        w2.userData.originalOpacity = 1.0;
-        w2.castShadow = true;
-        carGroup.add(w2);
-
-        const w3 = new Mesh(wheelGeo, wheelMat);
-        w3.position.set(2, -0.5, -2.5);
-        w3.userData.originalOpacity = 1.0;
-        w3.castShadow = true;
-        carGroup.add(w3);
-
-        const w4 = new Mesh(wheelGeo, wheelMat);
-        w4.position.set(-2, -0.5, -2.5);
-        w4.userData.originalOpacity = 1.0;
-        w4.castShadow = true;
-        carGroup.add(w4);
-      }
-
-      if (isPolice) {
-        // Police Light Bar
-        const lb = new Mesh(lightBarGeo, lightBarMat);
-        lb.position.set(0, 1.25, 0);
-        lb.userData.originalOpacity = 1.0;
-        carGroup.add(lb);
-
-        // Flashing Lights
-        const flIntensity = 80;
-        const flDist = 100;
-
-        const redLight = new PointLight(0xff0000, flIntensity, flDist);
-        redLight.position.set(-0.8, 1.5, 0);
-        redLight.userData.isPoliceFlasher = true;
-        redLight.visible = false;
-        carGroup.add(redLight);
-
-        const blueLight = new PointLight(0x0000ff, flIntensity, flDist);
-        blueLight.position.set(0.8, 1.5, 0);
-        blueLight.userData.isPoliceFlasher = true;
-        blueLight.visible = false;
-        carGroup.add(blueLight);
-
-        // Emissive meshes for the lightbar
-        const redMesh = new Mesh(new BoxGeometry(0.8, 0.4, 0.4), new MeshBasicMaterial({ color: 0xff0000 }));
-        redMesh.position.set(-0.8, 1.5, 0);
-        redMesh.userData.isPoliceFlasherMesh = true;
-        redMesh.visible = false;
-        carGroup.add(redMesh);
-
-        const blueMesh = new Mesh(new BoxGeometry(0.8, 0.4, 0.4), new MeshBasicMaterial({ color: 0x0000ff }));
-        blueMesh.position.set(0.8, 1.5, 0);
-        blueMesh.userData.isPoliceFlasherMesh = true;
-        blueMesh.visible = false;
-        carGroup.add(blueMesh);
-      } else {
-        if (Math.random() > 0.3) {
-          const underglowMat = (
-            Math.random() > 0.5 ? underglowMat1 : underglowMat2
-          ).clone();
-          const underglow = new Mesh(underglowGeo, underglowMat);
-          underglow.userData.originalOpacity = 0.5;
-          underglow.rotation.x = Math.PI / 2;
-          underglow.position.y = -0.9;
-          carGroup.add(underglow);
-        }
-      }
-
-      const tlMat = tailLightMat.clone();
-      tlMat.transparent = true;
-      const tl1 = new Mesh(tailLightGeo, tlMat);
-      tl1.userData.originalOpacity = 1.0;
-      tl1.position.set(1.5, 0, -4);
-      carGroup.add(tl1);
-
-      const tl2 = new Mesh(tailLightGeo, tlMat);
-      tl2.userData.originalOpacity = 1.0;
-      tl2.position.set(-1.5, 0, -4);
-      carGroup.add(tl2);
-
-      const hlMat = headLightMat.clone();
-      hlMat.transparent = true;
-      const hl1 = new Mesh(headLightGeo, hlMat);
-      hl1.userData.originalOpacity = 1.0;
-      hl1.position.set(1.5, 0, 4);
-      carGroup.add(hl1);
-
-      const hl2 = new Mesh(headLightGeo, hlMat);
-      hl2.userData.originalOpacity = 1.0;
-      hl2.position.set(-1.5, 0, 4);
-      carGroup.add(hl2);
-
-      const hitbox = new Mesh(hitboxGeo, hitboxMat);
-      hitbox.userData.originalOpacity = 0;
-      carGroup.add(hitbox);
-
-      carGroup.userData = { isPolice };
       this.resetCar(carGroup);
-
       this.scene.add(carGroup);
       this.cars.push(carGroup);
     }
@@ -277,70 +65,29 @@ export class TrafficSystem {
     const zBack = isTruck ? -10 : -4;
     const xOffset = isTruck ? 2 : 1.5;
 
-    const hl1 = new SpotLight(
-      hlColor,
-      hlIntensity,
-      hlDist,
-      hlAngle,
-      hlPenumbra,
-      1
-    );
-    hl1.position.set(xOffset, yPos, zFront);
-    hl1.castShadow = false;
-
-    const hl1Target = new Object3D();
-    hl1Target.position.set(xOffset, -10, zFront + 36);
-    car.add(hl1Target);
-    hl1.target = hl1Target;
-
-    hl1.userData.isCarLight = true;
-    car.add(hl1);
-
-    const hl2 = new SpotLight(
-      hlColor,
-      hlIntensity,
-      hlDist,
-      hlAngle,
-      hlPenumbra,
-      1
-    );
-    hl2.position.set(-xOffset, yPos, zFront);
-    hl2.castShadow = false;
-
-    const hl2Target = new Object3D();
-    hl2Target.position.set(-xOffset, -10, zFront + 36);
-    car.add(hl2Target);
-    hl2.target = hl2Target;
-
-    hl2.userData.isCarLight = true;
-    car.add(hl2);
+    this.createSpotLight(car, xOffset, yPos, zFront, hlColor, hlIntensity, hlDist, hlAngle, hlPenumbra, 36);
+    this.createSpotLight(car, -xOffset, yPos, zFront, hlColor, hlIntensity, hlDist, hlAngle, hlPenumbra, 36);
 
     const tlColor = 0xff0000;
     const tlIntensity = 50;
     const tlDist = 50;
     const tlAngle = Math.PI / 2.5;
 
-    const tl1 = new SpotLight(tlColor, tlIntensity, tlDist, tlAngle, 0.5, 1);
-    tl1.position.set(xOffset, yPos, zBack);
+    this.createSpotLight(car, xOffset, yPos, zBack, tlColor, tlIntensity, tlDist, tlAngle, 0.5, -16);
+    this.createSpotLight(car, -xOffset, yPos, zBack, tlColor, tlIntensity, tlDist, tlAngle, 0.5, -16);
+  }
 
-    const tl1Target = new Object3D();
-    tl1Target.position.set(xOffset, -5, zBack - 16);
-    car.add(tl1Target);
-    tl1.target = tl1Target;
+  private createSpotLight(car: Group, x: number, y: number, z: number, color: number, intensity: number, distance: number, angle: number, penumbra: number, targetZOffset: number) {
+      const light = new SpotLight(color, intensity, distance, angle, penumbra, 1);
+      light.position.set(x, y, z);
+      light.castShadow = false;
+      light.userData.isCarLight = true;
 
-    tl1.userData.isCarLight = true;
-    car.add(tl1);
-
-    const tl2 = new SpotLight(tlColor, tlIntensity, tlDist, tlAngle, 0.5, 1);
-    tl2.position.set(-xOffset, yPos, zBack);
-
-    const tl2Target = new Object3D();
-    tl2Target.position.set(-xOffset, -5, zBack - 16);
-    car.add(tl2Target);
-    tl2.target = tl2Target;
-
-    tl2.userData.isCarLight = true;
-    car.add(tl2);
+      const target = new Object3D();
+      target.position.set(x, -10, z + targetZOffset);
+      car.add(target);
+      light.target = target;
+      car.add(light);
   }
 
   public removeLightsFromCar(car: Group) {
@@ -377,12 +124,9 @@ export class TrafficSystem {
 
     const roadIndex = Math.floor(Math.random() * (GRID_SIZE + 1));
     const roadCoordinate = START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
-
     const laneOffset = (Math.random() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
 
-    let x = 0,
-      z = 0;
-
+    let x = 0, z = 0;
     if (axis === "x") {
       z = roadCoordinate + laneOffset;
       x = (Math.random() - 0.5) * CITY_SIZE;
@@ -392,52 +136,71 @@ export class TrafficSystem {
       z = (Math.random() - 0.5) * CITY_SIZE;
       carGroup.rotation.y = dir === 1 ? 0 : Math.PI;
     }
+
     carGroup.userData.heading = carGroup.rotation.y;
+    carGroup.position.set(x, getHeight(x, z) + 1, z);
 
-    const h = getHeight(x, z);
-    carGroup.position.set(x, h + 1, z);
-
-    carGroup.userData.speed = isPolice ? 2.5 + Math.random() * 1.5 : 0.5 + Math.random() * 1.0;
-    carGroup.userData.dir = dir;
-    carGroup.userData.axis = axis;
-    carGroup.userData.laneOffset = laneOffset;
-    carGroup.userData.collided = false;
-    carGroup.userData.fading = false;
-    carGroup.userData.isPlayerHit = false;
-    carGroup.userData.opacity = 1.0;
-    carGroup.userData.isPlayerControlled = false;
-    carGroup.userData.currentSpeed = 0;
-    carGroup.userData.isPolice = isPolice;
-    carGroup.userData.turnCooldown = 0;
+    // Reset properties
+    Object.assign(carGroup.userData, {
+        speed: isPolice ? 2.5 + Math.random() * 1.5 : 0.5 + Math.random() * 1.0,
+        dir,
+        axis,
+        laneOffset,
+        collided: false,
+        fading: false,
+        isPlayerHit: false,
+        opacity: 1.0,
+        isPlayerControlled: false,
+        currentSpeed: 0,
+        isPolice,
+        turnCooldown: 0
+    });
 
     carGroup.visible = true;
-
-    carGroup.traverse((child) => {
-      if (child instanceof Mesh) {
-        const mat = child.material;
-        if (
-          !Array.isArray(mat) &&
-          child.userData.originalOpacity !== undefined
-        ) {
-          mat.opacity = child.userData.originalOpacity;
-        }
-      }
-    });
+    this.restoreOpacity(carGroup);
 
     if (wasActive) {
       this.addLightsToCar(carGroup);
     }
   }
 
-  public update() {
-    // Move cars & Handle Collisions
-    for (let i = 0; i < this.cars.length; i++) {
-      const car = this.cars[i];
+  private restoreOpacity(carGroup: Group) {
+      carGroup.traverse((child) => {
+          if (child instanceof Mesh) {
+            const mat = child.material;
+            if (!Array.isArray(mat) && child.userData.originalOpacity !== undefined) {
+              mat.opacity = child.userData.originalOpacity;
+            }
+          }
+      });
+  }
 
-      if (car.userData.isPolice) {
-        const time = Date.now();
-        const isRedOn = Math.floor(time / 150) % 2 === 0;
-        car.traverse((child) => {
+  public update() {
+    this.updateCars();
+    this.checkCollisions();
+  }
+
+  private updateCars() {
+      const time = Date.now();
+      const isRedOn = Math.floor(time / 150) % 2 === 0;
+
+      for (const car of this.cars) {
+          if (car.userData.isPolice) {
+              this.updatePoliceLights(car, isRedOn);
+          }
+
+          if (car.userData.isPlayerControlled) continue;
+
+          if (!car.userData.fading) {
+              this.moveCar(car);
+          } else {
+              this.fadeCar(car);
+          }
+      }
+  }
+
+  private updatePoliceLights(car: Group, isRedOn: boolean) {
+      car.traverse((child) => {
           if (child.userData.isPoliceFlasher) {
             const light = child as PointLight;
             const isRed = light.color.getHex() === 0xff0000;
@@ -449,137 +212,103 @@ export class TrafficSystem {
             const isRed = mat.color.getHex() === 0xff0000;
             mesh.visible = isRed ? isRedOn : !isRedOn;
           }
-        });
+      });
+  }
+
+  private moveCar(car: Group) {
+      if (car.userData.isPlayerHit) return;
+
+      if (car.userData.turnCooldown > 0) {
+        car.userData.turnCooldown--;
       }
 
-      if (car.userData.isPlayerControlled) {
-        continue;
+      const speed = car.userData.speed;
+      const dir = car.userData.dir;
+
+      if (car.userData.axis === "x") {
+          car.position.x += speed * dir;
+          this.handlePoliceTurning(car, car.position.x);
+
+          if (car.position.x > BOUNDS) car.position.x = -BOUNDS;
+          if (car.position.x < -BOUNDS) car.position.x = BOUNDS;
+      } else {
+          car.position.z += speed * dir;
+          this.handlePoliceTurning(car, car.position.z);
+
+          if (car.position.z > BOUNDS) car.position.z = -BOUNDS;
+          if (car.position.z < -BOUNDS) car.position.z = BOUNDS;
       }
 
-      if (!car.userData.fading) {
-        // AI Movement
-        if (!car.userData.isPlayerHit) {
-          if (car.userData.turnCooldown > 0) {
-            car.userData.turnCooldown--;
-          }
+      this.updateCarOrientation(car);
+  }
 
-          if (car.userData.axis === "x") {
-            car.position.x += car.userData.speed * car.userData.dir;
+  private handlePoliceTurning(car: Group, currentPos: number) {
+      if (car.userData.isPolice && car.userData.turnCooldown <= 0) {
+          const roadIndex = Math.round((currentPos - (START_OFFSET - CELL_SIZE / 2)) / CELL_SIZE);
+          const roadCenter = START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
 
-            // Police Aggressive Turning
-            if (car.userData.isPolice && car.userData.turnCooldown <= 0) {
-              const currentPos = car.position.x;
-              const roadIndex = Math.round(
-                (currentPos - (START_OFFSET - CELL_SIZE / 2)) / CELL_SIZE
-              );
-              const roadCenter =
-                START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
+          if (Math.abs(currentPos - roadCenter) < car.userData.speed * 1.5) {
+            if (Math.random() < 0.4) {
+              const newDir = Math.random() > 0.5 ? 1 : -1;
+              const newLaneOffset = (Math.random() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
 
-              if (Math.abs(currentPos - roadCenter) < car.userData.speed * 1.5) {
-                if (Math.random() < 0.4) {
-                  // Turn
-                  const newDir = Math.random() > 0.5 ? 1 : -1;
-                  const newLaneOffset =
-                    (Math.random() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
-
+              if (car.userData.axis === "x") {
                   car.position.x = roadCenter + newLaneOffset;
                   car.userData.axis = "z";
-                  car.userData.dir = newDir;
                   car.userData.heading = newDir === 1 ? 0 : Math.PI;
-                  car.userData.turnCooldown = 60; // 1 second cooldown
-                }
-              }
-            }
-
-            if (car.position.x > BOUNDS) car.position.x = -BOUNDS;
-            if (car.position.x < -BOUNDS) car.position.x = BOUNDS;
-          } else {
-            car.position.z += car.userData.speed * car.userData.dir;
-
-            // Police Aggressive Turning
-            if (car.userData.isPolice && car.userData.turnCooldown <= 0) {
-              const currentPos = car.position.z;
-              const roadIndex = Math.round(
-                (currentPos - (START_OFFSET - CELL_SIZE / 2)) / CELL_SIZE
-              );
-              const roadCenter =
-                START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
-
-              if (Math.abs(currentPos - roadCenter) < car.userData.speed * 1.5) {
-                if (Math.random() < 0.4) {
-                  // Turn
-                  const newDir = Math.random() > 0.5 ? 1 : -1;
-                  const newLaneOffset =
-                    (Math.random() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
-
+              } else {
                   car.position.z = roadCenter + newLaneOffset;
                   car.userData.axis = "x";
-                  car.userData.dir = newDir;
                   car.userData.heading = newDir === 1 ? Math.PI / 2 : -Math.PI / 2;
-                  car.userData.turnCooldown = 60;
-                }
               }
+              car.userData.dir = newDir;
+              car.userData.turnCooldown = 60;
             }
-
-            if (car.position.z > BOUNDS) car.position.z = -BOUNDS;
-            if (car.position.z < -BOUNDS) car.position.z = BOUNDS;
           }
-
-          car.position.y = getHeight(car.position.x, car.position.z) + 1;
-
-          // Apply orientation
-          const normal = getNormal(car.position.x, car.position.z);
-          car.up.set(normal.x, normal.y, normal.z);
-          const heading = car.userData.heading ?? 0;
-          const lookDist = 5;
-          const targetX = car.position.x + Math.sin(heading) * lookDist;
-          const targetZ = car.position.z + Math.cos(heading) * lookDist;
-          const targetY = getHeight(targetX, targetZ) + 1;
-          car.lookAt(targetX, targetY, targetZ);
-        }
-      } else {
-        // Fading out logic
-        if (car.userData.axis === "x") {
-          car.position.x += car.userData.speed * 0.5 * car.userData.dir;
-        } else {
-          car.position.z += car.userData.speed * 0.5 * car.userData.dir;
-        }
-
-        car.position.y = getHeight(car.position.x, car.position.z) + 1;
-
-        // Apply orientation for fading cars too
-        const normal = getNormal(car.position.x, car.position.z);
-        car.up.set(normal.x, normal.y, normal.z);
-        const heading = car.userData.heading ?? 0;
-        const lookDist = 5;
-        const targetX = car.position.x + Math.sin(heading) * lookDist;
-        const targetZ = car.position.z + Math.cos(heading) * lookDist;
-        const targetY = getHeight(targetX, targetZ) + 1;
-        car.lookAt(targetX, targetY, targetZ);
-
-        car.userData.opacity -= 0.02;
-        if (car.userData.opacity <= 0) {
-          this.resetCar(car);
-        } else {
-          // Apply opacity
-          car.traverse((child) => {
-            if (child instanceof Mesh) {
-              const mat = child.material;
-              if (!Array.isArray(mat)) {
-                const original =
-                  child.userData.originalOpacity !== undefined
-                    ? child.userData.originalOpacity
-                    : 1.0;
-                mat.opacity = original * car.userData.opacity;
-              }
-            }
-          });
-        }
       }
-    }
+  }
 
-    // Check Collisions
+  private fadeCar(car: Group) {
+      if (car.userData.axis === "x") {
+        car.position.x += car.userData.speed * 0.5 * car.userData.dir;
+      } else {
+        car.position.z += car.userData.speed * 0.5 * car.userData.dir;
+      }
+
+      this.updateCarOrientation(car);
+
+      car.userData.opacity -= 0.02;
+      if (car.userData.opacity <= 0) {
+        this.resetCar(car);
+      } else {
+        car.traverse((child) => {
+          if (child instanceof Mesh) {
+            const mat = child.material;
+            if (!Array.isArray(mat)) {
+              const original = child.userData.originalOpacity !== undefined ? child.userData.originalOpacity : 1.0;
+              mat.opacity = original * car.userData.opacity;
+            }
+          }
+        });
+      }
+  }
+
+  private updateCarOrientation(car: Group) {
+      car.position.y = getHeight(car.position.x, car.position.z) + 1;
+      const normal = getNormal(car.position.x, car.position.z);
+      car.up.set(normal.x, normal.y, normal.z);
+
+      const heading = car.userData.heading ?? 0;
+      const lookDist = 5;
+      const targetX = car.position.x + Math.sin(heading) * lookDist;
+      const targetZ = car.position.z + Math.cos(heading) * lookDist;
+      const targetY = getHeight(targetX, targetZ) + 1;
+      car.lookAt(targetX, targetY, targetZ);
+  }
+
+  private checkCollisions() {
     const actualCollisionDist = 6;
+    const distSqThreshold = actualCollisionDist * actualCollisionDist;
 
     for (let i = 0; i < this.cars.length; i++) {
       const carA = this.cars[i];
@@ -593,27 +322,29 @@ export class TrafficSystem {
         const dz = carA.position.z - carB.position.z;
         const distSq = dx * dx + dz * dz;
 
-        if (distSq < actualCollisionDist * actualCollisionDist) {
-          if (
-            carA.userData.isPlayerControlled ||
-            carB.userData.isPlayerControlled
-          ) {
-            const player = carA.userData.isPlayerControlled ? carA : carB;
-            const ai = carA.userData.isPlayerControlled ? carB : carA;
+        if (distSq < distSqThreshold) {
+          this.handleCollision(carA, carB);
+        }
+      }
+    }
+  }
 
-            player.userData.currentSpeed *= -0.5;
-            carAudio.playCrash();
-            player.position.x += (player.position.x - ai.position.x) * 0.5;
-            player.position.z += (player.position.z - ai.position.z) * 0.5;
+  private handleCollision(carA: Group, carB: Group) {
+      if (carA.userData.isPlayerControlled || carB.userData.isPlayerControlled) {
+        const player = carA.userData.isPlayerControlled ? carA : carB;
+        const ai = carA.userData.isPlayerControlled ? carB : carA;
 
-            ai.userData.fading = true;
-            ai.userData.dir *= -1;
-            ai.userData.heading += Math.random() - 0.5;
-            this.spawnSparks(player.position);
-            continue;
-          }
+        player.userData.currentSpeed *= -0.5;
+        carAudio.playCrash();
+        player.position.x += (player.position.x - ai.position.x) * 0.5;
+        player.position.z += (player.position.z - ai.position.z) * 0.5;
 
-          if (Math.random() > 0.5) continue;
+        ai.userData.fading = true;
+        ai.userData.dir *= -1;
+        ai.userData.heading += Math.random() - 0.5;
+        this.spawnSparks(player.position);
+      } else {
+          if (Math.random() > 0.5) return;
 
           carA.userData.fading = true;
           carB.userData.fading = true;
@@ -623,8 +354,6 @@ export class TrafficSystem {
 
           carA.userData.heading += Math.random() - 0.5;
           carB.userData.heading += Math.random() - 0.5;
-        }
       }
-    }
   }
 }

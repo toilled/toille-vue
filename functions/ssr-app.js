@@ -60672,6 +60672,9 @@ class KonamiManager {
   constructor(scene) {
     this.scene = scene;
     this.fwPositions = new Float32Array(this.fireworkCount * 3);
+    for (let i = 0; i < this.fireworkCount; i++) {
+      this.fwPositions[i * 3 + 1] = -99999;
+    }
     this.fwColors = new Float32Array(this.fireworkCount * 3);
     this.fwVelocities = new Float32Array(this.fireworkCount * 3);
     this.fwLifetimes = new Float32Array(this.fireworkCount);
@@ -61150,19 +61153,33 @@ class GangWarManager {
 
 function createWindowTexture() {
   const canvas = document.createElement("canvas");
-  canvas.width = 32;
-  canvas.height = 64;
+  canvas.width = 64;
+  canvas.height = 128;
   const ctx = canvas.getContext("2d");
   if (ctx) {
-    ctx.fillStyle = "#020202";
-    ctx.fillRect(0, 0, 32, 64);
-    for (let y = 2; y < 64; y += 4) {
-      for (let x = 2; x < 32; x += 4) {
-        if (Math.random() > 0.5) {
-          ctx.fillStyle = Math.random() > 0.5 ? "#ff00cc" : "#00ccff";
-          ctx.fillRect(x, y, 2, 2);
+    ctx.fillStyle = "#050505";
+    ctx.fillRect(0, 0, 64, 128);
+    const w = 4;
+    const h = 6;
+    const gapX = 4;
+    const gapY = 6;
+    for (let y = 4; y < 128; y += h + gapY) {
+      for (let x = 4; x < 64; x += w + gapX) {
+        if (Math.random() > 0.4) {
+          const rand = Math.random();
+          if (rand > 0.95) ctx.fillStyle = "#ffffff";
+          else if (rand > 0.8) ctx.fillStyle = "#ffaa00";
+          else if (rand > 0.5) ctx.fillStyle = "#00ccff";
+          else ctx.fillStyle = "#ff00cc";
+          ctx.globalAlpha = 0.6 + Math.random() * 0.4;
+          ctx.fillRect(x, y, w, h);
+          ctx.globalAlpha = 1;
         }
       }
+    }
+    if (Math.random() > 0.8) {
+      ctx.fillStyle = "rgba(0,0,0,0.8)";
+      ctx.fillRect(0, 0, 64, 128);
     }
   }
   const texture = new CanvasTexture(canvas);
@@ -61173,42 +61190,50 @@ function createWindowTexture() {
 }
 function createGroundTexture() {
   const canvas = document.createElement("canvas");
-  canvas.width = 512;
-  canvas.height = 512;
+  canvas.width = 1024;
+  canvas.height = 1024;
   const ctx = canvas.getContext("2d");
   if (ctx) {
-    ctx.fillStyle = "#0a0a15";
-    ctx.fillRect(0, 0, 512, 512);
-    ctx.fillStyle = "#050505";
+    ctx.fillStyle = "#080808";
+    ctx.fillRect(0, 0, 1024, 1024);
     const roadRatio = ROAD_WIDTH / CELL_SIZE;
-    const roadPx = 512 * roadRatio;
+    const roadPx = 1024 * roadRatio;
     const halfRoad = roadPx / 2;
-    ctx.fillRect(0, 0, 512, halfRoad);
-    ctx.fillRect(0, 512 - halfRoad, 512, halfRoad);
-    ctx.fillRect(0, 0, halfRoad, 512);
-    ctx.fillRect(512 - halfRoad, 0, halfRoad, 512);
-    ctx.strokeStyle = "#333333";
-    ctx.lineWidth = 2;
-    ctx.setLineDash([10, 10]);
+    ctx.fillStyle = "#0a0a0a";
+    ctx.fillRect(0, 0, 1024, halfRoad);
+    ctx.fillRect(0, 1024 - halfRoad, 1024, halfRoad);
+    ctx.fillRect(0, 0, halfRoad, 1024);
+    ctx.fillRect(1024 - halfRoad, 0, halfRoad, 1024);
+    ctx.strokeStyle = "#444444";
+    ctx.lineWidth = 4;
+    ctx.setLineDash([20, 20]);
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.lineTo(512, 0);
+    ctx.lineTo(1024, 0);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(0, 512);
-    ctx.lineTo(512, 512);
+    ctx.moveTo(0, 1024);
+    ctx.lineTo(1024, 1024);
     ctx.stroke();
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.lineTo(0, 512);
+    ctx.lineTo(0, 1024);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(512, 0);
-    ctx.lineTo(512, 512);
+    ctx.moveTo(1024, 0);
+    ctx.lineTo(1024, 1024);
     ctx.stroke();
-    ctx.fillStyle = "rgba(255, 255, 255, 0.02)";
-    for (let i = 0; i < 100; i++) {
-      ctx.fillRect(Math.random() * 512, Math.random() * 512, 2, 2);
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#333333";
+    const stopOffset = halfRoad * 0.8;
+    const stopW = 8;
+    ctx.fillRect(halfRoad, stopOffset, halfRoad, stopW);
+    ctx.fillRect(halfRoad, 1024 - stopOffset, halfRoad, stopW);
+    ctx.fillRect(stopOffset, halfRoad, stopW, halfRoad);
+    ctx.fillRect(1024 - stopOffset, halfRoad, stopW, halfRoad);
+    ctx.fillStyle = "rgba(255, 255, 255, 0.03)";
+    for (let i = 0; i < 2e3; i++) {
+      ctx.fillRect(Math.random() * 1024, Math.random() * 1024, 2, 2);
     }
   }
   const texture = new CanvasTexture(canvas);
@@ -61220,22 +61245,22 @@ function createGroundTexture() {
 }
 function createBillboardTextures() {
   const textures = [];
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 8; i++) {
     const canvas = document.createElement("canvas");
     canvas.width = 128;
     canvas.height = 64;
     const ctx = canvas.getContext("2d");
     if (ctx) {
-      ctx.fillStyle = "#100010";
+      ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, 128, 64);
-      const colors = ["#ff00cc", "#00ffcc", "#ffff00", "#ff0000", "#00ff00"];
+      const colors = ["#ff00cc", "#00ffcc", "#ffff00", "#ff0000", "#00ff00", "#aa00ff", "#0000ff", "#ff8800"];
       const color = colors[i % colors.length];
       ctx.strokeStyle = color;
       ctx.lineWidth = 4;
       ctx.strokeRect(4, 4, 120, 56);
       ctx.fillStyle = color;
       ctx.shadowColor = color;
-      ctx.shadowBlur = 10;
+      ctx.shadowBlur = 15;
       switch (i) {
         case 0:
           ctx.fillRect(15, 15, 80, 5);
@@ -61253,8 +61278,27 @@ function createBillboardTextures() {
           ctx.fillStyle = color;
           ctx.fillRect(64, 20, 40, 24);
           break;
+        case 2:
+          ctx.beginPath();
+          ctx.moveTo(64, 10);
+          ctx.lineTo(20, 54);
+          ctx.lineTo(108, 54);
+          ctx.fill();
+          break;
+        case 3:
+          for (let gx = 10; gx < 118; gx += 20) {
+            for (let gy = 10; gy < 54; gy += 10) {
+              ctx.fillRect(gx, gy, 15, 5);
+            }
+          }
+          break;
+        case 4:
+          ctx.font = "40px serif";
+          ctx.fillText("CYBER", 10, 45);
+          break;
         default:
-          for (let k = 0; k < 5; k++) {
+          for (let k = 0; k < 6; k++) {
+            ctx.fillStyle = k % 2 === 0 ? color : "#ffffff";
             ctx.fillRect(
               10 + Math.random() * 100,
               10 + Math.random() * 40,
@@ -61277,7 +61321,7 @@ function createDroneTexture() {
   const ctx = canvas.getContext("2d");
   if (ctx) {
     ctx.clearRect(0, 0, 32, 32);
-    ctx.strokeStyle = "#888888";
+    ctx.strokeStyle = "#aaaaaa";
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(4, 4);
@@ -61285,7 +61329,7 @@ function createDroneTexture() {
     ctx.moveTo(28, 4);
     ctx.lineTo(4, 28);
     ctx.stroke();
-    ctx.fillStyle = "#444444";
+    ctx.fillStyle = "#666666";
     ctx.beginPath();
     ctx.arc(4, 4, 3, 0, Math.PI * 2);
     ctx.fill();
@@ -61300,9 +61344,9 @@ function createDroneTexture() {
     ctx.fill();
     ctx.fillStyle = "#ffffff";
     ctx.shadowColor = "#ffffff";
-    ctx.shadowBlur = 6;
+    ctx.shadowBlur = 8;
     ctx.beginPath();
-    ctx.arc(16, 16, 5, 0, Math.PI * 2);
+    ctx.arc(16, 16, 6, 0, Math.PI * 2);
     ctx.fill();
   }
   const texture = new CanvasTexture(canvas);
@@ -61384,8 +61428,8 @@ class CityBuilder {
     const planeMaterial = new MeshStandardMaterial({
       color: 16777215,
       map: groundTexture,
-      roughness: 0.8,
-      metalness: 0.2
+      roughness: 0.4,
+      metalness: 0.3
     });
     const offset = -CITY_SIZE / CELL_SIZE;
     groundTexture.offset.set(offset, offset);
@@ -61446,6 +61490,9 @@ class CityBuilder {
     const coneGeo = new ConeGeometry(0.7, 1, 4);
     coneGeo.translate(0, 0.5, 0);
     const coneEdgesGeo = new EdgesGeometry(coneGeo);
+    const cylinderGeo = new CylinderGeometry(0.5, 0.5, 1, 32);
+    cylinderGeo.translate(0, 0.5, 0);
+    const neonStripGeo = new BoxGeometry(0.5, 1, 0.5);
     for (let x = 0; x < GRID_SIZE; x++) {
       for (let z = 0; z < GRID_SIZE; z++) {
         const isLeaderboardBuilding = x === 5 && z === 5;
@@ -61474,8 +61521,10 @@ class CityBuilder {
         if (!isLeaderboardBuilding) {
           const r = Math.random();
           if (r > 0.9) style = "SPIRE";
-          else if (r > 0.7) style = "TIERED";
-          else if (r > 0.5) style = "GREEBLED";
+          else if (r > 0.75) style = "TIERED";
+          else if (r > 0.6) style = "GREEBLED";
+          else if (r > 0.45) style = "CYLINDRICAL";
+          else if (r > 0.35) style = "TWISTED";
         }
         let selectedMaterial = buildingMaterial;
         if (!isLeaderboardBuilding) {
@@ -61490,17 +61539,48 @@ class CityBuilder {
           selectedMaterial,
           selectedMaterial
         ];
-        const mainBlock = new Mesh(boxGeo, thisBuildingMaterials);
-        mainBlock.scale.set(w, h, d);
-        mainBlock.castShadow = true;
-        mainBlock.receiveShadow = true;
-        buildingGroup.add(mainBlock);
-        const mainLine = new LineSegments(
-          edgesGeo,
-          Math.random() > 0.5 ? edgeMat1 : edgeMat2
-        );
-        mainLine.scale.set(w, h, d);
-        buildingGroup.add(mainLine);
+        if (style === "CYLINDRICAL") {
+          const cylMats = [selectedMaterial, roofMaterial, roofMaterial];
+          const cyl = new Mesh(cylinderGeo, cylMats);
+          cyl.scale.set(w, h, d);
+          cyl.castShadow = true;
+          cyl.receiveShadow = true;
+          buildingGroup.add(cyl);
+        } else if (style === "TWISTED") {
+          const segments = 5 + Math.floor(Math.random() * 5);
+          const segH = h / segments;
+          let currentY = 0;
+          let rot = 0;
+          for (let s = 0; s < segments; s++) {
+            const seg = new Mesh(boxGeo, thisBuildingMaterials);
+            const scaleFactor = 1;
+            seg.scale.set(w * scaleFactor, segH, d * scaleFactor);
+            seg.position.y = currentY;
+            seg.rotation.y = rot;
+            seg.castShadow = true;
+            seg.receiveShadow = true;
+            buildingGroup.add(seg);
+            const segLine = new LineSegments(edgesGeo, edgeMat2);
+            segLine.scale.set(w * scaleFactor, segH, d * scaleFactor);
+            segLine.position.y = currentY;
+            segLine.rotation.y = rot;
+            buildingGroup.add(segLine);
+            currentY += segH;
+            rot += Math.random() > 0.5 ? Math.PI / 10 : -Math.PI / 10;
+          }
+        } else {
+          const mainBlock = new Mesh(boxGeo, thisBuildingMaterials);
+          mainBlock.scale.set(w, h, d);
+          mainBlock.castShadow = true;
+          mainBlock.receiveShadow = true;
+          buildingGroup.add(mainBlock);
+          const mainLine = new LineSegments(
+            edgesGeo,
+            Math.random() > 0.5 ? edgeMat1 : edgeMat2
+          );
+          mainLine.scale.set(w, h, d);
+          buildingGroup.add(mainLine);
+        }
         switch (style) {
           case "TIERED": {
             const tiers = 1 + Math.floor(Math.random() * 2);
@@ -61577,7 +61657,30 @@ class CityBuilder {
             break;
           }
         }
-        if (style !== "SPIRE" && Math.random() > 0.7) {
+        if (!isLeaderboardBuilding && h > 50 && Math.random() > 0.6) {
+          const color = new Color().setHSL(Math.random(), 1, 0.5);
+          const stripMat = new MeshBasicMaterial({ color });
+          const strip = new Mesh(neonStripGeo, stripMat);
+          strip.scale.set(1, h * 0.8, 1);
+          const face = Math.floor(Math.random() * 4);
+          const offset = 0.6;
+          switch (face) {
+            case 0:
+              strip.position.set(0, h / 2, d / 2 + offset);
+              break;
+            case 1:
+              strip.position.set(0, h / 2, -d / 2 - offset);
+              break;
+            case 2:
+              strip.position.set(w / 2 + offset, h / 2, 0);
+              break;
+            case 3:
+              strip.position.set(-w / 2 - offset, h / 2, 0);
+              break;
+          }
+          buildingGroup.add(strip);
+        }
+        if (style !== "SPIRE" && style !== "CYLINDRICAL" && style !== "TWISTED" && Math.random() > 0.7) {
           const antennaH = 20 + Math.random() * 50;
           const antenna = new Mesh(boxGeo, antennaMat);
           antenna.scale.set(2, antennaH, 2);
@@ -61707,6 +61810,8 @@ class TrafficSystem {
   }
   initCars() {
     const carGeo = new BoxGeometry(4, 2, 8);
+    const truckCabGeo = new BoxGeometry(5, 4, 6);
+    const truckTrailerGeo = new BoxGeometry(5.5, 6, 12);
     const tailLightGeo = new BoxGeometry(0.5, 0.5, 0.1);
     const headLightGeo = new BoxGeometry(0.5, 0.5, 0.1);
     const wheelGeo = new CylinderGeometry(0.8, 0.8, 0.5, 16);
@@ -61745,6 +61850,7 @@ class TrafficSystem {
     const totalCars = this.carCount + policeCount;
     for (let i = 0; i < totalCars; i++) {
       const isPolice = i >= this.carCount;
+      const isTruck = !isPolice && Math.random() < 0.15;
       let bodyMat;
       if (isPolice) {
         bodyMat = policeBodyMat.clone();
@@ -61754,30 +61860,62 @@ class TrafficSystem {
       }
       bodyMat.transparent = true;
       const carGroup = new Group();
-      const carBody = new Mesh(carGeo, bodyMat);
-      carBody.userData.originalOpacity = 1;
-      carBody.castShadow = true;
-      carGroup.add(carBody);
-      const w1 = new Mesh(wheelGeo, wheelMat);
-      w1.position.set(2, -0.5, 2.5);
-      w1.userData.originalOpacity = 1;
-      w1.castShadow = true;
-      carGroup.add(w1);
-      const w2 = new Mesh(wheelGeo, wheelMat);
-      w2.position.set(-2, -0.5, 2.5);
-      w2.userData.originalOpacity = 1;
-      w2.castShadow = true;
-      carGroup.add(w2);
-      const w3 = new Mesh(wheelGeo, wheelMat);
-      w3.position.set(2, -0.5, -2.5);
-      w3.userData.originalOpacity = 1;
-      w3.castShadow = true;
-      carGroup.add(w3);
-      const w4 = new Mesh(wheelGeo, wheelMat);
-      w4.position.set(-2, -0.5, -2.5);
-      w4.userData.originalOpacity = 1;
-      w4.castShadow = true;
-      carGroup.add(w4);
+      if (isTruck) {
+        const cab = new Mesh(truckCabGeo, bodyMat);
+        cab.position.set(0, 1.5, 5);
+        cab.userData.originalOpacity = 1;
+        cab.castShadow = true;
+        carGroup.add(cab);
+        const trailer = new Mesh(truckTrailerGeo, bodyMat);
+        trailer.position.set(0, 2.5, -4);
+        trailer.userData.originalOpacity = 1;
+        trailer.castShadow = true;
+        carGroup.add(trailer);
+        const positions = [
+          [2.5, -0.5, 7],
+          [-2.5, -0.5, 7],
+          // Front
+          [2.8, -0.5, 0],
+          [-2.8, -0.5, 0],
+          // Middle
+          [2.8, -0.5, -8],
+          [-2.8, -0.5, -8]
+          // Rear
+        ];
+        positions.forEach((pos) => {
+          const w = new Mesh(wheelGeo, wheelMat);
+          w.position.set(pos[0], pos[1], pos[2]);
+          w.userData.originalOpacity = 1;
+          w.castShadow = true;
+          carGroup.add(w);
+        });
+        carGroup.userData.isTruck = true;
+      } else {
+        const carBody = new Mesh(carGeo, bodyMat);
+        carBody.userData.originalOpacity = 1;
+        carBody.castShadow = true;
+        carGroup.add(carBody);
+        const w1 = new Mesh(wheelGeo, wheelMat);
+        w1.position.set(2, -0.5, 2.5);
+        w1.userData.originalOpacity = 1;
+        w1.castShadow = true;
+        carGroup.add(w1);
+        const w2 = new Mesh(wheelGeo, wheelMat);
+        w2.position.set(-2, -0.5, 2.5);
+        w2.userData.originalOpacity = 1;
+        w2.castShadow = true;
+        carGroup.add(w2);
+        const w3 = new Mesh(wheelGeo, wheelMat);
+        w3.position.set(2, -0.5, -2.5);
+        w3.userData.originalOpacity = 1;
+        w3.castShadow = true;
+        carGroup.add(w3);
+        const w4 = new Mesh(wheelGeo, wheelMat);
+        w4.position.set(-2, -0.5, -2.5);
+        w4.userData.originalOpacity = 1;
+        w4.castShadow = true;
+        carGroup.add(w4);
+      }
       if (isPolice) {
         const lb = new Mesh(lightBarGeo, lightBarMat);
         lb.position.set(0, 1.25, 0);
@@ -61850,6 +61988,11 @@ class TrafficSystem {
     const hlDist = 800;
     const hlAngle = Math.PI / 4.5;
     const hlPenumbra = 0.2;
+    const isTruck = !!car.userData.isTruck;
+    const yPos = isTruck ? 4 : 2;
+    const zFront = isTruck ? 8 : 4;
+    const zBack = isTruck ? -10 : -4;
+    const xOffset = isTruck ? 2 : 1.5;
     const hl1 = new SpotLight(
       hlColor,
       hlIntensity,
@@ -61858,10 +62001,10 @@ class TrafficSystem {
       hlPenumbra,
       1
     );
-    hl1.position.set(1.5, 2, 4);
+    hl1.position.set(xOffset, yPos, zFront);
     hl1.castShadow = false;
     const hl1Target = new Object3D();
-    hl1Target.position.set(1.5, -10, 40);
+    hl1Target.position.set(xOffset, -10, zFront + 36);
     car.add(hl1Target);
     hl1.target = hl1Target;
     hl1.userData.isCarLight = true;
@@ -61874,10 +62017,10 @@ class TrafficSystem {
       hlPenumbra,
       1
     );
-    hl2.position.set(-1.5, 2, 4);
+    hl2.position.set(-xOffset, yPos, zFront);
     hl2.castShadow = false;
     const hl2Target = new Object3D();
-    hl2Target.position.set(-1.5, -10, 40);
+    hl2Target.position.set(-xOffset, -10, zFront + 36);
     car.add(hl2Target);
     hl2.target = hl2Target;
     hl2.userData.isCarLight = true;
@@ -61887,17 +62030,17 @@ class TrafficSystem {
     const tlDist = 50;
     const tlAngle = Math.PI / 2.5;
     const tl1 = new SpotLight(tlColor, tlIntensity, tlDist, tlAngle, 0.5, 1);
-    tl1.position.set(1.5, 2, -4);
+    tl1.position.set(xOffset, yPos, zBack);
     const tl1Target = new Object3D();
-    tl1Target.position.set(1.5, -5, -20);
+    tl1Target.position.set(xOffset, -5, zBack - 16);
     car.add(tl1Target);
     tl1.target = tl1Target;
     tl1.userData.isCarLight = true;
     car.add(tl1);
     const tl2 = new SpotLight(tlColor, tlIntensity, tlDist, tlAngle, 0.5, 1);
-    tl2.position.set(-1.5, 2, -4);
+    tl2.position.set(-xOffset, yPos, zBack);
     const tl2Target = new Object3D();
-    tl2Target.position.set(-1.5, -5, -20);
+    tl2Target.position.set(-xOffset, -5, zBack - 16);
     car.add(tl2Target);
     tl2.target = tl2Target;
     tl2.userData.isCarLight = true;
@@ -62269,6 +62412,9 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     const pointer = new Vector2();
     let sparks;
     const sparkPositions = new Float32Array(sparkCount * 3);
+    for (let i = 0; i < sparkCount; i++) {
+      sparkPositions[i * 3 + 1] = -99999;
+    }
     const sparkVelocities = new Float32Array(sparkCount * 3);
     const sparkLifetimes = new Float32Array(sparkCount);
     const route = useRoute();
@@ -62900,7 +63046,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       }
     });
     return (_ctx, _push, _parent, _attrs) => {
-      _push(`<!--[--><div id="cyberpunk-city" data-v-6c88b08b></div>`);
+      _push(`<!--[--><div id="cyberpunk-city" data-v-04c905b8></div>`);
       _push(ssrRenderComponent(unref(GameUI), {
         isDrivingMode: isDrivingMode.value,
         isGameMode: isGameMode.value,
@@ -62932,7 +63078,7 @@ _sfc_main$4.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("src/components/CyberpunkCity.vue");
   return _sfc_setup$4 ? _sfc_setup$4(props, ctx) : void 0;
 };
-const CyberpunkCity = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-6c88b08b"]]);
+const CyberpunkCity = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-04c905b8"]]);
 
 const CyberpunkCity$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,

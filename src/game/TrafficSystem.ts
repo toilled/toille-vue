@@ -50,6 +50,9 @@ export class TrafficSystem {
 
   private initCars() {
     const carGeo = new BoxGeometry(4, 2, 8);
+    const truckCabGeo = new BoxGeometry(5, 4, 6);
+    const truckTrailerGeo = new BoxGeometry(5.5, 6, 12);
+
     const tailLightGeo = new BoxGeometry(0.5, 0.5, 0.1);
     const headLightGeo = new BoxGeometry(0.5, 0.5, 0.1);
     const wheelGeo = new CylinderGeometry(0.8, 0.8, 0.5, 16);
@@ -96,6 +99,7 @@ export class TrafficSystem {
 
     for (let i = 0; i < totalCars; i++) {
       const isPolice = i >= this.carCount; // Last few are police
+      const isTruck = !isPolice && Math.random() < 0.15;
       let bodyMat;
 
       if (isPolice) {
@@ -114,35 +118,66 @@ export class TrafficSystem {
 
       const carGroup = new Group();
 
-      const carBody = new Mesh(carGeo, bodyMat);
-      carBody.userData.originalOpacity = 1.0;
-      carBody.castShadow = true;
-      carGroup.add(carBody);
+      if (isTruck) {
+        const cab = new Mesh(truckCabGeo, bodyMat);
+        cab.position.set(0, 1.5, 5);
+        cab.userData.originalOpacity = 1.0;
+        cab.castShadow = true;
+        carGroup.add(cab);
 
-      // Wheels
-      const w1 = new Mesh(wheelGeo, wheelMat);
-      w1.position.set(2, -0.5, 2.5);
-      w1.userData.originalOpacity = 1.0;
-      w1.castShadow = true;
-      carGroup.add(w1);
+        const trailer = new Mesh(truckTrailerGeo, bodyMat);
+        trailer.position.set(0, 2.5, -4);
+        trailer.userData.originalOpacity = 1.0;
+        trailer.castShadow = true;
+        carGroup.add(trailer);
 
-      const w2 = new Mesh(wheelGeo, wheelMat);
-      w2.position.set(-2, -0.5, 2.5);
-      w2.userData.originalOpacity = 1.0;
-      w2.castShadow = true;
-      carGroup.add(w2);
+        // Truck Wheels
+        const positions = [
+             [2.5, -0.5, 7], [-2.5, -0.5, 7], // Front
+             [2.8, -0.5, 0], [-2.8, -0.5, 0], // Middle
+             [2.8, -0.5, -8], [-2.8, -0.5, -8] // Rear
+        ];
 
-      const w3 = new Mesh(wheelGeo, wheelMat);
-      w3.position.set(2, -0.5, -2.5);
-      w3.userData.originalOpacity = 1.0;
-      w3.castShadow = true;
-      carGroup.add(w3);
+        positions.forEach(pos => {
+            const w = new Mesh(wheelGeo, wheelMat);
+            w.position.set(pos[0], pos[1], pos[2]);
+            w.userData.originalOpacity = 1.0;
+            w.castShadow = true;
+            carGroup.add(w);
+        });
 
-      const w4 = new Mesh(wheelGeo, wheelMat);
-      w4.position.set(-2, -0.5, -2.5);
-      w4.userData.originalOpacity = 1.0;
-      w4.castShadow = true;
-      carGroup.add(w4);
+        carGroup.userData.isTruck = true;
+      } else {
+        const carBody = new Mesh(carGeo, bodyMat);
+        carBody.userData.originalOpacity = 1.0;
+        carBody.castShadow = true;
+        carGroup.add(carBody);
+
+        // Wheels
+        const w1 = new Mesh(wheelGeo, wheelMat);
+        w1.position.set(2, -0.5, 2.5);
+        w1.userData.originalOpacity = 1.0;
+        w1.castShadow = true;
+        carGroup.add(w1);
+
+        const w2 = new Mesh(wheelGeo, wheelMat);
+        w2.position.set(-2, -0.5, 2.5);
+        w2.userData.originalOpacity = 1.0;
+        w2.castShadow = true;
+        carGroup.add(w2);
+
+        const w3 = new Mesh(wheelGeo, wheelMat);
+        w3.position.set(2, -0.5, -2.5);
+        w3.userData.originalOpacity = 1.0;
+        w3.castShadow = true;
+        carGroup.add(w3);
+
+        const w4 = new Mesh(wheelGeo, wheelMat);
+        w4.position.set(-2, -0.5, -2.5);
+        w4.userData.originalOpacity = 1.0;
+        w4.castShadow = true;
+        carGroup.add(w4);
+      }
 
       if (isPolice) {
         // Police Light Bar
@@ -235,6 +270,13 @@ export class TrafficSystem {
     const hlAngle = Math.PI / 4.5;
     const hlPenumbra = 0.2;
 
+    const isTruck = !!car.userData.isTruck;
+
+    const yPos = isTruck ? 4 : 2;
+    const zFront = isTruck ? 8 : 4;
+    const zBack = isTruck ? -10 : -4;
+    const xOffset = isTruck ? 2 : 1.5;
+
     const hl1 = new SpotLight(
       hlColor,
       hlIntensity,
@@ -243,11 +285,11 @@ export class TrafficSystem {
       hlPenumbra,
       1
     );
-    hl1.position.set(1.5, 2, 4);
+    hl1.position.set(xOffset, yPos, zFront);
     hl1.castShadow = false;
 
     const hl1Target = new Object3D();
-    hl1Target.position.set(1.5, -10, 40);
+    hl1Target.position.set(xOffset, -10, zFront + 36);
     car.add(hl1Target);
     hl1.target = hl1Target;
 
@@ -262,11 +304,11 @@ export class TrafficSystem {
       hlPenumbra,
       1
     );
-    hl2.position.set(-1.5, 2, 4);
+    hl2.position.set(-xOffset, yPos, zFront);
     hl2.castShadow = false;
 
     const hl2Target = new Object3D();
-    hl2Target.position.set(-1.5, -10, 40);
+    hl2Target.position.set(-xOffset, -10, zFront + 36);
     car.add(hl2Target);
     hl2.target = hl2Target;
 
@@ -279,10 +321,10 @@ export class TrafficSystem {
     const tlAngle = Math.PI / 2.5;
 
     const tl1 = new SpotLight(tlColor, tlIntensity, tlDist, tlAngle, 0.5, 1);
-    tl1.position.set(1.5, 2, -4);
+    tl1.position.set(xOffset, yPos, zBack);
 
     const tl1Target = new Object3D();
-    tl1Target.position.set(1.5, -5, -20);
+    tl1Target.position.set(xOffset, -5, zBack - 16);
     car.add(tl1Target);
     tl1.target = tl1Target;
 
@@ -290,10 +332,10 @@ export class TrafficSystem {
     car.add(tl1);
 
     const tl2 = new SpotLight(tlColor, tlIntensity, tlDist, tlAngle, 0.5, 1);
-    tl2.position.set(-1.5, 2, -4);
+    tl2.position.set(-xOffset, yPos, zBack);
 
     const tl2Target = new Object3D();
-    tl2Target.position.set(-1.5, -5, -20);
+    tl2Target.position.set(-xOffset, -5, zBack - 16);
     car.add(tl2Target);
     tl2.target = tl2Target;
 

@@ -313,6 +313,7 @@ describe('CyberpunkCity.vue', () => {
       arc: vi.fn(),
       fill: vi.fn(),
       clearRect: vi.fn(),
+      scale: vi.fn(),
     } as unknown as CanvasRenderingContext2D;
 
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(mockContext as any);

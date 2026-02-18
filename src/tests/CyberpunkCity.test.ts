@@ -71,12 +71,6 @@ vi.mock('three', () => {
       toneMapping: 0,
       toneMappingExposure: 1
     })),
-    WebGLRenderTarget: vi.fn(() => ({
-      texture: {},
-      setSize: vi.fn(),
-      dispose: vi.fn(),
-      samples: 0
-    })),
     Color: vi.fn(() => ({
       setHSL: vi.fn(function() { return this; }),
       setHex: vi.fn(),
@@ -313,8 +307,6 @@ describe('CyberpunkCity.vue', () => {
       arc: vi.fn(),
       fill: vi.fn(),
       clearRect: vi.fn(),
-      scale: vi.fn(),
-      setTransform: vi.fn(),
     } as unknown as CanvasRenderingContext2D;
 
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(mockContext as any);

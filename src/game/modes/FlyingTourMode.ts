@@ -1,7 +1,28 @@
+import { Vector3, CatmullRomCurve3 } from "three";
 import { GameContext, GameMode } from "../types";
 
 export class FlyingTourMode implements GameMode {
     context: GameContext | null = null;
+    curve: CatmullRomCurve3;
+
+    constructor() {
+        // Define a path that explores both outer and inner streets.
+        // Coordinates correspond to street locations (multiples of 190) or midpoints.
+        // Heights are kept safe (>= 140) to avoid building collisions while providing a good view.
+        this.curve = new CatmullRomCurve3([
+            new Vector3(760, 300, 760),   // Start high at outer corner
+            new Vector3(760, 150, 190),   // South along outer street, drop height
+            new Vector3(190, 140, 190),   // West into inner street
+            new Vector3(190, 140, -190),  // North along inner street
+            new Vector3(-190, 150, -190), // West across center
+            new Vector3(-190, 200, -760), // North to outer edge, rise
+            new Vector3(380, 250, -760),  // East along outer edge
+            new Vector3(380, 150, 0),     // South to center-ish
+            new Vector3(760, 300, 0)      // East back to start area
+        ]);
+        this.curve.closed = true;
+        this.curve.tension = 0.5;
+    }
 
     init(context: GameContext) {
         this.context = context;
@@ -11,38 +32,20 @@ export class FlyingTourMode implements GameMode {
         if (!this.context) return;
         const { camera } = this.context;
 
-        // Flying Tour Mode
-        const tourSpeed = 0.15;
+        const loopTime = 60; // 60 seconds for a full loop
+        const t = (time % loopTime) / loopTime;
 
-        // More complex path: Figure-8ish / weaving
-        // Main circular orbit
-        const xBase = Math.sin(time * tourSpeed) * 1200;
-        const zBase = Math.cos(time * tourSpeed) * 800;
+        // Get position on curve
+        // getPointAt ensures constant speed along the path
+        const position = this.curve.getPointAt(t);
+        camera.position.copy(position);
 
-        // Secondary wave for weaving
-        const xWeave = Math.sin(time * tourSpeed * 3) * 300;
+        // Look ahead
+        const lookAhead = 0.05; // Look 5% ahead
+        const lookAtT = (t + lookAhead) % 1;
+        const target = this.curve.getPointAt(lookAtT);
 
-        camera.position.x = xBase + xWeave;
-        camera.position.z = zBase;
-
-        // Dynamic height: Dive down and up
-        // Base height 250, amplitude 150. Go between 100 and 400.
-        camera.position.y = 250 + Math.sin(time * tourSpeed * 2) * 150;
-
-        // Look ahead logic
-        // Calculate derivative (approx velocity direction)
-        const delta = 0.1;
-        const futureTime = time + delta;
-
-        const fxBase = Math.sin(futureTime * tourSpeed) * 1200;
-        const fzBase = Math.cos(futureTime * tourSpeed) * 800;
-        const fxWeave = Math.sin(futureTime * tourSpeed * 3) * 300;
-
-        const nextX = fxBase + fxWeave;
-        const nextZ = fzBase;
-        const nextY = 250 + Math.sin(futureTime * tourSpeed * 2) * 150;
-
-        camera.lookAt(nextX, nextY, nextZ);
+        camera.lookAt(target);
     }
 
     cleanup() { }

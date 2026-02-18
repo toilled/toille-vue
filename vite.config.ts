@@ -13,6 +13,7 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: ["./src/tests/setupThree.ts"],
+    exclude: ["e2e/**", "node_modules/**", "dist/**"],
   },
   server: {
     port: 3000,

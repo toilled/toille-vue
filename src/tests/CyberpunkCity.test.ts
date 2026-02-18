@@ -71,7 +71,11 @@ vi.mock('three', () => {
       toneMapping: 0,
       toneMappingExposure: 1
     })),
-    Color: vi.fn(),
+    Color: vi.fn(() => ({
+      setHSL: vi.fn(function() { return this; }),
+      setHex: vi.fn(),
+      getHex: vi.fn(() => 0),
+    })),
     FogExp2: vi.fn(),
     BoxGeometry: vi.fn(() => ({
       translate: vi.fn()

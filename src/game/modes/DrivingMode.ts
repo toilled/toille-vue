@@ -263,17 +263,45 @@ export class DrivingMode implements GameMode {
             const cZ = START_OFFSET + iz * CELL_SIZE;
             const dims = occupiedGrids.get(`${ix},${iz}`);
 
-            if (dims &&
-                Math.abs(car.position.x - cX) < dims.halfW + 5 &&
-                Math.abs(car.position.z - cZ) < dims.halfD + 5
-            ) {
-                car.userData.currentSpeed *= -0.5;
-                carAudio.playCrash();
-                const dx = car.position.x - cX;
-                const dz = car.position.z - cZ;
-                car.position.x += Math.sign(dx) * 2;
-                car.position.z += Math.sign(dz) * 2;
-                spawnSparks(car.position);
+            if (dims) {
+                const margin = 5;
+                if (dims.isRound) {
+                    const radius = Math.max(dims.halfW, dims.halfD);
+                    const dx = car.position.x - cX;
+                    const dz = car.position.z - cZ;
+                    const dist = Math.sqrt(dx * dx + dz * dz);
+
+                    if (dist < radius + margin) {
+                        car.userData.currentSpeed *= -0.5;
+                        carAudio.playCrash();
+
+                        let normalX = 0;
+                        let normalZ = 1;
+                        if (dist > 0.001) {
+                            normalX = dx / dist;
+                            normalZ = dz / dist;
+                        }
+
+                        const overlap = (radius + margin) - dist + 2;
+
+                        car.position.x += normalX * overlap;
+                        car.position.z += normalZ * overlap;
+                        spawnSparks(car.position);
+                    }
+                } else {
+                    if (
+                        Math.abs(car.position.x - cX) < dims.halfW + margin &&
+                        Math.abs(car.position.z - cZ) < dims.halfD + margin
+                    ) {
+                        car.userData.currentSpeed *= -0.5;
+                        carAudio.playCrash();
+                        const dx = car.position.x - cX;
+                        const dz = car.position.z - cZ;
+                        car.position.x += Math.sign(dx) * 2;
+                        car.position.z += Math.sign(dz) * 2;
+                        spawnSparks(car.position);
+                    }
+                }
             }
         }
 

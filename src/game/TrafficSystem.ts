@@ -28,13 +28,13 @@ export class TrafficSystem {
   private scene: Scene;
   private cars: Group[] = [];
   private carCount: number;
-  private occupiedGrids: Map<string, { halfW: number; halfD: number }>;
+  private occupiedGrids: Map<string, { halfW: number; halfD: number; isRound?: boolean }>;
   private spawnSparks: (pos: any) => void;
 
   constructor(
     scene: Scene,
     carCount: number,
-    occupiedGrids: Map<string, { halfW: number; halfD: number }>,
+    occupiedGrids: Map<string, { halfW: number; halfD: number; isRound?: boolean }>,
     spawnSparks: (pos: any) => void
   ) {
     this.scene = scene;

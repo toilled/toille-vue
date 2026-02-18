@@ -85,11 +85,11 @@ export class GangWarManager {
   arrowGeo: CylinderGeometry;
   arrowMat: MeshBasicMaterial;
 
-  occupiedGrids: Map<string, { halfW: number; halfD: number }>;
+  occupiedGrids: Map<string, { halfW: number; halfD: number; isRound?: boolean }>;
 
   constructor(
     scene: Scene,
-    occupiedGrids: Map<string, { halfW: number; halfD: number }>,
+    occupiedGrids: Map<string, { halfW: number; halfD: number; isRound?: boolean }>,
     spawnSparks: (pos: Vector3) => void,
     playPewSound: (pos?: Vector3) => void
   ) {

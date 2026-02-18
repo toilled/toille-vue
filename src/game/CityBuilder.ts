@@ -39,7 +39,7 @@ import { getHeight } from "../utils/HeightMap";
 export class CityBuilder {
   private scene: Scene;
   private buildings: Object3D[] = [];
-  private occupiedGrids = new Map<string, { halfW: number; halfD: number }>();
+  private occupiedGrids = new Map<string, { halfW: number; halfD: number; isRound?: boolean }>();
   private audioMaterials: { [key: string]: MeshStandardMaterial } = {};
 
   constructor(scene: Scene) {
@@ -50,7 +50,7 @@ export class CityBuilder {
     return this.buildings;
   }
 
-  public getOccupiedGrids(): Map<string, { halfW: number; halfD: number }> {
+  public getOccupiedGrids(): Map<string, { halfW: number; halfD: number; isRound?: boolean }> {
     return this.occupiedGrids;
   }
 
@@ -228,7 +228,20 @@ export class CityBuilder {
           d = BLOCK_SIZE - 10;
         }
 
-        this.occupiedGrids.set(`${x},${z}`, { halfW: w / 2, halfD: d / 2 });
+        // Determine style
+        let style = "SIMPLE";
+        if (!isLeaderboardBuilding) {
+          const r = Math.random();
+          if (r > 0.9) style = "SPIRE";
+          else if (r > 0.75) style = "TIERED";
+          else if (r > 0.6) style = "GREEBLED";
+          else if (r > 0.45) style = "CYLINDRICAL";
+          else if (r > 0.35) style = "TWISTED";
+        }
+
+        const isRound = style === "CYLINDRICAL" || style === "SPIRE";
+
+        this.occupiedGrids.set(`${x},${z}`, { halfW: w / 2, halfD: d / 2, isRound });
 
         // Calculate ground height
         const h1 = getHeight(xPos - w / 2, zPos - d / 2);
@@ -239,16 +252,6 @@ export class CityBuilder {
 
         const buildingGroup = new Group();
         buildingGroup.position.set(xPos, minH, zPos);
-
-        let style = "SIMPLE";
-        if (!isLeaderboardBuilding) {
-          const r = Math.random();
-          if (r > 0.9) style = "SPIRE";
-          else if (r > 0.75) style = "TIERED";
-          else if (r > 0.6) style = "GREEBLED";
-          else if (r > 0.45) style = "CYLINDRICAL";
-          else if (r > 0.35) style = "TWISTED";
-        }
 
         // Select material for this building
         let selectedMaterial = buildingMaterial;
@@ -266,9 +269,7 @@ export class CityBuilder {
           selectedMaterial,
         ];
 
-        // Main block is added only if NOT cylindrical or twisted, or as a core?
-        // Let's modify logic.
-
+        // Construction logic based on style
         if (style === "CYLINDRICAL") {
              const cylMats = [selectedMaterial, roofMaterial, roofMaterial];
              const cyl = new Mesh(cylinderGeo, cylMats);
@@ -283,7 +284,7 @@ export class CityBuilder {
              let rot = 0;
              for(let s=0; s<segments; s++) {
                const seg = new Mesh(boxGeo, thisBuildingMaterials);
-               const scaleFactor = 1.0; // Keep uniform width or taper?
+               const scaleFactor = 1.0;
                seg.scale.set(w * scaleFactor, segH, d * scaleFactor);
                seg.position.y = currentY;
                seg.rotation.y = rot;

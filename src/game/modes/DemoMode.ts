@@ -1,5 +1,5 @@
 import { GameMode, GameContext } from "../types";
-import { Vector3, MathUtils } from "three";
+import { Vector3, MathUtils, Group, Mesh } from "three";
 import { cyberpunkAudio } from "../../utils/CyberpunkAudio";
 import { AfterimagePass } from 'three/examples/jsm/postprocessing/AfterimagePass';
 import { GlitchPass } from 'three/examples/jsm/postprocessing/GlitchPass';
@@ -18,6 +18,9 @@ export class DemoMode implements GameMode {
     // Camera state
     private cameraBasePosition: Vector3 = new Vector3();
     private cameraShake: Vector3 = new Vector3();
+
+    // Spark Targets
+    private sparkTargets: Vector3[] = [];
 
     // Bind the listener
     private onAudioNoteBound = (type: string, data?: any) => this.onAudioNote(type, data);
@@ -54,6 +57,9 @@ export class DemoMode implements GameMode {
              this.context.composer.addPass(this.glitchPass);
         }
 
+        // Identify Spark Targets (Tall Buildings with Antennae/Poles)
+        this.identifySparkTargets();
+
         cyberpunkAudio.addListener(this.onAudioNoteBound);
         cyberpunkAudio.play();
 
@@ -62,6 +68,90 @@ export class DemoMode implements GameMode {
 
         // Initial Camera Setup
         this.setCameraForScene(0);
+    }
+
+    private identifySparkTargets() {
+        this.sparkTargets = [];
+        if (!this.context.buildings) return;
+
+        this.context.buildings.forEach((building: Group | any) => {
+            // Traverse to find the highest point
+            let maxY = 0;
+            // Assuming building position is at base
+            const buildingBaseY = building.position.y;
+
+            // Heuristic: Check for neon strips or just use bounding box top
+            // Since we don't have bounding boxes pre-calculated, let's look for children
+            if (building.children) {
+                building.children.forEach((child: any) => {
+                     // If it's a mesh, check geometry or position
+                     if (child instanceof Mesh) {
+                         // This is rough estimation.
+                         // For Twisted buildings, they are stacks of boxes.
+                         // For Cylindrical, it's a cylinder.
+                         // Let's just use the building's position + some height estimation
+                         // Or better, if we can find specific "antenna" geometry if implemented.
+                         // Given memory says "applies neon strip decorations to tall structures",
+                         // we can target those.
+
+                         // Simple approach: Use building position + a hardcoded offset based on scale/type?
+                         // No, let's use the object's position if it's high up.
+                     }
+                });
+            }
+
+            // Better approach: Iterate over all buildings, if userData.height is available (it might be), use that.
+            // Looking at CityBuilder memory: "Buildings... vertically positioned...".
+
+            // Let's assume high buildings have y > 100.
+            // Let's try to find the top center.
+            // Since we can't easily compute bbox here without Three.js Box3 which might be heavy for all,
+            // let's rely on the fact that buildings are generated around their origin (usually bottom center).
+            // We need the height.
+
+            // Let's just pick random spots high up above buildings for now if we can't get exact geometry.
+            // Wait, I can iterate children and find the one with highest world position.
+
+            let topPoint = new Vector3();
+            let highestY = -Infinity;
+
+            building.traverse((obj: any) => {
+                if (obj instanceof Mesh) {
+                    const worldPos = new Vector3();
+                    obj.getWorldPosition(worldPos);
+                    // This gets the center of the mesh.
+                    // If it's a tall block, center is middle.
+                    // We want the top.
+                    // Approximating: center.y + geometry.parameters.height/2
+                    let height = 0;
+                    if (obj.geometry && obj.geometry.parameters && obj.geometry.parameters.height) {
+                        height = obj.geometry.parameters.height;
+                    }
+
+                    const topY = worldPos.y + height / 2;
+                    if (topY > highestY) {
+                        highestY = topY;
+                        topPoint.copy(worldPos);
+                        topPoint.y = topY;
+                    }
+                }
+            });
+
+            if (highestY > 200) { // Only tall buildings
+                this.sparkTargets.push(topPoint);
+            }
+        });
+
+        // If no targets found (e.g. empty city or logic fail), fallback to random high points
+        if (this.sparkTargets.length === 0) {
+            for(let i=0; i<50; i++) {
+                this.sparkTargets.push(new Vector3(
+                    (Math.random() - 0.5) * 2000,
+                    300 + Math.random() * 200,
+                    (Math.random() - 0.5) * 2000
+                ));
+            }
+        }
     }
 
     update(dt: number, time: number): void {
@@ -140,16 +230,13 @@ export class DemoMode implements GameMode {
              // Camera shake horizontal
              this.cameraShake.x += (Math.random() - 0.5) * 5;
 
-             // Spawn sparks
-             // Find a point in front of camera
-             const cam = this.context.camera;
-             const forward = new Vector3(0, 0, -1).applyQuaternion(cam.quaternion);
-             const spawnPos = cam.position.clone().add(forward.multiplyScalar(100 + Math.random() * 50));
-             spawnPos.y = Math.max(10, spawnPos.y); // Keep above ground
-
-             // Spawn a burst
-             for(let i=0; i<5; i++) {
-                 this.context.spawnSparks(spawnPos.clone().add(new Vector3((Math.random()-0.5)*20, (Math.random()-0.5)*20, (Math.random()-0.5)*20)));
+             // Spawn sparks at random building top
+             if (this.sparkTargets.length > 0) {
+                 const target = this.sparkTargets[Math.floor(Math.random() * this.sparkTargets.length)];
+                 // Spawn a burst
+                 for(let i=0; i<8; i++) {
+                     this.context.spawnSparks(target.clone().add(new Vector3((Math.random()-0.5)*10, (Math.random()-0.5)*10, (Math.random()-0.5)*10)));
+                 }
              }
         }
 

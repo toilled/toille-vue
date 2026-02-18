@@ -24,6 +24,7 @@ export interface GameContext {
     // Game Objects
     cars: Group[];
     drones: Points | undefined;
+    buildings: Group[]; // Added for DemoMode
     occupiedGrids: Map<string, { halfW: number; halfD: number; isRound?: boolean }>;
 
     // State

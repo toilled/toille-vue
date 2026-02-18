@@ -573,7 +573,6 @@ onMounted(() => {
     cars,
     drones,
     occupiedGrids,
-    // @ts-ignore
     buildings,
     score,
     droneScore,

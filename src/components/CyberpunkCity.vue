@@ -130,6 +130,9 @@ function updateLeaderboardTexture() {
   const ctx = leaderboardCanvas.getContext("2d");
   if (!ctx) return;
 
+  // Reset transform to identity
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+
   // Background
   ctx.fillStyle = "#100010";
   ctx.fillRect(0, 0, 1024, 1024);

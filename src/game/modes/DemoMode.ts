@@ -1,6 +1,8 @@
 import { GameMode, GameContext } from "../types";
 import { Vector3, MathUtils } from "three";
 import { cyberpunkAudio } from "../../utils/CyberpunkAudio";
+import { AfterimagePass } from 'three/examples/jsm/postprocessing/AfterimagePass';
+import { GlitchPass } from 'three/examples/jsm/postprocessing/GlitchPass';
 
 export class DemoMode implements GameMode {
     private context!: GameContext;
@@ -8,6 +10,10 @@ export class DemoMode implements GameMode {
     private sceneTime: number = 0;
     private originalBloomStrength: number = 1.5;
     private bloomPass: any;
+
+    // Additional Passes
+    private afterimagePass: AfterimagePass | null = null;
+    private glitchPass: GlitchPass | null = null;
 
     // Camera state
     private cameraBasePosition: Vector3 = new Vector3();
@@ -34,6 +40,18 @@ export class DemoMode implements GameMode {
              if (this.bloomPass) {
                  this.originalBloomStrength = this.bloomPass.strength;
              }
+
+             // Initialize Afterimage Pass (Motion Blur)
+             this.afterimagePass = new AfterimagePass();
+             this.afterimagePass.uniforms["damp"].value = 0.8;
+             this.afterimagePass.enabled = false;
+             this.context.composer.addPass(this.afterimagePass);
+
+             // Initialize Glitch Pass
+             this.glitchPass = new GlitchPass();
+             this.glitchPass.goWild = false;
+             this.glitchPass.enabled = false;
+             this.context.composer.addPass(this.glitchPass);
         }
 
         cyberpunkAudio.addListener(this.onAudioNoteBound);
@@ -71,6 +89,11 @@ export class DemoMode implements GameMode {
         if (this.bloomPass) {
             this.bloomPass.strength = MathUtils.lerp(this.bloomPass.strength, this.originalBloomStrength, dt * 5);
         }
+
+        // Turn off glitch pass after a short burst
+        if (this.glitchPass && this.glitchPass.enabled && Math.random() > 0.95) {
+             this.glitchPass.enabled = false;
+        }
     }
 
     cleanup(): void {
@@ -79,6 +102,15 @@ export class DemoMode implements GameMode {
 
         if (this.bloomPass) {
             this.bloomPass.strength = this.originalBloomStrength;
+        }
+
+        if (this.context.composer) {
+            if (this.afterimagePass) {
+                this.context.composer.removePass(this.afterimagePass);
+            }
+            if (this.glitchPass) {
+                this.context.composer.removePass(this.glitchPass);
+            }
         }
     }
 
@@ -94,6 +126,11 @@ export class DemoMode implements GameMode {
             }
             // Camera shake vertical
              this.cameraShake.y += (Math.random() - 0.5) * 5;
+
+             // Trigger Glitch occasionally on kick
+             if (this.glitchPass && Math.random() < 0.3) {
+                 this.glitchPass.enabled = true;
+             }
         }
 
         if (type === 'snare') {
@@ -102,6 +139,18 @@ export class DemoMode implements GameMode {
              }
              // Camera shake horizontal
              this.cameraShake.x += (Math.random() - 0.5) * 5;
+
+             // Spawn sparks
+             // Find a point in front of camera
+             const cam = this.context.camera;
+             const forward = new Vector3(0, 0, -1).applyQuaternion(cam.quaternion);
+             const spawnPos = cam.position.clone().add(forward.multiplyScalar(100 + Math.random() * 50));
+             spawnPos.y = Math.max(10, spawnPos.y); // Keep above ground
+
+             // Spawn a burst
+             for(let i=0; i<5; i++) {
+                 this.context.spawnSparks(spawnPos.clone().add(new Vector3((Math.random()-0.5)*20, (Math.random()-0.5)*20, (Math.random()-0.5)*20)));
+             }
         }
 
         if (type === 'hihat') {
@@ -119,6 +168,7 @@ export class DemoMode implements GameMode {
                 this.cameraBasePosition.z -= 100 * dt;
                 this.cameraBasePosition.y = 400 + Math.sin(time * 0.5) * 50;
                 cam.lookAt(0, 0, 0);
+                if (this.afterimagePass) this.afterimagePass.enabled = false;
                 break;
             case 1: // Street Level Rush
                 this.cameraBasePosition.z -= 600 * dt;
@@ -129,6 +179,12 @@ export class DemoMode implements GameMode {
 
                 const targetZ = this.cameraBasePosition.z - 200;
                 cam.lookAt(0, 20, targetZ);
+
+                // Motion blur enabled for speed
+                if (this.afterimagePass) {
+                    this.afterimagePass.enabled = true;
+                    this.afterimagePass.uniforms["damp"].value = 0.85;
+                }
                 break;
             case 2: // Spiral
                  const radius = 800;
@@ -138,6 +194,10 @@ export class DemoMode implements GameMode {
                  this.cameraBasePosition.z = Math.cos(angle) * radius;
                  this.cameraBasePosition.y = 300 + Math.sin(time) * 100;
                  cam.lookAt(0, 0, 0);
+                 if (this.afterimagePass) {
+                     this.afterimagePass.enabled = true;
+                     this.afterimagePass.uniforms["damp"].value = 0.7; // lighter blur
+                 }
                  break;
             case 3: // Top Down glitchy
                  this.cameraBasePosition.x = Math.sin(time * 2) * 200;
@@ -145,6 +205,13 @@ export class DemoMode implements GameMode {
                  this.cameraBasePosition.y = 1000 + Math.sin(time) * 200;
                  cam.lookAt(0, 0, 0);
                  cam.rotation.z = time * 0.5;
+
+                 if (this.afterimagePass) this.afterimagePass.enabled = false;
+
+                 // More frequent glitches
+                 if (this.glitchPass && Math.random() < 0.05) {
+                     this.glitchPass.enabled = true;
+                 }
                  break;
         }
     }

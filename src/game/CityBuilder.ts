@@ -18,6 +18,7 @@ import {
   SpotLight,
   ConeGeometry,
   HemisphereLight,
+  CylinderGeometry,
 } from "three";
 import {
   BLOCK_SIZE,
@@ -125,8 +126,8 @@ export class CityBuilder {
     const planeMaterial = new MeshStandardMaterial({
       color: 0xffffff,
       map: groundTexture,
-      roughness: 0.8,
-      metalness: 0.2,
+      roughness: 0.4,
+      metalness: 0.3,
     });
 
     const offset = -CITY_SIZE / CELL_SIZE;
@@ -200,6 +201,11 @@ export class CityBuilder {
     coneGeo.translate(0, 0.5, 0);
     const coneEdgesGeo = new EdgesGeometry(coneGeo);
 
+    const cylinderGeo = new CylinderGeometry(0.5, 0.5, 1, 32);
+    cylinderGeo.translate(0, 0.5, 0);
+
+    const neonStripGeo = new BoxGeometry(0.5, 1, 0.5);
+
     for (let x = 0; x < GRID_SIZE; x++) {
       for (let z = 0; z < GRID_SIZE; z++) {
         const isLeaderboardBuilding = x === 5 && z === 5;
@@ -238,8 +244,10 @@ export class CityBuilder {
         if (!isLeaderboardBuilding) {
           const r = Math.random();
           if (r > 0.9) style = "SPIRE";
-          else if (r > 0.7) style = "TIERED";
-          else if (r > 0.5) style = "GREEBLED";
+          else if (r > 0.75) style = "TIERED";
+          else if (r > 0.6) style = "GREEBLED";
+          else if (r > 0.45) style = "CYLINDRICAL";
+          else if (r > 0.35) style = "TWISTED";
         }
 
         // Select material for this building
@@ -258,18 +266,55 @@ export class CityBuilder {
           selectedMaterial,
         ];
 
-        const mainBlock = new Mesh(boxGeo, thisBuildingMaterials);
-        mainBlock.scale.set(w, h, d);
-        mainBlock.castShadow = true;
-        mainBlock.receiveShadow = true;
-        buildingGroup.add(mainBlock);
+        // Main block is added only if NOT cylindrical or twisted, or as a core?
+        // Let's modify logic.
 
-        const mainLine = new LineSegments(
-          edgesGeo,
-          Math.random() > 0.5 ? edgeMat1 : edgeMat2,
-        );
-        mainLine.scale.set(w, h, d);
-        buildingGroup.add(mainLine);
+        if (style === "CYLINDRICAL") {
+             const cylMats = [selectedMaterial, roofMaterial, roofMaterial];
+             const cyl = new Mesh(cylinderGeo, cylMats);
+             cyl.scale.set(w, h, d);
+             cyl.castShadow = true;
+             cyl.receiveShadow = true;
+             buildingGroup.add(cyl);
+        } else if (style === "TWISTED") {
+             const segments = 5 + Math.floor(Math.random() * 5);
+             const segH = h / segments;
+             let currentY = 0;
+             let rot = 0;
+             for(let s=0; s<segments; s++) {
+               const seg = new Mesh(boxGeo, thisBuildingMaterials);
+               const scaleFactor = 1.0; // Keep uniform width or taper?
+               seg.scale.set(w * scaleFactor, segH, d * scaleFactor);
+               seg.position.y = currentY;
+               seg.rotation.y = rot;
+               seg.castShadow = true;
+               seg.receiveShadow = true;
+               buildingGroup.add(seg);
+
+               const segLine = new LineSegments(edgesGeo, edgeMat2);
+               segLine.scale.set(w * scaleFactor, segH, d * scaleFactor);
+               segLine.position.y = currentY;
+               segLine.rotation.y = rot;
+               buildingGroup.add(segLine);
+
+               currentY += segH;
+               rot += Math.random() > 0.5 ? Math.PI / 10 : -Math.PI / 10;
+             }
+        } else {
+            // Standard Box based styles
+            const mainBlock = new Mesh(boxGeo, thisBuildingMaterials);
+            mainBlock.scale.set(w, h, d);
+            mainBlock.castShadow = true;
+            mainBlock.receiveShadow = true;
+            buildingGroup.add(mainBlock);
+
+            const mainLine = new LineSegments(
+            edgesGeo,
+            Math.random() > 0.5 ? edgeMat1 : edgeMat2,
+            );
+            mainLine.scale.set(w, h, d);
+            buildingGroup.add(mainLine);
+        }
 
         switch (style) {
           case "TIERED": {
@@ -358,7 +403,25 @@ export class CityBuilder {
           }
         }
 
-        if (style !== "SPIRE" && Math.random() > 0.7) {
+        // Neon Strips
+        if (!isLeaderboardBuilding && h > 50 && Math.random() > 0.6) {
+             const color = new Color().setHSL(Math.random(), 1.0, 0.5);
+             const stripMat = new MeshBasicMaterial({ color: color });
+             const strip = new Mesh(neonStripGeo, stripMat);
+             strip.scale.set(1, h * 0.8, 1);
+
+             const face = Math.floor(Math.random() * 4);
+             const offset = 0.6;
+             switch(face) {
+                 case 0: strip.position.set(0, h/2, d/2 + offset); break;
+                 case 1: strip.position.set(0, h/2, -d/2 - offset); break;
+                 case 2: strip.position.set(w/2 + offset, h/2, 0); break;
+                 case 3: strip.position.set(-w/2 - offset, h/2, 0); break;
+             }
+             buildingGroup.add(strip);
+        }
+
+        if (style !== "SPIRE" && style !== "CYLINDRICAL" && style !== "TWISTED" && Math.random() > 0.7) {
           const antennaH = 20 + Math.random() * 50;
           const antenna = new Mesh(boxGeo, antennaMat);
           antenna.scale.set(2, antennaH, 2);

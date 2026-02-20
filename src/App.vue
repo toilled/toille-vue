@@ -14,6 +14,7 @@
         :content-visible="isContentVisible"
         @explore="startExploration" 
         @fly="startFlyingTour" 
+        @demo="startDemoMode"
         @toggle-content="toggleContent"
       />
     </nav>
@@ -112,6 +113,12 @@ function startExploration() {
 function startFlyingTour() {
   if (cyberpunkCityRef.value && cyberpunkCityRef.value.startFlyingTour) {
     cyberpunkCityRef.value.startFlyingTour();
+  }
+}
+
+function startDemoMode() {
+  if (cyberpunkCityRef.value && cyberpunkCityRef.value.startDemoMode) {
+    cyberpunkCityRef.value.startDemoMode();
   }
 }
 

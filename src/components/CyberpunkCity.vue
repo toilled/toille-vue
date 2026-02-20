@@ -61,6 +61,7 @@ import { DrivingMode } from "../game/modes/DrivingMode";
 import { DroneMode } from "../game/modes/DroneMode";
 import { ExplorationMode } from "../game/modes/ExplorationMode";
 import { FlyingTourMode } from "../game/modes/FlyingTourMode";
+import { DemoMode } from "../game/modes/DemoMode";
 import { GameContext } from "../game/types";
 import { carAudio } from "../game/audio/CarAudio";
 import { cyberpunkAudio } from "../utils/CyberpunkAudio";
@@ -568,10 +569,10 @@ onMounted(() => {
     scene,
     camera,
     renderer,
+    composer,
     cars,
     drones,
     occupiedGrids,
-    // @ts-ignore
     buildings,
     score,
     droneScore,
@@ -692,7 +693,13 @@ function startFlyingTour() {
   gameModeManager.setMode(new FlyingTourMode());
 }
 
-defineExpose({ startExplorationMode, startFlyingTour });
+function startDemoMode() {
+  isGameMode.value = true;
+  emit("game-start");
+  gameModeManager.setMode(new DemoMode());
+}
+
+defineExpose({ startExplorationMode, startFlyingTour, startDemoMode });
 
 function exitGameMode() {
   gameModeManager.clearMode();

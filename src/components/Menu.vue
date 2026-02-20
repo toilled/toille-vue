@@ -8,6 +8,9 @@
       <div @click="$emit('fly')" class="icon-wrapper" title="Fly Tour">
         <img src="/plane-icon.svg" alt="Fly Tour" class="icon" />
       </div>
+      <div @click="$emit('demo')" class="icon-wrapper" title="64k Demo">
+        <img src="/64k-icon.svg" alt="64k Demo" class="icon" />
+      </div>
       <div @click="toggleSound" class="icon-wrapper" title="Toggle Sound">
         <img
           v-if="soundOn"
@@ -63,6 +66,7 @@ const emit = defineEmits<{
   (e: "explore"): void;
   (e: "fly"): void;
   (e: "toggle-content"): void;
+  (e: "demo"): void;
 }>();
 
 const soundOn = ref(false);

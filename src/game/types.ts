@@ -19,10 +19,12 @@ export interface GameContext {
     scene: Scene;
     camera: PerspectiveCamera;
     renderer: WebGLRenderer;
+    composer: any;
 
     // Game Objects
     cars: Group[];
     drones: Points | undefined;
+    buildings: Group[]; // Added for DemoMode
     occupiedGrids: Map<string, { halfW: number; halfD: number; isRound?: boolean }>;
 
     // State

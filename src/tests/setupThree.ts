@@ -341,8 +341,12 @@ vi.mock("three/examples/jsm/postprocessing/EffectComposer", () => ({
   EffectComposer: class {
     constructor() {}
     addPass = vi.fn();
+    removePass = vi.fn();
     render = vi.fn();
     setSize = vi.fn();
+    passes = [
+        { strength: 1.5, radius: 0.4, threshold: 0.85 } // Bloom pass simulation
+    ];
   }
 }));
 
@@ -354,8 +358,27 @@ vi.mock("three/examples/jsm/postprocessing/RenderPass", () => ({
 
 vi.mock("three/examples/jsm/postprocessing/UnrealBloomPass", () => ({
   UnrealBloomPass: class {
+    strength = 1.5;
+    radius = 0.4;
+    threshold = 0.85;
     constructor() {}
   }
+}));
+
+vi.mock("three/examples/jsm/postprocessing/AfterimagePass", () => ({
+    AfterimagePass: class {
+        enabled = false;
+        uniforms = { damp: { value: 0.96 } };
+        constructor() {}
+    }
+}));
+
+vi.mock("three/examples/jsm/postprocessing/GlitchPass", () => ({
+    GlitchPass: class {
+        enabled = false;
+        goWild = false;
+        constructor() {}
+    }
 }));
 
 vi.mock("three/examples/jsm/postprocessing/OutputPass", () => ({

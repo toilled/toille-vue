@@ -30,12 +30,10 @@ export class DemoMode implements GameMode {
 
         // Find Bloom Pass
         if (this.context.composer && this.context.composer.passes) {
-             // Look for a pass with 'strength', 'radius', 'threshold' which are typical for UnrealBloomPass
              this.bloomPass = this.context.composer.passes.find((pass: any) =>
                 pass.strength !== undefined && pass.radius !== undefined && pass.threshold !== undefined
              );
 
-             // Fallback to index 1 if not found
              if (!this.bloomPass && this.context.composer.passes.length > 1) {
                  this.bloomPass = this.context.composer.passes[1];
              }
@@ -44,20 +42,18 @@ export class DemoMode implements GameMode {
                  this.originalBloomStrength = this.bloomPass.strength;
              }
 
-             // Initialize Afterimage Pass (Motion Blur)
              this.afterimagePass = new AfterimagePass();
              this.afterimagePass.uniforms["damp"].value = 0.8;
              this.afterimagePass.enabled = false;
              this.context.composer.addPass(this.afterimagePass);
 
-             // Initialize Glitch Pass
              this.glitchPass = new GlitchPass();
              this.glitchPass.goWild = false;
              this.glitchPass.enabled = false;
              this.context.composer.addPass(this.glitchPass);
         }
 
-        // Identify Spark Targets (Tall Buildings with Antennae/Poles)
+        // Identify Spark Targets (Building Spires and Antennae)
         this.identifySparkTargets();
 
         cyberpunkAudio.addListener(this.onAudioNoteBound);
@@ -74,77 +70,64 @@ export class DemoMode implements GameMode {
         this.sparkTargets = [];
         if (!this.context.buildings) return;
 
-        this.context.buildings.forEach((building: Group | any) => {
-            // Traverse to find the highest point
-            let maxY = 0;
-            // Assuming building position is at base
-            const buildingBaseY = building.position.y;
+        this.context.buildings.forEach((buildingGroup: Group | any) => {
+            // Find the highest point in the building group
+            let highestPoint = new Vector3();
+            let maxY = -Infinity;
+            let foundSpire = false;
 
-            // Heuristic: Check for neon strips or just use bounding box top
-            // Since we don't have bounding boxes pre-calculated, let's look for children
-            if (building.children) {
-                building.children.forEach((child: any) => {
-                     // If it's a mesh, check geometry or position
-                     if (child instanceof Mesh) {
-                         // This is rough estimation.
-                         // For Twisted buildings, they are stacks of boxes.
-                         // For Cylindrical, it's a cylinder.
-                         // Let's just use the building's position + some height estimation
-                         // Or better, if we can find specific "antenna" geometry if implemented.
-                         // Given memory says "applies neon strip decorations to tall structures",
-                         // we can target those.
-
-                         // Simple approach: Use building position + a hardcoded offset based on scale/type?
-                         // No, let's use the object's position if it's high up.
-                     }
-                });
-            }
-
-            // Better approach: Iterate over all buildings, if userData.height is available (it might be), use that.
-            // Looking at CityBuilder memory: "Buildings... vertically positioned...".
-
-            // Let's assume high buildings have y > 100.
-            // Let's try to find the top center.
-            // Since we can't easily compute bbox here without Three.js Box3 which might be heavy for all,
-            // let's rely on the fact that buildings are generated around their origin (usually bottom center).
-            // We need the height.
-
-            // Let's just pick random spots high up above buildings for now if we can't get exact geometry.
-            // Wait, I can iterate children and find the one with highest world position.
-
-            let topPoint = new Vector3();
-            let highestY = -Infinity;
-
-            building.traverse((obj: any) => {
-                if (obj instanceof Mesh) {
+            buildingGroup.traverse((child: any) => {
+                if (child instanceof Mesh) {
                     const worldPos = new Vector3();
-                    obj.getWorldPosition(worldPos);
-                    // This gets the center of the mesh.
-                    // If it's a tall block, center is middle.
-                    // We want the top.
-                    // Approximating: center.y + geometry.parameters.height/2
-                    let height = 0;
-                    if (obj.geometry && obj.geometry.parameters && obj.geometry.parameters.height) {
-                        height = obj.geometry.parameters.height;
+                    child.getWorldPosition(worldPos);
+
+                    // Check for ConeGeometry which indicates a spire
+                    // Using constructor name as a heuristic since instanceOf might fail if imports differ in tests/runtime
+                    const isCone = child.geometry && (child.geometry.type === 'ConeGeometry' || child.geometry.constructor.name === 'ConeGeometry');
+
+                    // Check for thin BoxGeometry at the top (Antenna)
+                    const isAntenna = child.geometry &&
+                                      child.geometry.type === 'BoxGeometry' &&
+                                      child.scale.x < 5 && child.scale.z < 5 && child.scale.y > 20;
+
+                    let topY = worldPos.y;
+
+                    // Add half height
+                    if (child.geometry && child.geometry.parameters && child.geometry.parameters.height) {
+                         // Scaled height
+                         topY += (child.geometry.parameters.height * child.scale.y) / 2;
+                    } else if (child.geometry && child.geometry.boundingBox) {
+                         topY = child.geometry.boundingBox.max.y * child.scale.y + worldPos.y;
                     }
 
-                    const topY = worldPos.y + height / 2;
-                    if (topY > highestY) {
-                        highestY = topY;
-                        topPoint.copy(worldPos);
-                        topPoint.y = topY;
+                    if (isCone || isAntenna) {
+                         // Prefer spires and antennas
+                         if (topY > maxY) {
+                             maxY = topY;
+                             highestPoint.copy(worldPos);
+                             highestPoint.y = topY;
+                             foundSpire = true;
+                         }
+                    } else if (!foundSpire) {
+                         // Fallback to highest general mesh if no spire found yet
+                         if (topY > maxY) {
+                             maxY = topY;
+                             highestPoint.copy(worldPos);
+                             highestPoint.y = topY;
+                         }
                     }
                 }
             });
 
-            if (highestY > 200) { // Only tall buildings
-                this.sparkTargets.push(topPoint);
+            // Filter for only tall buildings to avoid ground clutter
+            if (maxY > 100) {
+                this.sparkTargets.push(highestPoint);
             }
         });
 
-        // If no targets found (e.g. empty city or logic fail), fallback to random high points
+        // Fallback
         if (this.sparkTargets.length === 0) {
-            for(let i=0; i<50; i++) {
+            for(let i=0; i<20; i++) {
                 this.sparkTargets.push(new Vector3(
                     (Math.random() - 0.5) * 2000,
                     300 + Math.random() * 200,
@@ -157,7 +140,6 @@ export class DemoMode implements GameMode {
     update(dt: number, time: number): void {
         this.sceneTime += dt;
 
-        // Scene management
         const sceneDuration = 8.0;
         if (this.sceneTime > sceneDuration) {
             this.sceneIndex = (this.sceneIndex + 1) % 4;
@@ -165,22 +147,16 @@ export class DemoMode implements GameMode {
             this.setCameraForScene(this.sceneIndex);
         }
 
-        // Scene specific updates
         this.updateScene(dt, time);
 
-        // Apply Shake to Camera
         this.context.camera.position.copy(this.cameraBasePosition).add(this.cameraShake);
 
-        // Decay effects
-        // Shake decay
         this.cameraShake.lerp(new Vector3(0, 0, 0), dt * 5);
 
-        // Bloom decay
         if (this.bloomPass) {
             this.bloomPass.strength = MathUtils.lerp(this.bloomPass.strength, this.originalBloomStrength, dt * 5);
         }
 
-        // Turn off glitch pass after a short burst
         if (this.glitchPass && this.glitchPass.enabled && Math.random() > 0.95) {
              this.glitchPass.enabled = false;
         }
@@ -212,12 +188,10 @@ export class DemoMode implements GameMode {
     private onAudioNote(type: string, data?: any) {
         if (type === 'kick') {
             if (this.bloomPass) {
-                this.bloomPass.strength = 3.0; // Bloom flash
+                this.bloomPass.strength = 3.0;
             }
-            // Camera shake vertical
              this.cameraShake.y += (Math.random() - 0.5) * 5;
 
-             // Trigger Glitch occasionally on kick
              if (this.glitchPass && Math.random() < 0.3) {
                  this.glitchPass.enabled = true;
              }
@@ -227,28 +201,28 @@ export class DemoMode implements GameMode {
              if (this.bloomPass) {
                  this.bloomPass.strength = 2.5;
              }
-             // Camera shake horizontal
              this.cameraShake.x += (Math.random() - 0.5) * 5;
 
-             // Spawn sparks at random building top
+             // Emit from spires
              if (this.sparkTargets.length > 0) {
-                 const target = this.sparkTargets[Math.floor(Math.random() * this.sparkTargets.length)];
-                 // Spawn a burst
-                 for(let i=0; i<8; i++) {
-                     this.context.spawnSparks(target.clone().add(new Vector3((Math.random()-0.5)*10, (Math.random()-0.5)*10, (Math.random()-0.5)*10)));
+                 // Pick a few random spires
+                 for (let k=0; k<3; k++) {
+                     const target = this.sparkTargets[Math.floor(Math.random() * this.sparkTargets.length)];
+                     // Burst upwards/outwards from the tip
+                     for(let i=0; i<5; i++) {
+                         this.context.spawnSparks(target.clone());
+                     }
                  }
              }
         }
 
         if (type === 'hihat') {
-             // Subtle shake depth
              this.cameraShake.z += (Math.random() - 0.5) * 2;
         }
     }
 
     private updateScene(dt: number, time: number) {
         const cam = this.context.camera;
-        // NOTE: We modify cameraBasePosition here, NOT cam.position directly
 
         switch (this.sceneIndex) {
             case 0: // Intro Flyover
@@ -261,13 +235,11 @@ export class DemoMode implements GameMode {
                 this.cameraBasePosition.z -= 600 * dt;
                 if (this.cameraBasePosition.z < -2000) this.cameraBasePosition.z = 2000;
 
-                // Wiggle
                 this.cameraBasePosition.x = Math.sin(time * 5) * 50;
 
                 const targetZ = this.cameraBasePosition.z - 200;
                 cam.lookAt(0, 20, targetZ);
 
-                // Motion blur enabled for speed
                 if (this.afterimagePass) {
                     this.afterimagePass.enabled = true;
                     this.afterimagePass.uniforms["damp"].value = 0.85;
@@ -283,7 +255,7 @@ export class DemoMode implements GameMode {
                  cam.lookAt(0, 0, 0);
                  if (this.afterimagePass) {
                      this.afterimagePass.enabled = true;
-                     this.afterimagePass.uniforms["damp"].value = 0.7; // lighter blur
+                     this.afterimagePass.uniforms["damp"].value = 0.7;
                  }
                  break;
             case 3: // Top Down glitchy
@@ -295,7 +267,6 @@ export class DemoMode implements GameMode {
 
                  if (this.afterimagePass) this.afterimagePass.enabled = false;
 
-                 // More frequent glitches
                  if (this.glitchPass && Math.random() < 0.05) {
                      this.glitchPass.enabled = true;
                  }
@@ -305,7 +276,6 @@ export class DemoMode implements GameMode {
 
     private setCameraForScene(index: number) {
         const cam = this.context.camera;
-        // Reset rotation
         cam.rotation.set(0, 0, 0);
 
         switch (index) {
@@ -326,7 +296,6 @@ export class DemoMode implements GameMode {
                  cam.lookAt(0, 0, 0);
                  break;
         }
-        // Update actual camera immediately to prevent jump
         cam.position.copy(this.cameraBasePosition);
     }
 }

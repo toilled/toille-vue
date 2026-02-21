@@ -14,6 +14,19 @@ type HydrationStrategies = {
 type LazyComponent<T> = DefineComponent<HydrationStrategies, {}, {}, {}, {}, {}, {}, { hydrated: () => void }> & T
 
 interface _GlobalComponents {
+  Activity: typeof import("../../components/Activity.vue")['default']
+  Checker: typeof import("../../components/Checker.vue")['default']
+  CyberpunkCity: typeof import("../../components/CyberpunkCity.vue")['default']
+  GameUI: typeof import("../../components/GameUI.vue")['default']
+  Menu: typeof import("../../components/Menu.vue")['default']
+  MenuItem: typeof import("../../components/MenuItem.vue")['default']
+  PageContent: typeof import("../../components/PageContent.vue")['default']
+  Paragraph: typeof import("../../components/Paragraph.vue")['default']
+  SplashScreen: typeof import("../../components/SplashScreen.vue")['default']
+  Suggestion: typeof import("../../components/Suggestion.vue")['default']
+  Title: typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Title']
+  TypingText: typeof import("../../components/TypingText.vue")['default']
+  WeatherIcon: typeof import("../../components/WeatherIcon.vue")['default']
   NuxtWelcome: typeof import("../../node_modules/nuxt/dist/app/components/welcome.vue")['default']
   NuxtLayout: typeof import("../../node_modules/nuxt/dist/app/components/nuxt-layout")['default']
   NuxtErrorBoundary: typeof import("../../node_modules/nuxt/dist/app/components/nuxt-error-boundary.vue")['default']
@@ -26,17 +39,29 @@ interface _GlobalComponents {
   NuxtRouteAnnouncer: typeof import("../../node_modules/nuxt/dist/app/components/nuxt-route-announcer")['default']
   NuxtImg: typeof import("../../node_modules/nuxt/dist/app/components/nuxt-stubs")['NuxtImg']
   NuxtPicture: typeof import("../../node_modules/nuxt/dist/app/components/nuxt-stubs")['NuxtPicture']
-  NuxtPage: typeof import("../../node_modules/nuxt/dist/pages/runtime/page-placeholder")['default']
+  NuxtPage: typeof import("../../node_modules/nuxt/dist/pages/runtime/page")['default']
   NoScript: typeof import("../../node_modules/nuxt/dist/head/runtime/components")['NoScript']
   Link: typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Link']
   Base: typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Base']
-  Title: typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Title']
   Meta: typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Meta']
   Style: typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Style']
   Head: typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Head']
   Html: typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Html']
   Body: typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Body']
   NuxtIsland: typeof import("../../node_modules/nuxt/dist/app/components/nuxt-island")['default']
+  LazyActivity: LazyComponent<typeof import("../../components/Activity.vue")['default']>
+  LazyChecker: LazyComponent<typeof import("../../components/Checker.vue")['default']>
+  LazyCyberpunkCity: LazyComponent<typeof import("../../components/CyberpunkCity.vue")['default']>
+  LazyGameUI: LazyComponent<typeof import("../../components/GameUI.vue")['default']>
+  LazyMenu: LazyComponent<typeof import("../../components/Menu.vue")['default']>
+  LazyMenuItem: LazyComponent<typeof import("../../components/MenuItem.vue")['default']>
+  LazyPageContent: LazyComponent<typeof import("../../components/PageContent.vue")['default']>
+  LazyParagraph: LazyComponent<typeof import("../../components/Paragraph.vue")['default']>
+  LazySplashScreen: LazyComponent<typeof import("../../components/SplashScreen.vue")['default']>
+  LazySuggestion: LazyComponent<typeof import("../../components/Suggestion.vue")['default']>
+  LazyTitle: LazyComponent<typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Title']>
+  LazyTypingText: LazyComponent<typeof import("../../components/TypingText.vue")['default']>
+  LazyWeatherIcon: LazyComponent<typeof import("../../components/WeatherIcon.vue")['default']>
   LazyNuxtWelcome: LazyComponent<typeof import("../../node_modules/nuxt/dist/app/components/welcome.vue")['default']>
   LazyNuxtLayout: LazyComponent<typeof import("../../node_modules/nuxt/dist/app/components/nuxt-layout")['default']>
   LazyNuxtErrorBoundary: LazyComponent<typeof import("../../node_modules/nuxt/dist/app/components/nuxt-error-boundary.vue")['default']>
@@ -49,11 +74,10 @@ interface _GlobalComponents {
   LazyNuxtRouteAnnouncer: LazyComponent<typeof import("../../node_modules/nuxt/dist/app/components/nuxt-route-announcer")['default']>
   LazyNuxtImg: LazyComponent<typeof import("../../node_modules/nuxt/dist/app/components/nuxt-stubs")['NuxtImg']>
   LazyNuxtPicture: LazyComponent<typeof import("../../node_modules/nuxt/dist/app/components/nuxt-stubs")['NuxtPicture']>
-  LazyNuxtPage: LazyComponent<typeof import("../../node_modules/nuxt/dist/pages/runtime/page-placeholder")['default']>
+  LazyNuxtPage: LazyComponent<typeof import("../../node_modules/nuxt/dist/pages/runtime/page")['default']>
   LazyNoScript: LazyComponent<typeof import("../../node_modules/nuxt/dist/head/runtime/components")['NoScript']>
   LazyLink: LazyComponent<typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Link']>
   LazyBase: LazyComponent<typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Base']>
-  LazyTitle: LazyComponent<typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Title']>
   LazyMeta: LazyComponent<typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Meta']>
   LazyStyle: LazyComponent<typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Style']>
   LazyHead: LazyComponent<typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Head']>

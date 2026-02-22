@@ -8,3 +8,5 @@ dev_server.log
 server.log
 dev.log
 functions/ssr-app.js
+.nuxt
+.output

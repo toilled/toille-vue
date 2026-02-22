@@ -21,9 +21,9 @@ export function createWindowTexture() {
         if (Math.random() > 0.4) {
           const rand = Math.random();
           if (rand > 0.95) ctx.fillStyle = "#ffffff"; // Bright White
-          else if (rand > 0.8) ctx.fillStyle = "#ffaa00"; // Warm Orange
-          else if (rand > 0.5) ctx.fillStyle = "#00ccff"; // Cyan
-          else ctx.fillStyle = "#ff00cc"; // Magenta
+          else if (rand > 0.8) ctx.fillStyle = "#ffff00"; // Yellow
+          else if (rand > 0.5) ctx.fillStyle = "#ff6600"; // Orange
+          else ctx.fillStyle = "#ff0000"; // Red
 
           ctx.globalAlpha = 0.6 + Math.random() * 0.4;
           ctx.fillRect(x, y, w, h);
@@ -34,7 +34,7 @@ export function createWindowTexture() {
 
     // Add some "dark" buildings or sections
     if (Math.random() > 0.8) {
-       ctx.fillStyle = "rgba(0,0,0,0.8)";
+       ctx.fillStyle = "rgba(20,0,0,0.8)";
        ctx.fillRect(0, 0, 64, 128);
     }
   }
@@ -51,7 +51,7 @@ export function createGroundTexture() {
   canvas.height = 1024;
   const ctx = canvas.getContext("2d");
   if (ctx) {
-    ctx.fillStyle = "#080808"; // Dark asphalt
+    ctx.fillStyle = "#080000"; // Dark reddish asphalt
     ctx.fillRect(0, 0, 1024, 1024);
 
     // Roads are at the edges (tiled)
@@ -59,7 +59,7 @@ export function createGroundTexture() {
     const roadPx = 1024 * roadRatio;
     const halfRoad = roadPx / 2;
 
-    ctx.fillStyle = "#0a0a0a"; // Slightly lighter road color
+    ctx.fillStyle = "#0a0000"; // Slightly lighter road color
     // Horizontal
     ctx.fillRect(0, 0, 1024, halfRoad);
     ctx.fillRect(0, 1024 - halfRoad, 1024, halfRoad);
@@ -68,7 +68,7 @@ export function createGroundTexture() {
     ctx.fillRect(1024 - halfRoad, 0, halfRoad, 1024);
 
     // Dashed Center Lines
-    ctx.strokeStyle = "#444444";
+    ctx.strokeStyle = "#880000";
     ctx.lineWidth = 4;
     ctx.setLineDash([20, 20]);
 
@@ -97,7 +97,7 @@ export function createGroundTexture() {
     ctx.setLineDash([]);
 
     // Intersection Stop Lines
-    ctx.fillStyle = "#333333";
+    ctx.fillStyle = "#550000";
     const stopOffset = halfRoad * 0.8;
     const stopW = 8;
 
@@ -145,7 +145,7 @@ export function createBillboardTextures() {
       ctx.fillRect(0, 0, 128, 64);
 
       // Neon border
-      const colors = ["#ff00cc", "#00ffcc", "#ffff00", "#ff0000", "#00ff00", "#aa00ff", "#0000ff", "#ff8800"];
+      const colors = ["#ff0000", "#ff3300", "#ff6600", "#ff9900", "#ffcc00", "#ffff00", "#cc0000", "#990000"];
       const color = colors[i % colors.length];
 
       ctx.strokeStyle = color;
@@ -190,7 +190,7 @@ export function createBillboardTextures() {
            break;
         case 4: // Japanese-like chars (fake)
            ctx.font = "40px serif";
-           ctx.fillText("CYBER", 10, 45);
+           ctx.fillText("METAL", 10, 45);
            break;
         default:
           // Random blocks

@@ -135,22 +135,22 @@ function updateLeaderboardTexture() {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
 
   // Background
-  ctx.fillStyle = "#100010";
+  ctx.fillStyle = "#110000";
   ctx.fillRect(0, 0, 1024, 1024);
 
   // Scale everything by 2
   ctx.scale(2, 2);
 
   // Border
-  ctx.strokeStyle = "#00ffcc";
+  ctx.strokeStyle = "#ff3300";
   ctx.lineWidth = 8;
   ctx.strokeRect(4, 4, 504, 504);
 
   // Title
-  ctx.fillStyle = "#00ffcc";
+  ctx.fillStyle = "#ff0000";
   ctx.font = "bold 60px Arial";
   ctx.textAlign = "center";
-  ctx.shadowColor = "#00ffcc";
+  ctx.shadowColor = "#ff0000";
   ctx.shadowBlur = 10;
   ctx.fillText("LEADERBOARD", 256, 80);
   ctx.shadowBlur = 0;
@@ -205,7 +205,7 @@ function updateLeaderboardTexture() {
   }
   
   // Footer / Instructions
-  ctx.fillStyle = "#00ffcc";
+  ctx.fillStyle = "#ff0000";
   ctx.font = "20px Arial";
   ctx.textAlign = "center";
   ctx.fillText("CRASH TO SUBMIT SCORE", 256, 480);
@@ -301,7 +301,7 @@ function createNavArrow() {
   const cone = new Mesh(
     new ConeGeometry(2, 7.5, 16),
     new MeshBasicMaterial({
-      color: 0x888800, // Reduced brightness to avoid bloom
+      color: 0x884400, // Reduced brightness to avoid bloom
       depthTest: false,
       depthWrite: false,
       transparent: true,
@@ -412,7 +412,7 @@ onMounted(() => {
 
   // Scene setup
   scene = new Scene();
-  scene.background = new Color(0x050510);
+  scene.background = new Color(0x000000);
 
   // Camera setup
   camera = new PerspectiveCamera(
@@ -439,7 +439,7 @@ onMounted(() => {
 
   const bloomPass = new UnrealBloomPass(new Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
   bloomPass.threshold = 0.5;
-  bloomPass.strength = 1.0;
+  bloomPass.strength = 1.2;
   bloomPass.radius = 0.8;
 
   const outputPass = new OutputPass();
@@ -490,8 +490,8 @@ onMounted(() => {
   }
 
   const dColor1 = new Color(0xff0000); // Red
-  const dColor2 = new Color(0x00ffcc); // Cyan
-  const dColor3 = new Color(0x00ff00); // Green
+  const dColor2 = new Color(0xff6600); // Orange
+  const dColor3 = new Color(0xffff00); // Yellow
   const dColor4 = new Color(0xffffff); // White
 
   generateDroneTargets(route.path);

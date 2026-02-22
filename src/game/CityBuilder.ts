@@ -54,16 +54,16 @@ export class CityBuilder {
     this.createBuildings(lbTexture);
 
     // Setup Fog
-    this.scene.fog = new FogExp2(0x050510, isMobile ? 0.00057 : 0.001);
+    this.scene.fog = new FogExp2(0x110000, isMobile ? 0.00057 : 0.001);
   }
 
   private setupLighting() {
-    const hemiLight = new HemisphereLight(0xffffff, 0x444444, 0.4);
+    const hemiLight = new HemisphereLight(0xff4444, 0x110000, 0.4);
     hemiLight.position.set(0, 500, 0);
     this.scene.add(hemiLight);
 
-    this.addDirectionalLight(100, 300, 100, 0xff00cc);
-    this.addDirectionalLight(-100, 300, -100, 0x00ccff);
+    this.addDirectionalLight(100, 300, 100, 0xff0000);
+    this.addDirectionalLight(-100, 300, -100, 0xff6600);
   }
 
   private addDirectionalLight(x: number, y: number, z: number, color: number) {
@@ -363,7 +363,7 @@ export class CityBuilder {
   private addDecorations(buildingGroup: Group, style: string, isLeaderboard: boolean, h: number, w: number, d: number) {
     // Neon Strips
     if (!isLeaderboard && h > 50 && Math.random() > 0.6) {
-      const color = new Color().setHSL(Math.random(), 1.0, 0.5);
+      const color = new Color().setHSL(Math.random() * 0.17, 1.0, 0.5);
       const stripMat = new MeshBasicMaterial({ color: color });
       const strip = new Mesh(this.materials.neonStripGeo, stripMat);
       strip.scale.set(1, h * 0.8, 1);
@@ -462,7 +462,7 @@ export class CityBuilder {
 
       buildingGroup.add(lbMesh);
 
-      const spot = new SpotLight(0x00ffcc, 500, 100, 0.6, 0.5, 1);
+      const spot = new SpotLight(0xff3300, 500, 100, 0.6, 0.5, 1);
 
       switch (i) {
         case 0:

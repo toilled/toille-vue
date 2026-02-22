@@ -61,13 +61,13 @@ export class CarFactory {
       visible: true,
     });
     this.underglowMat1 = new MeshBasicMaterial({
-      color: 0xff00cc,
+      color: 0xff0000,
       opacity: 0.5,
       transparent: true,
       side: DoubleSide,
     });
     this.underglowMat2 = new MeshBasicMaterial({
-      color: 0x00ccff,
+      color: 0xffaa00,
       opacity: 0.5,
       transparent: true,
       side: DoubleSide,
@@ -177,7 +177,7 @@ export class CarFactory {
     redLight.visible = false;
     carGroup.add(redLight);
 
-    const blueLight = new PointLight(0x0000ff, flIntensity, flDist);
+    const blueLight = new PointLight(0xffaa00, flIntensity, flDist);
     blueLight.position.set(0.8, 1.5, 0);
     blueLight.userData.isPoliceFlasher = true;
     blueLight.visible = false;
@@ -189,7 +189,7 @@ export class CarFactory {
     redMesh.visible = false;
     carGroup.add(redMesh);
 
-    const blueMesh = new Mesh(new BoxGeometry(0.8, 0.4, 0.4), new MeshBasicMaterial({ color: 0x0000ff }));
+    const blueMesh = new Mesh(new BoxGeometry(0.8, 0.4, 0.4), new MeshBasicMaterial({ color: 0xffaa00 }));
     blueMesh.position.set(0.8, 1.5, 0);
     blueMesh.userData.isPoliceFlasherMesh = true;
     blueMesh.visible = false;

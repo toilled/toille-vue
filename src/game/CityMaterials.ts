@@ -44,11 +44,11 @@ export class CityMaterials {
     this.edgesGeo = new EdgesGeometry(this.boxGeo);
 
     this.buildingMaterial = new MeshStandardMaterial({
-      color: 0x222222,
+      color: 0x220000,
       map: this.windowTexture,
       emissiveMap: this.windowTexture,
-      emissive: 0xffffff,
-      emissiveIntensity: 0.2,
+      emissive: 0xff3300,
+      emissiveIntensity: 0.3,
       roughness: 0.2,
       metalness: 0.8,
     });
@@ -66,12 +66,12 @@ export class CityMaterials {
     });
 
     this.edgeMat1 = new LineBasicMaterial({
-      color: 0xff00cc,
+      color: 0xff0000,
       transparent: true,
       opacity: 0.4,
     });
     this.edgeMat2 = new LineBasicMaterial({
-      color: 0x00ccff,
+      color: 0xff6600,
       transparent: true,
       opacity: 0.4,
     });

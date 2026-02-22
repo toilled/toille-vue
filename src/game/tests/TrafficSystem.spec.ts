@@ -31,7 +31,7 @@ describe('TrafficSystem', () => {
     policeCar.traverse((child: any) => {
         if (child.userData.isPoliceFlasher && child.color) {
             if (child.color.getHex() === 0xff0000) hasRedLight = true;
-            if (child.color.getHex() === 0x0000ff) hasBlueLight = true;
+            if (child.color.getHex() === 0xffaa00) hasBlueLight = true;
         }
     });
 
@@ -59,7 +59,7 @@ describe('TrafficSystem', () => {
       policeCar!.traverse((child: any) => {
           if (child.userData.isPoliceFlasher && child.color) {
               if (child.color.getHex() === 0xff0000) redLight = child;
-              if (child.color.getHex() === 0x0000ff) blueLight = child;
+              if (child.color.getHex() === 0xffaa00) blueLight = child;
           }
       });
 

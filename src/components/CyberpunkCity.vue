@@ -56,6 +56,8 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass';
+import { GTAOPass } from 'three/examples/jsm/postprocessing/GTAOPass';
+import { FilmPass } from 'three/examples/jsm/postprocessing/FilmPass';
 import { GameModeManager } from "../game/GameModeManager";
 import { DrivingMode } from "../game/modes/DrivingMode";
 import { DroneMode } from "../game/modes/DroneMode";
@@ -437,10 +439,17 @@ onMounted(() => {
   // Post Processing
   const renderScene = new RenderPass(scene, camera);
 
+  // GTAO for realistic ambient occlusion
+  const gtaoPass = new GTAOPass(scene, camera, window.innerWidth, window.innerHeight);
+  gtaoPass.output = GTAOPass.OUTPUT.Default;
+
   const bloomPass = new UnrealBloomPass(new Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
   bloomPass.threshold = 0.5;
-  bloomPass.strength = 1.0;
+  bloomPass.strength = 1.2; // Slightly stronger for neon feel
   bloomPass.radius = 0.8;
+
+  // Film grain for cinematic look
+  const filmPass = new FilmPass(0.35, 0.025, 648, false);
 
   const outputPass = new OutputPass();
 
@@ -450,13 +459,15 @@ onMounted(() => {
 
   composer = new EffectComposer(renderer, renderTarget);
   composer.addPass(renderScene);
+  composer.addPass(gtaoPass);
   composer.addPass(bloomPass);
+  composer.addPass(filmPass);
   composer.addPass(outputPass);
 
   // City Builder
   const lbTexture = createLeaderboardTexture();
   cityBuilder = new CityBuilder(scene);
-  cityBuilder.buildCity(isMobile.value, lbTexture);
+  cityBuilder.buildCity(isMobile.value, lbTexture, renderer);
   const buildings = cityBuilder.getBuildings();
   occupiedGrids = cityBuilder.getOccupiedGrids();
 
@@ -743,6 +754,10 @@ function onResize() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   if (composer) {
     composer.setSize(window.innerWidth, window.innerHeight);
+    // Update GTAO size if it exists in passes (it might be hard to access directly, but usually resize handles it if pass has setSize)
+    // GTAOPass has setSize method
+    const gtao = composer.passes.find(p => p instanceof GTAOPass) as GTAOPass;
+    if (gtao) gtao.setSize(window.innerWidth, window.innerHeight);
   }
   updateIsMobile();
 }

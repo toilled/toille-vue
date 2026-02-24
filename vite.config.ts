@@ -29,8 +29,12 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
-        manualChunks: {
-          three: ['three'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('three')) {
+              return 'three-vendor';
+            }
+          }
         },
       },
     },

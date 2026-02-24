@@ -43,7 +43,7 @@
       </footer>
     </Transition>
   </div>
-  <CyberpunkCity ref="cyberpunkCityRef" @game-start="gameMode = true" @game-end="gameMode = false" />
+  <CyberpunkCity v-if="isClient" ref="cyberpunkCityRef" @game-start="gameMode = true" @game-end="gameMode = false" />
   <Transition name="fade">
     <Checker v-if="checker" :class="{ 'fade-out': gameMode }" />
   </Transition>
@@ -76,9 +76,12 @@ import TypingText from "./components/TypingText.vue";
 import SplashScreen from "./components/SplashScreen.vue";
 import pages from "./configs/pages.json";
 
-const CyberpunkCity = defineAsyncComponent(() =>
-  import("./components/CyberpunkCity.vue")
-);
+const CyberpunkCity = defineAsyncComponent(() => {
+  if (import.meta.env.SSR) {
+    return Promise.resolve({ render: () => null });
+  }
+  return import("./components/CyberpunkCity.vue");
+});
 import titles from "./configs/titles.json";
 import { Page } from "./interfaces/Page";
 
@@ -97,6 +100,7 @@ const router = useRouter();
 const transitionName = ref("cards");
 const gameMode = ref(false);
 const isContentVisible = ref(true);
+const isClient = ref(false);
 
 function toggleContent() {
   isContentVisible.value = !isContentVisible.value;
@@ -194,6 +198,7 @@ function toggleJoke() {
 let splashTimeout: ReturnType<typeof setTimeout>;
 
 onMounted(() => {
+  isClient.value = true;
   splashTimeout = setTimeout(() => {
     showSplash.value = false;
   }, 500);

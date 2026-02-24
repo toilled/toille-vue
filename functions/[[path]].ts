@@ -15,14 +15,13 @@ export const onRequest = async (context: any) => {
 
     // 2. Get the index.html template
     let response = await context.next();
+    let headers = new Headers();
+    let template = "";
 
     // Check if we got a valid HTML response (index.html or similar)
-    // If it's a 404, it might be that the static file doesn't exist, but we want to render the app anyway (SPA route).
-    // In many Pages setups, 404 is the default for non-existent files.
-
-    let template = "";
     if (response.ok && response.headers.get('content-type')?.includes('text/html')) {
         template = await response.text();
+        headers = new Headers(response.headers);
     } else {
         // Try fetching index.html explicitly if the route returned 404 (e.g. /about)
         if (context.env && context.env.ASSETS) {
@@ -30,8 +29,7 @@ export const onRequest = async (context: any) => {
             const indexResponse = await context.env.ASSETS.fetch(indexRequest);
             if (indexResponse.ok) {
                 template = await indexResponse.text();
-                // Fix status code to 200 since we found the app
-                response = new Response(response.body, { ...response, status: 200 });
+                headers = new Headers(indexResponse.headers);
             } else {
                 return response;
             }
@@ -42,11 +40,11 @@ export const onRequest = async (context: any) => {
 
     const html = template.replace('<!--app-html-->', appHtml);
 
+    headers.set('content-type', 'text/html;charset=UTF-8');
+    headers.set('cache-control', 'public, max-age=0, must-revalidate');
+
     return new Response(html, {
-      headers: {
-          ...Object.fromEntries(response.headers),
-          'content-type': 'text/html;charset=UTF-8'
-      },
+      headers,
       status: 200,
     });
 

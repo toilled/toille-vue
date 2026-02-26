@@ -1,22 +1,19 @@
 import { GameContext, GameMode } from "../types";
 import { carAudio } from "../audio/CarAudio";
 import { BOUNDS, CELL_SIZE, START_OFFSET } from "../config";
-import { Vector3, BoxGeometry, MeshStandardMaterial, Mesh, Quaternion } from "three";
+import { Vector3, BoxGeometry, MeshStandardMaterial, Mesh } from "three";
 import { getHeight, getNormal } from "../../utils/HeightMap";
 
 export class SnakeMode implements GameMode {
     context: GameContext | null = null;
     trailers: Mesh[] = [];
-    pathHistory: { pos: Vector3, rot: Quaternion }[] = [];
     trailerDistance = 12; // Distance between trailers
-    lastRecordPos: Vector3 = new Vector3();
 
     init(context: GameContext) {
         this.context = context;
 
         // Reset state
         this.trailers = [];
-        this.pathHistory = [];
 
         // Setup Car
         if (!context.activeCar.value && context.cars.length > 0) {
@@ -44,13 +41,6 @@ export class SnakeMode implements GameMode {
 
             // Audio
             carAudio.start();
-
-            // Init history
-            this.lastRecordPos.copy(car.position);
-            this.pathHistory.push({
-                pos: car.position.clone(),
-                rot: new Quaternion().setFromEuler(car.rotation)
-            });
         }
     }
 
@@ -114,47 +104,48 @@ export class SnakeMode implements GameMode {
         if (car.position.z > BOUNDS) car.position.z = -BOUNDS;
         if (car.position.z < -BOUNDS) car.position.z = BOUNDS;
 
-        // --- Path Recording ---
-        // Only record if moved enough (0.5 units)
-        const recordDist = 0.5;
-        if (car.position.distanceTo(this.lastRecordPos) > recordDist) {
-            this.pathHistory.unshift({
-                pos: car.position.clone(),
-                rot: car.quaternion.clone()
-            });
-            this.lastRecordPos.copy(car.position);
+        // --- Trailer Constraint Physics ---
+        for (let i = 0; i < this.trailers.length; i++) {
+            const trailer = this.trailers[i];
+            const leader = i === 0 ? car : this.trailers[i - 1];
 
-            // Limit history size
-            // We need trailerDistance * numTrailers * (1 / recordDist)
-            // trailerDistance = 12, recordDist = 0.5 => 24 steps per trailer
-            const stepsPerTrailer = this.trailerDistance / recordDist;
-            const maxHistory = (this.trailers.length + 5) * stepsPerTrailer;
-            if (this.pathHistory.length > maxHistory) {
-                this.pathHistory.length = maxHistory;
+            const p1 = leader.position;
+            const p2 = trailer.position;
+
+            // Calculate vector from trailer to leader
+            const diff = new Vector3().subVectors(p1, p2);
+            // Ignore Y for length calculation to prevent weird aerial behavior initially,
+            // but we need to respect 3D distance if terrain is steep.
+            // For stability, 2D distance is often better for ground vehicles.
+            const diff2D = new Vector3(diff.x, 0, diff.z);
+
+            let dist = diff2D.length();
+
+            if (dist < 0.001) {
+                // Too close, push back arbitrarily (e.g. along -Z of leader)
+                const pushDir = new Vector3(0, 0, 1).applyQuaternion(leader.quaternion);
+                diff2D.copy(pushDir).multiplyScalar(0.1);
+                dist = 0.1;
             }
+
+            // Constraint: Maintain exactly 'trailerDistance'
+            // New position for trailer = LeaderPos - (DirectionToLeader * Distance)
+            const dir = diff2D.normalize();
+            const newPos = p1.clone().sub(dir.multiplyScalar(this.trailerDistance));
+
+            trailer.position.x = newPos.x;
+            trailer.position.z = newPos.z;
+            trailer.position.y = getHeight(newPos.x, newPos.z) + 2.5; // Lift slightly to avoid z-fighting with ground
+
+            // Orientation: Look at leader
+            // But we want to look at the leader's HITCH point?
+            // Car center is leader.position.
+            // Simple lookAt works well for snake.
+            const lookTarget = leader.position.clone();
+            lookTarget.y = trailer.position.y; // Look horizontally to avoid tilting up/down too much
+            trailer.lookAt(lookTarget);
         }
 
-        // --- Trailer Updates ---
-        const stepsPerTrailer = this.trailerDistance / recordDist;
-
-        this.trailers.forEach((trailer, i) => {
-            const index = Math.floor((i + 1) * stepsPerTrailer);
-            if (index < this.pathHistory.length) {
-                const entry = this.pathHistory[index];
-                trailer.position.copy(entry.pos);
-                trailer.quaternion.copy(entry.rot);
-                trailer.visible = true;
-            } else {
-                 if (this.pathHistory.length > 0) {
-                     const last = this.pathHistory[this.pathHistory.length - 1];
-                     trailer.position.copy(last.pos);
-                     trailer.quaternion.copy(last.rot);
-                     trailer.visible = true;
-                 } else {
-                     trailer.visible = false;
-                 }
-            }
-        });
 
         // --- Collision Logic ---
 
@@ -171,16 +162,17 @@ export class SnakeMode implements GameMode {
 
         // 2. Self Collision (Game Over)
         // Check if car hits any trailer
-        // Ignore the first few trailers (e.g., first 2) to prevent immediate collision on tight turns
-        for (let i = 4; i < this.trailers.length; i++) {
-             if (car.position.distanceTo(this.trailers[i].position) < 6) {
+        // Start from index 2 (3rd trailer) to avoid false positives with immediate neighbors
+        // Immediate neighbors are constrained to distance 12, so they can't collide (dist < 6).
+        for (let i = 2; i < this.trailers.length; i++) {
+             if (car.position.distanceTo(this.trailers[i].position) < 8) {
                  isGameOver.value = true;
                  carAudio.playCrash();
                  spawnSparks(car.position);
              }
         }
 
-        // 3. Building Collision
+        // 3. Building Collision (Car Only)
          const ix = Math.round((car.position.x - START_OFFSET) / CELL_SIZE);
          const iz = Math.round((car.position.z - START_OFFSET) / CELL_SIZE);
 
@@ -255,6 +247,17 @@ export class SnakeMode implements GameMode {
         const trailer = new Mesh(geo, mat);
         trailer.castShadow = true;
 
+        // Position behind last element
+        const last = this.trailers.length > 0 ? this.trailers[this.trailers.length - 1] : this.context.activeCar.value;
+        if (last) {
+            // Place it 'spacing' units behind the leader, assuming leader is facing forward (-Z)
+            // Actually, we can just use the reverse of the leader's forward vector.
+            // Leader forward is -Z (local). So backward is +Z (local).
+            const backward = new Vector3(0, 0, 1).applyQuaternion(last.quaternion);
+            trailer.position.copy(last.position).add(backward.multiplyScalar(this.trailerDistance));
+            trailer.quaternion.copy(last.quaternion);
+        }
+
         this.context.scene.add(trailer);
         this.trailers.push(trailer);
     }
@@ -267,7 +270,6 @@ export class SnakeMode implements GameMode {
                 this.context!.scene.remove(t);
             });
             this.trailers = [];
-            this.pathHistory = [];
 
             if (this.context.activeCar.value) {
                 this.context.activeCar.value.userData.isPlayerControlled = false;

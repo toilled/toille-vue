@@ -33,7 +33,7 @@ export class SnakeMode implements GameMode {
 
             // Reset Score
             context.drivingScore.value = 0;
-            context.timeLeft.value = 999;
+            context.timeLeft.value = 60;
             context.isGameOver.value = false;
 
             // Spawn first package
@@ -48,11 +48,19 @@ export class SnakeMode implements GameMode {
         if (!this.context || !this.context.activeCar.value) return;
 
         const car = this.context.activeCar.value;
-        const { controls, isGameOver, checkpointMesh, spawnCheckpoint, drivingScore, playPewSound, spawnSparks, camera, occupiedGrids, distToTarget, navArrow } = this.context;
+        const { controls, isGameOver, checkpointMesh, spawnCheckpoint, drivingScore, playPewSound, spawnSparks, camera, occupiedGrids, distToTarget, navArrow, timeLeft } = this.context;
 
         if (isGameOver.value) {
             car.userData.currentSpeed *= 0.95;
             carAudio.update(car.userData.currentSpeed);
+            return;
+        }
+
+        // Timer
+        timeLeft.value -= dt;
+        if (timeLeft.value <= 0) {
+            timeLeft.value = 0;
+            isGameOver.value = true;
             return;
         }
 
@@ -158,6 +166,7 @@ export class SnakeMode implements GameMode {
             spawnCheckpoint();
             this.addTrailer();
             drivingScore.value += 100;
+            timeLeft.value += 10;
         }
 
         // 2. Self Collision (Game Over)

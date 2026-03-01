@@ -197,20 +197,62 @@ function toggleJoke() {
 
 let touchStartX = 0;
 let touchStartY = 0;
+let isSwiping = false;
 
 function handleTouchStart(e: TouchEvent) {
   if (gameMode.value) return;
   touchStartX = e.changedTouches[0].screenX;
   touchStartY = e.changedTouches[0].screenY;
+  isSwiping = false;
+
+  if (containerRef.value) {
+    containerRef.value.style.transition = 'none';
+  }
+}
+
+function handleTouchMove(e: TouchEvent) {
+  if (gameMode.value) return;
+  if (!touchStartX || !touchStartY) return;
+
+  const currentX = e.changedTouches[0].screenX;
+  const currentY = e.changedTouches[0].screenY;
+
+  const diffX = currentX - touchStartX;
+  const diffY = currentY - touchStartY;
+
+  if (!isSwiping) {
+    if (Math.abs(diffX) > Math.abs(diffY)) {
+      isSwiping = true;
+    } else {
+      touchStartX = 0;
+      touchStartY = 0;
+      return;
+    }
+  }
+
+  if (isSwiping && containerRef.value) {
+    containerRef.value.style.transform = `translateX(${diffX}px)`;
+  }
 }
 
 function handleTouchEnd(e: TouchEvent) {
   if (gameMode.value) return;
+  if (!touchStartX || !touchStartY) return;
+
   const touchEndX = e.changedTouches[0].screenX;
   const touchEndY = e.changedTouches[0].screenY;
 
   const diffX = touchEndX - touchStartX;
   const diffY = touchEndY - touchStartY;
+
+  touchStartX = 0;
+  touchStartY = 0;
+  isSwiping = false;
+
+  if (containerRef.value) {
+    containerRef.value.style.transition = 'transform 0.3s ease';
+    containerRef.value.style.transform = '';
+  }
 
   if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
     if (diffX > 0) {
@@ -259,6 +301,7 @@ onMounted(() => {
 
   window.addEventListener("keydown", handleKeydown);
   window.addEventListener("touchstart", handleTouchStart, { passive: true });
+  window.addEventListener("touchmove", handleTouchMove, { passive: true });
   window.addEventListener("touchend", handleTouchEnd, { passive: true });
 });
 
@@ -272,6 +315,7 @@ onUnmounted(() => {
   clearTimeout(splashTimeout);
   window.removeEventListener("keydown", handleKeydown);
   window.removeEventListener("touchstart", handleTouchStart);
+  window.removeEventListener("touchmove", handleTouchMove);
   window.removeEventListener("touchend", handleTouchEnd);
 });
 

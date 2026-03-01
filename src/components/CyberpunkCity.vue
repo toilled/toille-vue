@@ -16,9 +16,12 @@
     :lookControls="lookControls"
     :leaderboard="leaderboard"
     :showLeaderboard="showLeaderboard"
+    :otherPlayers="otherPlayers"
+    :spectatingTarget="spectatingTarget"
     @exit-game-mode="exitGameMode"
     @update-leaderboard="updateLeaderboard"
     @close-leaderboard="showLeaderboard = false"
+    @spectate="setSpectatingTarget"
   />
 </template>
 
@@ -118,6 +121,12 @@ let cityBuilder: CityBuilder;
 let multiplayerManager: MultiplayerManager;
 
 const leaderboard = ref<ScoreEntry[]>([]);
+const otherPlayers = ref<Group[]>([]);
+const spectatingTarget = ref<string | null>(null);
+
+function setSpectatingTarget(id: string | null) {
+  spectatingTarget.value = id;
+}
 const showLeaderboard = ref(false);
 
 let leaderboardCanvas: HTMLCanvasElement;
@@ -709,6 +718,7 @@ defineExpose({ startExplorationMode, startFlyingTour, startDemoMode });
 
 function exitGameMode() {
   gameModeManager.clearMode();
+  spectatingTarget.value = null;
 
   if (isDrivingMode.value) {
     isDrivingMode.value = false;
@@ -865,6 +875,7 @@ function animate() {
 
   if (multiplayerManager) {
     multiplayerManager.update(dt);
+    otherPlayers.value = multiplayerManager.getOtherPlayersCars();
     if (isDrivingMode.value && activeCar.value) {
       multiplayerManager.sendUpdate(activeCar.value);
     }
@@ -960,7 +971,26 @@ function animate() {
   }
 
   if (!gameModeManager.getMode()) {
-    if (isCinematicMode.value) {
+    if (spectatingTarget.value && multiplayerManager) {
+        // Camera Follow Logic for Spectating
+        const targetGroup = otherPlayers.value.find(p => p.userData.id === spectatingTarget.value);
+        if (targetGroup) {
+            const heading = targetGroup.rotation.y;
+            const dist = 40;
+            const height = 20;
+            const targetX = targetGroup.position.x - Math.sin(heading) * dist;
+            const targetZ = targetGroup.position.z - Math.cos(heading) * dist;
+            const targetY = targetGroup.position.y + height;
+
+            camera.position.x += (targetX - camera.position.x) * 0.1;
+            camera.position.z += (targetZ - camera.position.z) * 0.1;
+            camera.position.y += (targetY - camera.position.y) * 0.1;
+            camera.lookAt(targetGroup.position.x, targetGroup.position.y, targetGroup.position.z);
+        } else {
+            // Target left, clear spectate
+            spectatingTarget.value = null;
+        }
+    } else if (isCinematicMode.value) {
        const orbitRadius = 200;
        const orbitSpeed = 0.5;
        const angle = time * orbitSpeed;

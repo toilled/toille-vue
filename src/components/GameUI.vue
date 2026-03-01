@@ -1,4 +1,22 @@
 <template>
+  <div v-if="otherPlayers && otherPlayers.length > 0 && !isDrivingMode && !isGameOver" id="spectate-widget">
+    <div class="spectate-header">Spectate Player</div>
+    <div class="spectate-list">
+      <button
+        v-for="p in otherPlayers"
+        :key="p.userData.id"
+        class="spectate-btn"
+        :class="{ active: spectatingTarget === p.userData.id }"
+        @click="emitSpectate(p.userData.id)"
+      >
+        Player {{ p.userData.id.substring(0, 4) }}
+      </button>
+      <button v-if="spectatingTarget" class="spectate-btn stop-btn" @click="emitSpectate(null)">
+        Stop Spectating
+      </button>
+    </div>
+  </div>
+
   <div v-if="(isDrivingMode ? drivingScore : droneScore) > 0" id="score-counter">SCORE: {{ isDrivingMode ? drivingScore : droneScore }}</div>
   <div v-if="isDrivingMode" id="timer-counter">
     TIME: {{ Math.ceil(timeLeft) }}

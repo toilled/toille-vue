@@ -50,6 +50,9 @@ export interface GameContext {
     checkpointMesh: any; // Mesh but typing might differ
     navArrow: Group;
     chaseArrow: Group;
+
+    // Multiplayer
+    getOtherPlayersCars: () => Group[];
 }
 
 export interface GameMode {

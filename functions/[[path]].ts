@@ -1,6 +1,8 @@
 // @ts-ignore
 import { render } from "./ssr-app.js";
 
+export { MultiplayerDO } from "./api/multiplayer.js";
+
 export const onRequest = async (context: any) => {
   const url = new URL(context.request.url);
 

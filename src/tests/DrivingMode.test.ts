@@ -45,7 +45,8 @@ describe('DrivingMode Physics', () => {
             isGameOver: { value: false },
             distToTarget: { value: 0 },
             scene: { add: vi.fn(), remove: vi.fn() }, // Mock scene
-            chaseArrow: { visible: false, position: new THREE.Vector3(), lookAt: vi.fn(), traverse: vi.fn() } // Mock chaseArrow
+            chaseArrow: { visible: false, position: new THREE.Vector3(), lookAt: vi.fn(), traverse: vi.fn() }, // Mock chaseArrow
+            getOtherPlayersCars: vi.fn().mockReturnValue([])
         };
 
         drivingMode.init(mockContext);

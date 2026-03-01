@@ -72,6 +72,7 @@ import { createDroneTexture } from "../utils/TextureGenerator";
 import { CityBuilder } from "../game/CityBuilder";
 import { TrafficSystem } from "../game/TrafficSystem";
 import { getHeight } from "../utils/HeightMap";
+import { MultiplayerManager } from "../game/MultiplayerManager";
 
 const GameUI = defineAsyncComponent(() => import("./GameUI.vue"));
 
@@ -114,6 +115,7 @@ let konamiManager: KonamiManager;
 let gangWarManager: GangWarManager;
 let trafficSystem: TrafficSystem;
 let cityBuilder: CityBuilder;
+let multiplayerManager: MultiplayerManager;
 
 const leaderboard = ref<ScoreEntry[]>([]);
 const showLeaderboard = ref(false);
@@ -470,7 +472,7 @@ onMounted(() => {
   });
 
   // Traffic System
-  trafficSystem = new TrafficSystem(scene, CAR_COUNT, occupiedGrids, spawnSparks);
+  trafficSystem = new TrafficSystem(scene, CAR_COUNT, occupiedGrids, spawnSparks, () => multiplayerManager ? multiplayerManager.getOtherPlayersCars() : []);
   cars = trafficSystem.getCars();
 
   // Drone Swarm
@@ -553,6 +555,9 @@ onMounted(() => {
   // Initialize Gang Wars
   gangWarManager = new GangWarManager(scene, occupiedGrids, spawnSparks, playPewSound);
 
+  // Initialize Multiplayer Manager
+  multiplayerManager = new MultiplayerManager(scene);
+
   createCheckpoint();
   createNavArrow();
   createChaseArrow();
@@ -589,7 +594,8 @@ onMounted(() => {
     spawnCheckpoint,
     checkpointMesh,
     navArrow,
-    chaseArrow
+    chaseArrow,
+    getOtherPlayersCars: () => multiplayerManager ? multiplayerManager.getOtherPlayersCars() : []
   };
   gameModeManager = new GameModeManager(context);
 
@@ -856,6 +862,14 @@ function animate() {
   konamiManager.update(dt);
   gangWarManager.update(dt);
   gameModeManager.update(dt, time);
+
+  if (multiplayerManager) {
+    multiplayerManager.update(dt);
+    if (isDrivingMode.value && activeCar.value) {
+      multiplayerManager.sendUpdate(activeCar.value);
+    }
+  }
+
   trafficSystem.update();
 
   if (cityBuilder) {
@@ -1047,6 +1061,9 @@ function onAudioNote(type: string, data?: any) {
 onBeforeUnmount(() => {
   cyberpunkAudio.removeListener(onAudioNote);
   isActive = false;
+  if (multiplayerManager) {
+      multiplayerManager.disconnect();
+  }
   window.removeEventListener("resize", onResize);
   window.removeEventListener("click", onClick);
   window.removeEventListener("keydown", onKeyDown);

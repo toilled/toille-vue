@@ -17,18 +17,21 @@ export class TrafficSystem {
   private carCount: number;
   private occupiedGrids: Map<string, { halfW: number; halfD: number; isRound?: boolean }>;
   private spawnSparks: (pos: any) => void;
+  private getOtherPlayers: () => Group[];
   private carFactory: CarFactory;
 
   constructor(
     scene: Scene,
     carCount: number,
     occupiedGrids: Map<string, { halfW: number; halfD: number; isRound?: boolean }>,
-    spawnSparks: (pos: any) => void
+    spawnSparks: (pos: any) => void,
+    getOtherPlayers: () => Group[] = () => []
   ) {
     this.scene = scene;
     this.carCount = carCount;
     this.occupiedGrids = occupiedGrids;
     this.spawnSparks = spawnSparks;
+    this.getOtherPlayers = getOtherPlayers;
     this.carFactory = new CarFactory();
     this.initCars();
   }
@@ -310,6 +313,8 @@ export class TrafficSystem {
     const actualCollisionDist = 6;
     const distSqThreshold = actualCollisionDist * actualCollisionDist;
 
+    const otherPlayers = this.getOtherPlayers();
+
     for (let i = 0; i < this.cars.length; i++) {
       const carA = this.cars[i];
       if (carA.userData.fading) continue;
@@ -326,23 +331,43 @@ export class TrafficSystem {
           this.handleCollision(carA, carB);
         }
       }
+
+      // Check against other players
+      for (let j = 0; j < otherPlayers.length; j++) {
+          const carB = otherPlayers[j];
+          const dx = carA.position.x - carB.position.x;
+          const dz = carA.position.z - carB.position.z;
+          const distSq = dx * dx + dz * dz;
+
+          if (distSq < distSqThreshold) {
+            this.handleCollision(carA, carB, true);
+          }
+      }
     }
   }
 
-  private handleCollision(carA: Group, carB: Group) {
-      if (carA.userData.isPlayerControlled || carB.userData.isPlayerControlled) {
-        const player = carA.userData.isPlayerControlled ? carA : carB;
-        const ai = carA.userData.isPlayerControlled ? carB : carA;
+  private handleCollision(carA: Group, carB: Group, againstMultiplayer: boolean = false) {
+      if (carA.userData.isPlayerControlled || carB.userData.isPlayerControlled || againstMultiplayer) {
+        // Find which one is the human player (local or remote)
+        const isAHuman = carA.userData.isPlayerControlled || carA.userData.isOtherPlayer;
+        const player = isAHuman ? carA : carB;
+        const ai = player === carA ? carB : carA;
 
-        player.userData.currentSpeed *= -0.5;
-        carAudio.playCrash();
-        player.position.x += (player.position.x - ai.position.x) * 0.5;
-        player.position.z += (player.position.z - ai.position.z) * 0.5;
+        // Apply bounce logic if local player
+        if (player.userData.isPlayerControlled) {
+            player.userData.currentSpeed *= -0.5;
+            carAudio.playCrash();
+            player.position.x += (player.position.x - ai.position.x) * 0.5;
+            player.position.z += (player.position.z - ai.position.z) * 0.5;
+            this.spawnSparks(player.position);
+        }
 
-        ai.userData.fading = true;
-        ai.userData.dir *= -1;
-        ai.userData.heading += Math.random() - 0.5;
-        this.spawnSparks(player.position);
+        // Apply crash to AI
+        if (!ai.userData.isOtherPlayer && !ai.userData.isPlayerControlled) {
+            ai.userData.fading = true;
+            ai.userData.dir *= -1;
+            ai.userData.heading += Math.random() - 0.5;
+        }
       } else {
           if (Math.random() > 0.5) return;
 

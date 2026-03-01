@@ -320,6 +320,31 @@ export class DrivingMode implements GameMode {
 
         // Update Red Car
         this.updateRedCar(car);
+
+        // Check collisions with other players
+        this.checkMultiplayerCollisions(car);
+    }
+
+    checkMultiplayerCollisions(car: Group) {
+        if (!this.context) return;
+        const otherPlayers = this.context.getOtherPlayersCars();
+        const distSqThreshold = 6 * 6; // 6 units distance
+
+        for (const other of otherPlayers) {
+            const dx = car.position.x - other.position.x;
+            const dz = car.position.z - other.position.z;
+            const distSq = dx * dx + dz * dz;
+
+            if (distSq < distSqThreshold) {
+                // simple collision response
+                car.userData.currentSpeed *= -0.5;
+                carAudio.playCrash();
+
+                car.position.x += (car.position.x - other.position.x) * 0.5;
+                car.position.z += (car.position.z - other.position.z) * 0.5;
+                this.context.spawnSparks(car.position);
+            }
+        }
     }
 
     updateRedCar(playerCar: Group) {

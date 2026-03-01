@@ -1,4 +1,22 @@
 <template>
+  <div v-if="otherPlayers && otherPlayers.length > 0 && !isDrivingMode && !isGameOver" id="spectate-widget">
+    <div class="spectate-header">Spectate Player</div>
+    <div class="spectate-list">
+      <button
+        v-for="p in otherPlayers"
+        :key="p.userData.id"
+        class="spectate-btn"
+        :class="{ active: spectatingTarget === p.userData.id }"
+        @click="emitSpectate(p.userData.id)"
+      >
+        Player {{ p.userData.id.substring(0, 4) }}
+      </button>
+      <button v-if="spectatingTarget" class="spectate-btn stop-btn" @click="emitSpectate(null)">
+        Stop Spectating
+      </button>
+    </div>
+  </div>
+
   <div v-if="(isDrivingMode ? drivingScore : droneScore) > 0" id="score-counter">SCORE: {{ isDrivingMode ? drivingScore : droneScore }}</div>
   <div v-if="isDrivingMode" id="timer-counter">
     TIME: {{ Math.ceil(timeLeft) }}
@@ -192,10 +210,22 @@ const props = defineProps({
         type: Array as PropType<ScoreEntry[]>,
         required: true
     },
-    showLeaderboard: Boolean
+    showLeaderboard: Boolean,
+    otherPlayers: {
+        type: Array as PropType<any[]>,
+        default: () => []
+    },
+    spectatingTarget: {
+        type: String as PropType<string | null>,
+        default: null
+    }
 });
 
-const emit = defineEmits(["exit-game-mode", "update-leaderboard", "close-leaderboard"]);
+const emit = defineEmits(["exit-game-mode", "update-leaderboard", "close-leaderboard", "spectate"]);
+
+function emitSpectate(id: string | null) {
+  emit("spectate", id);
+}
 
 const playerName = ref("");
 const isScoreSubmitted = ref(false);
@@ -492,5 +522,62 @@ function exitGameMode() {
 }
 .close-btn:hover {
   background: #fff;
+}
+</style>
+
+<style scoped>
+#spectate-widget {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid #00ffcc;
+  padding: 10px;
+  font-family: "Courier New", Courier, monospace;
+  color: #00ffcc;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+  min-width: 150px;
+}
+.spectate-header {
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #00ffcc;
+  padding-bottom: 5px;
+  text-align: center;
+}
+.spectate-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.spectate-btn {
+  background: transparent;
+  border: 1px solid #00ffcc;
+  color: #00ffcc;
+  padding: 5px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+.spectate-btn:hover {
+  background: rgba(0, 255, 204, 0.2);
+}
+.spectate-btn.active {
+  background: #00ffcc;
+  color: #000;
+  font-weight: bold;
+}
+.spectate-btn.stop-btn {
+  border-color: #ff00cc;
+  color: #ff00cc;
+  margin-top: 5px;
+}
+.spectate-btn.stop-btn:hover {
+  background: rgba(255, 0, 204, 0.2);
 }
 </style>

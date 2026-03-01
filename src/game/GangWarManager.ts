@@ -433,7 +433,7 @@ export class GangWarManager {
     for (let i = 0; i < combatants.length; i++) {
         if (visited.has(i)) continue;
 
-        let center = combatants[i].group.position.clone();
+        const center = combatants[i].group.position.clone();
         let count = 1;
         visited.add(i);
 

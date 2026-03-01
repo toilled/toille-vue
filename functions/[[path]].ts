@@ -1,6 +1,8 @@
 // @ts-ignore
 import { render } from "./ssr-app.js";
 
+export { MultiplayerDO } from "./api/multiplayer.js";
+
 export const onRequest = async (context: any) => {
   const url = new URL(context.request.url);
 
@@ -14,7 +16,7 @@ export const onRequest = async (context: any) => {
     const appHtml = await render(url.pathname);
 
     // 2. Get the index.html template
-    let response = await context.next();
+    const response = await context.next();
     let headers = new Headers();
     let template = "";
 

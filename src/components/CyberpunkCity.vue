@@ -875,7 +875,12 @@ function animate() {
 
   if (multiplayerManager) {
     multiplayerManager.update(dt);
-    otherPlayers.value = multiplayerManager.getOtherPlayersCars();
+    const newOtherPlayers = multiplayerManager.getOtherPlayersCars();
+    // Only update ref if the length changes or it's empty to prevent massive reactivity loops
+    // or just map to IDs for the UI to be lightweight.
+    if (otherPlayers.value.length !== newOtherPlayers.length) {
+        otherPlayers.value = [...newOtherPlayers];
+    }
     if (isDrivingMode.value && activeCar.value) {
       multiplayerManager.sendUpdate(activeCar.value);
     }

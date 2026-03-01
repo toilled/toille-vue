@@ -195,6 +195,38 @@ function toggleJoke() {
   joke.value = !joke.value;
 }
 
+let touchStartX = 0;
+let touchStartY = 0;
+
+function handleTouchStart(e: TouchEvent) {
+  if (gameMode.value) return;
+  touchStartX = e.changedTouches[0].screenX;
+  touchStartY = e.changedTouches[0].screenY;
+}
+
+function handleTouchEnd(e: TouchEvent) {
+  if (gameMode.value) return;
+  const touchEndX = e.changedTouches[0].screenX;
+  const touchEndY = e.changedTouches[0].screenY;
+
+  const diffX = touchEndX - touchStartX;
+  const diffY = touchEndY - touchStartY;
+
+  if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+    if (diffX > 0) {
+      const currentIndex = visiblePages.value.findIndex((page: Page) => page.link === route.path);
+      if (currentIndex > 0) {
+        router.push(visiblePages.value[currentIndex - 1].link);
+      }
+    } else {
+      const currentIndex = visiblePages.value.findIndex((page: Page) => page.link === route.path);
+      if (currentIndex !== -1 && currentIndex < visiblePages.value.length - 1) {
+        router.push(visiblePages.value[currentIndex + 1].link);
+      }
+    }
+  }
+}
+
 let splashTimeout: ReturnType<typeof setTimeout>;
 
 onMounted(() => {
@@ -226,6 +258,8 @@ onMounted(() => {
   });
 
   window.addEventListener("keydown", handleKeydown);
+  window.addEventListener("touchstart", handleTouchStart, { passive: true });
+  window.addEventListener("touchend", handleTouchEnd, { passive: true });
 });
 
 onErrorCaptured((err) => {
@@ -237,6 +271,8 @@ onErrorCaptured((err) => {
 onUnmounted(() => {
   clearTimeout(splashTimeout);
   window.removeEventListener("keydown", handleKeydown);
+  window.removeEventListener("touchstart", handleTouchStart);
+  window.removeEventListener("touchend", handleTouchEnd);
 });
 
 watch(

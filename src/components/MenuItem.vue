@@ -34,6 +34,8 @@ defineProps<{
   border-radius: 8px;
   transition: all 0.3s ease;
   border: 1px solid transparent; /* Reserve space for border */
+  background-color: rgba(5, 5, 16, 0.85);
+  backdrop-filter: blur(5px);
 }
 
 /* Hover Effect: Subtle Space Glow */

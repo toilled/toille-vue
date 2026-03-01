@@ -15,6 +15,7 @@ html {
   --pico-primary-hover: #cc00aa;
   --pico-primary-hover-background: #cc00aa;
   --pico-primary-focus: rgba(255, 0, 204, 0.5);
+  --pico-primary-inverse: #050510;
   --pico-card-background-color: rgba(10, 10, 20, 0.9);
   --pico-card-sectioning-background-color: rgba(20, 20, 40, 0.9);
   --pico-muted-color: #8888aa;

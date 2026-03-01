@@ -249,23 +249,45 @@ function handleTouchEnd(e: TouchEvent) {
   touchStartY = 0;
   isSwiping = false;
 
-  if (containerRef.value) {
-    containerRef.value.style.transition = 'transform 0.3s ease';
-    containerRef.value.style.transform = '';
-  }
+  const isHorizontalSwipe = Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50;
 
-  if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+  if (isHorizontalSwipe) {
+    let handled = false;
     if (diffX > 0) {
       const currentIndex = visiblePages.value.findIndex((page: Page) => page.link === route.path);
       if (currentIndex > 0) {
         router.push(visiblePages.value[currentIndex - 1].link);
+        handled = true;
       }
     } else {
       const currentIndex = visiblePages.value.findIndex((page: Page) => page.link === route.path);
       if (currentIndex !== -1 && currentIndex < visiblePages.value.length - 1) {
         router.push(visiblePages.value[currentIndex + 1].link);
+        handled = true;
       }
     }
+
+    if (handled && containerRef.value) {
+      const direction = diffX > 0 ? 1 : -1;
+      containerRef.value.style.transition = 'transform 0.3s ease-out';
+      containerRef.value.style.transform = `translateX(${direction * 100}vw)`;
+
+      // Reset transform after transition so next page enters centered
+      setTimeout(() => {
+        if (containerRef.value) {
+          containerRef.value.style.transition = 'none';
+          containerRef.value.style.transform = '';
+        }
+      }, 300);
+    } else if (containerRef.value) {
+      // Swipe was long enough but no next/prev page exists, snap back
+      containerRef.value.style.transition = 'transform 0.3s ease';
+      containerRef.value.style.transform = '';
+    }
+  } else if (containerRef.value) {
+    // Swipe not long enough or vertical, snap back
+    containerRef.value.style.transition = 'transform 0.3s ease';
+    containerRef.value.style.transform = '';
   }
 }
 

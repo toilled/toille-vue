@@ -72,7 +72,7 @@ export class DemoMode implements GameMode {
 
         this.context.buildings.forEach((buildingGroup: Group | any) => {
             // Find the highest point in the building group
-            let highestPoint = new Vector3();
+            const highestPoint = new Vector3();
             let maxY = -Infinity;
             let foundSpire = false;
 

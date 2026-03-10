@@ -30,6 +30,26 @@ vi.mock("three/examples/jsm/postprocessing/OutputPass", () => ({
   }
 }));
 
+vi.mock("three/examples/jsm/postprocessing/GTAOPass", () => ({
+  GTAOPass: class {
+    constructor() {}
+    setSize = vi.fn();
+    static OUTPUT = { Default: 0 };
+  }
+}));
+
+vi.mock("three/examples/jsm/postprocessing/FilmPass", () => ({
+  FilmPass: class {
+    constructor() {}
+  }
+}));
+
+vi.mock("three/examples/jsm/environments/RoomEnvironment", () => ({
+  RoomEnvironment: class {
+    constructor() {}
+  }
+}));
+
 // Mock useRoute
 vi.mock('vue-router', () => ({
   useRoute: vi.fn(() => ({
@@ -67,9 +87,14 @@ vi.mock('three', () => {
       domElement: document.createElement('canvas'),
       setPixelRatio: vi.fn(),
       dispose: vi.fn(),
+      compile: vi.fn(),
       shadowMap: { enabled: false, type: 0 },
       toneMapping: 0,
       toneMappingExposure: 1
+    })),
+    PMREMGenerator: vi.fn(() => ({
+      compileEquirectangularShader: vi.fn(),
+      fromScene: vi.fn(() => ({ texture: {} }))
     })),
     WebGLRenderTarget: vi.fn(() => ({
       texture: {},

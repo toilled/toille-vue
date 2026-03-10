@@ -55,7 +55,14 @@ vi.mock("three", async () => {
       render = vi.fn();
       dispose = vi.fn();
       setAnimationLoop = vi.fn();
+      compile = vi.fn();
       constructor(parameters?: any) { }
+    },
+    PMREMGenerator: class {
+      compileEquirectangularShader = vi.fn();
+      fromScene = vi.fn(() => ({ texture: {} }));
+      dispose = vi.fn();
+      constructor(renderer?: any) {}
     },
     CylinderGeometry: class {
       parameters: any;
@@ -383,6 +390,26 @@ vi.mock("three/examples/jsm/postprocessing/GlitchPass", () => ({
 
 vi.mock("three/examples/jsm/postprocessing/OutputPass", () => ({
   OutputPass: class {
+    constructor() {}
+  }
+}));
+
+vi.mock("three/examples/jsm/postprocessing/GTAOPass", () => ({
+  GTAOPass: class {
+    constructor() {}
+    setSize = vi.fn();
+    static OUTPUT = { Default: 0 };
+  }
+}));
+
+vi.mock("three/examples/jsm/postprocessing/FilmPass", () => ({
+  FilmPass: class {
+    constructor() {}
+  }
+}));
+
+vi.mock("three/examples/jsm/environments/RoomEnvironment", () => ({
+  RoomEnvironment: class {
     constructor() {}
   }
 }));

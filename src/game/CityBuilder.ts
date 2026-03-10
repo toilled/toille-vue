@@ -13,7 +13,11 @@ import {
   SpotLight,
   HemisphereLight,
   Color,
+  PMREMGenerator,
+  WebGLRenderer,
+  Vector2,
 } from "three";
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment';
 import {
   BLOCK_SIZE,
   CELL_SIZE,
@@ -21,7 +25,7 @@ import {
   GRID_SIZE,
   START_OFFSET,
 } from "./config";
-import { createGroundTexture } from "../utils/TextureGenerator";
+import { createGroundTexture, createGroundNormalMap } from "../utils/TextureGenerator";
 import { getHeight } from "../utils/HeightMap";
 import { CityMaterials } from "./CityMaterials";
 
@@ -48,22 +52,29 @@ export class CityBuilder {
     return this.materials.audioMaterials;
   }
 
-  public buildCity(isMobile: boolean, lbTexture: any) {
-    this.setupLighting();
+  public buildCity(isMobile: boolean, lbTexture: any, renderer?: WebGLRenderer) {
+    this.setupLighting(renderer);
     this.createGround();
     this.createBuildings(lbTexture);
 
     // Setup Fog
-    this.scene.fog = new FogExp2(0x050510, isMobile ? 0.00057 : 0.001);
+    // Darker, reddish fog for Inferno theme
+    this.scene.fog = new FogExp2(0x110011, isMobile ? 0.0008 : 0.0012);
   }
 
-  private setupLighting() {
-    const hemiLight = new HemisphereLight(0xffffff, 0x444444, 0.4);
+  private setupLighting(renderer?: WebGLRenderer) {
+    const hemiLight = new HemisphereLight(0xffffff, 0x444444, 0.2); // Reduced intensity
     hemiLight.position.set(0, 500, 0);
     this.scene.add(hemiLight);
 
     this.addDirectionalLight(100, 300, 100, 0xff00cc);
     this.addDirectionalLight(-100, 300, -100, 0x00ccff);
+
+    if (renderer) {
+      const pmremGenerator = new PMREMGenerator(renderer);
+      pmremGenerator.compileEquirectangularShader();
+      this.scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+    }
   }
 
   private addDirectionalLight(x: number, y: number, z: number, color: number) {
@@ -84,6 +95,7 @@ export class CityBuilder {
 
   private createGround() {
     const groundTexture = createGroundTexture();
+    const groundNormalMap = createGroundNormalMap();
     const planeGeometry = new PlaneGeometry(
       CITY_SIZE * 2,
       CITY_SIZE * 2,
@@ -103,16 +115,20 @@ export class CityBuilder {
 
     const repeatCount = (CITY_SIZE * 2) / CELL_SIZE;
     groundTexture.repeat.set(repeatCount, repeatCount);
+    groundNormalMap.repeat.set(repeatCount, repeatCount);
 
     const planeMaterial = new MeshStandardMaterial({
-      color: 0xffffff,
+      color: 0x888888, // Darker base
       map: groundTexture,
-      roughness: 0.4,
-      metalness: 0.3,
+      normalMap: groundNormalMap,
+      normalScale: new Vector2(0.8, 0.8),
+      roughness: 0.2, // More reflective (wet look)
+      metalness: 0.5,
     });
 
     const offset = -CITY_SIZE / CELL_SIZE;
     groundTexture.offset.set(offset, offset);
+    groundNormalMap.offset.set(offset, offset);
     const plane = new Mesh(planeGeometry, planeMaterial);
     plane.rotation.x = -Math.PI / 2;
     plane.position.y = -0.5;

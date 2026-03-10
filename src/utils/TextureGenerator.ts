@@ -45,6 +45,77 @@ export function createWindowTexture() {
   return texture;
 }
 
+export function createWindowRoughnessMap() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 64;
+  canvas.height = 128;
+  const ctx = canvas.getContext("2d");
+  if (ctx) {
+    // Frame is rough
+    ctx.fillStyle = "#888888";
+    ctx.fillRect(0, 0, 64, 128);
+
+    const w = 4;
+    const h = 6;
+    const gapX = 4;
+    const gapY = 6;
+
+    // Windows are smooth (shiny)
+    ctx.fillStyle = "#000000";
+
+    for (let y = 4; y < 128; y += h + gapY) {
+      for (let x = 4; x < 64; x += w + gapX) {
+        // We can match the random logic of window lights or just make all potential windows shiny
+        // To be safe, let's make the grid pattern shiny, so unlit windows still reflect
+        ctx.fillRect(x, y, w, h);
+      }
+    }
+  }
+  const texture = new CanvasTexture(canvas);
+  texture.wrapS = RepeatWrapping;
+  texture.wrapT = RepeatWrapping;
+  texture.magFilter = NearestFilter;
+  texture.anisotropy = 16;
+  return texture;
+}
+
+export function createGroundNormalMap() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1024;
+  canvas.height = 1024;
+  const ctx = canvas.getContext("2d");
+  if (ctx) {
+    // Flat normal
+    ctx.fillStyle = "#8080ff";
+    ctx.fillRect(0, 0, 1024, 1024);
+
+    // Noise for asphalt bump
+    for (let i = 0; i < 50000; i++) {
+      const x = Math.random() * 1024;
+      const y = Math.random() * 1024;
+      const r = 128 + (Math.random() - 0.5) * 20;
+      const g = 128 + (Math.random() - 0.5) * 20;
+      const b = 255;
+      ctx.fillStyle = `rgb(${r},${g},${b})`;
+      ctx.fillRect(x, y, 2, 2);
+    }
+
+    // Roads are flatter? No, let's keep noise everywhere.
+
+    // Dashed Center Lines - slightly raised
+    // To raise, we tilt normals. But for simplicity, let's just keep them flat or slightly different.
+    // Actually, paint usually has thickness.
+    // We can simulate edges.
+
+    // For now, simple noise is better than nothing.
+  }
+  const texture = new CanvasTexture(canvas);
+  texture.wrapS = RepeatWrapping;
+  texture.wrapT = RepeatWrapping;
+  texture.magFilter = NearestFilter;
+  return texture;
+}
+
 export function createGroundTexture() {
   const canvas = document.createElement("canvas");
   canvas.width = 1024; // Higher res

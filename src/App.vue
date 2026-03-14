@@ -1,5 +1,5 @@
 <template>
-  <div id="content-wrapper" :class="{ 'fade-out': gameMode }">
+  <div id="content-wrapper" :class="{ 'fade-out': gameMode, 'welcome-animation': !showSplash }">
     <nav>
       <Title
         :title="titles.title"
@@ -43,7 +43,7 @@
       </footer>
     </Transition>
   </div>
-  <CyberpunkCity v-if="isClient" ref="cyberpunkCityRef" @game-start="gameMode = true" @game-end="gameMode = false" />
+  <CyberpunkCity v-if="isClient" :showSplash="showSplash" ref="cyberpunkCityRef" @game-start="gameMode = true" @game-end="gameMode = false" />
   <Transition name="fade">
     <Checker v-if="checker" :class="{ 'fade-out': gameMode }" />
   </Transition>
@@ -320,6 +320,21 @@ watch(
   opacity: 0;
   pointer-events: none;
   transition: opacity 2s ease;
+}
+
+.welcome-animation {
+  animation: content-welcome 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+@keyframes content-welcome {
+  0% {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Glitch Fade Transition for Splash Screen */

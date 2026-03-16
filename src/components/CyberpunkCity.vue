@@ -992,13 +992,13 @@ function animate() {
        const introProgress = startTime.value === 0 ? 0 : Math.min(1, (now - startTime.value) / introDuration);
 
        if (startTime.value === 0) {
-         camera.position.y = 2000;
+         camera.position.y = 1000;
          camera.position.x = Math.sin(time * 0.1 + Math.PI * 2) * orbitRadius;
          camera.position.z = Math.cos(time * 0.1 + Math.PI * 2) * orbitRadius;
        } else if (introProgress < 1) {
          // Easing function (easeOutCubic)
          const ease = 1 - Math.pow(1 - introProgress, 3);
-         const startY = 2000;
+         const startY = 1000;
          const currentY = startY + (targetY - startY) * ease;
          camera.position.y = currentY;
 

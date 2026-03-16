@@ -323,7 +323,7 @@ watch(
 }
 
 .welcome-animation {
-  animation: content-welcome 0.75s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  animation: content-welcome 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 }
 
 @keyframes content-welcome {

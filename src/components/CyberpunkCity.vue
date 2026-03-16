@@ -988,7 +988,7 @@ function animate() {
 
        const targetY = isMobile.value ? 350 : 250;
 
-       const introDuration = 2000; // 2 seconds intro
+       const introDuration = 4000; // 4 seconds intro
        const introProgress = startTime.value === 0 ? 0 : Math.min(1, (now - startTime.value) / introDuration);
 
        if (startTime.value === 0) {

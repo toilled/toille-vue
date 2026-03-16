@@ -1,5 +1,5 @@
 <template>
-  <div id="content-wrapper" :class="{ 'fade-out': gameMode, 'welcome-animation': !showSplash }">
+  <div id="content-wrapper" :class="{ 'fade-out': gameMode, 'welcome-animation': !showSplash && !gameMode }">
     <nav>
       <Title
         :title="titles.title"

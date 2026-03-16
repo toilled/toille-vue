@@ -309,21 +309,46 @@ export class TrafficSystem {
   private checkCollisions() {
     const actualCollisionDist = 6;
     const distSqThreshold = actualCollisionDist * actualCollisionDist;
+    const gridSize = 20; // Size of grid cell for spatial partitioning
+    const grid = new Map<string, Group[]>();
 
-    for (let i = 0; i < this.cars.length; i++) {
-      const carA = this.cars[i];
+    // Spatial partitioning to reduce collision checks
+    for (const car of this.cars) {
+      if (car.userData.fading) continue;
+      const gridX = Math.floor(car.position.x / gridSize);
+      const gridZ = Math.floor(car.position.z / gridSize);
+      const key = `${gridX},${gridZ}`;
+
+      if (!grid.has(key)) {
+        grid.set(key, []);
+      }
+      grid.get(key)!.push(car);
+    }
+
+    for (const carA of this.cars) {
       if (carA.userData.fading) continue;
 
-      for (let j = i + 1; j < this.cars.length; j++) {
-        const carB = this.cars[j];
-        if (carB.userData.fading) continue;
+      const gridX = Math.floor(carA.position.x / gridSize);
+      const gridZ = Math.floor(carA.position.z / gridSize);
 
-        const dx = carA.position.x - carB.position.x;
-        const dz = carA.position.z - carB.position.z;
-        const distSq = dx * dx + dz * dz;
+      // Check current and adjacent grid cells
+      for (let dx = -1; dx <= 1; dx++) {
+        for (let dz = -1; dz <= 1; dz++) {
+          const key = `${gridX + dx},${gridZ + dz}`;
+          const neighbors = grid.get(key);
 
-        if (distSq < distSqThreshold) {
-          this.handleCollision(carA, carB);
+          if (neighbors) {
+            for (const carB of neighbors) {
+              // Avoid duplicate checks and self-collision
+              if (carA.uuid >= carB.uuid || carB.userData.fading) continue;
+
+              const distSq = carA.position.distanceToSquared(carB.position);
+
+              if (distSq < distSqThreshold) {
+                this.handleCollision(carA, carB);
+              }
+            }
+          }
         }
       }
     }

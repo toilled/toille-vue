@@ -108,6 +108,7 @@ let chaseArrow: Group;
 const timeLeft = ref(0);
 const isGameOver = ref(false);
 const lastTime = ref(0);
+const startTime = ref(0);
 const distToTarget = ref(0);
 let gameModeManager: GameModeManager;
 let konamiManager: KonamiManager;
@@ -252,6 +253,13 @@ const lookControls = ref({
   right: false,
   up: false,
   down: false,
+});
+
+const props = defineProps({
+  showSplash: {
+    type: Boolean,
+    default: true
+  }
 });
 
 const emit = defineEmits(["game-start", "game-end"]);
@@ -594,6 +602,9 @@ onMounted(() => {
   gameModeManager = new GameModeManager(context);
 
   isActive = true;
+  if (!props.showSplash) {
+    startTime.value = Date.now();
+  }
   animate();
 
   ScoreService.getTopScores().then((scores) => {
@@ -660,6 +671,15 @@ watch(
       generateDroneTargets(newPath);
     }
   },
+);
+
+watch(
+  () => props.showSplash,
+  (newVal, oldVal) => {
+    if (oldVal === true && newVal === false) {
+      startTime.value = Date.now();
+    }
+  }
 );
 
 watch(activeCar, (newCar, oldCar) => {
@@ -967,8 +987,29 @@ function animate() {
        camera.position.z = Math.cos(time * 0.1) * orbitRadius;
 
        const targetY = isMobile.value ? 350 : 250;
-       if (Math.abs(camera.position.y - targetY) > 1) {
-         camera.position.y += (targetY - camera.position.y) * 0.05;
+
+       const introDuration = 4000; // 4 seconds intro
+       const introProgress = startTime.value === 0 ? 0 : Math.min(1, (now - startTime.value) / introDuration);
+
+       if (startTime.value === 0) {
+         camera.position.y = 1000;
+         camera.position.x = Math.sin(time * 0.1 + Math.PI * 2) * orbitRadius;
+         camera.position.z = Math.cos(time * 0.1 + Math.PI * 2) * orbitRadius;
+       } else if (introProgress < 1) {
+         // Easing function (easeOutCubic)
+         const ease = 1 - Math.pow(1 - introProgress, 3);
+         const startY = 1000;
+         const currentY = startY + (targetY - startY) * ease;
+         camera.position.y = currentY;
+
+         // Spiral effect during intro
+         const spiralAngle = (1 - ease) * Math.PI * 2;
+         camera.position.x = Math.sin(time * 0.1 + spiralAngle) * orbitRadius;
+         camera.position.z = Math.cos(time * 0.1 + spiralAngle) * orbitRadius;
+       } else {
+         if (Math.abs(camera.position.y - targetY) > 1) {
+           camera.position.y += (targetY - camera.position.y) * 0.05;
+         }
        }
 
        const targetLookAt = new Vector3(0, 0, 0);

@@ -85,6 +85,7 @@ const toggleSound = () => {
 
 <style scoped>
 ul {
+  padding-right: 230px;
   position: relative;
 }
 

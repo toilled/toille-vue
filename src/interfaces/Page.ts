@@ -23,4 +23,8 @@ export interface Page {
    * @property {boolean} [hidden] - Optional flag to hide the page from the menu.
    */
   hidden?: boolean;
+  /**
+   * @property {string} [icon] - Optional icon to display next to the title.
+   */
+  icon?: string;
 }

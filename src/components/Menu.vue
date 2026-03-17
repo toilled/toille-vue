@@ -88,9 +88,14 @@ ul {
   position: relative;
 }
 
-@media (min-width: 768px) {
+ul {
+  padding-right: 230px;
+}
+
+@media (max-width: 768px) {
   ul {
-    padding-right: 230px;
+    padding-right: 0px;
+    padding-top: 50px;
   }
 }
 

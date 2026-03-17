@@ -85,8 +85,13 @@ const toggleSound = () => {
 
 <style scoped>
 ul {
-  padding-right: 230px;
   position: relative;
+}
+
+@media (min-width: 768px) {
+  ul {
+    padding-right: 230px;
+  }
 }
 
 .icons-container {

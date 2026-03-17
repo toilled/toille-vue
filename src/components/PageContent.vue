@@ -5,7 +5,7 @@
         <header>
           <h2 class="title" @mousedown="handleMouseDown">
             <template v-if="page">
-              {{ page.title }}
+              <span v-if="page.icon" class="page-icon">{{ page.icon }} </span>{{ page.title }}
               <Transition name="fade">
                 <span
                   v-if="showHint"

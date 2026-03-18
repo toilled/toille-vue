@@ -33,7 +33,7 @@
         </template>
         <template v-else>
           <Paragraph
-            :paragraph="`The page <strong>${props.name || route.params.name}</strong> does not exist!`"
+            :paragraph="`The page <strong>${props.name}</strong> does not exist!`"
             :last="true"
           />
         </template>
@@ -44,7 +44,6 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { useRoute } from "vue-router";
 import pages from "../configs/pages.json";
 import Paragraph from "./Paragraph.vue";
 import { useWindowManager } from "../composables/useWindowManager";
@@ -62,10 +61,9 @@ const props = defineProps<{
 
 const { openWindow } = useWindowManager();
 const showHint = ref(false);
-const route = useRoute();
 
 const page = computed(() => {
-  const targetName = props.name || (route.params.name as string);
+  const targetName = props.name;
 
   if (targetName) {
     return pages.find((p) => p.link.slice(1) === targetName || (targetName === 'home' && p.link === '/'));

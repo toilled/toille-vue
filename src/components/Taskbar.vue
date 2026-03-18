@@ -1,6 +1,6 @@
 <template>
   <div class="taskbar">
-    <div class="start-button" @click="toggleStartMenu">
+    <div class="start-button" @click.stop="toggleStartMenu">
       SYS
     </div>
 

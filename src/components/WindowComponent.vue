@@ -26,7 +26,7 @@
 
     <!-- Content Area -->
     <div class="window-body" v-show="!isMinimized">
-      <component :is="component" v-bind="props" />
+      <component :is="component" v-bind="componentProps" />
     </div>
 
     <!-- Resizers -->
@@ -44,7 +44,7 @@ const props = defineProps<{
   id: string;
   title: string;
   component: any;
-  props?: Record<string, any>;
+  componentProps?: Record<string, any>;
   initialX: number;
   initialY: number;
   initialWidth: number;

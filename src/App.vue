@@ -17,7 +17,7 @@
         :id="win.id"
         :title="win.title"
         :component="win.component"
-        :props="win.props"
+        :componentProps="win.props"
         :initialX="win.x"
         :initialY="win.y"
         :initialWidth="win.width"

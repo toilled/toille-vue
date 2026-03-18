@@ -44,7 +44,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import pages from "../configs/pages.json";
 import Paragraph from "./Paragraph.vue";
 import { useWindowManager } from "../composables/useWindowManager";
@@ -63,7 +63,6 @@ const props = defineProps<{
 const { openWindow } = useWindowManager();
 const showHint = ref(false);
 const route = useRoute();
-const router = useRouter();
 
 const page = computed(() => {
   const targetName = props.name || (route.params.name as string);

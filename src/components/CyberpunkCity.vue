@@ -24,7 +24,6 @@
 
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref, watch, defineAsyncComponent } from "vue";
-import { useRoute } from "vue-router";
 import { ScoreService, type ScoreEntry } from "../utils/ScoreService";
 import {
   AdditiveBlending,
@@ -277,7 +276,6 @@ for (let i = 0; i < sparkCount; i++) {
 const sparkVelocities = new Float32Array(sparkCount * 3);
 const sparkLifetimes = new Float32Array(sparkCount); // 0 = dead, 1 = full life
 
-const route = useRoute();
 const CAR_COUNT = 150;
 
 function createCheckpoint() {
@@ -483,7 +481,7 @@ onMounted(() => {
   const dColor3 = new Color(0x00ff00); // Green
   const dColor4 = new Color(0xffffff); // White
 
-  generateDroneTargets(route.path);
+  generateDroneTargets('/');
 
   for (let i = 0; i < droneCount * 3; i++) {
     dronePositions[i] = droneTargetPositions[i];
@@ -645,14 +643,6 @@ function generateDroneTargets(path: string) {
   }
 }
 
-watch(
-  () => route.path,
-  (newPath) => {
-    if (!isGameMode.value && !isDrivingMode.value) {
-      generateDroneTargets(newPath);
-    }
-  },
-);
 
 watch(
   () => props.showSplash,

@@ -73,6 +73,9 @@ describe("PageContent.vue", () => {
     router.push("/some/random/path");
     await router.isReady();
     const wrapper = mount(PageContent, {
+      props: {
+        name: 'does-not-exist'
+      },
       global: {
         plugins: [router],
       },

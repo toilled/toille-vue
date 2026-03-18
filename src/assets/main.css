@@ -1,5 +1,11 @@
 html {
   user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
   --pico-font-family: "Courier New", Courier, monospace;
   --pico-background-color: #050510;
   --pico-color: #00ffcc;
@@ -24,6 +30,7 @@ html {
 
 body {
   background-color: transparent !important; /* Let canvas show through */
+  overscroll-behavior-y: none;
 }
 
 .question {

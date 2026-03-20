@@ -42,11 +42,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import MenuItem from "./MenuItem.vue";
 import WeatherIcon from "./WeatherIcon.vue";
 import { Page } from "../interfaces/Page";
 import { cyberpunkAudio } from "../utils/CyberpunkAudio";
+import { audioManager } from "../utils/AudioManager";
 
 /**
  * @file Menu.vue
@@ -69,11 +70,11 @@ const emit = defineEmits<{
   (e: "demo"): void;
 }>();
 
-const soundOn = ref(false);
+const soundOn = computed(() => audioManager.isSoundEnabled.value);
 
 const toggleSound = () => {
-  soundOn.value = !soundOn.value;
-  if (soundOn.value) {
+  audioManager.toggleSound();
+  if (audioManager.isSoundEnabled.value) {
     cyberpunkAudio.play();
   } else {
     cyberpunkAudio.pause();

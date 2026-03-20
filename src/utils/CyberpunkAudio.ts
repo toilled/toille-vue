@@ -2,10 +2,11 @@ interface WindowWithAudioContext extends Window {
   webkitAudioContext?: typeof AudioContext;
 }
 
+import { audioManager } from "./AudioManager";
+
 type NoteCallback = (type: string, data?: any) => void;
 
 export class CyberpunkAudio {
-  private ctx: AudioContext | null = null;
   private isPlaying: boolean = false;
   private nextNoteTime: number = 0;
   private tempo: number = 110;
@@ -150,15 +151,18 @@ export class CyberpunkAudio {
     }
   }
 
+  private get ctx() {
+    return audioManager.ctx;
+  }
+
+  private get dest() {
+    return audioManager.masterGain || audioManager.ctx?.destination;
+  }
+
   private initContext() {
-    if (!this.ctx) {
-      const AudioContext =
-        window.AudioContext ||
-        (window as WindowWithAudioContext).webkitAudioContext;
-      if (AudioContext) {
-        this.ctx = new AudioContext();
-        this.createNoiseBuffers();
-      }
+    audioManager.init();
+    if (this.ctx && !this.snareBuffer) {
+      this.createNoiseBuffers();
     }
   }
 
@@ -267,7 +271,7 @@ export class CyberpunkAudio {
   }
 
   private playBass(time: number, freq: number) {
-    if (!this.ctx) return;
+    if (!this.ctx || !this.dest) return;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
     const filter = this.ctx.createBiquadFilter();
@@ -285,14 +289,14 @@ export class CyberpunkAudio {
 
     osc.connect(filter);
     filter.connect(gain);
-    gain.connect(this.ctx.destination);
+    gain.connect(this.dest);
 
     osc.start(time);
     osc.stop(time + 0.25);
   }
 
   private playKick(time: number, velocity: number = 1.0) {
-    if (!this.ctx) return;
+    if (!this.ctx || !this.dest) return;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
 
@@ -304,14 +308,14 @@ export class CyberpunkAudio {
     gain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
 
     osc.connect(gain);
-    gain.connect(this.ctx.destination);
+    gain.connect(this.dest);
 
     osc.start(time);
     osc.stop(time + 0.1);
   }
 
   private playSnare(time: number, velocity: number = 1.0) {
-    if (!this.ctx || !this.snareBuffer) return;
+    if (!this.ctx || !this.snareBuffer || !this.dest) return;
 
     const noise = this.ctx.createBufferSource();
     noise.buffer = this.snareBuffer;
@@ -327,7 +331,7 @@ export class CyberpunkAudio {
 
     noise.connect(noiseFilter);
     noiseFilter.connect(noiseGain);
-    noiseGain.connect(this.ctx.destination);
+    noiseGain.connect(this.dest);
 
     noise.start(time);
 
@@ -341,13 +345,13 @@ export class CyberpunkAudio {
     oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
 
     osc.connect(oscGain);
-    oscGain.connect(this.ctx.destination);
+    oscGain.connect(this.dest);
     osc.start(time);
     osc.stop(time + 0.1);
   }
 
   private playHiHat(time: number, velocity: number = 1.0) {
-    if (!this.ctx || !this.hiHatBuffer) return;
+    if (!this.ctx || !this.hiHatBuffer || !this.dest) return;
 
     const noise = this.ctx.createBufferSource();
     noise.buffer = this.hiHatBuffer;
@@ -369,7 +373,7 @@ export class CyberpunkAudio {
 
     noise.connect(filter);
     filter.connect(gain);
-    gain.connect(this.ctx.destination);
+    gain.connect(this.dest);
 
     noise.start(time);
   }

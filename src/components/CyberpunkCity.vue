@@ -69,6 +69,7 @@ import { createDroneTexture } from "../utils/TextureGenerator";
 import { CityBuilder } from "../game/CityBuilder";
 import { TrafficSystem } from "../game/TrafficSystem";
 import { getHeight } from "../utils/HeightMap";
+import { audioManager } from "../utils/AudioManager";
 
 const GameUI = defineAsyncComponent(() => import("./GameUI.vue"));
 
@@ -1006,16 +1007,12 @@ function animate() {
   }
 }
 
-let audioCtx: AudioContext | null = null;
-
 function playPewSound(pos?: Vector3) {
-  const AudioContext =
-    window.AudioContext || (window as any).webkitAudioContext;
-  if (!AudioContext) return;
+  audioManager.init();
+  const audioCtx = audioManager.ctx;
+  const dest = audioManager.masterGain || audioManager.ctx?.destination;
 
-  if (!audioCtx) {
-    audioCtx = new AudioContext();
-  }
+  if (!audioCtx || !dest) return;
 
   if (audioCtx.state === "suspended") {
     audioCtx.resume();
@@ -1044,7 +1041,7 @@ function playPewSound(pos?: Vector3) {
   gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
 
   oscillator.connect(gainNode);
-  gainNode.connect(audioCtx.destination);
+  gainNode.connect(dest);
 
   oscillator.start();
   oscillator.stop(audioCtx.currentTime + 0.2);
@@ -1080,14 +1077,7 @@ onBeforeUnmount(() => {
   if (renderer) {
     renderer.dispose();
   }
-  if (audioCtx) {
-    audioCtx.close();
-    audioCtx = null;
-  }
   carAudio.stop();
-  if (carAudio.ctx) {
-    carAudio.ctx.close();
-  }
   if (konamiManager) {
     konamiManager.dispose();
   }

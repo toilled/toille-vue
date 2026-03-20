@@ -1,16 +1,22 @@
+import { audioManager } from "../../utils/AudioManager";
+
 export class CarAudio {
-    ctx: AudioContext | null = null;
     engineOsc: OscillatorNode | null = null;
     engineGain: GainNode | null = null;
     lfo: OscillatorNode | null = null;
     lfoGain: GainNode | null = null;
     isPlaying = false;
 
+    get ctx() {
+        return audioManager.ctx;
+    }
+
+    get dest() {
+        return audioManager.masterGain || audioManager.ctx?.destination;
+    }
+
     init() {
-        const AudioContext =
-            window.AudioContext || (window as any).webkitAudioContext;
-        if (!AudioContext) return;
-        this.ctx = new AudioContext();
+        audioManager.init();
     }
 
     start() {
@@ -43,13 +49,15 @@ export class CarAudio {
         filter.type = "lowpass";
         filter.frequency.value = 400;
 
-        this.engineOsc.connect(filter);
-        filter.connect(this.engineGain);
-        this.engineGain.connect(this.ctx.destination);
+        if (this.dest) {
+            this.engineOsc.connect(filter);
+            filter.connect(this.engineGain);
+            this.engineGain.connect(this.dest);
 
-        this.engineOsc.start();
-        this.lfo.start();
-        this.isPlaying = true;
+            this.engineOsc.start();
+            this.lfo.start();
+            this.isPlaying = true;
+        }
     }
 
     update(speed: number) {
@@ -79,7 +87,7 @@ export class CarAudio {
 
     playCrash() {
         if (!this.ctx) this.init();
-        if (!this.ctx) return;
+        if (!this.ctx || !this.dest) return;
 
         const t = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
@@ -93,7 +101,7 @@ export class CarAudio {
         gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
 
         osc.connect(gain);
-        gain.connect(this.ctx.destination);
+        gain.connect(this.dest);
 
         osc.start(t);
         osc.stop(t + 0.3);

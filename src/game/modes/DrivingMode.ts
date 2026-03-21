@@ -364,6 +364,20 @@ export class DrivingMode implements GameMode {
 
     // Update Red Car
     this.updateRedCar(car);
+
+    // Multiplayer update
+    const { multiplayer } = this.context;
+    if (multiplayer && activeCar.value) {
+      multiplayer.update(
+        dt,
+        activeCar.value.position,
+        heading,
+        "driving",
+        activeCar.value.userData.carId,
+        heading,
+        car.userData.currentSpeed || 0,
+      );
+    }
   }
 
   updateRedCar(playerCar: Group) {

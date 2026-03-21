@@ -16,6 +16,10 @@
     :lookControls="lookControls"
     :leaderboard="leaderboard"
     :showLeaderboard="showLeaderboard"
+    :isMultiplayerConnected="isMultiplayerConnected"
+    :playerCount="playerCount"
+    :roomId="multiplayerRoomId"
+    :myPeerId="multiplayerManager.getPlayerId()"
     @exit-game-mode="exitGameMode"
     @update-leaderboard="updateLeaderboard"
     @close-leaderboard="showLeaderboard = false"
@@ -68,6 +72,7 @@ import { DemoMode } from "../game/modes/DemoMode";
 import { GameContext } from "../game/types";
 import { carAudio } from "../game/audio/CarAudio";
 import { cyberpunkAudio } from "../utils/CyberpunkAudio";
+import { multiplayerManager, RemotePlayer } from "../utils/MultiplayerManager";
 import {
   BOUNDS,
   CELL_SIZE,
@@ -181,8 +186,17 @@ let cityBuilder: CityBuilder;
 const leaderboard = ref<ScoreEntry[]>([]);
 const showLeaderboard = ref(false);
 
+const isMultiplayerConnected = ref(false);
+const playerCount = ref(0);
+const multiplayerRoomId = ref("cyberpunk-city");
+let remotePlayers = new Map<string, RemotePlayer>();
+
 let leaderboardCanvas: HTMLCanvasElement;
 let leaderboardTexture: CanvasTexture;
+
+function getRemotePlayers(): Map<string, RemotePlayer> {
+  return remotePlayers;
+}
 
 function updateLeaderboard(newScores: ScoreEntry[]) {
   leaderboard.value = newScores;
@@ -664,6 +678,8 @@ onMounted(() => {
     checkpointMesh,
     navArrow,
     chaseArrow,
+    multiplayer: multiplayerManager,
+    getRemotePlayers,
   };
   gameModeManager = new GameModeManager(context);
 
@@ -679,7 +695,30 @@ onMounted(() => {
   });
 
   cyberpunkAudio.addListener(onAudioNote);
+
+  // Initialize multiplayer
+  initMultiplayer();
 });
+
+function initMultiplayer() {
+  multiplayerManager.setScene(scene);
+
+  multiplayerManager.onConnectionChange((connected) => {
+    isMultiplayerConnected.value = connected;
+    if (connected) {
+      playerCount.value = 1;
+    } else {
+      playerCount.value = 0;
+    }
+  });
+
+  multiplayerManager.onPlayerUpdate((players) => {
+    remotePlayers = players;
+    playerCount.value = players.size + 1;
+  });
+
+  multiplayerManager.connect("", "cyberpunk-city").catch(console.error);
+}
 
 function onKeyDown(event: KeyboardEvent) {
   if (event.key === "Escape") {
@@ -1187,6 +1226,7 @@ onBeforeUnmount(() => {
   if (gangWarManager) {
     gangWarManager.dispose();
   }
+  multiplayerManager.disconnect();
 });
 </script>
 

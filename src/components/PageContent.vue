@@ -33,7 +33,7 @@
         </template>
         <template v-else>
           <Paragraph
-            :paragraph="`The page <strong>${route.params.name}</strong> does not exist!`"
+            :paragraph="`The page <strong>${props.name}</strong> does not exist!`"
             :last="true"
           />
         </template>
@@ -43,44 +43,84 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
-import { useRoute } from "vue-router";
+import { ref, computed } from "vue";
 import pages from "../configs/pages.json";
 import Paragraph from "./Paragraph.vue";
+import { useWindowManager } from "../composables/useWindowManager";
 
-/**
- * @file PageContent.vue
- * @description Renders the main content of a page based on the current route.
- * It displays the page title and body, or a 404 message if the page is not found.
- */
+// Import other apps that might be linked
+import { defineAsyncComponent } from "vue";
+const Checker = defineAsyncComponent(() => import("./Checker.vue"));
+const MiniGame = defineAsyncComponent(() => import("./MiniGame.vue"));
+const NoughtsAndCrosses = defineAsyncComponent(() => import("./NoughtsAndCrosses.vue"));
+const Ask = defineAsyncComponent(() => import("./Ask.vue"));
 
-/**
- * @type {import('vue').Ref<boolean>}
- * @description A reactive reference to control the visibility of a hint on the title.
- */
+const props = defineProps<{
+  name?: string;
+}>();
+
+const { openWindow } = useWindowManager();
 const showHint = ref(false);
 
-/**
- * @type {import('vue-router').RouteLocationNormalizedLoaded}
- * @description The current route object provided by `vue-router`.
- */
-const route = useRoute();
-
-/**
- * @type {import('vue').ComputedRef<Page | null | undefined>}
- * @description A computed property that finds the page object from `pages.json` that matches the current route's `name` parameter.
- * Returns the page object, `null` for a 404, or the first page as a default.
- */
 const page = computed(() => {
-  if (route.params.name) {
-    return (
-      pages.find((p) => p.link.slice(1) === route.params.name)
-    );
-  }
-  if (route.params.pathMatch) {
-    return null;
+  const targetName = props.name;
+
+  if (targetName) {
+    return pages.find((p) => p.link.slice(1) === targetName || (targetName === 'home' && p.link === '/'));
   }
   return pages[0];
+});
+
+// Intercept link clicks to open in new windows instead of navigating route
+function handleLinkClick(e: MouseEvent) {
+  const target = e.target as HTMLElement;
+  if (target.tagName === 'A') {
+    const href = target.getAttribute('href');
+    if (href && href.startsWith('/')) {
+      e.preventDefault();
+
+      const routeName = href.replace('/', '');
+
+      switch (routeName) {
+        case 'checker':
+          openWindow("Alcohol Checker", Checker, {});
+          break;
+        case 'game':
+          openWindow("Catch the Button!", MiniGame, {}, { isFullScreen: true });
+          break;
+        case 'noughts-and-crosses':
+          openWindow("Noughts and Crosses", NoughtsAndCrosses, {}, { isFullScreen: true });
+          break;
+        case 'ask':
+          openWindow("Ask Me", Ask, {});
+          break;
+        default:
+          const targetPage = pages.find((p) => p.link === href);
+          if (targetPage) {
+             openWindow(targetPage.title, PageContent, { name: routeName || 'home' });
+          } else {
+             openWindow("404", PageContent, { name: routeName });
+          }
+          break;
+      }
+    }
+  }
+}
+
+import { onMounted, onUnmounted, getCurrentInstance } from 'vue';
+
+const instance = getCurrentInstance();
+
+onMounted(() => {
+   if (instance?.vnode.el) {
+       (instance.vnode.el as HTMLElement).addEventListener('click', handleLinkClick);
+   }
+});
+
+onUnmounted(() => {
+   if (instance?.vnode.el) {
+       (instance.vnode.el as HTMLElement).removeEventListener('click', handleLinkClick);
+   }
 });
 
 /**

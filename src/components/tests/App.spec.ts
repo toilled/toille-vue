@@ -72,138 +72,21 @@ describe("App.vue", () => {
   });
 
   it("renders the main components", async () => {
-    const router = createTestRouter();
-    router.push("/");
-    await router.isReady();
     wrapper = mount(App, {
       global: {
-        plugins: [router],
         stubs: {
           "router-view": true,
           Starfield: true,
+          CyberpunkCity: true,
+          SplashScreen: true,
+          Taskbar: true,
+          WindowComponent: true
         },
       },
     });
     await flushPromises();
-    expect(wrapper.findComponent({ name: "Title" }).exists()).toBe(true);
-    expect(wrapper.findComponent({ name: "Menu" }).exists()).toBe(true);
-    expect(wrapper.find("router-view-stub").exists()).toBe(true);
+    expect(wrapper.findComponent({ name: "Taskbar" }).exists()).toBe(true);
+    expect(wrapper.findComponent({ name: "SplashScreen" }).exists()).toBe(true);
   });
 
-  it("toggles the Activity component", async () => {
-    const router = createTestRouter();
-    router.push("/");
-    await router.isReady();
-    wrapper = mount(App, {
-      global: {
-        plugins: [router],
-        stubs: {
-          Starfield: true,
-        },
-      },
-    });
-    await flushPromises();
-    const title = wrapper.findComponent({ name: "Title" });
-    await title.vm.$emit("activity");
-    await flushPromises();
-    expect(wrapper.vm.activity).toBe(true);
-    await title.vm.$emit("activity");
-    await flushPromises();
-    expect(wrapper.vm.activity).toBe(false);
-  });
-
-  it("toggles the Suggestion component", async () => {
-    const router = createTestRouter();
-    router.push("/");
-    await router.isReady();
-    wrapper = mount(App, {
-      global: {
-        plugins: [router],
-        stubs: {
-          Starfield: true,
-        },
-      },
-    });
-    await flushPromises();
-    const title = wrapper.findComponent({ name: "Title" });
-    await title.vm.$emit("joke");
-    await flushPromises();
-    expect(wrapper.vm.joke).toBe(true);
-    await title.vm.$emit("joke");
-    await flushPromises();
-    expect(wrapper.vm.joke).toBe(false);
-  });
-
-  it("toggles the Checker component", async () => {
-    const router = createTestRouter();
-    router.push("/");
-    await router.isReady();
-    vi.useFakeTimers();
-    wrapper = mount(App, {
-      global: {
-        plugins: [router],
-        stubs: {
-          Starfield: true,
-        },
-      },
-    });
-    await flushPromises();
-    vi.advanceTimersByTime(2000);
-    await flushPromises();
-    const footer = wrapper.find("footer");
-    await footer.trigger("click");
-    await flushPromises();
-    expect(wrapper.findComponent({ name: "Checker" }).exists()).toBe(true);
-    vi.useRealTimers();
-  });
-
-  it("shows and hides the hint", async () => {
-    const router = createTestRouter();
-    router.push("/");
-    await router.isReady();
-    vi.useFakeTimers();
-    wrapper = mount(App, {
-      global: {
-        plugins: [router],
-        stubs: {
-          Starfield: true,
-          TypingText: true,
-        },
-      },
-    });
-    await flushPromises();
-    expect(wrapper.findComponent({ name: "TypingText" }).exists()).toBe(false);
-    vi.advanceTimersByTime(2000);
-    await flushPromises();
-    expect(wrapper.findComponent({ name: "TypingText" }).exists()).toBe(true);
-    vi.advanceTimersByTime(3000);
-    await flushPromises();
-    expect(wrapper.findComponent({ name: "TypingText" }).exists()).toBe(false);
-    vi.useRealTimers();
-  });
-
-  it("updates the document title on route change", async () => {
-    const router = createTestRouter();
-    router.push("/");
-    await router.isReady();
-    wrapper = mount(App, {
-      global: {
-        plugins: [router],
-        stubs: {
-          "router-view": true,
-          Starfield: true,
-        },
-      },
-    });
-    await flushPromises();
-    expect(document.title).toBe("Elliot > Home");
-
-    await router.push("/about");
-    await flushPromises();
-    expect(document.title).toBe("Elliot > About Me");
-
-    await router.push("/non-existent-page");
-    await flushPromises();
-    expect(document.title).toBe("Elliot > 404");
-  });
 });

@@ -1,10 +1,6 @@
-interface WindowWithAudioContext extends Window {
-  webkitAudioContext?: typeof AudioContext;
-}
-
 import { audioManager } from "./AudioManager";
 
-type NoteCallback = (type: string, data?: any) => void;
+type NoteCallback = (type: string, data?: number) => void;
 
 export class CyberpunkAudio {
   private isPlaying: boolean = false;
@@ -236,7 +232,7 @@ export class CyberpunkAudio {
     let delay = (time - this.ctx.currentTime) * 1000;
     if (delay < 0) delay = 0;
 
-    const triggerVisual = (type: string, data?: any) => {
+    const triggerVisual = (type: string, data?: number) => {
       setTimeout(() => {
         this.listeners.forEach((l) => l(type, data));
       }, delay);

@@ -1,5 +1,11 @@
 <template>
-  <div id="content-wrapper" :class="{ 'fade-out': gameMode, 'welcome-animation': !showSplash && !gameMode }">
+  <div
+    id="content-wrapper"
+    :class="{
+      'fade-out': gameMode,
+      'welcome-animation': !showSplash && !gameMode,
+    }"
+  >
     <nav>
       <Title
         :title="titles.title"
@@ -9,17 +15,21 @@
         @activity="toggleActivity"
         @joke="toggleJoke"
       />
-      <Menu 
-        :pages="visiblePages" 
+      <Menu
+        :pages="visiblePages"
         :content-visible="isContentVisible"
-        @explore="startExploration" 
-        @fly="startFlyingTour" 
+        @explore="startExploration"
+        @fly="startFlyingTour"
         @demo="startDemoMode"
         @toggle-content="toggleContent"
       />
     </nav>
     <Transition name="cyberpunk-glitch">
-      <div class="router-view-container" ref="containerRef" v-show="isContentVisible">
+      <div
+        class="router-view-container"
+        ref="containerRef"
+        v-show="isContentVisible"
+      >
         <router-view v-slot="{ Component, route }">
           <Transition
             :name="transitionName"
@@ -43,7 +53,13 @@
       </footer>
     </Transition>
   </div>
-  <CyberpunkCity v-if="isClient" :showSplash="showSplash" ref="cyberpunkCityRef" @game-start="gameMode = true" @game-end="gameMode = false" />
+  <CyberpunkCity
+    v-if="isClient"
+    :showSplash="showSplash"
+    ref="cyberpunkCityRef"
+    @game-start="gameMode = true"
+    @game-end="gameMode = false"
+  />
   <Transition name="fade">
     <Checker v-if="checker" :class="{ 'fade-out': gameMode }" />
   </Transition>
@@ -65,7 +81,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, watch, defineAsyncComponent, onErrorCaptured } from "vue";
+import {
+  ref,
+  onMounted,
+  onUnmounted,
+  computed,
+  watch,
+  defineAsyncComponent,
+  onErrorCaptured,
+} from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Title from "./components/Title.vue";
 import Menu from "./components/Menu.vue";
@@ -130,22 +154,26 @@ function handleKeydown(e: KeyboardEvent) {
   if (gameMode.value) return;
 
   if (e.key === "Escape") {
-    const gameRoutes = ['/game', '/noughts-and-crosses', '/checker', '/ask'];
+    const gameRoutes = ["/game", "/noughts-and-crosses", "/checker", "/ask"];
     if (gameRoutes.includes(route.path)) {
-      router.push('/hidden');
+      router.push("/hidden");
     }
   }
 
   switch (e.key) {
     case "ArrowRight": {
-      const currentIndex = visiblePages.value.findIndex((page: Page) => page.link === route.path);
+      const currentIndex = visiblePages.value.findIndex(
+        (page: Page) => page.link === route.path,
+      );
       if (currentIndex !== -1 && currentIndex < visiblePages.value.length - 1) {
         router.push(visiblePages.value[currentIndex + 1].link);
       }
       break;
     }
     case "ArrowLeft": {
-      const currentIndex = visiblePages.value.findIndex((page: Page) => page.link === route.path);
+      const currentIndex = visiblePages.value.findIndex(
+        (page: Page) => page.link === route.path,
+      );
       if (currentIndex > 0) {
         router.push(visiblePages.value[currentIndex - 1].link);
       }
@@ -214,14 +242,14 @@ onMounted(() => {
   // Input detection for sticky hover fix
   let lastTouchTime = 0;
 
-  document.body.addEventListener('touchstart', () => {
+  document.body.addEventListener("touchstart", () => {
     lastTouchTime = Date.now();
-    document.body.classList.remove('can-hover');
+    document.body.classList.remove("can-hover");
   });
 
-  document.body.addEventListener('mousemove', () => {
+  document.body.addEventListener("mousemove", () => {
     if (Date.now() - lastTouchTime > 500) {
-      document.body.classList.add('can-hover');
+      document.body.classList.add("can-hover");
     }
   });
 
@@ -252,48 +280,51 @@ watch(
       const oldPageIndex = getPageIndex(oldPath.slice(1));
       const newPageIndex = getPageIndex(newPath.slice(1));
 
-      transitionName.value = newPageIndex > oldPageIndex ? 'cards' : 'cards-reverse';
+      transitionName.value =
+        newPageIndex > oldPageIndex ? "cards" : "cards-reverse";
     }
 
     let pageTitle;
 
     switch (newPath) {
-      case '/noughts-and-crosses':
-        pageTitle = 'Noughts and Crosses';
+      case "/noughts-and-crosses":
+        pageTitle = "Noughts and Crosses";
         break;
-      case '/game':
-        pageTitle = 'Catch the Button!';
+      case "/game":
+        pageTitle = "Catch the Button!";
         break;
-      case '/checker':
-        pageTitle = 'Checker';
+      case "/checker":
+        pageTitle = "Checker";
         break;
-      case '/ask':
-        pageTitle = 'Ask Me';
+      case "/ask":
+        pageTitle = "Ask Me";
         break;
       default: {
         let routeName;
         if (route.params.name) {
           routeName = route.params.name;
-        } else if (newPath === '/') {
-          routeName = 'home';
+        } else if (newPath === "/") {
+          routeName = "home";
         }
 
         if (routeName) {
           let currentPage;
-          if (routeName === 'home') {
-            currentPage = pages.find((page) => page.link === '/');
+          if (routeName === "home") {
+            currentPage = pages.find((page) => page.link === "/");
           } else {
-            currentPage = pages.find((page) => page.link.slice(1) === routeName);
+            currentPage = pages.find(
+              (page) => page.link.slice(1) === routeName,
+            );
           }
-          pageTitle = currentPage ? currentPage.title : '404';
+          pageTitle = currentPage ? currentPage.title : "404";
         } else {
-          pageTitle = '404';
+          pageTitle = "404";
         }
         break;
       }
     }
 
-    if (typeof document !== 'undefined') {
+    if (typeof document !== "undefined") {
       document.title = "Elliot > " + pageTitle;
     }
   },
@@ -337,7 +368,6 @@ watch(
   }
 }
 
-/* Glitch Fade Transition for Splash Screen */
 .glitch-fade-leave-active {
   animation: glitch-fade-out 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 }
@@ -400,9 +430,6 @@ watch(
   }
 }
 
-</style>
-
-<style>
 .cyberpunk-glitch-enter-active {
   animation: glitch-in 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 }

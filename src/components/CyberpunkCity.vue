@@ -23,7 +23,13 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref, watch, defineAsyncComponent } from "vue";
+import {
+  onMounted,
+  onBeforeUnmount,
+  ref,
+  watch,
+  defineAsyncComponent,
+} from "vue";
 import { useRoute } from "vue-router";
 import { ScoreService, type ScoreEntry } from "../utils/ScoreService";
 import {
@@ -49,9 +55,9 @@ import {
   Object3D,
   MathUtils,
   PCFSoftShadowMap,
-  ACESFilmicToneMapping
+  ACESFilmicToneMapping,
 } from "three";
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
 import { GameModeManager } from "../game/GameModeManager";
 import { setupPostProcessing } from "../game/PostProcessingManager";
 import { DrivingMode } from "../game/modes/DrivingMode";
@@ -62,7 +68,62 @@ import { DemoMode } from "../game/modes/DemoMode";
 import { GameContext } from "../game/types";
 import { carAudio } from "../game/audio/CarAudio";
 import { cyberpunkAudio } from "../utils/CyberpunkAudio";
-import { BOUNDS, CELL_SIZE, START_OFFSET, DRONE_COUNT, GRID_SIZE } from "../game/config";
+import {
+  BOUNDS,
+  CELL_SIZE,
+  START_OFFSET,
+  DRONE_COUNT,
+  GRID_SIZE,
+} from "../game/config";
+import {
+  LEADERBOARD_CANVAS_SIZE,
+  MOBILE_BREAKPOINT,
+  SPARK_COUNT,
+  SPARK_BURST_SIZE,
+  SPARK_GRAVITY,
+  SPARK_LIFETIME_DECAY,
+  SPARK_OFF_SCREEN_Y,
+  SPARK_MIN_VELOCITY,
+  SPARK_RANDOM_VELOCITY,
+  CAR_COUNT,
+  CAMERA_FOV,
+  CAMERA_FAR,
+  CAMERA_NEAR,
+  CAMERA_START_Y,
+  CAMERA_TARGET_Y_DESKTOP,
+  CAMERA_TARGET_Y_MOBILE,
+  CAMERA_CINEMATIC_Y,
+  CAMERA_LERP_FACTOR,
+  CAMERA_LOOK_AT_LERP,
+  ORBIT_RADIUS_DESKTOP,
+  ORBIT_RADIUS_MOBILE,
+  ORBIT_SPEED,
+  INTRO_DURATION_MS,
+  INTRO_ORBIT_RADIUS,
+  INTRO_ORBIT_SPEED,
+  RAYCASTER_POINTS_THRESHOLD,
+  DRONE_SCORE_POINTS,
+  DRONE_OSCILLATION_X,
+  DRONE_OSCILLATION_Y,
+  DRONE_OSCILLATION_Z,
+  DRONE_EASING,
+  AUDIO_VOLUME,
+  AUDIO_DISTANCE_FACTOR,
+  AUDIO_OSCILLATOR_FREQ_START,
+  AUDIO_OSCILLATOR_FREQ_END,
+  AUDIO_SWEEP_DURATION,
+  CHECKPOINT_RADIUS,
+  CHECKPOINT_HEIGHT,
+  CHECKPOINT_SEGMENTS,
+  CHECKPOINT_CORE_RADIUS,
+  CHECKPOINT_CORE_SEGMENTS,
+  EMISSIVE_INTENSITY_BOOST_BASS,
+  EMISSIVE_INTENSITY_BOOST_HIHAT,
+  EMISSIVE_INTENSITY_TARGET,
+  EMISSIVE_LERP_FACTOR,
+  SPARK_SPAWN_POSITIONS_OFF_Y,
+  CHASE_ARROW_POSITION_Z,
+} from "../game/constants/CyberpunkCity";
 import { KonamiManager } from "../game/KonamiManager";
 import { GangWarManager } from "../game/GangWarManager";
 import { createDroneTexture } from "../utils/TextureGenerator";
@@ -82,7 +143,10 @@ let composer: EffectComposer;
 let animationId: number;
 let isActive = false;
 
-let occupiedGrids = new Map<string, { halfW: number; halfD: number; isRound?: boolean }>();
+let occupiedGrids = new Map<
+  string,
+  { halfW: number; halfD: number; isRound?: boolean }
+>();
 let cars: Group[] = [];
 let leaderboardMeshes: Mesh[] = [];
 
@@ -135,7 +199,7 @@ function updateLeaderboardTexture() {
 
   // Background
   ctx.fillStyle = "#100010";
-  ctx.fillRect(0, 0, 1024, 1024);
+  ctx.fillRect(0, 0, LEADERBOARD_CANVAS_SIZE, LEADERBOARD_CANVAS_SIZE);
 
   // Scale everything by 2
   ctx.scale(2, 2);
@@ -190,10 +254,10 @@ function updateLeaderboardTexture() {
       const rank = `${idx + 1}.`;
       const name = entry.name.substring(0, 8).toUpperCase();
       const scoreStr = entry.score.toString();
-      
+
       ctx.fillText(rank, 40, y);
       ctx.fillText(name, 110, y);
-      
+
       // Right align score
       ctx.textAlign = "right";
       ctx.fillText(scoreStr, 470, y);
@@ -202,7 +266,7 @@ function updateLeaderboardTexture() {
       y += 60;
     });
   }
-  
+
   // Footer / Instructions
   ctx.fillStyle = "#00ffcc";
   ctx.font = "20px Arial";
@@ -214,27 +278,31 @@ function updateLeaderboardTexture() {
   }
 }
 
-watch(leaderboard, () => {
-  updateLeaderboardTexture();
-}, { deep: true });
+watch(
+  leaderboard,
+  () => {
+    updateLeaderboardTexture();
+  },
+  { deep: true },
+);
 
 function createLeaderboardTexture() {
   leaderboardCanvas = document.createElement("canvas");
-  leaderboardCanvas.width = 1024;
-  leaderboardCanvas.height = 1024;
+  leaderboardCanvas.width = LEADERBOARD_CANVAS_SIZE;
+  leaderboardCanvas.height = LEADERBOARD_CANVAS_SIZE;
   leaderboardTexture = new CanvasTexture(leaderboardCanvas);
   leaderboardTexture.anisotropy = 16;
-  
+
   updateLeaderboardTexture();
-  
+
   return leaderboardTexture;
 }
 
 const isMobile = ref(false);
 
 const updateIsMobile = () => {
-  if (typeof window !== 'undefined') {
-    isMobile.value = window.innerWidth <= 768;
+  if (typeof window !== "undefined") {
+    isMobile.value = window.innerWidth <= MOBILE_BREAKPOINT;
   }
 };
 
@@ -256,8 +324,8 @@ const lookControls = ref({
 const props = defineProps({
   showSplash: {
     type: Boolean,
-    default: true
-  }
+    default: true,
+  },
 });
 
 const emit = defineEmits(["game-start", "game-end"]);
@@ -269,20 +337,25 @@ const pointer = new Vector2();
 
 // Sparks system
 let sparks: Points;
-const sparkCount = 2000;
-const sparkPositions = new Float32Array(sparkCount * 3);
+const sparkPositions = new Float32Array(SPARK_COUNT * 3);
 // Initialize sparks off-screen
-for (let i = 0; i < sparkCount; i++) {
-  sparkPositions[i * 3 + 1] = -99999;
+for (let i = 0; i < SPARK_COUNT; i++) {
+  sparkPositions[i * 3 + 1] = SPARK_SPAWN_POSITIONS_OFF_Y;
 }
-const sparkVelocities = new Float32Array(sparkCount * 3);
-const sparkLifetimes = new Float32Array(sparkCount); // 0 = dead, 1 = full life
+const sparkVelocities = new Float32Array(SPARK_COUNT * 3);
+const sparkLifetimes = new Float32Array(SPARK_COUNT);
 
 const route = useRoute();
-const CAR_COUNT = 150;
 
 function createCheckpoint() {
-  const geo = new CylinderGeometry(25, 25, 1000, 32, 1, true);
+  const geo = new CylinderGeometry(
+    CHECKPOINT_RADIUS,
+    CHECKPOINT_RADIUS,
+    CHECKPOINT_HEIGHT,
+    CHECKPOINT_SEGMENTS,
+    1,
+    true,
+  );
   const mat = new MeshBasicMaterial({
     color: 0x00ff00,
     transparent: true,
@@ -295,7 +368,12 @@ function createCheckpoint() {
   checkpointMesh.visible = false;
   scene.add(checkpointMesh);
 
-  const coreGeo = new CylinderGeometry(5, 5, 1000, 16);
+  const coreGeo = new CylinderGeometry(
+    CHECKPOINT_CORE_RADIUS,
+    CHECKPOINT_CORE_RADIUS,
+    CHECKPOINT_HEIGHT,
+    CHECKPOINT_CORE_SEGMENTS,
+  );
   const coreMat = new MeshBasicMaterial({ color: 0xffffff });
   const core = new Mesh(coreGeo, coreMat);
   checkpointMesh.add(core);
@@ -337,7 +415,7 @@ function createChaseArrow() {
     }),
   );
   cone.rotation.x = Math.PI / 2;
-  cone.position.z = 25;
+  cone.position.z = CHASE_ARROW_POSITION_Z;
 
   chaseArrow.add(cone);
   cone.renderOrder = 999;
@@ -379,19 +457,18 @@ function spawnSparks(position: Vector3) {
   const posAttribute = sparks.geometry.attributes.position;
 
   let spawned = 0;
-  const burstSize = 30;
 
-  for (let i = 0; i < sparkCount; i++) {
+  for (let i = 0; i < SPARK_COUNT; i++) {
     if (sparkLifetimes[i] <= 0) {
       activateSpark(i, position, posAttribute);
       spawned++;
-      if (spawned >= burstSize) break;
+      if (spawned >= SPARK_BURST_SIZE) break;
     }
   }
 
-  if (spawned < burstSize) {
-    for (let i = 0; i < burstSize - spawned; i++) {
-      const randIndex = Math.floor(Math.random() * sparkCount);
+  if (spawned < SPARK_BURST_SIZE) {
+    for (let i = 0; i < SPARK_BURST_SIZE - spawned; i++) {
+      const randIndex = Math.floor(Math.random() * SPARK_COUNT);
       activateSpark(randIndex, position, posAttribute);
     }
   }
@@ -406,9 +483,10 @@ function activateSpark(
 ) {
   sparkLifetimes[i] = 1.0;
   posAttribute.setXYZ(i, position.x, position.y, position.z);
-  sparkVelocities[i * 3] = (Math.random() - 0.5) * 5;
-  sparkVelocities[i * 3 + 1] = Math.random() * 5 + 2;
-  sparkVelocities[i * 3 + 2] = (Math.random() - 0.5) * 5;
+  sparkVelocities[i * 3] = (Math.random() - 0.5) * SPARK_RANDOM_VELOCITY;
+  sparkVelocities[i * 3 + 1] =
+    Math.random() * SPARK_RANDOM_VELOCITY + SPARK_MIN_VELOCITY;
+  sparkVelocities[i * 3 + 2] = (Math.random() - 0.5) * SPARK_RANDOM_VELOCITY;
 }
 
 onMounted(() => {
@@ -422,10 +500,10 @@ onMounted(() => {
 
   // Camera setup
   camera = new PerspectiveCamera(
-    60,
+    CAMERA_FOV,
     window.innerWidth / window.innerHeight,
-    1,
-    3000,
+    CAMERA_NEAR,
+    CAMERA_FAR,
   );
   camera.position.set(0, 250, 600);
   camera.lookAt(0, 0, 0);
@@ -460,7 +538,7 @@ onMounted(() => {
   });
 
   // Traffic System
-  trafficSystem = new TrafficSystem(scene, CAR_COUNT, occupiedGrids, spawnSparks);
+  trafficSystem = new TrafficSystem(scene, CAR_COUNT, spawnSparks);
   cars = trafficSystem.getCars();
 
   // Drone Swarm
@@ -541,7 +619,12 @@ onMounted(() => {
   konamiManager = new KonamiManager(scene);
 
   // Initialize Gang Wars
-  gangWarManager = new GangWarManager(scene, occupiedGrids, spawnSparks, playPewSound);
+  gangWarManager = new GangWarManager(
+    scene,
+    occupiedGrids,
+    spawnSparks,
+    playPewSound,
+  );
 
   createCheckpoint();
   createNavArrow();
@@ -579,7 +662,7 @@ onMounted(() => {
     spawnCheckpoint,
     checkpointMesh,
     navArrow,
-    chaseArrow
+    chaseArrow,
   };
   gameModeManager = new GameModeManager(context);
 
@@ -661,7 +744,7 @@ watch(
     if (oldVal === true && newVal === false) {
       startTime.value = Date.now();
     }
-  }
+  },
 );
 
 watch(activeCar, (newCar, oldCar) => {
@@ -749,8 +832,7 @@ function onResize() {
   updateIsMobile();
 }
 
-function onPointerLockChange() {
-}
+function onPointerLockChange() {}
 
 function onClick(event: MouseEvent) {
   if (!camera) return;
@@ -765,7 +847,9 @@ function onClick(event: MouseEvent) {
   raycaster.setFromCamera(pointer, camera);
 
   if (gangWarManager && gangWarManager.fightMarkers.length > 0) {
-    const markerIntersects = raycaster.intersectObjects(gangWarManager.fightMarkers);
+    const markerIntersects = raycaster.intersectObjects(
+      gangWarManager.fightMarkers,
+    );
     if (markerIntersects.length > 0) {
       const hit = markerIntersects[0].object;
       if (hit.userData.isFightMarker && hit.userData.target) {
@@ -796,11 +880,11 @@ function onClick(event: MouseEvent) {
     if (target instanceof Group && target.userData.speed !== undefined) {
       isDrivingMode.value = true;
       emit("game-start");
-      
+
       activeCar.value = target;
       target.userData.isPlayerControlled = true;
       target.userData.currentSpeed = target.userData.speed;
-      
+
       gameModeManager.setMode(new DrivingMode());
       return;
     }
@@ -813,9 +897,9 @@ function onClick(event: MouseEvent) {
       return;
     }
   }
-  
+
   if (drones && !isExplorationMode.value) {
-    raycaster.params.Points.threshold = 20; 
+    raycaster.params.Points.threshold = RAYCASTER_POINTS_THRESHOLD;
     const intersects = raycaster.intersectObject(drones);
 
     if (intersects.length > 0) {
@@ -830,13 +914,13 @@ function onClick(event: MouseEvent) {
 
         spawnSparks(new Vector3(x, y, z));
 
-        posAttribute.setXYZ(index, 0, -99999, 0);
+        posAttribute.setXYZ(index, 0, SPARK_OFF_SCREEN_Y, 0);
         posAttribute.needsUpdate = true;
 
         deadDrones.add(index);
 
         playPewSound();
-        droneScore.value += 100;
+        droneScore.value += DRONE_SCORE_POINTS;
       }
     }
   }
@@ -864,8 +948,12 @@ function animate() {
     const materials = cityBuilder.getAudioMaterials();
     for (const key in materials) {
       const mat = materials[key];
-      if (mat.emissiveIntensity > 0.2) {
-        mat.emissiveIntensity = MathUtils.lerp(mat.emissiveIntensity, 0.2, 0.1);
+      if (mat.emissiveIntensity > EMISSIVE_INTENSITY_TARGET) {
+        mat.emissiveIntensity = MathUtils.lerp(
+          mat.emissiveIntensity,
+          EMISSIVE_INTENSITY_TARGET,
+          EMISSIVE_LERP_FACTOR,
+        );
       }
     }
   }
@@ -874,9 +962,9 @@ function animate() {
     const positions = sparks.geometry.attributes.position.array;
     let needsUpdate = false;
 
-    for (let i = 0; i < sparkCount; i++) {
+    for (let i = 0; i < SPARK_COUNT; i++) {
       if (sparkLifetimes[i] > 0) {
-        sparkVelocities[i * 3 + 1] -= 0.1; // gravity
+        sparkVelocities[i * 3 + 1] -= SPARK_GRAVITY;
         positions[i * 3] += sparkVelocities[i * 3];
         positions[i * 3 + 1] += sparkVelocities[i * 3 + 1];
         positions[i * 3 + 2] += sparkVelocities[i * 3 + 2];
@@ -889,7 +977,9 @@ function animate() {
         }
 
         const ix = Math.round((positions[i * 3] - START_OFFSET) / CELL_SIZE);
-        const iz = Math.round((positions[i * 3 + 2] - START_OFFSET) / CELL_SIZE);
+        const iz = Math.round(
+          (positions[i * 3 + 2] - START_OFFSET) / CELL_SIZE,
+        );
 
         if (occupiedGrids.has(`${ix},${iz}`)) {
           const cX = START_OFFSET + ix * CELL_SIZE;
@@ -905,10 +995,10 @@ function animate() {
           }
         }
 
-        sparkLifetimes[i] -= 0.02;
+        sparkLifetimes[i] -= SPARK_LIFETIME_DECAY;
         if (sparkLifetimes[i] < 0) {
           sparkLifetimes[i] = 0;
-          positions[i * 3 + 1] = -100;
+          positions[i * 3 + 1] = SPARK_OFF_SCREEN_Y;
         }
         needsUpdate = true;
       }
@@ -919,87 +1009,93 @@ function animate() {
   }
 
   const isDroneMode = gameModeManager.getMode() instanceof DroneMode;
-  
+
   if (drones && !isDroneMode) {
     const positions = drones.geometry.attributes.position.array;
-    
+
     if (droneTargetPositions) {
-        const easing = 0.02;
-        const oscTime = Date.now() * 0.001;
+      const oscTime = Date.now() * 0.001;
 
-        for (let i = 0; i < positions.length / 3; i++) {
-            if (deadDrones.has(i)) continue;
+      for (let i = 0; i < positions.length / 3; i++) {
+        if (deadDrones.has(i)) continue;
 
-            const offset = i;
-            const oscX = Math.sin(oscTime + offset) * 20;
-            const oscY = Math.cos(oscTime * 0.5 + offset) * 10;
-            const oscZ = Math.sin(oscTime * 0.8 + offset) * 20;
+        const offset = i;
+        const oscX = Math.sin(oscTime + offset) * DRONE_OSCILLATION_X;
+        const oscY = Math.cos(oscTime * 0.5 + offset) * DRONE_OSCILLATION_Y;
+        const oscZ = Math.sin(oscTime * 0.8 + offset) * DRONE_OSCILLATION_Z;
 
-            const targetX = droneTargetPositions[i * 3] + oscX;
-            const targetY = droneTargetPositions[i * 3 + 1] + oscY;
-            const targetZ = droneTargetPositions[i * 3 + 2] + oscZ;
+        const targetX = droneTargetPositions[i * 3] + oscX;
+        const targetY = droneTargetPositions[i * 3 + 1] + oscY;
+        const targetZ = droneTargetPositions[i * 3 + 2] + oscZ;
 
-            positions[i * 3] += (targetX - positions[i * 3]) * easing;
-            positions[i * 3 + 1] += (targetY - positions[i * 3 + 1]) * easing;
-            positions[i * 3 + 2] += (targetZ - positions[i * 3 + 2]) * easing;
-        }
-        drones.geometry.attributes.position.needsUpdate = true;
+        positions[i * 3] += (targetX - positions[i * 3]) * DRONE_EASING;
+        positions[i * 3 + 1] += (targetY - positions[i * 3 + 1]) * DRONE_EASING;
+        positions[i * 3 + 2] += (targetZ - positions[i * 3 + 2]) * DRONE_EASING;
+      }
+      drones.geometry.attributes.position.needsUpdate = true;
     }
   }
 
   if (!gameModeManager.getMode()) {
     if (isCinematicMode.value) {
-       const orbitRadius = 200;
-       const orbitSpeed = 0.5;
-       const angle = time * orbitSpeed;
+      const angle = time * INTRO_ORBIT_SPEED;
 
-       const tx = cinematicTarget.x + Math.sin(angle) * orbitRadius;
-       const tz = cinematicTarget.z + Math.cos(angle) * orbitRadius;
+      const tx = cinematicTarget.x + Math.sin(angle) * INTRO_ORBIT_RADIUS;
+      const tz = cinematicTarget.z + Math.cos(angle) * INTRO_ORBIT_RADIUS;
 
-       camera.position.x += (tx - camera.position.x) * 0.05;
-       camera.position.z += (tz - camera.position.z) * 0.05;
-       camera.position.y += (150 - camera.position.y) * 0.05;
+      camera.position.x += (tx - camera.position.x) * CAMERA_LERP_FACTOR;
+      camera.position.z += (tz - camera.position.z) * CAMERA_LERP_FACTOR;
+      camera.position.y +=
+        (CAMERA_CINEMATIC_Y - camera.position.y) * CAMERA_LERP_FACTOR;
 
-       currentLookAt.lerp(cinematicTarget, 0.05);
-       camera.lookAt(currentLookAt);
-
+      currentLookAt.lerp(cinematicTarget, CAMERA_LERP_FACTOR);
+      camera.lookAt(currentLookAt);
     } else {
-       const orbitRadius = isMobile.value ? 1400 : 800;
-       camera.position.x = Math.sin(time * 0.1) * orbitRadius;
-       camera.position.z = Math.cos(time * 0.1) * orbitRadius;
+      const orbitRadius = isMobile.value
+        ? ORBIT_RADIUS_MOBILE
+        : ORBIT_RADIUS_DESKTOP;
+      camera.position.x = Math.sin(time * ORBIT_SPEED) * orbitRadius;
+      camera.position.z = Math.cos(time * ORBIT_SPEED) * orbitRadius;
 
-       const targetY = isMobile.value ? 350 : 250;
+      const targetY = isMobile.value
+        ? CAMERA_TARGET_Y_MOBILE
+        : CAMERA_TARGET_Y_DESKTOP;
 
-       const introDuration = 4000; // 4 seconds intro
-       const introProgress = startTime.value === 0 ? 0 : Math.min(1, (now - startTime.value) / introDuration);
+      const introProgress =
+        startTime.value === 0
+          ? 0
+          : Math.min(1, (now - startTime.value) / INTRO_DURATION_MS);
 
-       if (startTime.value === 0) {
-         camera.position.y = 1000;
-         camera.position.x = Math.sin(time * 0.1 + Math.PI * 2) * orbitRadius;
-         camera.position.z = Math.cos(time * 0.1 + Math.PI * 2) * orbitRadius;
-       } else if (introProgress < 1) {
-         // Easing function (easeOutCubic)
-         const ease = 1 - Math.pow(1 - introProgress, 3);
-         const startY = 1000;
-         const currentY = startY + (targetY - startY) * ease;
-         camera.position.y = currentY;
+      if (startTime.value === 0) {
+        camera.position.y = CAMERA_START_Y;
+        camera.position.x =
+          Math.sin(time * ORBIT_SPEED + Math.PI * 2) * orbitRadius;
+        camera.position.z =
+          Math.cos(time * ORBIT_SPEED + Math.PI * 2) * orbitRadius;
+      } else if (introProgress < 1) {
+        const ease = 1 - Math.pow(1 - introProgress, 3);
+        const startY = CAMERA_START_Y;
+        const currentY = startY + (targetY - startY) * ease;
+        camera.position.y = currentY;
 
-         // Spiral effect during intro
-         const spiralAngle = (1 - ease) * Math.PI * 2;
-         camera.position.x = Math.sin(time * 0.1 + spiralAngle) * orbitRadius;
-         camera.position.z = Math.cos(time * 0.1 + spiralAngle) * orbitRadius;
-       } else {
-         if (Math.abs(camera.position.y - targetY) > 1) {
-           camera.position.y += (targetY - camera.position.y) * 0.05;
-         }
-       }
+        const spiralAngle = (1 - ease) * Math.PI * 2;
+        camera.position.x =
+          Math.sin(time * ORBIT_SPEED + spiralAngle) * orbitRadius;
+        camera.position.z =
+          Math.cos(time * ORBIT_SPEED + spiralAngle) * orbitRadius;
+      } else {
+        if (Math.abs(camera.position.y - targetY) > 1) {
+          camera.position.y +=
+            (targetY - camera.position.y) * CAMERA_LERP_FACTOR;
+        }
+      }
 
-       const targetLookAt = new Vector3(0, 0, 0);
-       currentLookAt.lerp(targetLookAt, 0.02);
-       camera.lookAt(currentLookAt);
+      const targetLookAt = new Vector3(0, 0, 0);
+      currentLookAt.lerp(targetLookAt, CAMERA_LOOK_AT_LERP);
+      camera.lookAt(currentLookAt);
     }
   }
-  
+
   if (composer) {
     composer.render();
   } else {
@@ -1022,29 +1118,35 @@ function playPewSound(pos?: Vector3) {
   const gainNode = audioCtx.createGain();
 
   oscillator.type = "sawtooth";
-  oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+  oscillator.frequency.setValueAtTime(
+    AUDIO_OSCILLATOR_FREQ_START,
+    audioCtx.currentTime,
+  );
   oscillator.frequency.exponentialRampToValueAtTime(
-    110,
-    audioCtx.currentTime + 0.2,
+    AUDIO_OSCILLATOR_FREQ_END,
+    audioCtx.currentTime + AUDIO_SWEEP_DURATION,
   );
 
-  let volume = 0.1;
+  let volume = AUDIO_VOLUME;
 
   if (pos && camera) {
-      const dist = pos.distanceTo(camera.position);
-      volume = 0.1 / (1 + dist / 300);
+    const dist = pos.distanceTo(camera.position);
+    volume = AUDIO_VOLUME / (1 + dist / AUDIO_DISTANCE_FACTOR);
 
-      if (volume < 0.001) volume = 0;
+    if (volume < 0.001) volume = 0;
   }
 
   gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
-  gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+  gainNode.gain.exponentialRampToValueAtTime(
+    0.001,
+    audioCtx.currentTime + AUDIO_SWEEP_DURATION,
+  );
 
   oscillator.connect(gainNode);
   gainNode.connect(dest);
 
   oscillator.start();
-  oscillator.stop(audioCtx.currentTime + 0.2);
+  oscillator.stop(audioCtx.currentTime + AUDIO_SWEEP_DURATION);
 }
 
 function onAudioNote(type: string, data?: any) {
@@ -1057,8 +1159,8 @@ function onAudioNote(type: string, data?: any) {
     key = type;
   }
   if (materials[key]) {
-    let boost = 2.0;
-    if (type === "hihat") boost = 1.0;
+    let boost = EMISSIVE_INTENSITY_BOOST_BASS;
+    if (type === "hihat") boost = EMISSIVE_INTENSITY_BOOST_HIHAT;
     materials[key].emissiveIntensity = boost;
   }
 }

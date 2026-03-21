@@ -10,16 +10,31 @@ vi.mock("vue-router", () => ({
 }));
 
 // Mock defineAsyncComponent to return a stub for GameUI
-vi.mock('vue', async (importOriginal) => {
-  const actual = await importOriginal();
+vi.mock("vue", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("vue")>();
   return {
-    ...(actual as any),
+    ...actual,
     defineAsyncComponent: () => ({
-      name: 'GameUI',
+      name: "GameUI",
       template: '<div id="game-ui-stub" />',
-      props: ['isDrivingMode', 'isGameMode', 'isExplorationMode', 'isFlyingTour', 'isCinematicMode', 'isGameOver', 'isMobile', 'drivingScore', 'droneScore', 'timeLeft', 'distToTarget', 'controls', 'lookControls', 'leaderboard'],
-      emits: ['exit-game-mode', 'update-leaderboard']
-    })
+      props: [
+        "isDrivingMode",
+        "isGameMode",
+        "isExplorationMode",
+        "isFlyingTour",
+        "isCinematicMode",
+        "isGameOver",
+        "isMobile",
+        "drivingScore",
+        "droneScore",
+        "timeLeft",
+        "distToTarget",
+        "controls",
+        "lookControls",
+        "leaderboard",
+      ],
+      emits: ["exit-game-mode", "update-leaderboard"],
+    }),
   };
 });
 
@@ -29,12 +44,12 @@ describe("CyberpunkCity.vue", () => {
   beforeEach(() => {
     // Mock canvas context
     const mockContext = {
-      fillStyle: '',
-      strokeStyle: '',
+      fillStyle: "",
+      strokeStyle: "",
       lineWidth: 0,
-      font: '',
-      textAlign: '',
-      shadowColor: '',
+      font: "",
+      textAlign: "",
+      shadowColor: "",
       shadowBlur: 0,
       fillRect: vi.fn(),
       strokeRect: vi.fn(),
@@ -51,7 +66,10 @@ describe("CyberpunkCity.vue", () => {
       setTransform: vi.fn(),
     } as unknown as CanvasRenderingContext2D;
 
-    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(mockContext as any);
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      () => mockContext as any,
+    );
 
     wrapper = mount(CyberpunkCity, {
       attachTo: document.body,
@@ -76,8 +94,8 @@ describe("CyberpunkCity.vue", () => {
   });
 
   it("initializes Three.js scene on mount", async () => {
-     // Scene creation is side-effect, we can check if canvas has content or if Three mocks were called
-     // But strictly, we assume if mount happened without error, it's fine for now given setupThree.ts
+    // Scene creation is side-effect, we can check if canvas has content or if Three mocks were called
+    // But strictly, we assume if mount happened without error, it's fine for now given setupThree.ts
   });
 
   it("cleans up on unmount", () => {

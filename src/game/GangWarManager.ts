@@ -1,5 +1,4 @@
 import {
-  Color,
   Group,
   Mesh,
   MeshBasicMaterial,
@@ -8,10 +7,8 @@ import {
   CylinderGeometry,
   SphereGeometry,
   BoxGeometry,
-  Quaternion,
-  Matrix4
 } from "three";
-import { CELL_SIZE, START_OFFSET, GRID_SIZE, ROAD_WIDTH, BLOCK_SIZE } from "./config";
+import { CELL_SIZE, START_OFFSET, GRID_SIZE, BLOCK_SIZE } from "./config";
 import { getHeight } from "../utils/HeightMap";
 
 interface GangConfig {
@@ -21,10 +18,10 @@ interface GangConfig {
 }
 
 const GANGS: GangConfig[] = [
-  { id: 0, color: 0x00ff00, name: "Neon Vipers" },   // Green
-  { id: 1, color: 0xff00ff, name: "Cyber Punks" },   // Magenta
-  { id: 2, color: 0x00ffff, name: "Data Ghosts" },   // Cyan
-  { id: 3, color: 0xff0000, name: "Red Dragons" }    // Red
+  { id: 0, color: 0x00ff00, name: "Neon Vipers" }, // Green
+  { id: 1, color: 0xff00ff, name: "Cyber Punks" }, // Magenta
+  { id: 2, color: 0x00ffff, name: "Data Ghosts" }, // Cyan
+  { id: 3, color: 0xff0000, name: "Red Dragons" }, // Red
 ];
 
 class Projectile {
@@ -85,13 +82,19 @@ export class GangWarManager {
   arrowGeo: CylinderGeometry;
   arrowMat: MeshBasicMaterial;
 
-  occupiedGrids: Map<string, { halfW: number; halfD: number; isRound?: boolean }>;
+  occupiedGrids: Map<
+    string,
+    { halfW: number; halfD: number; isRound?: boolean }
+  >;
 
   constructor(
     scene: Scene,
-    occupiedGrids: Map<string, { halfW: number; halfD: number; isRound?: boolean }>,
+    occupiedGrids: Map<
+      string,
+      { halfW: number; halfD: number; isRound?: boolean }
+    >,
     spawnSparks: (pos: Vector3) => void,
-    playPewSound: (pos?: Vector3) => void
+    playPewSound: (pos?: Vector3) => void,
   ) {
     this.scene = scene;
     this.occupiedGrids = occupiedGrids;
@@ -101,7 +104,11 @@ export class GangWarManager {
     // Create arrow geometry
     this.arrowGeo = new CylinderGeometry(0, 4, 10, 8);
     this.arrowGeo.rotateX(Math.PI); // Point down
-    this.arrowMat = new MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.8 });
+    this.arrowMat = new MeshBasicMaterial({
+      color: 0xff0000,
+      transparent: true,
+      opacity: 0.8,
+    });
 
     this.initWarriors();
   }
@@ -110,7 +117,7 @@ export class GangWarManager {
     // Spawn warriors for each gang
     const warriorsPerGang = 20;
 
-    GANGS.forEach(gang => {
+    GANGS.forEach((gang) => {
       this.spawnGangBatch(gang, warriorsPerGang);
     });
   }
@@ -176,7 +183,10 @@ export class GangWarManager {
     const head = new Mesh(this.headGeo, mat);
     head.position.y = 1.5;
 
-    const gun = new Mesh(this.gunGeo, new MeshBasicMaterial({ color: 0x555555 }));
+    const gun = new Mesh(
+      this.gunGeo,
+      new MeshBasicMaterial({ color: 0x555555 }),
+    );
     gun.position.set(0.6, 0.8, 0.5);
 
     group.add(body);
@@ -246,8 +256,11 @@ export class GangWarManager {
         if (warrior.state === "DEAD") continue;
         if (warrior.gangId === proj.shooterId) continue; // Don't hit friends
 
-        const distSq = warrior.group.position.distanceToSquared(proj.mesh.position);
-        if (distSq < 2 * 2) { // Hit radius
+        const distSq = warrior.group.position.distanceToSquared(
+          proj.mesh.position,
+        );
+        if (distSq < 2 * 2) {
+          // Hit radius
           this.damageWarrior(warrior, proj.damage);
           this.spawnSparks(proj.mesh.position);
           hit = true;
@@ -268,7 +281,9 @@ export class GangWarManager {
 
   isValidTarget(w: Warrior, target: Warrior): boolean {
     const range = 150; // Increased range
-    return w.group.position.distanceToSquared(target.group.position) < range * range;
+    return (
+      w.group.position.distanceToSquared(target.group.position) < range * range
+    );
   }
 
   findTarget(w: Warrior) {
@@ -351,7 +366,7 @@ export class GangWarManager {
     this.projectiles.push(new Projectile(mesh, velocity, shooter.gangId));
 
     if (Math.random() > 0.7) {
-        this.playPewSound(startPos);
+      this.playPewSound(startPos);
     }
   }
 
@@ -360,11 +375,12 @@ export class GangWarManager {
     if (w.hp <= 0) {
       this.killWarrior(w);
     } else {
-        // Flash red
-        (w.body.material as MeshBasicMaterial).color.setHex(0xff0000);
-        setTimeout(() => {
-            if(w.state !== "DEAD") (w.body.material as MeshBasicMaterial).color.setHex(0x111111);
-        }, 100);
+      // Flash red
+      (w.body.material as MeshBasicMaterial).color.setHex(0xff0000);
+      setTimeout(() => {
+        if (w.state !== "DEAD")
+          (w.body.material as MeshBasicMaterial).color.setHex(0x111111);
+      }, 100);
     }
   }
 
@@ -382,9 +398,9 @@ export class GangWarManager {
   checkReinforcements() {
     // Count living members per gang
     const counts = new Map<number, number>();
-    GANGS.forEach(g => counts.set(g.id, 0));
+    GANGS.forEach((g) => counts.set(g.id, 0));
 
-    this.warriors.forEach(w => {
+    this.warriors.forEach((w) => {
       if (w.state !== "DEAD") {
         counts.set(w.gangId, (counts.get(w.gangId) || 0) + 1);
       }
@@ -395,7 +411,7 @@ export class GangWarManager {
 
     counts.forEach((count, gangId) => {
       if (count < threshold) {
-        const gang = GANGS.find(g => g.id === gangId);
+        const gang = GANGS.find((g) => g.id === gangId);
         if (gang) {
           this.spawnGangBatch(gang, reinforceCount);
         }
@@ -405,23 +421,26 @@ export class GangWarManager {
 
   updateFightMarkers(dt: number) {
     this.lastMarkerUpdate += dt;
-    if (this.lastMarkerUpdate < 1.0) { // Update every second
-        // Just animate existing arrows
-        const time = Date.now() * 0.003;
-        this.fightMarkers.forEach(m => {
-            m.position.y = 80 + Math.sin(time) * 5;
-            m.rotation.y += dt;
-        });
-        return;
+    if (this.lastMarkerUpdate < 1.0) {
+      // Update every second
+      // Just animate existing arrows
+      const time = Date.now() * 0.003;
+      this.fightMarkers.forEach((m) => {
+        m.position.y = 80 + Math.sin(time) * 5;
+        m.rotation.y += dt;
+      });
+      return;
     }
     this.lastMarkerUpdate = 0;
 
     // Clear old markers
-    this.fightMarkers.forEach(m => this.scene.remove(m));
+    this.fightMarkers.forEach((m) => this.scene.remove(m));
     this.fightMarkers = [];
 
     // Identify clusters of combat
-    const combatants = this.warriors.filter(w => w.state === "COMBAT" && w.hp > 0);
+    const combatants = this.warriors.filter(
+      (w) => w.state === "COMBAT" && w.hp > 0,
+    );
     if (combatants.length === 0) return;
 
     // Simple clustering: Grid based? Or just proximity
@@ -431,43 +450,48 @@ export class GangWarManager {
 
     // Warning: O(N^2) on combatants
     for (let i = 0; i < combatants.length; i++) {
-        if (visited.has(i)) continue;
+      if (visited.has(i)) continue;
 
-        const center = combatants[i].group.position.clone();
-        let count = 1;
-        visited.add(i);
+      const center = combatants[i].group.position.clone();
+      let count = 1;
+      visited.add(i);
 
-        for (let j = i + 1; j < combatants.length; j++) {
-            if (visited.has(j)) continue;
+      for (let j = i + 1; j < combatants.length; j++) {
+        if (visited.has(j)) continue;
 
-            if (combatants[i].group.position.distanceToSquared(combatants[j].group.position) < clusterRangeSq) {
-                center.add(combatants[j].group.position);
-                count++;
-                visited.add(j);
-            }
+        if (
+          combatants[i].group.position.distanceToSquared(
+            combatants[j].group.position,
+          ) < clusterRangeSq
+        ) {
+          center.add(combatants[j].group.position);
+          count++;
+          visited.add(j);
         }
+      }
 
-        if (count >= 4) { // Only show for decent fights
-            center.divideScalar(count);
-            clusters.push(center);
-        }
+      if (count >= 4) {
+        // Only show for decent fights
+        center.divideScalar(count);
+        clusters.push(center);
+      }
     }
 
-    clusters.forEach(pos => {
-        const arrow = new Mesh(this.arrowGeo, this.arrowMat);
-        arrow.position.set(pos.x, 80, pos.z);
-        arrow.userData.isFightMarker = true; // Tag for raycasting
-        arrow.userData.target = pos; // Store target location
+    clusters.forEach((pos) => {
+      const arrow = new Mesh(this.arrowGeo, this.arrowMat);
+      arrow.position.set(pos.x, 80, pos.z);
+      arrow.userData.isFightMarker = true; // Tag for raycasting
+      arrow.userData.target = pos; // Store target location
 
-        this.scene.add(arrow);
-        this.fightMarkers.push(arrow);
+      this.scene.add(arrow);
+      this.fightMarkers.push(arrow);
     });
   }
 
   dispose() {
-      // Cleanup meshes
-      this.warriors.forEach(w => this.scene.remove(w.group));
-      this.projectiles.forEach(p => this.scene.remove(p.mesh));
-      this.fightMarkers.forEach(m => this.scene.remove(m));
+    // Cleanup meshes
+    this.warriors.forEach((w) => this.scene.remove(w.group));
+    this.projectiles.forEach((p) => this.scene.remove(p.mesh));
+    this.fightMarkers.forEach((m) => this.scene.remove(m));
   }
 }

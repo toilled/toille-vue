@@ -1,5 +1,7 @@
 import { vi } from "vitest";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // @ts-expect-error: Mocking complex overload structure
 HTMLCanvasElement.prototype.getContext = vi.fn((contextId: string) => {
   if (contextId === "2d") {
@@ -55,7 +57,7 @@ vi.mock("three", async () => {
       render = vi.fn();
       dispose = vi.fn();
       setAnimationLoop = vi.fn();
-      constructor(parameters?: any) {}
+      constructor(_parameters?: any) {}
     },
     CylinderGeometry: class {
       parameters: any;
@@ -351,7 +353,7 @@ vi.mock("three", async () => {
       userData = {};
       visible = true;
       isObject3D = true;
-      constructor(color?: any, intensity?: any, distance?: any) {
+      constructor(color?: any, _intensity?: any, _distance?: any) {
         if (color !== undefined) this.color.getHex = vi.fn(() => color);
       }
       traverse(cb: any) {

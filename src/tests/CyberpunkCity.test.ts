@@ -95,7 +95,7 @@ vi.mock("three", () => {
       samples: 0,
     })),
     Color: vi.fn(() => ({
-      setHSL: vi.fn(function () {
+      setHSL: vi.fn(function (this: { setHSL: () => void }) {
         return this;
       }),
       setHex: vi.fn(),
@@ -165,22 +165,30 @@ vi.mock("three", () => {
         distanceToSquared: vi.fn(() => 100), // Added
         distanceTo: vi.fn(() => 10), // Added
         clone: vi.fn(() => ({
-          add: vi.fn(function () {
+          add: vi.fn(function (this: { x: number; y: number; z: number }) {
             return this;
           }),
-          sub: vi.fn(function () {
+          sub: vi.fn(function (this: { x: number; y: number; z: number }) {
             return this;
           }),
-          normalize: vi.fn(function () {
+          normalize: vi.fn(function (this: {
+            x: number;
+            y: number;
+            z: number;
+          }) {
             return this;
           }),
-          multiplyScalar: vi.fn(function () {
+          multiplyScalar: vi.fn(function (this: {
+            x: number;
+            y: number;
+            z: number;
+          }) {
             return this;
           }),
           x: 0,
           y: 0,
           z: 0,
-          clone: vi.fn(function () {
+          clone: vi.fn(function (this: { x: number; y: number; z: number }) {
             return this;
           }),
           distanceTo: vi.fn(() => 10),

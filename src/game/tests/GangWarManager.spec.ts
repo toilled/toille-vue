@@ -4,6 +4,65 @@ import { Scene, Vector3 } from "three";
 
 // Mock Three.js classes that aren't fully mocked in setupThree
 vi.mock("three", async () => {
+  class MockVector3 {
+    x = 0;
+    y = 0;
+    z = 0;
+    constructor(x: number = 0, y: number = 0, z: number = 0) {
+      this.x = x;
+      this.y = y;
+      this.z = z;
+    }
+    set(x: number, y: number, z: number): this {
+      this.x = x;
+      this.y = y;
+      this.z = z;
+      return this;
+    }
+    clone(): MockVector3 {
+      return new MockVector3(this.x, this.y, this.z);
+    }
+    copy(v: MockVector3): this {
+      this.x = v.x;
+      this.y = v.y;
+      this.z = v.z;
+      return this;
+    }
+    add(v: MockVector3): this {
+      this.x += v.x;
+      this.y += v.y;
+      this.z += v.z;
+      return this;
+    }
+    sub(v: MockVector3): this {
+      this.x -= v.x;
+      this.y -= v.y;
+      this.z -= v.z;
+      return this;
+    }
+    multiplyScalar(s: number): this {
+      this.x *= s;
+      this.y *= s;
+      this.z *= s;
+      return this;
+    }
+    divideScalar(s: number): this {
+      this.x /= s;
+      this.y /= s;
+      this.z /= s;
+      return this;
+    }
+    normalize(): this {
+      return this;
+    }
+    distanceToSquared(v: MockVector3): number {
+      const dx = this.x - v.x;
+      const dy = this.y - v.y;
+      const dz = this.z - v.z;
+      return dx * dx + dy * dy + dz * dz;
+    }
+  }
+
   const actual = await vi.importActual("three");
   return {
     ...actual,
@@ -14,7 +73,7 @@ vi.mock("three", async () => {
     BoxGeometry: class {},
     MeshBasicMaterial: class {},
     Mesh: class {
-      position = new Vector3();
+      position = new MockVector3();
       rotation = { x: 0, y: 0, z: 0, set: vi.fn() };
       material = { color: { setHex: vi.fn() } };
       add = vi.fn();
@@ -23,70 +82,12 @@ vi.mock("three", async () => {
       constructor() {}
     },
     Group: class {
-      position = new Vector3();
+      position = new MockVector3();
       rotation = { x: 0, y: 0, z: 0, set: vi.fn() };
       add = vi.fn();
       lookAt = vi.fn();
     },
-    Vector3: class {
-      x = 0;
-      y = 0;
-      z = 0;
-      constructor(x = 0, y = 0, z = 0) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-      }
-      set(x, y, z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        return this;
-      }
-      clone() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return new (this.constructor as any)(this.x, this.y, this.z);
-      }
-      copy(v) {
-        this.x = v.x;
-        this.y = v.y;
-        this.z = v.z;
-        return this;
-      }
-      add(v) {
-        this.x += v.x;
-        this.y += v.y;
-        this.z += v.z;
-        return this;
-      }
-      sub(v) {
-        this.x -= v.x;
-        this.y -= v.y;
-        this.z -= v.z;
-        return this;
-      }
-      multiplyScalar(s) {
-        this.x *= s;
-        this.y *= s;
-        this.z *= s;
-        return this;
-      }
-      divideScalar(s) {
-        this.x /= s;
-        this.y /= s;
-        this.z /= s;
-        return this;
-      }
-      normalize() {
-        return this;
-      }
-      distanceToSquared(v) {
-        const dx = this.x - v.x;
-        const dy = this.y - v.y;
-        const dz = this.z - v.z;
-        return dx * dx + dy * dy + dz * dz;
-      }
-    },
+    Vector3: MockVector3,
   };
 });
 
@@ -100,7 +101,7 @@ describe("GangWarManager", () => {
     scene = {
       add: vi.fn(),
       remove: vi.fn(),
-    };
+    } as unknown as Scene;
     spawnSparks = vi.fn();
     playPewSound = vi.fn();
 

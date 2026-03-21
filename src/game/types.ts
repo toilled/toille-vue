@@ -32,6 +32,7 @@ export interface GameContext {
 
   cars: Group[];
   drones: Points | undefined;
+  droneTargetPositions: Float32Array | undefined;
   buildings: Group[];
   occupiedGrids: Map<
     string,

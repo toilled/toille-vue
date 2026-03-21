@@ -44,13 +44,12 @@ import * as THREE from "three";
 import type { Scene } from "three";
 
 describe("KonamiManager", () => {
-  let _manager: KonamiManager;
   let scene: Scene;
 
   beforeEach(() => {
     vi.clearAllMocks();
     scene = new THREE.Scene();
-    _manager = new KonamiManager(scene);
+    new KonamiManager(scene);
   });
 
   it("should initialize fireworks positions off-screen", () => {

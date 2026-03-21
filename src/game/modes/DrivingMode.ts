@@ -209,6 +209,8 @@ export class DrivingMode implements GameMode {
       navArrow.visible = false;
     } else {
       // Checkpoint Logic
+      if (!checkpointMesh) return;
+
       const cx = car.position.x;
       const cz = car.position.z;
       const tx = checkpointMesh.position.x;

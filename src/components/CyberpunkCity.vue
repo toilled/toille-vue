@@ -479,7 +479,7 @@ function spawnSparks(position: Vector3) {
 function activateSpark(
   i: number,
   position: Vector3,
-  posAttribute: BufferAttribute | any,
+  posAttribute: BufferAttribute,
 ) {
   sparkLifetimes[i] = 1.0;
   posAttribute.setXYZ(i, position.x, position.y, position.z);
@@ -645,6 +645,7 @@ onMounted(() => {
     composer,
     cars,
     drones,
+    droneTargetPositions,
     occupiedGrids,
     buildings,
     score,

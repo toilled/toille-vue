@@ -17,25 +17,37 @@ describe("Checker.vue", () => {
 
   it("increments count when add is clicked", async () => {
     const wrapper = mount(Checker);
-    const addButton = wrapper.findAll('button').find(button => button.text() === 'Add');
-    await addButton.trigger("click");
+    const addButton = wrapper
+      .findAll("button")
+      .find((button) => button.text() === "Add");
+    expect(addButton).toBeDefined();
+    await addButton!.trigger("click");
     expect(wrapper.vm.count).toBe(1);
   });
 
   it("decrements count when subtract is clicked", async () => {
     const wrapper = mount(Checker);
-    const addButton = wrapper.findAll('button').find(button => button.text() === 'Add');
-    const subtractButton = wrapper.findAll('button').find(button => button.text() === 'Subtract');
-    await addButton.trigger("click");
-    await addButton.trigger("click");
-    await subtractButton.trigger("click");
+    const addButton = wrapper
+      .findAll("button")
+      .find((button) => button.text() === "Add");
+    const subtractButton = wrapper
+      .findAll("button")
+      .find((button) => button.text() === "Subtract");
+    expect(addButton).toBeDefined();
+    expect(subtractButton).toBeDefined();
+    await addButton!.trigger("click");
+    await addButton!.trigger("click");
+    await subtractButton!.trigger("click");
     expect(wrapper.vm.count).toBe(1);
   });
 
   it("does not decrement count below 0", async () => {
     const wrapper = mount(Checker);
-    const subtractButton = wrapper.findAll('button').find(button => button.text() === 'Subtract');
-    await subtractButton.trigger("click");
+    const subtractButton = wrapper
+      .findAll("button")
+      .find((button) => button.text() === "Subtract");
+    expect(subtractButton).toBeDefined();
+    await subtractButton!.trigger("click");
     expect(wrapper.vm.count).toBe(0);
   });
 
@@ -50,15 +62,29 @@ describe("Checker.vue", () => {
     } as const;
 
     // Initial state
-    expect(wrapper.vm.limitTime).toBe(new Date().toLocaleTimeString([], options));
-    expect(wrapper.vm.soberTime).toBe(new Date().toLocaleTimeString([], options));
+    expect(wrapper.vm.limitTime).toBe(
+      new Date().toLocaleTimeString([], options),
+    );
+    expect(wrapper.vm.soberTime).toBe(
+      new Date().toLocaleTimeString([], options),
+    );
 
     // Add one unit
-    const addButton = wrapper.findAll('button').find(button => button.text() === 'Add');
-    await addButton.trigger("click");
+    const addButton = wrapper
+      .findAll("button")
+      .find((button) => button.text() === "Add");
+    expect(addButton).toBeDefined();
+    await addButton!.trigger("click");
     const currentTime = new Date().getTime();
-    expect(wrapper.vm.limitTime).toBe(new Date(currentTime + 60 * 60 * 1000).toLocaleTimeString([], options));
-    expect(wrapper.vm.soberTime).toBe(new Date(currentTime + 2 * 60 * 60 * 1000).toLocaleTimeString([], options));
+    expect(wrapper.vm.limitTime).toBe(
+      new Date(currentTime + 60 * 60 * 1000).toLocaleTimeString([], options),
+    );
+    expect(wrapper.vm.soberTime).toBe(
+      new Date(currentTime + 2 * 60 * 60 * 1000).toLocaleTimeString(
+        [],
+        options,
+      ),
+    );
 
     vi.useRealTimers();
   });

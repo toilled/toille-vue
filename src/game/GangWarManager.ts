@@ -54,12 +54,22 @@ class Warrior {
   body: Mesh;
   gun: Mesh;
 
+  // Timer for damage flash effect
+  flashTimerId: ReturnType<typeof setTimeout> | null = null;
+
   constructor(group: Group, gangId: number, head: Mesh, body: Mesh, gun: Mesh) {
     this.group = group;
     this.gangId = gangId;
     this.head = head;
     this.body = body;
     this.gun = gun;
+  }
+
+  clearFlashTimer() {
+    if (this.flashTimerId !== null) {
+      clearTimeout(this.flashTimerId);
+      this.flashTimerId = null;
+    }
   }
 }
 
@@ -375,9 +385,11 @@ export class GangWarManager {
     if (w.hp <= 0) {
       this.killWarrior(w);
     } else {
+      // Clear any existing flash timer
+      w.clearFlashTimer();
       // Flash red
       (w.body.material as MeshBasicMaterial).color.setHex(0xff0000);
-      setTimeout(() => {
+      w.flashTimerId = setTimeout(() => {
         if (w.state !== "DEAD")
           (w.body.material as MeshBasicMaterial).color.setHex(0x111111);
       }, 100);
@@ -386,6 +398,7 @@ export class GangWarManager {
 
   killWarrior(w: Warrior) {
     w.state = "DEAD";
+    w.clearFlashTimer();
     w.group.rotation.x = Math.PI / 2; // Fall over
     const h = getHeight(w.group.position.x, w.group.position.z);
     w.group.position.y = h + 0.5;

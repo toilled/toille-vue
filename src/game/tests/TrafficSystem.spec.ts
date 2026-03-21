@@ -65,8 +65,10 @@ describe("TrafficSystem", () => {
       }
     });
 
-    expect(redLight.visible).toBe(true);
-    expect(blueLight.visible).toBe(false);
+    expect(redLight).toBeDefined();
+    expect(blueLight).toBeDefined();
+    expect(redLight!.visible).toBe(true);
+    expect(blueLight!.visible).toBe(false);
 
     // Advance time to toggle
     // 1000 + 150 = 1150. 1150/150 = 7.66 -> 7 % 2 = 1 -> isRedOn = false
@@ -74,8 +76,8 @@ describe("TrafficSystem", () => {
 
     trafficSystem.update();
 
-    expect(redLight.visible).toBe(false);
-    expect(blueLight.visible).toBe(true);
+    expect(redLight!.visible).toBe(false);
+    expect(blueLight!.visible).toBe(true);
   });
 
   it("should execute update without errors", () => {

@@ -18,12 +18,12 @@ class AudioManager {
         this.ctx = new AudioContext();
         this.masterGain = this.ctx.createGain();
         this.masterGain.connect(this.ctx.destination);
-        this.updateGain();
+        this.applyGain();
       }
     }
   }
 
-  private updateGain() {
+  applyGain() {
     if (this.masterGain && this.ctx) {
       this.masterGain.gain.setValueAtTime(
         this.isSoundEnabled.value ? 1 : 0,
@@ -40,17 +40,12 @@ class AudioManager {
     if (this.ctx && this.ctx.state === "suspended") {
       this.ctx.resume();
     }
-    this.updateGain();
+    this.applyGain();
   }
 }
 
 export const audioManager = new AudioManager();
 
 watch(audioManager.isSoundEnabled, () => {
-  if (audioManager.masterGain && audioManager.ctx) {
-    audioManager.masterGain.gain.setValueAtTime(
-      audioManager.isSoundEnabled.value ? 1 : 0,
-      audioManager.ctx.currentTime,
-    );
-  }
+  audioManager.applyGain();
 });

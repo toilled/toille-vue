@@ -9,7 +9,7 @@ const mockActivity = {
 };
 
 beforeEach(() => {
-  vi.spyOn(global, "fetch").mockResolvedValue({
+  vi.spyOn(globalThis, "fetch").mockResolvedValue({
     json: () => Promise.resolve(mockActivity),
   } as Response);
 });
@@ -34,13 +34,15 @@ describe("Activity.vue", () => {
       activity: "Go for a walk",
       type: "recreational",
     };
-    global.fetch.mockResolvedValue({
+    vi.mocked(globalThis.fetch).mockResolvedValue({
       json: () => Promise.resolve(newMockActivity),
     } as Response);
     await wrapper.trigger("click");
     await flushPromises();
     expect(wrapper.text()).toContain(newMockActivity.activity);
-    expect(wrapper.text()).toContain(`Try this ${newMockActivity.type} activity`);
+    expect(wrapper.text()).toContain(
+      `Try this ${newMockActivity.type} activity`,
+    );
   });
 
   it("shows a loading state while fetching", async () => {
@@ -60,8 +62,10 @@ describe("Activity.vue", () => {
   });
 
   it("handles fetch errors gracefully", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    global.fetch.mockRejectedValue(new Error("API is down"));
+    const consoleErrorSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+    vi.mocked(globalThis.fetch).mockRejectedValue(new Error("API is down"));
     const wrapper = mount(Activity);
     await flushPromises();
     expect(wrapper.text()).toContain("Loading from The Bored API.");

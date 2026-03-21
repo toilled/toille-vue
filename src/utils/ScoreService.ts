@@ -4,6 +4,20 @@ export interface ScoreEntry {
 }
 
 const LOCAL_KEY = "cyberpunk_city_scores";
+const MAX_NAME_LENGTH = 20;
+const MIN_SCORE = 0;
+const MAX_SCORE = Number.MAX_SAFE_INTEGER;
+
+function sanitizeName(name: string): string {
+  return name.trim().substring(0, MAX_NAME_LENGTH);
+}
+
+function validateScore(score: number): number {
+  if (typeof score !== "number" || !Number.isFinite(score)) {
+    return MIN_SCORE;
+  }
+  return Math.max(MIN_SCORE, Math.min(score, MAX_SCORE));
+}
 
 export const ScoreService = {
   async getTopScores(): Promise<ScoreEntry[]> {
@@ -31,11 +45,18 @@ export const ScoreService = {
   },
 
   async submitScore(name: string, score: number): Promise<ScoreEntry[]> {
+    const sanitizedName = sanitizeName(name);
+    const validatedScore = validateScore(score);
+
+    if (sanitizedName.length === 0) {
+      return getLocalScores();
+    }
+
     try {
       const res = await fetch("/api/scores", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, score }),
+        body: JSON.stringify({ name: sanitizedName, score: validatedScore }),
       });
 
       if (res.ok) {
@@ -54,7 +75,7 @@ export const ScoreService = {
       console.warn("API unavailable, using local storage:", e);
     }
 
-    saveLocalScore(name, score);
+    saveLocalScore(sanitizedName, validatedScore);
     return getLocalScores();
   },
 };

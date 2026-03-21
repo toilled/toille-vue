@@ -28,7 +28,7 @@ export class FlyingTourMode implements GameMode {
     this.context = context;
   }
 
-  update(dt: number, time: number) {
+  update(_dt: number, time: number) {
     if (!this.context) return;
     const { camera } = this.context;
 

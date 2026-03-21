@@ -30,7 +30,7 @@ describe("PageContent.vue", () => {
     await flushPromises();
     expect(wrapper.text()).toContain(pages[0].title);
     expect(wrapper.findAllComponents(Paragraph).length).toBe(
-      pages[0].body.length
+      pages[0].body.length,
     );
   });
 
@@ -47,7 +47,7 @@ describe("PageContent.vue", () => {
     await flushPromises();
     expect(wrapper.text()).toContain(pages[1].title);
     expect(wrapper.findAllComponents(Paragraph).length).toBe(
-      pages[1].body.length
+      pages[1].body.length,
     );
   });
 
@@ -63,9 +63,7 @@ describe("PageContent.vue", () => {
     });
     await flushPromises();
     expect(wrapper.text()).toContain("404 - Page not found");
-    expect(wrapper.text()).toContain(
-      `The page ${pageName} does not exist!`
-    );
+    expect(wrapper.text()).toContain(`The page ${pageName} does not exist!`);
   });
 
   it("renders a 404 message for a catch-all route", async () => {
@@ -83,7 +81,7 @@ describe("PageContent.vue", () => {
 
   it("shows a hint on title mousedown", async () => {
     vi.useFakeTimers();
-    const router = createTestRouter("/");
+    const router = createTestRouter();
     router.push("/");
     await router.isReady();
     const wrapper = mount(PageContent, {
@@ -100,5 +98,4 @@ describe("PageContent.vue", () => {
     expect(wrapper.text()).not.toContain("Nothing here");
     vi.useRealTimers();
   });
-
 });

@@ -145,13 +145,21 @@ vi.mock("three", async () => {
         x: 0,
         y: 0,
         z: 0,
-        set: vi.fn(function (x, y, z) {
+        set: vi.fn(function (
+          this: { x: number; y: number; z: number },
+          x: number,
+          y: number,
+          z: number,
+        ) {
           this.x = x;
           this.y = y;
           this.z = z;
           return this;
         }),
-        copy: vi.fn(function (v) {
+        copy: vi.fn(function (
+          this: { x: number; y: number; z: number },
+          v: { x: number; y: number; z: number },
+        ) {
           this.x = v.x;
           this.y = v.y;
           this.z = v.z;
@@ -201,13 +209,21 @@ vi.mock("three", async () => {
         x: 0,
         y: 0,
         z: 0,
-        set: vi.fn(function (x, y, z) {
+        set: vi.fn(function (
+          this: { x: number; y: number; z: number },
+          x: number,
+          y: number,
+          z: number,
+        ) {
           this.x = x;
           this.y = y;
           this.z = z;
           return this;
         }),
-        copy: vi.fn(function (v) {
+        copy: vi.fn(function (
+          this: { x: number; y: number; z: number },
+          v: { x: number; y: number; z: number },
+        ) {
           this.x = v.x;
           this.y = v.y;
           this.z = v.z;

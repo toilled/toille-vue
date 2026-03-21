@@ -26,7 +26,7 @@ export class DroneMode implements GameMode {
     this.deadDrones.clear();
   }
 
-  update(dt: number, time: number) {
+  update(_dt: number, time: number) {
     if (!this.context || !this.context.drones || !this.droneVelocities) return;
 
     const { drones, camera, isMobile } = this.context;
@@ -78,15 +78,22 @@ export class DroneMode implements GameMode {
   cleanup() {
     if (!this.context || !this.context.drones) return;
 
-    // Restore dead drones (although in original code, they are restored and positions reset to targets)
-    // We don't have access to `droneTargetPositions` here easily unless we pass it in Context.
-    // Ideally, the standard "Idle" mode (no mode) handles the target/oscillation logic.
-    // When we exit DroneMode, we should probably reset positions to something safe or let the next mode handle it.
-    // For now, just clear the dead set.
-    this.deadDrones.clear();
+    // Restore dead drones to their target positions
+    if (this.context.droneTargetPositions) {
+      const positions = this.context.drones.geometry.attributes.position
+        .array as Float32Array;
 
-    // Note: The original code resets positions to `droneTargetPositions` on exit.
-    // We might need `droneTargetPositions` in GameContext if we want to perfectly replicate behavior.
+      this.deadDrones.forEach((index) => {
+        positions[index * 3] = this.context!.droneTargetPositions![index * 3];
+        positions[index * 3 + 1] =
+          this.context!.droneTargetPositions![index * 3 + 1];
+        positions[index * 3 + 2] =
+          this.context!.droneTargetPositions![index * 3 + 2];
+      });
+      this.context.drones.geometry.attributes.position.needsUpdate = true;
+    }
+
+    this.deadDrones.clear();
   }
 
   onKeyDown(_event: KeyboardEvent) {}

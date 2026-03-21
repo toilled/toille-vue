@@ -55,34 +55,40 @@ vi.mock("three", async () => {
       render = vi.fn();
       dispose = vi.fn();
       setAnimationLoop = vi.fn();
-      constructor(parameters?: any) { }
+      constructor(parameters?: any) {}
     },
     CylinderGeometry: class {
       parameters: any;
-      constructor() { }
-      translate() { }
+      constructor() {}
+      translate() {}
       rotateX = vi.fn();
       rotateZ = vi.fn();
-      dispose() { }
+      dispose() {}
     },
     SphereGeometry: class {
       parameters: any;
-      constructor() { }
-      translate() { }
-      dispose() { }
+      constructor() {}
+      translate() {}
+      dispose() {}
     },
     ConeGeometry: class {
       parameters: any;
-      constructor() { }
-      translate() { }
-      dispose() { }
+      constructor() {}
+      translate() {}
+      dispose() {}
     },
     BoxGeometry: class {
-      translate() { }
-      getIndex() { return null; }
-      getAttribute() { return { count: 0, itemSize: 3, array: [] }; }
-      clone() { return this; }
-      dispose() { }
+      translate() {}
+      getIndex() {
+        return null;
+      }
+      getAttribute() {
+        return { count: 0, itemSize: 3, array: [] };
+      }
+      clone() {
+        return this;
+      }
+      dispose() {}
       parameters = {};
     },
     PlaneGeometry: class {
@@ -97,11 +103,11 @@ vi.mock("three", async () => {
             getY: vi.fn(() => 0),
             getZ: vi.fn(() => 0),
             setZ: vi.fn(),
-          }
+          },
         };
       }
       computeVertexNormals = vi.fn();
-      dispose() { }
+      dispose() {}
     },
     BufferGeometry: class {
       attributes = {
@@ -116,25 +122,39 @@ vi.mock("three", async () => {
           setXYZ: vi.fn(),
         },
       };
-      setAttribute() { }
-      setFromPoints() { }
-      getIndex() { return null; }
-      getAttribute() { return this.attributes.position; }
-      computeBoundingSphere() { }
-      dispose() { }
+      setAttribute() {}
+      setFromPoints() {}
+      getIndex() {
+        return null;
+      }
+      getAttribute() {
+        return this.attributes.position;
+      }
+      computeBoundingSphere() {}
+      dispose() {}
     },
     EdgesGeometry: class {
-      constructor() { }
+      constructor() {}
       scale = { set: vi.fn() };
-      dispose() { }
+      dispose() {}
     },
     Mesh: class {
       position = {
         x: 0,
         y: 0,
         z: 0,
-        set: vi.fn(function(x, y, z) { this.x = x; this.y = y; this.z = z; return this; }),
-        copy: vi.fn(function(v) { this.x = v.x; this.y = v.y; this.z = v.z; return this; }),
+        set: vi.fn(function (x, y, z) {
+          this.x = x;
+          this.y = y;
+          this.z = z;
+          return this;
+        }),
+        copy: vi.fn(function (v) {
+          this.x = v.x;
+          this.y = v.y;
+          this.z = v.z;
+          return this;
+        }),
         lerp: vi.fn(),
         distanceTo: vi.fn(),
         distanceToSquared: vi.fn(),
@@ -163,22 +183,34 @@ vi.mock("three", async () => {
         (this as any).addEventListener = vi.fn();
         (this as any).removeEventListener = vi.fn();
       }
-      add() { }
-      remove() { }
-      removeFromParent() { }
-      traverse(cb: any) { cb(this); }
-      lookAt() { }
-      dispatchEvent() { }
-      addEventListener() { }
-      removeEventListener() { }
+      add() {}
+      remove() {}
+      removeFromParent() {}
+      traverse(cb: any) {
+        cb(this);
+      }
+      lookAt() {}
+      dispatchEvent() {}
+      addEventListener() {}
+      removeEventListener() {}
     },
     Group: class {
       position = {
         x: 0,
         y: 0,
         z: 0,
-        set: vi.fn(function(x, y, z) { this.x = x; this.y = y; this.z = z; return this; }),
-        copy: vi.fn(function(v) { this.x = v.x; this.y = v.y; this.z = v.z; return this; }),
+        set: vi.fn(function (x, y, z) {
+          this.x = x;
+          this.y = y;
+          this.z = z;
+          return this;
+        }),
+        copy: vi.fn(function (v) {
+          this.x = v.x;
+          this.y = v.y;
+          this.z = v.z;
+          return this;
+        }),
         distanceTo: vi.fn(),
         distanceToSquared: vi.fn(),
       };
@@ -198,15 +230,15 @@ vi.mock("three", async () => {
       remove(obj: any) {
         this.children = this.children.filter((c) => c !== obj);
       }
-      removeFromParent() { }
+      removeFromParent() {}
       traverse(cb: any) {
         cb(this);
         this.children.forEach((c) => c.traverse && c.traverse(cb));
       }
       lookAt = vi.fn(); // Added lookAt to Group
-      dispatchEvent() { }
-      addEventListener() { }
-      removeEventListener() { }
+      dispatchEvent() {}
+      addEventListener() {}
+      removeEventListener() {}
     },
     Scene: class {
       add = vi.fn();
@@ -217,23 +249,30 @@ vi.mock("three", async () => {
       isObject3D = true;
     },
     MeshStandardMaterial: class {
-      clone() { return this; }
-      dispose() { }
+      clone() {
+        return this;
+      }
+      dispose() {}
     },
     MeshLambertMaterial: class {
-      clone() { return this; }
-      dispose() { }
+      clone() {
+        return this;
+      }
+      dispose() {}
     },
     MeshBasicMaterial: class {
       color = { getHex: vi.fn(() => 0xffffff) };
       constructor(params?: any) {
-        if (params?.color !== undefined) this.color.getHex = vi.fn(() => params.color);
+        if (params?.color !== undefined)
+          this.color.getHex = vi.fn(() => params.color);
       }
-      clone() { return this; }
-      dispose() { }
+      clone() {
+        return this;
+      }
+      dispose() {}
     },
     LineBasicMaterial: class {
-      dispose() { }
+      dispose() {}
     },
     LineSegments: class {
       scale = { set: vi.fn() };
@@ -246,14 +285,14 @@ vi.mock("three", async () => {
       };
       rotation = { x: 0, y: 0, z: 0, copy: vi.fn() };
       isObject3D = true;
-      add() { }
-      removeFromParent() { }
-      dispatchEvent() { }
-      addEventListener() { }
-      removeEventListener() { }
+      add() {}
+      removeFromParent() {}
+      dispatchEvent() {}
+      addEventListener() {}
+      removeEventListener() {}
     },
     PointsMaterial: class {
-      dispose() { }
+      dispose() {}
     },
     Points: class {
       geometry = {
@@ -266,11 +305,12 @@ vi.mock("three", async () => {
             getZ: vi.fn(),
             setXYZ: vi.fn(),
           },
-          color: { // Added color attribute support
+          color: {
+            // Added color attribute support
             array: [],
             needsUpdate: false,
             setXYZ: vi.fn(),
-          }
+          },
         },
         dispose: vi.fn(), // Added dispose to geometry
       };
@@ -279,11 +319,11 @@ vi.mock("three", async () => {
       };
       frustumCulled = true;
       isObject3D = true;
-      add() { }
-      removeFromParent() { }
-      dispatchEvent() { }
-      addEventListener() { }
-      removeEventListener() { }
+      add() {}
+      removeFromParent() {}
+      dispatchEvent() {}
+      addEventListener() {}
+      removeEventListener() {}
     },
     Raycaster: class {
       params = { Points: { threshold: 1 } };
@@ -297,13 +337,13 @@ vi.mock("three", async () => {
       userData = {};
       castShadow = false;
       isObject3D = true;
-      add() { }
-      remove() { }
-      removeFromParent() { }
-      dispose() { }
-      dispatchEvent() { }
-      addEventListener() { }
-      removeEventListener() { }
+      add() {}
+      remove() {}
+      removeFromParent() {}
+      dispose() {}
+      dispatchEvent() {}
+      addEventListener() {}
+      removeEventListener() {}
     },
     PointLight: class {
       position = { set: vi.fn(), copy: vi.fn() };
@@ -314,23 +354,25 @@ vi.mock("three", async () => {
       constructor(color?: any, intensity?: any, distance?: any) {
         if (color !== undefined) this.color.getHex = vi.fn(() => color);
       }
-      traverse(cb: any) { cb(this); }
-      add() { }
-      remove() { }
-      removeFromParent() { }
-      dispose() { }
-      dispatchEvent() { }
-      addEventListener() { }
-      removeEventListener() { }
+      traverse(cb: any) {
+        cb(this);
+      }
+      add() {}
+      remove() {}
+      removeFromParent() {}
+      dispose() {}
+      dispatchEvent() {}
+      addEventListener() {}
+      removeEventListener() {}
     },
     HemisphereLight: class {
       position = { set: vi.fn(), copy: vi.fn() };
       isObject3D = true;
-      constructor() { }
-      add() { }
-      remove() { }
-      removeFromParent() { }
-      dispose() { }
+      constructor() {}
+      add() {}
+      remove() {}
+      removeFromParent() {}
+      dispose() {}
     },
     PCFSoftShadowMap: 2,
     ACESFilmicToneMapping: 4,
@@ -345,15 +387,15 @@ vi.mock("three/examples/jsm/postprocessing/EffectComposer", () => ({
     render = vi.fn();
     setSize = vi.fn();
     passes = [
-        { strength: 1.5, radius: 0.4, threshold: 0.85 } // Bloom pass simulation
+      { strength: 1.5, radius: 0.4, threshold: 0.85 }, // Bloom pass simulation
     ];
-  }
+  },
 }));
 
 vi.mock("three/examples/jsm/postprocessing/RenderPass", () => ({
   RenderPass: class {
     constructor() {}
-  }
+  },
 }));
 
 vi.mock("three/examples/jsm/postprocessing/UnrealBloomPass", () => ({
@@ -362,93 +404,124 @@ vi.mock("three/examples/jsm/postprocessing/UnrealBloomPass", () => ({
     radius = 0.4;
     threshold = 0.85;
     constructor() {}
-  }
+  },
 }));
 
 vi.mock("three/examples/jsm/postprocessing/AfterimagePass", () => ({
-    AfterimagePass: class {
-        enabled = false;
-        uniforms = { damp: { value: 0.96 } };
-        constructor() {}
-    }
+  AfterimagePass: class {
+    enabled = false;
+    uniforms = { damp: { value: 0.96 } };
+    constructor() {}
+  },
 }));
 
 vi.mock("three/examples/jsm/postprocessing/GlitchPass", () => ({
-    GlitchPass: class {
-        enabled = false;
-        goWild = false;
-        constructor() {}
-    }
+  GlitchPass: class {
+    enabled = false;
+    goWild = false;
+    constructor() {}
+  },
 }));
 
 vi.mock("three/examples/jsm/postprocessing/OutputPass", () => ({
   OutputPass: class {
     constructor() {}
-  }
+  },
 }));
 
-vi.stubGlobal("requestAnimationFrame", vi.fn((cb) => setTimeout(cb, 16)));
-vi.stubGlobal("cancelAnimationFrame", vi.fn((id) => clearTimeout(id)));
+vi.stubGlobal(
+  "requestAnimationFrame",
+  vi.fn((cb) => setTimeout(cb, 16)),
+);
+vi.stubGlobal(
+  "cancelAnimationFrame",
+  vi.fn((id) => clearTimeout(id)),
+);
 
-vi.stubGlobal("ResizeObserver", class ResizeObserver {
-  observe() { }
-  unobserve() { }
-  disconnect() { }
-});
-
-vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({
-  json: () => Promise.resolve({}),
-  text: () => Promise.resolve(""),
-  ok: true,
-  headers: {
-    get: vi.fn(),
+vi.stubGlobal(
+  "ResizeObserver",
+  class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
   },
-})));
+);
 
-vi.stubGlobal("AudioContext", class AudioContext {
-  state = "suspended";
-  currentTime = 0;
-  createOscillator() {
-    return {
-      type: "sine",
-      frequency: { setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() },
-      connect: vi.fn(),
-      start: vi.fn(),
-      stop: vi.fn(),
-    };
-  }
-  createGain() {
-    return {
-      gain: { setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() },
-      connect: vi.fn(),
-    };
-  }
-  createBiquadFilter() {
-    return {
-      type: "lowpass",
-      frequency: { setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn(), value: 0 },
-      connect: vi.fn(),
-    };
-  }
-  createBuffer() {
-    return { getChannelData: vi.fn(() => new Float32Array(0)) };
-  }
-  createBufferSource() {
-    return { buffer: null, connect: vi.fn(), start: vi.fn(), stop: vi.fn() };
-  }
-  resume() {
-    this.state = "running";
-    return Promise.resolve();
-  }
-  suspend() {
-    this.state = "suspended";
-    return Promise.resolve();
-  }
-  close() { // Added close method
-    this.state = "closed";
-    return Promise.resolve();
-  }
-  destination = {};
-  sampleRate = 44100;
-});
+vi.stubGlobal(
+  "fetch",
+  vi.fn(() =>
+    Promise.resolve({
+      json: () => Promise.resolve({}),
+      text: () => Promise.resolve(""),
+      ok: true,
+      headers: {
+        get: vi.fn(),
+      },
+    }),
+  ),
+);
+
+vi.stubGlobal(
+  "AudioContext",
+  class AudioContext {
+    state = "suspended";
+    currentTime = 0;
+    createOscillator() {
+      return {
+        type: "sine",
+        frequency: {
+          setValueAtTime: vi.fn(),
+          exponentialRampToValueAtTime: vi.fn(),
+          setTargetAtTime: vi.fn(),
+        },
+        connect: vi.fn(),
+        start: vi.fn(),
+        stop: vi.fn(),
+      };
+    }
+    createGain() {
+      return {
+        gain: {
+          setValueAtTime: vi.fn(),
+          exponentialRampToValueAtTime: vi.fn(),
+          setTargetAtTime: vi.fn(),
+        },
+        connect: vi.fn(),
+      };
+    }
+    createBiquadFilter() {
+      return {
+        type: "lowpass",
+        frequency: {
+          setValueAtTime: vi.fn(),
+          exponentialRampToValueAtTime: vi.fn(),
+          setTargetAtTime: vi.fn(),
+          value: 0,
+        },
+        connect: vi.fn(),
+      };
+    }
+    createBuffer() {
+      return { getChannelData: vi.fn(() => new Float32Array(0)) };
+    }
+    createBufferSource() {
+      return { buffer: null, connect: vi.fn(), start: vi.fn(), stop: vi.fn() };
+    }
+    resume() {
+      this.state = "running";
+      return Promise.resolve();
+    }
+    suspend() {
+      this.state = "suspended";
+      return Promise.resolve();
+    }
+    close() {
+      // Added close method
+      this.state = "closed";
+      return Promise.resolve();
+    }
+    destination = {};
+    sampleRate = 44100;
+  },
+);
 vi.stubGlobal("webkitAudioContext", (globalThis as any).AudioContext);

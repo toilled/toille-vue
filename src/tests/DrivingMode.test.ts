@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { DrivingMode } from "../game/modes/DrivingMode";
-import { GameContext } from "../game/types";
 import * as THREE from "three";
 
 const { mockCarAudio } = vi.hoisted(() => {
@@ -22,6 +21,7 @@ vi.mock("../game/audio/CarAudio", () => {
 
 describe("DrivingMode Physics", () => {
   let drivingMode: DrivingMode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockContext: any;
 
   beforeEach(() => {

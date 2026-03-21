@@ -1,133 +1,141 @@
 import { GameContext, GameMode } from "../types";
-import { Raycaster, Vector2, Vector3, BufferAttribute } from "three";
+import { Raycaster, Vector2, Vector3 } from "three";
 import { BOUNDS, DRONE_COUNT } from "../config";
 
 export class DroneMode implements GameMode {
-    context: GameContext | null = null;
-    droneVelocities: Float32Array | null = null;
-    deadDrones = new Set<number>();
-    raycaster = new Raycaster();
-    pointer = new Vector2();
-    currentLookAt = new Vector3(0, 0, 0); // For camera smoothing
+  context: GameContext | null = null;
+  droneVelocities: Float32Array | null = null;
+  deadDrones = new Set<number>();
+  raycaster = new Raycaster();
+  pointer = new Vector2();
+  currentLookAt = new Vector3(0, 0, 0); // For camera smoothing
 
-    init(context: GameContext) {
-        this.context = context;
+  init(context: GameContext) {
+    this.context = context;
 
-        const droneCount = DRONE_COUNT; // Hardcoded in original component
-        this.droneVelocities = new Float32Array(droneCount * 3);
+    const droneCount = DRONE_COUNT; // Hardcoded in original component
+    this.droneVelocities = new Float32Array(droneCount * 3);
 
-        for (let i = 0; i < droneCount; i++) {
-            this.droneVelocities[i * 3] = (Math.random() - 0.5) * 8; // vx
-            this.droneVelocities[i * 3 + 1] = (Math.random() - 0.5) * 4; // vy
-            this.droneVelocities[i * 3 + 2] = (Math.random() - 0.5) * 8; // vz
-        }
-
-        // Reset dead drones just in case
-        this.deadDrones.clear();
+    for (let i = 0; i < droneCount; i++) {
+      this.droneVelocities[i * 3] = (Math.random() - 0.5) * 8; // vx
+      this.droneVelocities[i * 3 + 1] = (Math.random() - 0.5) * 4; // vy
+      this.droneVelocities[i * 3 + 2] = (Math.random() - 0.5) * 8; // vz
     }
 
-    update(dt: number, time: number) {
-        if (!this.context || !this.context.drones || !this.droneVelocities) return;
+    // Reset dead drones just in case
+    this.deadDrones.clear();
+  }
 
-        const { drones, camera, isMobile } = this.context;
-        const positions = drones.geometry.attributes.position.array as Float32Array;
+  update(_dt: number, time: number) {
+    if (!this.context || !this.context.drones || !this.droneVelocities) return;
 
-        const count = positions.length / 3;
-        const range = BOUNDS;
+    const { drones, camera, isMobile } = this.context;
+    const positions = drones.geometry.attributes.position.array as Float32Array;
 
-        for (let i = 0; i < count; i++) {
-            if (this.deadDrones.has(i)) continue;
+    const count = positions.length / 3;
+    const range = BOUNDS;
 
-            positions[i * 3] += this.droneVelocities[i * 3];
-            positions[i * 3 + 1] += this.droneVelocities[i * 3 + 1];
-            positions[i * 3 + 2] += this.droneVelocities[i * 3 + 2];
+    for (let i = 0; i < count; i++) {
+      if (this.deadDrones.has(i)) continue;
 
-            // Bounds check (wrap around)
-            if (positions[i * 3] > range) positions[i * 3] = -range;
-            if (positions[i * 3] < -range) positions[i * 3] = range;
+      positions[i * 3] += this.droneVelocities[i * 3];
+      positions[i * 3 + 1] += this.droneVelocities[i * 3 + 1];
+      positions[i * 3 + 2] += this.droneVelocities[i * 3 + 2];
 
-            if (positions[i * 3 + 1] > 1000) positions[i * 3 + 1] = 0;
-            if (positions[i * 3 + 1] < 0) positions[i * 3 + 1] = 1000;
+      // Bounds check (wrap around)
+      if (positions[i * 3] > range) positions[i * 3] = -range;
+      if (positions[i * 3] < -range) positions[i * 3] = range;
 
-            if (positions[i * 3 + 2] > range) positions[i * 3 + 2] = -range;
-            if (positions[i * 3 + 2] < -range) positions[i * 3 + 2] = range;
-        }
-        drones.geometry.attributes.position.needsUpdate = true;
+      if (positions[i * 3 + 1] > 1000) positions[i * 3 + 1] = 0;
+      if (positions[i * 3 + 1] < 0) positions[i * 3 + 1] = 1000;
 
-        // Camera Orbit
-        // Standard Orbit around 0, 500, 0
-        const orbitRadius = isMobile.value ? 1400 : 800;
-        // We use time * 0.1 from original code
-        // The passed 'time' is usually seconds? Or raw timestamp?
-        // In animate(): const time = now * 0.0005;
-        // So 'time' passed to update should be this scaled time.
+      if (positions[i * 3 + 2] > range) positions[i * 3 + 2] = -range;
+      if (positions[i * 3 + 2] < -range) positions[i * 3 + 2] = range;
+    }
+    drones.geometry.attributes.position.needsUpdate = true;
 
-        camera.position.x = Math.sin(time * 0.1) * orbitRadius;
-        camera.position.z = Math.cos(time * 0.1) * orbitRadius;
+    // Camera Orbit
+    // Standard Orbit around 0, 500, 0
+    const orbitRadius = isMobile.value ? 1400 : 800;
+    // We use time * 0.1 from original code
+    // The passed 'time' is usually seconds? Or raw timestamp?
+    // In animate(): const time = now * 0.0005;
+    // So 'time' passed to update should be this scaled time.
 
-        const targetY = isMobile.value ? 350 : 250;
-        if (Math.abs(camera.position.y - targetY) > 1) {
-            camera.position.y += (targetY - camera.position.y) * 0.05;
-        }
+    camera.position.x = Math.sin(time * 0.1) * orbitRadius;
+    camera.position.z = Math.cos(time * 0.1) * orbitRadius;
 
-        const targetLookAt = new Vector3(0, 500, 0);
-        this.currentLookAt.lerp(targetLookAt, 0.02);
-        camera.lookAt(this.currentLookAt);
+    const targetY = isMobile.value ? 350 : 250;
+    if (Math.abs(camera.position.y - targetY) > 1) {
+      camera.position.y += (targetY - camera.position.y) * 0.05;
     }
 
-    cleanup() {
-        if (!this.context || !this.context.drones) return;
+    const targetLookAt = new Vector3(0, 500, 0);
+    this.currentLookAt.lerp(targetLookAt, 0.02);
+    camera.lookAt(this.currentLookAt);
+  }
 
-        // Restore dead drones (although in original code, they are restored and positions reset to targets)
-        // We don't have access to `droneTargetPositions` here easily unless we pass it in Context.
-        // Ideally, the standard "Idle" mode (no mode) handles the target/oscillation logic.
-        // When we exit DroneMode, we should probably reset positions to something safe or let the next mode handle it.
-        // For now, just clear the dead set.
-        this.deadDrones.clear();
+  cleanup() {
+    if (!this.context || !this.context.drones) return;
 
-        // Note: The original code resets positions to `droneTargetPositions` on exit.
-        // We might need `droneTargetPositions` in GameContext if we want to perfectly replicate behavior.
+    // Restore dead drones to their target positions
+    if (this.context.droneTargetPositions) {
+      const positions = this.context.drones.geometry.attributes.position
+        .array as Float32Array;
+
+      this.deadDrones.forEach((index) => {
+        positions[index * 3] = this.context!.droneTargetPositions![index * 3];
+        positions[index * 3 + 1] =
+          this.context!.droneTargetPositions![index * 3 + 1];
+        positions[index * 3 + 2] =
+          this.context!.droneTargetPositions![index * 3 + 2];
+      });
+      this.context.drones.geometry.attributes.position.needsUpdate = true;
     }
 
-    onKeyDown(event: KeyboardEvent) { }
-    onKeyUp(event: KeyboardEvent) { }
+    this.deadDrones.clear();
+  }
 
-    onClick(event: MouseEvent) {
-        if (!this.context || !this.context.drones) return;
-        const { camera, drones, droneScore, playPewSound, spawnSparks } = this.context;
+  onKeyDown(_event: KeyboardEvent) {}
+  onKeyUp(_event: KeyboardEvent) {}
 
-        this.pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-        this.pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  onClick(event: MouseEvent) {
+    if (!this.context || !this.context.drones) return;
+    const { camera, drones, droneScore, playPewSound, spawnSparks } =
+      this.context;
 
-        this.raycaster.setFromCamera(this.pointer, camera);
-        this.raycaster.params.Points.threshold = 20;
+    this.pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+    this.pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-        const intersects = this.raycaster.intersectObject(drones);
+    this.raycaster.setFromCamera(this.pointer, camera);
+    this.raycaster.params.Points.threshold = 20;
 
-        if (intersects.length > 0) {
-            const intersect = intersects[0];
-            const index = intersect.index;
+    const intersects = this.raycaster.intersectObject(drones);
 
-            if (index !== undefined && !this.deadDrones.has(index)) {
-                const posAttribute = drones.geometry.attributes.position;
-                const x = posAttribute.getX(index);
-                const y = posAttribute.getY(index);
-                const z = posAttribute.getZ(index);
+    if (intersects.length > 0) {
+      const intersect = intersects[0];
+      const index = intersect.index;
 
-                // Spawn explosion
-                spawnSparks(new Vector3(x, y, z));
+      if (index !== undefined && !this.deadDrones.has(index)) {
+        const posAttribute = drones.geometry.attributes.position;
+        const x = posAttribute.getX(index);
+        const y = posAttribute.getY(index);
+        const z = posAttribute.getZ(index);
 
-                // Hide drone
-                posAttribute.setXYZ(index, 0, -99999, 0);
-                posAttribute.needsUpdate = true;
+        // Spawn explosion
+        spawnSparks(new Vector3(x, y, z));
 
-                this.deadDrones.add(index);
+        // Hide drone
+        posAttribute.setXYZ(index, 0, -99999, 0);
+        posAttribute.needsUpdate = true;
 
-                playPewSound();
-                droneScore.value += 100;
-            }
-        }
+        this.deadDrones.add(index);
+
+        playPewSound();
+        droneScore.value += 100;
+      }
     }
+  }
 
-    onMouseMove(event: MouseEvent) { }
+  onMouseMove(_event: MouseEvent) {}
 }

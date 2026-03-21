@@ -1,65 +1,72 @@
-import { Scene, PerspectiveCamera, WebGLRenderer, Group, Points, Vector3 } from "three";
+import {
+  Scene,
+  PerspectiveCamera,
+  WebGLRenderer,
+  Group,
+  Points,
+  Vector3,
+  Mesh,
+} from "three";
 import { Ref } from "vue";
+import type { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 
 export interface Controls {
-    left: boolean;
-    right: boolean;
-    forward: boolean;
-    backward: boolean;
+  left: boolean;
+  right: boolean;
+  forward: boolean;
+  backward: boolean;
 }
 
 export interface LookControls {
-    left: boolean;
-    right: boolean;
-    up: boolean;
-    down: boolean;
+  left: boolean;
+  right: boolean;
+  up: boolean;
+  down: boolean;
 }
 
 export interface GameContext {
-    scene: Scene;
-    camera: PerspectiveCamera;
-    renderer: WebGLRenderer;
-    composer: any;
+  scene: Scene;
+  camera: PerspectiveCamera;
+  renderer: WebGLRenderer;
+  composer: EffectComposer | null;
 
-    // Game Objects
-    cars: Group[];
-    drones: Points | undefined;
-    buildings: Group[]; // Added for DemoMode
-    occupiedGrids: Map<string, { halfW: number; halfD: number; isRound?: boolean }>;
+  cars: Group[];
+  drones: Points | undefined;
+  droneTargetPositions: Float32Array | undefined;
+  buildings: Group[];
+  occupiedGrids: Map<
+    string,
+    { halfW: number; halfD: number; isRound?: boolean }
+  >;
 
-    // State
-    score: Ref<number>; // Kept for backward compatibility or computed
-    droneScore: Ref<number>;
-    drivingScore: Ref<number>;
-    timeLeft: Ref<number>;
-    activeCar: Ref<Group | null>;
-    isMobile: Ref<boolean>;
-    isGameOver: Ref<boolean>;
-    distToTarget: Ref<number>;
+  score: Ref<number>;
+  droneScore: Ref<number>;
+  drivingScore: Ref<number>;
+  timeLeft: Ref<number>;
+  activeCar: Ref<Group | null>;
+  isMobile: Ref<boolean>;
+  isGameOver: Ref<boolean>;
+  distToTarget: Ref<number>;
 
-    // Inputs
-    controls: Ref<Controls>;
-    lookControls: Ref<LookControls>;
+  controls: Ref<Controls>;
+  lookControls: Ref<LookControls>;
 
-    // Helpers
-    spawnSparks: (position: Vector3) => void;
-    playPewSound: () => void;
-    spawnCheckpoint: () => void;
+  spawnSparks: (position: Vector3) => void;
+  playPewSound: () => void;
+  spawnCheckpoint: () => void;
 
-    // Shared Objects
-    checkpointMesh: any; // Mesh but typing might differ
-    navArrow: Group;
-    chaseArrow: Group;
+  checkpointMesh: Mesh | undefined;
+  navArrow: Group;
+  chaseArrow: Group;
 }
 
 export interface GameMode {
-    init(context: GameContext): void;
-    update(dt: number, time: number): void;
-    cleanup(): void;
+  init(context: GameContext): void;
+  update(dt: number, time: number): void;
+  cleanup(): void;
 
-    // Input Events
-    onKeyDown(event: KeyboardEvent): void;
-    onKeyUp(event: KeyboardEvent): void;
-    onClick(event: MouseEvent): void;
-    onMouseMove(event: MouseEvent): void;
+  onKeyDown(event: KeyboardEvent): void;
+  onKeyUp(event: KeyboardEvent): void;
+  onClick(event: MouseEvent): void;
+  onMouseMove(event: MouseEvent): void;
 }

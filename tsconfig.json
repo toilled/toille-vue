@@ -7,12 +7,16 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "jsx": "preserve",
-    "types": [
-      "vite/client"
-    ],
+    "types": ["vite/client", "vitest/globals"],
     "noEmit": true,
     "isolatedModules": true,
     "resolveJsonModule": true,
-    "skipLibCheck": true
-  }
+    "skipLibCheck": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "exactOptionalPropertyTypes": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["src/game/PostProcessingManager.ts", "src/game/modes/DemoMode.ts"]
 }

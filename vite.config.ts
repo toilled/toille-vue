@@ -1,13 +1,13 @@
 /// <reference types="vitest" />
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
-import viteCompression from 'vite-plugin-compression';
+import viteCompression from "vite-plugin-compression";
 
 export default defineConfig({
   plugins: [
     vue(),
     viteCompression(),
-    viteCompression({ algorithm: 'brotliCompress', ext: '.br' }),
+    viteCompression({ algorithm: "brotliCompress", ext: ".br" }),
   ],
   test: {
     globals: true,
@@ -20,7 +20,7 @@ export default defineConfig({
   },
   build: {
     target: "esnext",
-    minify: 'terser',
+    minify: "terser",
     terserOptions: {
       compress: {
         drop_console: true,
@@ -29,12 +29,13 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('three')) {
-              return 'three-vendor';
+        manualChunks(id: string): string | undefined {
+          if (id.includes("node_modules")) {
+            if (id.includes("three")) {
+              return "three-vendor";
             }
           }
+          return undefined;
         },
       },
     },

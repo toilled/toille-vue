@@ -1,6 +1,5 @@
 import { mount } from "@vue/test-utils";
-import { describe, it, expect, vi } from "vitest";
-import { ref } from "vue";
+import { describe, it, expect } from "vitest";
 import NoughtsAndCrosses from "../NoughtsAndCrosses.vue";
 
 describe("NoughtsAndCrosses.vue", () => {

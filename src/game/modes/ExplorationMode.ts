@@ -33,10 +33,17 @@ export class ExplorationMode implements GameMode {
     }
   }
 
-  update(_dt: number, _time: number) {
+  update(dt: number, _time: number) {
     if (!this.context) return;
-    const { camera, controls, isMobile, occupiedGrids, cars, lookControls } =
-      this.context;
+    const {
+      camera,
+      controls,
+      isMobile,
+      occupiedGrids,
+      cars,
+      lookControls,
+      multiplayer,
+    } = this.context;
 
     if (this.isTransitioning) {
       const targetPos = new Vector3(0, 3, 0);
@@ -161,6 +168,16 @@ export class ExplorationMode implements GameMode {
           car.userData.isPlayerHit = false;
         }
       }
+    }
+
+    // Multiplayer update
+    if (multiplayer) {
+      multiplayer.update(
+        dt,
+        camera.position,
+        this.playerRotation.y,
+        "exploring",
+      );
     }
   }
 

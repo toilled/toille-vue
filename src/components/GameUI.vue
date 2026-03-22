@@ -1,10 +1,32 @@
 <template>
-  <div v-if="(isDrivingMode ? drivingScore : droneScore) > 0" id="score-counter">SCORE: {{ isDrivingMode ? drivingScore : droneScore }}</div>
+  <div
+    v-if="(isDrivingMode ? drivingScore : droneScore) > 0"
+    id="score-counter"
+  >
+    SCORE: {{ isDrivingMode ? drivingScore : droneScore }}
+  </div>
   <div v-if="isDrivingMode" id="timer-counter">
     TIME: {{ Math.ceil(timeLeft) }}
   </div>
   <div v-if="isDrivingMode" id="dist-counter">
     DIST: {{ Math.ceil(distToTarget) }}m
+  </div>
+
+  <div id="multiplayer-status">
+    <div v-if="isMultiplayerConnected" class="multiplayer-indicator connected">
+      <span class="dot"></span>
+      {{ playerCount }} PLAYER{{ playerCount !== 1 ? "S" : "" }}
+    </div>
+    <div v-else class="multiplayer-indicator disconnected">
+      <span class="dot"></span>
+      OFFLINE
+    </div>
+    <div v-if="isMultiplayerConnected && roomId" class="room-info">
+      ROOM: {{ roomId }}
+    </div>
+    <div v-if="isMultiplayerConnected && myPeerId" class="peer-info">
+      YOUR ID: {{ myPeerId }}
+    </div>
   </div>
 
   <GameOverModal
@@ -25,7 +47,13 @@
   />
 
   <button
-    v-if="isGameMode || isDrivingMode || isExplorationMode || isFlyingTour || isCinematicMode"
+    v-if="
+      isGameMode ||
+      isDrivingMode ||
+      isExplorationMode ||
+      isFlyingTour ||
+      isCinematicMode
+    "
     id="return-button"
     @click="exitGameMode"
   >
@@ -155,36 +183,47 @@ import LeaderboardModal from "./LeaderboardModal.vue";
 import GameOverModal from "./GameOverModal.vue";
 
 const props = defineProps({
-    isDrivingMode: Boolean,
-    isGameMode: Boolean,
-    isExplorationMode: Boolean,
-    isFlyingTour: Boolean,
-    isCinematicMode: Boolean,
-    isGameOver: Boolean,
-    isMobile: Boolean,
-    drivingScore: Number,
-    droneScore: Number,
-    timeLeft: Number,
-    distToTarget: Number,
-    controls: {
-        type: Object as PropType<Controls>,
-        required: true
-    },
-    lookControls: {
-        type: Object as PropType<LookControls>,
-        required: true
-    },
-    leaderboard: {
-        type: Array as PropType<ScoreEntry[]>,
-        required: true
-    },
-    showLeaderboard: Boolean
+  isDrivingMode: Boolean,
+  isGameMode: Boolean,
+  isExplorationMode: Boolean,
+  isFlyingTour: Boolean,
+  isCinematicMode: Boolean,
+  isGameOver: Boolean,
+  isMobile: Boolean,
+  drivingScore: Number,
+  droneScore: Number,
+  timeLeft: Number,
+  distToTarget: Number,
+  controls: {
+    type: Object as PropType<Controls>,
+    required: true,
+  },
+  lookControls: {
+    type: Object as PropType<LookControls>,
+    required: true,
+  },
+  leaderboard: {
+    type: Array as PropType<ScoreEntry[]>,
+    required: true,
+  },
+  showLeaderboard: Boolean,
+  isMultiplayerConnected: Boolean,
+  playerCount: {
+    type: Number,
+    default: 0,
+  },
+  roomId: String,
+  myPeerId: String,
 });
 
-const emit = defineEmits(["exit-game-mode", "update-leaderboard", "close-leaderboard"]);
+const emit = defineEmits([
+  "exit-game-mode",
+  "update-leaderboard",
+  "close-leaderboard",
+]);
 
 function exitGameMode() {
-    emit("exit-game-mode");
+  emit("exit-game-mode");
 }
 </script>
 
@@ -335,5 +374,93 @@ function exitGameMode() {
 .dpad-btn.right {
   top: 35px;
   right: 0;
+}
+
+#multiplayer-status {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  pointer-events: none;
+  max-width: 200px;
+}
+
+@media (max-width: 600px) {
+  #multiplayer-status {
+    top: auto;
+    bottom: 160px;
+    right: 10px;
+    max-width: 150px;
+  }
+}
+
+.multiplayer-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid #00ffcc;
+  border-radius: 4px;
+  color: #00ffcc;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 12px;
+  font-weight: bold;
+  text-shadow: 0 0 5px currentColor;
+}
+
+@media (max-width: 600px) {
+  .multiplayer-indicator {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+}
+
+.multiplayer-indicator.disconnected {
+  border-color: #666;
+  color: #666;
+}
+
+.multiplayer-indicator .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 5px currentColor;
+}
+
+.multiplayer-indicator.connected .dot {
+  animation: pulse 2s infinite;
+}
+
+.room-info,
+.peer-info {
+  display: none;
+}
+
+@media (min-width: 800px) {
+  .room-info,
+  .peer-info {
+    display: block;
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid #00ffcc;
+    border-radius: 4px;
+    color: #00ffcc;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 11px;
+    margin-top: 4px;
+    word-break: break-all;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 </style>

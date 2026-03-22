@@ -16,6 +16,10 @@
     :lookControls="lookControls"
     :leaderboard="leaderboard"
     :showLeaderboard="showLeaderboard"
+    :isMultiplayerConnected="isMultiplayerConnected"
+    :playerCount="playerCount"
+    :roomId="multiplayerRoomId"
+    :myPeerId="multiplayerManager.getPlayerId()"
     @exit-game-mode="exitGameMode"
     @update-leaderboard="updateLeaderboard"
     @close-leaderboard="showLeaderboard = false"
@@ -68,6 +72,7 @@ import { DemoMode } from "../game/modes/DemoMode";
 import { GameContext } from "../game/types";
 import { carAudio } from "../game/audio/CarAudio";
 import { cyberpunkAudio } from "../utils/CyberpunkAudio";
+import { multiplayerManager, RemotePlayer } from "../utils/MultiplayerManager";
 import {
   BOUNDS,
   CELL_SIZE,
@@ -181,8 +186,29 @@ let cityBuilder: CityBuilder;
 const leaderboard = ref<ScoreEntry[]>([]);
 const showLeaderboard = ref(false);
 
+const isMultiplayerConnected = ref(false);
+const playerCount = ref(0);
+const multiplayerRoomId = ref("cyberpunk-city");
+let remotePlayers = new Map<string, RemotePlayer>();
+let lastTrafficBroadcast = 0;
+let lastTrafficMovement = 0;
+let previousTrafficHash = "";
+let backgroundTrafficTimeout: ReturnType<typeof setTimeout> | null = null;
+const TRAFFIC_TIMEOUT_MS = 8000;
+
+function hashTrafficState(states: any[]): string {
+  if (!states || states.length === 0) return "";
+  return states
+    .map((s) => `${s.index}:${Math.round(s.x)}:${Math.round(s.z)}`)
+    .join("|");
+}
+
 let leaderboardCanvas: HTMLCanvasElement;
 let leaderboardTexture: CanvasTexture;
+
+function getRemotePlayers(): Map<string, RemotePlayer> {
+  return remotePlayers;
+}
 
 function updateLeaderboard(newScores: ScoreEntry[]) {
   leaderboard.value = newScores;
@@ -664,6 +690,8 @@ onMounted(() => {
     checkpointMesh,
     navArrow,
     chaseArrow,
+    multiplayer: multiplayerManager,
+    getRemotePlayers,
   };
   gameModeManager = new GameModeManager(context);
 
@@ -679,7 +707,129 @@ onMounted(() => {
   });
 
   cyberpunkAudio.addListener(onAudioNote);
+
+  // Initialize multiplayer
+  initMultiplayer();
 });
+
+function initMultiplayer() {
+  multiplayerManager.setScene(scene);
+
+  multiplayerManager.onConnectionChange((connected) => {
+    isMultiplayerConnected.value = connected;
+    if (connected) {
+      playerCount.value = 1;
+      if (!multiplayerManager.isHost) {
+        trafficSystem.setNetworkControlled(true);
+        multiplayerManager.requestTrafficState();
+      } else {
+        trafficSystem.setNetworkControlled(false);
+        if (document.hidden) {
+          startBackgroundTrafficUpdate();
+        }
+      }
+    } else {
+      playerCount.value = 0;
+      trafficSystem.setNetworkControlled(false);
+      stopBackgroundTrafficUpdate();
+    }
+  });
+
+  multiplayerManager.onHostChange((isHost) => {
+    if (isHost) {
+      trafficSystem.setNetworkControlled(false);
+      if (document.hidden) {
+        startBackgroundTrafficUpdate();
+      }
+    } else {
+      trafficSystem.setNetworkControlled(true);
+      multiplayerManager.requestTrafficState();
+      stopBackgroundTrafficUpdate();
+    }
+  });
+
+  multiplayerManager.onTrafficStateChange((states) => {
+    if (states.length > 0) {
+      const newHash = hashTrafficState(states);
+      if (newHash !== previousTrafficHash) {
+        lastTrafficMovement = Date.now();
+        previousTrafficHash = newHash;
+      }
+      trafficSystem.setNetworkControlled(true);
+      trafficSystem.updateFromNetwork(states);
+    }
+  });
+
+  multiplayerManager.onPlayerUpdate((players) => {
+    remotePlayers = players;
+    playerCount.value = players.size + 1;
+  });
+
+  multiplayerManager.onTrafficStateRequest(() => {
+    return trafficSystem.getState();
+  });
+
+  multiplayerManager.connect("", "cyberpunk-city").catch(console.error);
+
+  function startBackgroundTrafficUpdate() {
+    if (backgroundTrafficTimeout) return;
+
+    function tick() {
+      if (
+        multiplayerManager.isNetworkConnected() &&
+        multiplayerManager.isHost &&
+        !trafficSystem.isNetworkTrafficControlled()
+      ) {
+        trafficSystem.update();
+        multiplayerManager.sendTrafficState(trafficSystem.getState());
+      }
+      if (
+        multiplayerManager.isHost &&
+        multiplayerManager.isNetworkConnected()
+      ) {
+        backgroundTrafficTimeout = setTimeout(tick, 33);
+      } else {
+        backgroundTrafficTimeout = null;
+      }
+    }
+
+    backgroundTrafficTimeout = setTimeout(tick, 33);
+  }
+
+  function stopBackgroundTrafficUpdate() {
+    if (backgroundTrafficTimeout) {
+      clearTimeout(backgroundTrafficTimeout);
+      backgroundTrafficTimeout = null;
+    }
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      if (
+        multiplayerManager.isHost &&
+        multiplayerManager.isNetworkConnected()
+      ) {
+        startBackgroundTrafficUpdate();
+      }
+    } else {
+      stopBackgroundTrafficUpdate();
+    }
+  });
+
+  function checkTrafficTimeout() {
+    if (
+      !multiplayerManager.isHost &&
+      multiplayerManager.isNetworkConnected() &&
+      lastTrafficMovement > 0 &&
+      Date.now() - lastTrafficMovement > TRAFFIC_TIMEOUT_MS &&
+      playerCount.value > 1
+    ) {
+      multiplayerManager.becomeHost();
+    }
+  }
+
+  setInterval(checkTrafficTimeout, 1000);
+}
 
 function onKeyDown(event: KeyboardEvent) {
   if (event.key === "Escape") {
@@ -945,6 +1095,17 @@ function animate() {
   gameModeManager.update(dt, time);
   trafficSystem.update();
 
+  if (
+    multiplayerManager.isNetworkConnected() &&
+    !trafficSystem.isNetworkTrafficControlled()
+  ) {
+    const now = Date.now();
+    if (now - lastTrafficBroadcast > 33) {
+      multiplayerManager.sendTrafficState(trafficSystem.getState());
+      lastTrafficBroadcast = now;
+    }
+  }
+
   if (cityBuilder) {
     const materials = cityBuilder.getAudioMaterials();
     for (const key in materials) {
@@ -1187,6 +1348,7 @@ onBeforeUnmount(() => {
   if (gangWarManager) {
     gangWarManager.dispose();
   }
+  multiplayerManager.disconnect();
 });
 </script>
 

@@ -6,6 +6,7 @@ import {
   Scene,
   Object3D,
   SpotLight,
+  Vector3,
 } from "three";
 import {
   BOUNDS,
@@ -19,12 +20,30 @@ import { carAudio } from "./audio/CarAudio";
 import { getHeight, getNormal } from "../utils/HeightMap";
 import { CarFactory } from "./CarFactory";
 
+export interface CarState {
+  index: number;
+  x: number;
+  y: number;
+  z: number;
+  heading: number;
+  axis: string;
+  dir: number;
+  speed: number;
+  fading: boolean;
+  turnCooldown: number;
+  isPolice: boolean;
+}
+
 export class TrafficSystem {
   private scene: Scene;
   private cars: Group[] = [];
   private carCount: number;
   private spawnSparks: (pos: { x: number; y: number; z: number }) => void;
   private carFactory: CarFactory;
+  private isNetworkControlled: boolean = false;
+  private targetPositions: Map<number, Vector3> = new Map();
+  private targetHeadings: Map<number, number> = new Map();
+  private interpolationFactor: number = 0.3;
 
   constructor(
     scene: Scene,
@@ -40,6 +59,76 @@ export class TrafficSystem {
 
   public getCars(): Group[] {
     return this.cars;
+  }
+
+  public setNetworkControlled(controlled: boolean) {
+    this.isNetworkControlled = controlled;
+    if (!controlled) {
+      this.targetPositions.clear();
+      this.targetHeadings.clear();
+    }
+  }
+
+  public isNetworkTrafficControlled(): boolean {
+    return this.isNetworkControlled;
+  }
+
+  public getState(): CarState[] {
+    return this.cars.map((car, index) => ({
+      index,
+      x: car.position.x,
+      y: car.position.y,
+      z: car.position.z,
+      heading: car.userData.heading ?? 0,
+      axis: car.userData.axis,
+      dir: car.userData.dir,
+      speed: car.userData.speed,
+      fading: car.userData.fading,
+      turnCooldown: car.userData.turnCooldown ?? 0,
+      isPolice: car.userData.isPolice,
+    }));
+  }
+
+  public applyState(states: CarState[]) {
+    for (const state of states) {
+      const car = this.cars[state.index];
+      if (!car) continue;
+
+      this.targetPositions.set(
+        state.index,
+        new Vector3(state.x, state.y, state.z),
+      );
+      this.targetHeadings.set(state.index, state.heading);
+
+      car.userData.heading = state.heading;
+      car.userData.axis = state.axis;
+      car.userData.dir = state.dir;
+      car.userData.speed = state.speed;
+      car.userData.fading = state.fading;
+      car.userData.turnCooldown = state.turnCooldown;
+    }
+  }
+
+  private interpolateCars() {
+    for (let i = 0; i < this.cars.length; i++) {
+      const car = this.cars[i];
+      const targetPos = this.targetPositions.get(i);
+      const targetHeading = this.targetHeadings.get(i);
+
+      if (targetPos) {
+        car.position.lerp(targetPos, this.interpolationFactor);
+        this.updateCarOrientation(car);
+      }
+
+      if (targetHeading !== undefined) {
+        let currentHeading = car.userData.heading ?? 0;
+        let diff = targetHeading - currentHeading;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        currentHeading += diff * this.interpolationFactor;
+        car.userData.heading = currentHeading;
+      }
+    }
   }
 
   private initCars() {
@@ -240,8 +329,16 @@ export class TrafficSystem {
   }
 
   public update() {
-    this.updateCars();
-    this.checkCollisions();
+    if (this.isNetworkControlled) {
+      this.interpolateCars();
+    } else {
+      this.updateCars();
+      this.checkCollisions();
+    }
+  }
+
+  public updateFromNetwork(states: CarState[]) {
+    this.applyState(states);
   }
 
   private updateCars() {

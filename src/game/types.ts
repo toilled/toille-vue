@@ -9,6 +9,10 @@ import {
 } from "three";
 import { Ref } from "vue";
 import type { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import type {
+  MultiplayerManager,
+  RemotePlayer,
+} from "../utils/MultiplayerManager";
 
 export interface Controls {
   left: boolean;
@@ -58,6 +62,9 @@ export interface GameContext {
   checkpointMesh: Mesh | undefined;
   navArrow: Group;
   chaseArrow: Group;
+
+  multiplayer: MultiplayerManager | null;
+  getRemotePlayers: () => Map<string, RemotePlayer>;
 }
 
 export interface GameMode {

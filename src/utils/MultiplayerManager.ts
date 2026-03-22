@@ -51,11 +51,13 @@ export interface MultiplayerMessage {
     | "request-state"
     | "ping"
     | "pong"
-    | "new-host";
+    | "new-host"
+    | "id-change";
   playerId?: string;
   player?: PlayerState;
   players?: PlayerState[];
   peerIds?: string[];
+  oldId?: string;
 }
 
 export type PlayerUpdateCallback = (players: Map<string, RemotePlayer>) => void;
@@ -369,10 +371,34 @@ export class MultiplayerManager {
       this.isHost = true;
       this.startHeartbeat();
 
+      if (!this.players.has(id)) {
+        const myState = this.createPlayerState();
+        const player = new RemotePlayer(myState);
+        this.players.set(id, player);
+      }
+
       this.broadcast({
         type: "new-host",
         playerId: oldPlayerId,
+        peerIds: [id],
       } as MultiplayerMessage);
+
+      setTimeout(() => {
+        this.broadcast({
+          type: "join",
+          playerId: id,
+          player: this.createPlayerState(),
+        } as MultiplayerMessage);
+      }, 100);
+
+      setTimeout(() => {
+        this.broadcast({
+          type: "id-change",
+          playerId: id,
+          oldId: oldPlayerId,
+          player: this.createPlayerState(),
+        } as MultiplayerMessage);
+      }, 200);
 
       this.notifyConnection(true);
       this.notifyUpdate();
@@ -528,10 +554,15 @@ export class MultiplayerManager {
       switch (data.type) {
         case "request-state":
           if (this.isHost) {
+            const myPlayer = this.players.get(this.playerId!);
+            const myState = myPlayer
+              ? myPlayer.state
+              : this.createPlayerState();
+
             this.sendTo(fromPeerId, {
               type: "join",
               playerId: this.playerId!,
-              player: this.createPlayerState(),
+              player: myState,
             } as MultiplayerMessage);
 
             const allPlayers = Array.from(this.players.values()).map(
@@ -632,6 +663,44 @@ export class MultiplayerManager {
           if (data.playerId) {
             this.isHost = false;
           }
+          if (data.peerIds && data.peerIds.length > 0) {
+            const newHostPeerId = data.peerIds[0];
+            const currentHostConn = this.connections.get(`${this.roomId}-host`);
+
+            if (currentHostConn) {
+              this.connections.delete(`${this.roomId}-host`);
+              this.connectedPeerIds.delete(`${this.roomId}-host`);
+              this.peerLastSeen.delete(`${this.roomId}-host`);
+              try {
+                currentHostConn.close();
+              } catch {}
+            }
+
+            this.connectToPeer(newHostPeerId);
+          }
+          break;
+
+        case "id-change":
+          if (data.oldId && data.playerId) {
+            if (this.players.has(data.oldId)) {
+              const player = this.players.get(data.oldId)!;
+              this.players.delete(data.oldId);
+              player.state.id = data.playerId;
+              this.players.set(data.playerId, player);
+              if (player.mesh) {
+                player.mesh.name = data.playerId;
+              }
+            } else if (data.player) {
+              this.addPlayer(data.player);
+            }
+            const hostConn = this.connections.get(`${this.roomId}-host`);
+            if (hostConn && hostConn.open) {
+              hostConn.send({
+                type: "request-state",
+                playerId: this.playerId,
+              } as MultiplayerMessage);
+            }
+          }
           break;
       }
 
@@ -667,6 +736,14 @@ export class MultiplayerManager {
           } as MultiplayerMessage);
         }
       }, 100);
+      setTimeout(() => {
+        if (conn.open) {
+          conn.send({
+            type: "request-state",
+            playerId: this.playerId!,
+          } as MultiplayerMessage);
+        }
+      }, 200);
     });
 
     conn.on("error", () => {
@@ -676,7 +753,16 @@ export class MultiplayerManager {
 
   private addPlayer(state: PlayerState) {
     if (state.id === this.playerId) return;
-    if (this.players.has(state.id)) return;
+
+    if (this.players.has(state.id)) {
+      const player = this.players.get(state.id)!;
+      player.updateState(state);
+      if (this.scene && !player.mesh) {
+        this.createPlayerMesh(player, state);
+      }
+      this.notifyUpdate();
+      return;
+    }
 
     const player = new RemotePlayer(state);
     this.players.set(state.id, player);

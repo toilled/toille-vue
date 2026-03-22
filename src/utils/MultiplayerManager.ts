@@ -40,6 +40,8 @@ export interface PlayerState {
   lastUpdate: number;
 }
 
+import type { CarState } from "../game/TrafficSystem";
+
 export interface MultiplayerMessage {
   type:
     | "join"
@@ -52,12 +54,15 @@ export interface MultiplayerMessage {
     | "ping"
     | "pong"
     | "new-host"
-    | "id-change";
+    | "id-change"
+    | "traffic-state"
+    | "request-traffic-state";
   playerId?: string;
   player?: PlayerState;
   players?: PlayerState[];
   peerIds?: string[];
   oldId?: string;
+  trafficState?: CarState[];
 }
 
 export type PlayerUpdateCallback = (players: Map<string, RemotePlayer>) => void;
@@ -149,7 +154,7 @@ export class MultiplayerManager {
   private lastRotation: number = 0;
   private lastMode: string = "idle";
   private lastCarId: string | undefined = undefined;
-  private isHost: boolean = false;
+  public isHost: boolean = false;
   private connectedPeerIds: Set<string> = new Set();
   private peerLastSeen: Map<string, number> = new Map();
   private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
@@ -178,6 +183,7 @@ export class MultiplayerManager {
           this.isHost = true;
           this.isConnected = true;
           this.notifyConnection(true);
+          this.notifyHostChange(true);
           this.notifyUpdate();
           this.startHeartbeat();
           resolve(true);
@@ -369,6 +375,7 @@ export class MultiplayerManager {
     this.peer.on("open", (id) => {
       this.playerId = id;
       this.isHost = true;
+      this.notifyHostChange(true);
       this.startHeartbeat();
 
       if (!this.players.has(id)) {
@@ -527,6 +534,19 @@ export class MultiplayerManager {
     this.notifyConnection(false);
   }
 
+  becomeHost() {
+    this.connections.forEach((conn) => conn.close());
+    this.connections.clear();
+    this.connectedPeerIds.clear();
+    this.peerLastSeen.clear();
+    if (this.peer) {
+      this.peer.destroy();
+      this.peer = null;
+    }
+    this.clearPlayers();
+    this.becomeNewHost();
+  }
+
   setScene(scene: Scene) {
     this.scene = scene;
   }
@@ -543,6 +563,58 @@ export class MultiplayerManager {
   onConnectionChange(callback: ConnectionCallback) {
     this.connectionCallbacks.add(callback);
     return () => this.connectionCallbacks.delete(callback);
+  }
+
+  onHostChange(callback: (isHost: boolean) => void) {
+    this.hostCallbacks.add(callback);
+    return () => this.hostCallbacks.delete(callback);
+  }
+
+  private hostCallbacks: Set<(isHost: boolean) => void> = new Set();
+
+  private notifyHostChange(isHost: boolean) {
+    this.hostCallbacks.forEach((cb) => cb(isHost));
+  }
+
+  onTrafficStateChange(callback: (state: CarState[]) => void) {
+    this.trafficCallbacks.add(callback);
+    return () => this.trafficCallbacks.delete(callback);
+  }
+
+  onTrafficStateRequest(callback: () => CarState[]) {
+    this.trafficRequestCallback = callback;
+    return () => {
+      if (this.trafficRequestCallback === callback) {
+        this.trafficRequestCallback = null;
+      }
+    };
+  }
+
+  private trafficCallbacks: Set<(state: CarState[]) => void> = new Set();
+  private trafficRequestCallback: (() => CarState[]) | null = null;
+
+  sendTrafficState(state: CarState[]) {
+    if (this.isHost && this.isConnected) {
+      this.broadcast({
+        type: "traffic-state",
+        trafficState: state,
+      } as MultiplayerMessage);
+    }
+  }
+
+  requestTrafficState() {
+    if (!this.isHost && this.isConnected) {
+      const hostConn = this.connections.get(`${this.roomId}-host`);
+      if (hostConn && hostConn.open) {
+        hostConn.send({
+          type: "request-traffic-state",
+        } as MultiplayerMessage);
+      }
+    }
+  }
+
+  private notifyTraffic(state: CarState[]) {
+    this.trafficCallbacks.forEach((cb) => cb(state));
   }
 
   private notifyConnection(connected: boolean) {
@@ -661,7 +733,11 @@ export class MultiplayerManager {
 
         case "new-host":
           if (data.playerId) {
+            const wasHost = this.isHost;
             this.isHost = false;
+            if (wasHost) {
+              this.notifyHostChange(false);
+            }
           }
           if (data.peerIds && data.peerIds.length > 0) {
             const newHostPeerId = data.peerIds[0];
@@ -700,6 +776,22 @@ export class MultiplayerManager {
                 playerId: this.playerId,
               } as MultiplayerMessage);
             }
+          }
+          break;
+
+        case "traffic-state":
+          if (data.trafficState) {
+            this.notifyTraffic(data.trafficState);
+          }
+          break;
+
+        case "request-traffic-state":
+          if (this.isHost && this.trafficRequestCallback) {
+            const state = this.trafficRequestCallback();
+            this.sendTo(fromPeerId, {
+              type: "traffic-state",
+              trafficState: state,
+            } as MultiplayerMessage);
           }
           break;
       }

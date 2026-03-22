@@ -387,7 +387,8 @@ function exitGameMode() {
 
 @media (max-width: 600px) {
   #multiplayer-status {
-    top: 60px;
+    top: auto;
+    bottom: 160px;
     right: 10px;
     max-width: 150px;
   }

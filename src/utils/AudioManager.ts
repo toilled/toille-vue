@@ -1,4 +1,4 @@
-import { ref, watch } from "vue";
+import { createSignal } from "solid-js";
 
 interface WindowWithAudioContext extends Window {
   webkitAudioContext?: typeof AudioContext;
@@ -7,7 +7,14 @@ interface WindowWithAudioContext extends Window {
 class AudioManager {
   ctx: AudioContext | null = null;
   masterGain: GainNode | null = null;
-  isSoundEnabled = ref(false);
+  isSoundEnabled;
+  setIsSoundEnabled;
+
+  constructor() {
+    const [isSoundEnabled, setIsSoundEnabled] = createSignal(false);
+    this.isSoundEnabled = isSoundEnabled;
+    this.setIsSoundEnabled = setIsSoundEnabled;
+  }
 
   init() {
     if (!this.ctx) {
@@ -26,14 +33,14 @@ class AudioManager {
   applyGain() {
     if (this.masterGain && this.ctx) {
       this.masterGain.gain.setValueAtTime(
-        this.isSoundEnabled.value ? 1 : 0,
+        this.isSoundEnabled() ? 1 : 0,
         this.ctx.currentTime,
       );
     }
   }
 
   toggleSound() {
-    this.isSoundEnabled.value = !this.isSoundEnabled.value;
+    this.setIsSoundEnabled(!this.isSoundEnabled());
     if (!this.ctx) {
       this.init();
     }
@@ -45,7 +52,3 @@ class AudioManager {
 }
 
 export const audioManager = new AudioManager();
-
-watch(audioManager.isSoundEnabled, () => {
-  audioManager.applyGain();
-});

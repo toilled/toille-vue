@@ -1,11 +1,14 @@
 import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue";
+import solidPlugin from "vite-plugin-solid";
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [solidPlugin({ ssr: true })],
   ssr: {
     noExternal: true, // Bundle everything for Worker
     target: 'webworker',
+    resolve: {
+      conditions: ['solid', 'node', 'import']
+    }
   },
   build: {
     target: 'esnext',
@@ -13,7 +16,7 @@ export default defineConfig({
     emptyOutDir: false,
     minify: false,
     rollupOptions: {
-      input: 'src/entry-server.ts',
+      input: 'src/entry-server.tsx',
       output: {
         entryFileNames: 'ssr-app.js',
         format: 'esm',

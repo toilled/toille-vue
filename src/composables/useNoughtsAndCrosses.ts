@@ -1,33 +1,40 @@
-import { ref } from "vue";
+import { createSignal } from "solid-js";
 
 export function useNoughtsAndCrosses() {
-  const board = ref<string[]>(Array(9).fill(""));
-  const currentPlayer = ref("X");
-  const winner = ref<string | null>(null);
+  const [board, setBoard] = createSignal<string[]>(Array(9).fill(""));
+  const [currentPlayer, setCurrentPlayer] = createSignal("X");
+  const [winner, setWinner] = createSignal<string | null>(null);
 
   const makeMove = (index: number) => {
-    if (board.value[index] || winner.value) return;
+    if (board()[index] || winner()) return;
 
-    board.value[index] = currentPlayer.value;
-    if (checkWinner(board.value, currentPlayer.value)) {
-      winner.value = currentPlayer.value;
+    setBoard((prev) => {
+      const newBoard = [...prev];
+      newBoard[index] = currentPlayer();
+      return newBoard;
+    });
+
+    if (checkWinner(board(), currentPlayer())) {
+      setWinner(currentPlayer());
       return;
     }
-    if (board.value.every((cell) => cell)) {
-      winner.value = "draw";
+    if (board().every((cell) => cell)) {
+      setWinner("draw");
       return;
     }
 
-    currentPlayer.value = "O";
+    setCurrentPlayer("O");
     computerMove();
   };
 
   const computerMove = () => {
     let bestScore = -Infinity;
     let move: number | undefined;
+    const currentBoard = board();
+
     for (let i = 0; i < 9; i++) {
-      if (board.value[i] === "") {
-        const newBoard = [...board.value];
+      if (currentBoard[i] === "") {
+        const newBoard = [...currentBoard];
         newBoard[i] = "O";
         const score = minimax(newBoard, 0, false);
         if (score > bestScore) {
@@ -38,27 +45,32 @@ export function useNoughtsAndCrosses() {
     }
 
     if (move !== undefined) {
-      board.value[move] = "O";
-      if (checkWinner(board.value, "O")) {
-        winner.value = "O";
-      } else if (board.value.every((cell) => cell)) {
-        winner.value = "draw";
+      setBoard((prev) => {
+        const newBoard = [...prev];
+        newBoard[move!] = "O";
+        return newBoard;
+      });
+
+      if (checkWinner(board(), "O")) {
+        setWinner("O");
+      } else if (board().every((cell) => cell)) {
+        setWinner("draw");
       }
     }
 
-    currentPlayer.value = "X";
+    setCurrentPlayer("X");
   };
 
-  const minimax = (board: string[], depth: number, isMaximizing: boolean) => {
-    if (checkWinner(board, "O")) return 10 - depth;
-    if (checkWinner(board, "X")) return depth - 10;
-    if (board.every((cell) => cell)) return 0;
+  const minimax = (tempBoard: string[], depth: number, isMaximizing: boolean): number => {
+    if (checkWinner(tempBoard, "O")) return 10 - depth;
+    if (checkWinner(tempBoard, "X")) return depth - 10;
+    if (tempBoard.every((cell) => cell)) return 0;
 
     if (isMaximizing) {
       let bestScore = -Infinity;
       for (let i = 0; i < 9; i++) {
-        if (board[i] === "") {
-          const newBoard = [...board];
+        if (tempBoard[i] === "") {
+          const newBoard = [...tempBoard];
           newBoard[i] = "O";
           const score = minimax(newBoard, depth + 1, false);
           bestScore = Math.max(score, bestScore);
@@ -68,8 +80,8 @@ export function useNoughtsAndCrosses() {
     } else {
       let bestScore = Infinity;
       for (let i = 0; i < 9; i++) {
-        if (board[i] === "") {
-          const newBoard = [...board];
+        if (tempBoard[i] === "") {
+          const newBoard = [...tempBoard];
           newBoard[i] = "X";
           const score = minimax(newBoard, depth + 1, true);
           bestScore = Math.min(score, bestScore);
@@ -79,7 +91,7 @@ export function useNoughtsAndCrosses() {
     }
   };
 
-  const checkWinner = (board: string[], player: string) => {
+  const checkWinner = (tempBoard: string[], player: string) => {
     const winConditions = [
       [0, 1, 2],
       [3, 4, 5],
@@ -91,14 +103,14 @@ export function useNoughtsAndCrosses() {
       [2, 4, 6],
     ];
     return winConditions.some((combination) =>
-      combination.every((index) => board[index] === player),
+      combination.every((index) => tempBoard[index] === player),
     );
   };
 
   const resetGame = () => {
-    board.value = Array(9).fill("");
-    currentPlayer.value = "X";
-    winner.value = null;
+    setBoard(Array(9).fill(""));
+    setCurrentPlayer("X");
+    setWinner(null);
   };
 
   return {

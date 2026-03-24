@@ -1,11 +1,11 @@
 /// <reference types="vitest" />
 import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue";
+import solidPlugin from "vite-plugin-solid";
 import viteCompression from "vite-plugin-compression";
 
 export default defineConfig({
   plugins: [
-    vue(),
+    solidPlugin(),
     viteCompression(),
     viteCompression({ algorithm: "brotliCompress", ext: ".br" }),
   ],

@@ -131,6 +131,7 @@ import { CityBuilder } from "../game/CityBuilder";
 import { TrafficSystem } from "../game/TrafficSystem";
 import { getHeight } from "../utils/HeightMap";
 import { audioManager } from "../utils/AudioManager";
+import { MultiplayerManager } from "../game/MultiplayerManager";
 
 const GameUI = defineAsyncComponent(() => import("./GameUI.vue"));
 
@@ -177,6 +178,7 @@ let konamiManager: KonamiManager;
 let gangWarManager: GangWarManager;
 let trafficSystem: TrafficSystem;
 let cityBuilder: CityBuilder;
+let multiplayerManager: MultiplayerManager;
 
 const leaderboard = ref<ScoreEntry[]>([]);
 const showLeaderboard = ref(false);
@@ -626,6 +628,10 @@ onMounted(() => {
     playPewSound,
   );
 
+  // Initialize Multiplayer
+  multiplayerManager = new MultiplayerManager(scene);
+  multiplayerManager.connect();
+
   createCheckpoint();
   createNavArrow();
   createChaseArrow();
@@ -944,6 +950,27 @@ function animate() {
   gangWarManager.update(dt);
   gameModeManager.update(dt, time);
   trafficSystem.update();
+  if (multiplayerManager) {
+    multiplayerManager.update(dt);
+    if (isExplorationMode.value) {
+      multiplayerManager.broadcast(
+        camera.position.x,
+        camera.position.y,
+        camera.position.z,
+        camera.rotation.y,
+        "walking"
+      );
+    } else if (isDrivingMode.value && activeCar.value) {
+      const heading = activeCar.value.userData.heading ?? activeCar.value.rotation.y;
+      multiplayerManager.broadcast(
+        activeCar.value.position.x,
+        activeCar.value.position.y,
+        activeCar.value.position.z,
+        heading,
+        "driving"
+      );
+    }
+  }
 
   if (cityBuilder) {
     const materials = cityBuilder.getAudioMaterials();
@@ -1186,6 +1213,9 @@ onBeforeUnmount(() => {
   }
   if (gangWarManager) {
     gangWarManager.dispose();
+  }
+  if (multiplayerManager) {
+    multiplayerManager.dispose();
   }
 });
 </script>

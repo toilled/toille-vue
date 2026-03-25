@@ -1,3 +1,4 @@
+import { random } from "../utils/Random";
 import {
   Group,
   Mesh,
@@ -46,7 +47,7 @@ class Warrior {
   state: "IDLE" | "COMBAT" | "DEAD" = "IDLE";
   target: Warrior | null = null;
   cooldown: number = 0;
-  speed: number = 5 + Math.random() * 5;
+  speed: number = 5 + random.next() * 5;
   accuracy: number = 0.1; // rad error
 
   // Visuals
@@ -134,8 +135,8 @@ export class GangWarManager {
 
   spawnGangBatch(gang: GangConfig, count: number) {
     // Pick a random block for this gang's base/spawn area to cluster them slightly
-    const blockX = Math.floor(Math.random() * GRID_SIZE);
-    const blockZ = Math.floor(Math.random() * GRID_SIZE);
+    const blockX = Math.floor(random.next() * GRID_SIZE);
+    const blockZ = Math.floor(random.next() * GRID_SIZE);
 
     // Get building size for this block
     const key = `${blockX},${blockZ}`;
@@ -150,7 +151,7 @@ export class GangWarManager {
 
     for (let i = 0; i < count; i++) {
       // Pick a side of the building (North, South, East, West)
-      const side = Math.floor(Math.random() * 4);
+      const side = Math.floor(random.next() * 4);
       let x = cx;
       let z = cz;
 
@@ -160,20 +161,20 @@ export class GangWarManager {
       switch (side) {
         case 0: // North (-Z)
           // z needs to be < cz - halfD
-          z = cz - halfD - margin - Math.random() * 15;
-          x = cx + (Math.random() - 0.5) * CELL_SIZE;
+          z = cz - halfD - margin - random.next() * 15;
+          x = cx + (random.next() - 0.5) * CELL_SIZE;
           break;
         case 1: // South (+Z)
-          z = cz + halfD + margin + Math.random() * 15;
-          x = cx + (Math.random() - 0.5) * CELL_SIZE;
+          z = cz + halfD + margin + random.next() * 15;
+          x = cx + (random.next() - 0.5) * CELL_SIZE;
           break;
         case 2: // East (+X)
-          x = cx + halfW + margin + Math.random() * 15;
-          z = cz + (Math.random() - 0.5) * CELL_SIZE;
+          x = cx + halfW + margin + random.next() * 15;
+          z = cz + (random.next() - 0.5) * CELL_SIZE;
           break;
         case 3: // West (-X)
-          x = cx - halfW - margin - Math.random() * 15;
-          z = cz + (Math.random() - 0.5) * CELL_SIZE;
+          x = cx - halfW - margin - random.next() * 15;
+          z = cz + (random.next() - 0.5) * CELL_SIZE;
           break;
       }
 
@@ -340,7 +341,7 @@ export class GangWarManager {
       // Shoot
       if (w.cooldown <= 0) {
         this.shoot(w, w.target);
-        w.cooldown = 0.5 + Math.random() * 1.0; // Fire rate
+        w.cooldown = 0.5 + random.next() * 1.0; // Fire rate
       }
     }
   }
@@ -358,9 +359,9 @@ export class GangWarManager {
     const dir = target.group.position.clone().sub(startPos).normalize();
 
     // Add inaccuracy
-    dir.x += (Math.random() - 0.5) * shooter.accuracy;
-    dir.y += (Math.random() - 0.5) * shooter.accuracy;
-    dir.z += (Math.random() - 0.5) * shooter.accuracy;
+    dir.x += (random.next() - 0.5) * shooter.accuracy;
+    dir.y += (random.next() - 0.5) * shooter.accuracy;
+    dir.z += (random.next() - 0.5) * shooter.accuracy;
     dir.normalize();
 
     const speed = 80;
@@ -375,7 +376,7 @@ export class GangWarManager {
     this.scene.add(mesh);
     this.projectiles.push(new Projectile(mesh, velocity, shooter.gangId));
 
-    if (Math.random() > 0.7) {
+    if (random.next() > 0.7) {
       this.playPewSound(startPos);
     }
   }

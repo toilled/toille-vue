@@ -1,3 +1,4 @@
+import { random } from "../utils/Random";
 import {
   DirectionalLight,
   DoubleSide,
@@ -140,13 +141,13 @@ export class CityBuilder {
     const xPos = START_OFFSET + x * CELL_SIZE;
     const zPos = START_OFFSET + z * CELL_SIZE;
 
-    if (!isLeaderboardBuilding && Math.random() > 0.8) {
+    if (!isLeaderboardBuilding && random.next() > 0.8) {
       return;
     }
 
-    let h = 40 + Math.random() * 120;
-    let w = BLOCK_SIZE - 10 - Math.random() * 20;
-    let d = BLOCK_SIZE - 10 - Math.random() * 20;
+    let h = 40 + random.next() * 120;
+    let w = BLOCK_SIZE - 10 - random.next() * 20;
+    let d = BLOCK_SIZE - 10 - random.next() * 20;
 
     if (isLeaderboardBuilding) {
       h = 250;
@@ -200,7 +201,7 @@ export class CityBuilder {
 
   private determineStyle(isLeaderboardBuilding: boolean): string {
     if (isLeaderboardBuilding) return "SIMPLE";
-    const r = Math.random();
+    const r = random.next();
     if (r > 0.9) return "SPIRE";
     if (r > 0.75) return "TIERED";
     if (r > 0.6) return "GREEBLED";
@@ -225,7 +226,7 @@ export class CityBuilder {
   private selectMaterial(isLeaderboardBuilding: boolean): MeshStandardMaterial {
     if (isLeaderboardBuilding) return this.materials.buildingMaterial;
     const audioKeys = Object.keys(this.materials.audioMaterials);
-    const channelIndex = Math.floor(Math.random() * audioKeys.length);
+    const channelIndex = Math.floor(random.next() * audioKeys.length);
     return this.materials.audioMaterials[audioKeys[channelIndex]];
   }
 
@@ -279,7 +280,7 @@ export class CityBuilder {
 
       const mainLine = new LineSegments(
         this.materials.edgesGeo,
-        Math.random() > 0.5 ? this.materials.edgeMat1 : this.materials.edgeMat2,
+        random.next() > 0.5 ? this.materials.edgeMat1 : this.materials.edgeMat2,
       );
       mainLine.scale.set(w, h, d);
       buildingGroup.add(mainLine);
@@ -293,7 +294,7 @@ export class CityBuilder {
     d: number,
     materials: MeshStandardMaterial[],
   ) {
-    const segments = 5 + Math.floor(Math.random() * 5);
+    const segments = 5 + Math.floor(random.next() * 5);
     const segH = h / segments;
     let currentY = 0;
     let rot = 0;
@@ -317,7 +318,7 @@ export class CityBuilder {
       buildingGroup.add(segLine);
 
       currentY += segH;
-      rot += Math.random() > 0.5 ? Math.PI / 10 : -Math.PI / 10;
+      rot += random.next() > 0.5 ? Math.PI / 10 : -Math.PI / 10;
     }
   }
 
@@ -328,15 +329,15 @@ export class CityBuilder {
     d: number,
     materials: MeshStandardMaterial[],
   ) {
-    const tiers = 1 + Math.floor(Math.random() * 2);
+    const tiers = 1 + Math.floor(random.next() * 2);
     let currentH = h;
     let currentW = w;
     let currentD = d;
 
     for (let t = 0; t < tiers; t++) {
-      const tierH = 20 + Math.random() * 40;
-      currentW *= 0.6 + Math.random() * 0.2;
-      currentD *= 0.6 + Math.random() * 0.2;
+      const tierH = 20 + random.next() * 40;
+      currentW *= 0.6 + random.next() * 0.2;
+      currentD *= 0.6 + random.next() * 0.2;
 
       const tierBlock = new Mesh(this.materials.boxGeo, materials);
       tierBlock.scale.set(currentW, tierH, currentD);
@@ -364,7 +365,7 @@ export class CityBuilder {
     d: number,
     material: MeshStandardMaterial,
   ) {
-    const spireH = h * 0.5 + Math.random() * h;
+    const spireH = h * 0.5 + random.next() * h;
     const spireW = w * 0.5;
     const spireD = d * 0.5;
 
@@ -387,11 +388,11 @@ export class CityBuilder {
   }
 
   private addGreebles(buildingGroup: Group, w: number, h: number, d: number) {
-    const count = 4 + Math.floor(Math.random() * 6);
+    const count = 4 + Math.floor(random.next() * 6);
     for (let g = 0; g < count; g++) {
-      const gw = 5 + Math.random() * 10;
-      const gh = 5 + Math.random() * 20;
-      const gd = 5 + Math.random() * 10;
+      const gw = 5 + random.next() * 10;
+      const gh = 5 + random.next() * 20;
+      const gd = 5 + random.next() * 10;
 
       const gMesh = new Mesh(
         this.materials.boxGeo,
@@ -401,19 +402,19 @@ export class CityBuilder {
       gMesh.castShadow = true;
       gMesh.receiveShadow = true;
 
-      const face = Math.floor(Math.random() * 4);
+      const face = Math.floor(random.next() * 4);
       switch (face) {
         case 0:
-          gMesh.position.set(0, Math.random() * h, d / 2 + gd / 2);
+          gMesh.position.set(0, random.next() * h, d / 2 + gd / 2);
           break;
         case 1:
-          gMesh.position.set(0, Math.random() * h, -d / 2 - gd / 2);
+          gMesh.position.set(0, random.next() * h, -d / 2 - gd / 2);
           break;
         case 2:
-          gMesh.position.set(w / 2 + gw / 2, Math.random() * h, 0);
+          gMesh.position.set(w / 2 + gw / 2, random.next() * h, 0);
           break;
         default:
-          gMesh.position.set(-w / 2 - gw / 2, Math.random() * h, 0);
+          gMesh.position.set(-w / 2 - gw / 2, random.next() * h, 0);
           break;
       }
 
@@ -438,13 +439,13 @@ export class CityBuilder {
     d: number,
   ) {
     // Neon Strips
-    if (!isLeaderboard && h > 50 && Math.random() > 0.6) {
-      const color = new Color().setHSL(Math.random(), 1.0, 0.5);
+    if (!isLeaderboard && h > 50 && random.next() > 0.6) {
+      const color = new Color().setHSL(random.next(), 1.0, 0.5);
       const stripMat = new MeshBasicMaterial({ color: color });
       const strip = new Mesh(this.materials.neonStripGeo, stripMat);
       strip.scale.set(1, h * 0.8, 1);
 
-      const face = Math.floor(Math.random() * 4);
+      const face = Math.floor(random.next() * 4);
       const offset = 0.6;
       switch (face) {
         case 0:
@@ -468,9 +469,9 @@ export class CityBuilder {
       style !== "SPIRE" &&
       style !== "CYLINDRICAL" &&
       style !== "TWISTED" &&
-      Math.random() > 0.7
+      random.next() > 0.7
     ) {
-      const antennaH = 20 + Math.random() * 50;
+      const antennaH = 20 + random.next() * 50;
       const antenna = new Mesh(
         this.materials.boxGeo,
         this.materials.antennaMat,
@@ -481,33 +482,33 @@ export class CityBuilder {
     }
 
     // Billboard
-    if (!isLeaderboard && h > 60 && Math.random() > 0.7) {
+    if (!isLeaderboard && h > 60 && random.next() > 0.7) {
       const texIndex = Math.floor(
-        Math.random() * this.materials.billboardMaterials.length,
+        random.next() * this.materials.billboardMaterials.length,
       );
       const bbMat = this.materials.billboardMaterials[texIndex];
 
-      const bbW = 20 + Math.random() * 15;
-      const bbH = 10 + Math.random() * 10;
+      const bbW = 20 + random.next() * 15;
+      const bbH = 10 + random.next() * 10;
       const bbGeo = new PlaneGeometry(bbW, bbH);
 
       const billboard = new Mesh(bbGeo, bbMat);
 
-      const face = Math.floor(Math.random() * 4);
+      const face = Math.floor(random.next() * 4);
       const offset = 1;
 
       switch (face) {
         case 0:
           billboard.position.set(
             0,
-            h * (0.5 + Math.random() * 0.3),
+            h * (0.5 + random.next() * 0.3),
             d / 2 + offset,
           );
           break;
         case 1:
           billboard.position.set(
             0,
-            h * (0.5 + Math.random() * 0.3),
+            h * (0.5 + random.next() * 0.3),
             -d / 2 - offset,
           );
           billboard.rotation.y = Math.PI;
@@ -515,7 +516,7 @@ export class CityBuilder {
         case 2:
           billboard.position.set(
             w / 2 + offset,
-            h * (0.5 + Math.random() * 0.3),
+            h * (0.5 + random.next() * 0.3),
             0,
           );
           billboard.rotation.y = Math.PI / 2;
@@ -523,7 +524,7 @@ export class CityBuilder {
         default:
           billboard.position.set(
             -w / 2 - offset,
-            h * (0.5 + Math.random() * 0.3),
+            h * (0.5 + random.next() * 0.3),
             0,
           );
           billboard.rotation.y = -Math.PI / 2;

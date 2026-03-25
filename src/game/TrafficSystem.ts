@@ -1,3 +1,4 @@
+import { random } from "../utils/Random";
 import {
   Group,
   Mesh,
@@ -179,22 +180,22 @@ export class TrafficSystem {
 
     this.removeLightsFromCar(carGroup);
 
-    const axis = Math.random() > 0.5 ? "x" : "z";
-    const dir = Math.random() > 0.5 ? 1 : -1;
+    const axis = random.next() > 0.5 ? "x" : "z";
+    const dir = random.next() > 0.5 ? 1 : -1;
 
-    const roadIndex = Math.floor(Math.random() * (GRID_SIZE + 1));
+    const roadIndex = Math.floor(random.next() * (GRID_SIZE + 1));
     const roadCoordinate = START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
-    const laneOffset = (Math.random() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
+    const laneOffset = (random.next() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
 
     let x = 0,
       z = 0;
     if (axis === "x") {
       z = roadCoordinate + laneOffset;
-      x = (Math.random() - 0.5) * CITY_SIZE;
+      x = (random.next() - 0.5) * CITY_SIZE;
       carGroup.rotation.y = dir === 1 ? Math.PI / 2 : -Math.PI / 2;
     } else {
       x = roadCoordinate + laneOffset;
-      z = (Math.random() - 0.5) * CITY_SIZE;
+      z = (random.next() - 0.5) * CITY_SIZE;
       carGroup.rotation.y = dir === 1 ? 0 : Math.PI;
     }
 
@@ -203,7 +204,7 @@ export class TrafficSystem {
 
     // Reset properties
     Object.assign(carGroup.userData, {
-      speed: isPolice ? 2.5 + Math.random() * 1.5 : 0.5 + Math.random() * 1.0,
+      speed: isPolice ? 2.5 + random.next() * 1.5 : 0.5 + random.next() * 1.0,
       dir,
       axis,
       laneOffset,
@@ -314,10 +315,10 @@ export class TrafficSystem {
       const roadCenter = START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
 
       if (Math.abs(currentPos - roadCenter) < car.userData.speed * 1.5) {
-        if (Math.random() < 0.4) {
-          const newDir = Math.random() > 0.5 ? 1 : -1;
+        if (random.next() < 0.4) {
+          const newDir = random.next() > 0.5 ? 1 : -1;
           const newLaneOffset =
-            (Math.random() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
+            (random.next() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
 
           if (car.userData.axis === "x") {
             car.position.x = roadCenter + newLaneOffset;
@@ -436,10 +437,10 @@ export class TrafficSystem {
 
       ai.userData.fading = true;
       ai.userData.dir *= -1;
-      ai.userData.heading += Math.random() - 0.5;
+      ai.userData.heading += random.next() - 0.5;
       this.spawnSparks(player.position);
     } else {
-      if (Math.random() > 0.5) return;
+      if (random.next() > 0.5) return;
 
       carA.userData.fading = true;
       carB.userData.fading = true;
@@ -447,8 +448,8 @@ export class TrafficSystem {
       carA.userData.dir *= -1;
       carB.userData.dir *= -1;
 
-      carA.userData.heading += Math.random() - 0.5;
-      carB.userData.heading += Math.random() - 0.5;
+      carA.userData.heading += random.next() - 0.5;
+      carB.userData.heading += random.next() - 0.5;
     }
   }
 }

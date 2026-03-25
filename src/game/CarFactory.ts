@@ -1,3 +1,4 @@
+import { random } from "../utils/Random";
 import {
   BoxGeometry,
   CylinderGeometry,
@@ -75,17 +76,17 @@ export class CarFactory {
   }
 
   public createCar(isPolice: boolean): Group {
-    const isTruck = !isPolice && Math.random() < 0.15;
+    const isTruck = !isPolice && random.next() < 0.15;
     let bodyMat;
 
     if (isPolice) {
       bodyMat = this.policeBodyMat.clone();
     } else {
-      const isSpecial = Math.random() > 0.8;
+      const isSpecial = random.next() > 0.8;
       bodyMat = (
         isSpecial
           ? this.carBodyMat1
-          : Math.random() > 0.5
+          : random.next() > 0.5
           ? this.carBodyMat2
           : this.carBodyMat3
       ).clone();
@@ -197,9 +198,9 @@ export class CarFactory {
   }
 
   private addUnderglow(carGroup: Group) {
-    if (Math.random() > 0.3) {
+    if (random.next() > 0.3) {
       const underglowMat = (
-        Math.random() > 0.5 ? this.underglowMat1 : this.underglowMat2
+        random.next() > 0.5 ? this.underglowMat1 : this.underglowMat2
       ).clone();
       const underglow = new Mesh(this.underglowGeo, underglowMat);
       underglow.userData.originalOpacity = 0.5;

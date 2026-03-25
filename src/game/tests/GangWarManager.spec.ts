@@ -1,3 +1,4 @@
+import { random } from "../../utils/Random";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GangWarManager } from "../GangWarManager";
 import { Scene, Vector3 } from "three";
@@ -198,7 +199,8 @@ describe("GangWarManager", () => {
     // Actually code says if (Math.random() > 0.7)
 
     // Spy on Math.random
-    const randSpy = vi.spyOn(Math, "random").mockReturnValue(0.9); // Ensure > 0.7
+
+    const randSpy = vi.spyOn(random, "next").mockReturnValue(0.9); // Ensure > 0.7
 
     manager.shoot(w2, w1);
 

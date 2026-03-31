@@ -43,7 +43,7 @@ export const DRONE_POINT_SIZE = 300;
 export const DRONE_HIT_THRESHOLD = 300;
 
 export const AUDIO_VOLUME = 0.1;
-export const AUDIO_DISTANCE_FACTOR = 300;
+export const AUDIO_DISTANCE_FACTOR = 50;
 export const AUDIO_OSCILLATOR_FREQ_START = 880;
 export const AUDIO_OSCILLATOR_FREQ_END = 110;
 export const AUDIO_SWEEP_DURATION = 0.2;

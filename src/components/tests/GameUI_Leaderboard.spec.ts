@@ -36,7 +36,6 @@ describe("GameUI.vue Leaderboard Modal", () => {
     isGameOver: false,
     isMobile: false,
     drivingScore: 0,
-    droneScore: 0,
     timeLeft: 0,
     distToTarget: 0,
     controls: mockControls,

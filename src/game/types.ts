@@ -3,7 +3,6 @@ import {
   PerspectiveCamera,
   WebGLRenderer,
   Group,
-  Points,
   Vector3,
   Mesh,
 } from "three";
@@ -31,8 +30,6 @@ export interface GameContext {
   composer: EffectComposer | null;
 
   cars: Group[];
-  drones: Points | undefined;
-  droneTargetPositions: Float32Array | undefined;
   buildings: Group[];
   occupiedGrids: Map<
     string,
@@ -40,7 +37,6 @@ export interface GameContext {
   >;
 
   score: Ref<number>;
-  droneScore: Ref<number>;
   drivingScore: Ref<number>;
   timeLeft: Ref<number>;
   activeCar: Ref<Group | null>;

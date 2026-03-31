@@ -30,14 +30,13 @@ import { ref, PropType, watch } from "vue";
 import { ScoreService, type ScoreEntry } from "../utils/ScoreService";
 
 const props = defineProps({
-    isGameOver: Boolean,
-    drivingScore: Number,
-    droneScore: Number,
-    isDrivingMode: Boolean,
-    leaderboard: {
-        type: Array as PropType<ScoreEntry[]>,
-        required: true
-    }
+  isGameOver: Boolean,
+  drivingScore: Number,
+  isDrivingMode: Boolean,
+  leaderboard: {
+    type: Array as PropType<ScoreEntry[]>,
+    required: true,
+  },
 });
 
 const emit = defineEmits(["update-leaderboard"]);
@@ -45,18 +44,22 @@ const emit = defineEmits(["update-leaderboard"]);
 const playerName = ref("");
 const isScoreSubmitted = ref(false);
 
-watch(() => props.isGameOver, async (val) => {
-  if (val && props.isDrivingMode) {
-    isScoreSubmitted.value = false;
-    const scores = await ScoreService.getTopScores();
-    emit("update-leaderboard", scores);
-  }
-}, { immediate: true });
+watch(
+  () => props.isGameOver,
+  async (val) => {
+    if (val && props.isDrivingMode) {
+      isScoreSubmitted.value = false;
+      const scores = await ScoreService.getTopScores();
+      emit("update-leaderboard", scores);
+    }
+  },
+  { immediate: true },
+);
 
 async function submitHighScore() {
   if (!playerName.value.trim()) return;
   const nameUpper = playerName.value.trim().toUpperCase();
-  const finalScore = props.isDrivingMode ? props.drivingScore : (props.droneScore || 0);
+  const finalScore = props.drivingScore;
   const newScores = await ScoreService.submitScore(nameUpper, finalScore || 0);
   isScoreSubmitted.value = true;
   emit("update-leaderboard", newScores);

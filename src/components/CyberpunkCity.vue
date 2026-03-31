@@ -9,7 +9,6 @@
     :isGameOver="isGameOver"
     :isMobile="isMobile"
     :drivingScore="drivingScore"
-    :droneScore="droneScore"
     :timeLeft="timeLeft"
     :distToTarget="distToTarget"
     :controls="controls"
@@ -61,20 +60,13 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { GameModeManager } from "../game/GameModeManager";
 import { setupPostProcessing } from "../game/PostProcessingManager";
 import { DrivingMode } from "../game/modes/DrivingMode";
-import { DroneMode } from "../game/modes/DroneMode";
 import { ExplorationMode } from "../game/modes/ExplorationMode";
 import { FlyingTourMode } from "../game/modes/FlyingTourMode";
 import { DemoMode } from "../game/modes/DemoMode";
 import { GameContext } from "../game/types";
 import { carAudio } from "../game/audio/CarAudio";
 import { cyberpunkAudio } from "../utils/CyberpunkAudio";
-import {
-  BOUNDS,
-  CELL_SIZE,
-  START_OFFSET,
-  DRONE_COUNT,
-  GRID_SIZE,
-} from "../game/config";
+import { BOUNDS, CELL_SIZE, START_OFFSET, GRID_SIZE } from "../game/config";
 import {
   LEADERBOARD_CANVAS_SIZE,
   MOBILE_BREAKPOINT,
@@ -101,12 +93,6 @@ import {
   INTRO_DURATION_MS,
   INTRO_ORBIT_RADIUS,
   INTRO_ORBIT_SPEED,
-  RAYCASTER_POINTS_THRESHOLD,
-  DRONE_SCORE_POINTS,
-  DRONE_OSCILLATION_X,
-  DRONE_OSCILLATION_Y,
-  DRONE_OSCILLATION_Z,
-  DRONE_EASING,
   AUDIO_VOLUME,
   AUDIO_DISTANCE_FACTOR,
   AUDIO_OSCILLATOR_FREQ_START,
@@ -126,9 +112,9 @@ import {
 } from "../game/constants/CyberpunkCity";
 import { KonamiManager } from "../game/KonamiManager";
 import { GangWarManager } from "../game/GangWarManager";
-import { createDroneTexture } from "../utils/TextureGenerator";
 import { CityBuilder } from "../game/CityBuilder";
 import { TrafficSystem } from "../game/TrafficSystem";
+import { SkyEffects } from "../game/SkyEffects";
 import { getHeight } from "../utils/HeightMap";
 import { audioManager } from "../utils/AudioManager";
 import { MultiplayerManager } from "../game/MultiplayerManager";
@@ -151,12 +137,7 @@ let occupiedGrids = new Map<
 let cars: Group[] = [];
 let leaderboardMeshes: Mesh[] = [];
 
-let drones: Points;
-let droneTargetPositions: Float32Array;
-let droneBasePositions: Float32Array;
-const deadDrones = new Set<number>();
 const score = ref(0);
-const droneScore = ref(0);
 const drivingScore = ref(0);
 const isGameMode = ref(false);
 const isDrivingMode = ref(false);
@@ -179,6 +160,7 @@ let gangWarManager: GangWarManager;
 let trafficSystem: TrafficSystem;
 let cityBuilder: CityBuilder;
 let multiplayerManager: MultiplayerManager;
+let skyEffects: SkyEffects;
 
 const leaderboard = ref<ScoreEntry[]>([]);
 const showLeaderboard = ref(false);
@@ -498,7 +480,7 @@ onMounted(() => {
 
   // Scene setup
   scene = new Scene();
-  scene.background = new Color(0x050510);
+  // scene.background handled by SkyEffects sky dome
 
   // Camera setup
   camera = new PerspectiveCamera(
@@ -523,6 +505,10 @@ onMounted(() => {
   // Post Processing
   composer = setupPostProcessing(scene, camera, renderer);
 
+  // Sky Effects
+  skyEffects = new SkyEffects(scene);
+  skyEffects.addClouds();
+
   // City Builder
   const lbTexture = createLeaderboardTexture();
   cityBuilder = new CityBuilder(scene);
@@ -542,62 +528,6 @@ onMounted(() => {
   // Traffic System
   trafficSystem = new TrafficSystem(scene, CAR_COUNT, spawnSparks);
   cars = trafficSystem.getCars();
-
-  // Drone Swarm
-  const droneGeo = new BufferGeometry();
-  const droneCount = DRONE_COUNT;
-  const dronePositions = new Float32Array(droneCount * 3);
-  const droneColorsArray = new Float32Array(droneCount * 3);
-  droneTargetPositions = new Float32Array(droneCount * 3);
-  droneBasePositions = new Float32Array(droneCount * 3);
-
-  const baseRand = mulberry32(1337);
-  for (let i = 0; i < droneCount; i++) {
-    const range = BOUNDS * 2;
-    droneBasePositions[i * 3] = (baseRand() - 0.5) * range;
-    droneBasePositions[i * 3 + 1] = 300 + baseRand() * 800;
-    droneBasePositions[i * 3 + 2] = (baseRand() - 0.5) * range;
-  }
-
-  const dColor1 = new Color(0xff0000); // Red
-  const dColor2 = new Color(0x00ffcc); // Cyan
-  const dColor3 = new Color(0x00ff00); // Green
-  const dColor4 = new Color(0xffffff); // White
-
-  generateDroneTargets(route.path);
-
-  for (let i = 0; i < droneCount * 3; i++) {
-    dronePositions[i] = droneTargetPositions[i];
-  }
-
-  for (let i = 0; i < droneCount; i++) {
-    const c = Math.random();
-    let finalColor = dColor4;
-    if (c < 0.25) finalColor = dColor1;
-    else if (c < 0.5) finalColor = dColor2;
-    else if (c < 0.75) finalColor = dColor3;
-
-    droneColorsArray[i * 3] = finalColor.r;
-    droneColorsArray[i * 3 + 1] = finalColor.g;
-    droneColorsArray[i * 3 + 2] = finalColor.b;
-  }
-
-  droneGeo.setAttribute("position", new BufferAttribute(dronePositions, 3));
-  droneGeo.setAttribute("color", new BufferAttribute(droneColorsArray, 3));
-
-  const droneMaterial = new PointsMaterial({
-    size: 15,
-    map: createDroneTexture(),
-    vertexColors: true,
-    transparent: true,
-    opacity: 0.9,
-    sizeAttenuation: true,
-    depthWrite: false,
-    blending: AdditiveBlending,
-  });
-
-  drones = new Points(droneGeo, droneMaterial);
-  scene.add(drones);
 
   // Initialize Sparks
   const sparkGeo = new BufferGeometry();
@@ -650,12 +580,9 @@ onMounted(() => {
     renderer,
     composer,
     cars,
-    drones,
-    droneTargetPositions,
     occupiedGrids,
     buildings,
     score,
-    droneScore,
     drivingScore,
     timeLeft,
     activeCar,
@@ -709,42 +636,6 @@ function mulberry32(a: number) {
   };
 }
 
-function generateDroneTargets(path: string) {
-  let seed = 0;
-  for (let i = 0; i < path.length; i++) {
-    seed = (seed << 5) - seed + path.charCodeAt(i);
-    seed |= 0;
-  }
-  seed = Math.abs(seed) + 1;
-
-  const rand = mulberry32(seed);
-
-  for (let i = 0; i < droneTargetPositions.length / 3; i++) {
-    const xOffset = (rand() - 0.5) * 500;
-    const yOffset = (rand() - 0.5) * 200;
-    const zOffset = (rand() - 0.5) * 500;
-
-    if (droneBasePositions) {
-      droneTargetPositions[i * 3] = droneBasePositions[i * 3] + xOffset;
-      droneTargetPositions[i * 3 + 1] = droneBasePositions[i * 3 + 1] + yOffset;
-      droneTargetPositions[i * 3 + 2] = droneBasePositions[i * 3 + 2] + zOffset;
-    } else {
-      droneTargetPositions[i * 3] = xOffset * 8;
-      droneTargetPositions[i * 3 + 1] = 300 + (yOffset + 100) * 4;
-      droneTargetPositions[i * 3 + 2] = zOffset * 8;
-    }
-  }
-}
-
-watch(
-  () => route.path,
-  (newPath) => {
-    if (!isGameMode.value && !isDrivingMode.value) {
-      generateDroneTargets(newPath);
-    }
-  },
-);
-
 watch(
   () => props.showSplash,
   (newVal, oldVal) => {
@@ -758,18 +649,6 @@ watch(activeCar, (newCar, oldCar) => {
   if (oldCar) trafficSystem.removeLightsFromCar(oldCar);
   if (newCar) trafficSystem.addLightsToCar(newCar);
 });
-
-watch(droneScore, (val) => {
-  if (val >= 500 && !isGameMode.value && !isDrivingMode.value) {
-    startTargetPractice();
-  }
-});
-
-function startTargetPractice() {
-  isGameMode.value = true;
-  emit("game-start");
-  gameModeManager.setMode(new DroneMode());
-}
 
 function startExplorationMode() {
   isGameMode.value = true;
@@ -812,20 +691,8 @@ function exitGameMode() {
   isGameMode.value = false;
   isGameOver.value = false;
   score.value = 0;
-  droneScore.value = 0;
   drivingScore.value = 0;
   emit("game-end");
-
-  if (drones && droneTargetPositions) {
-    const positions = drones.geometry.attributes.position.array;
-    const count = positions.length / 3;
-    for (let i = 0; i < count; i++) {
-      positions[i * 3] = droneTargetPositions[i * 3];
-      positions[i * 3 + 1] = droneTargetPositions[i * 3 + 1];
-      positions[i * 3 + 2] = droneTargetPositions[i * 3 + 2];
-    }
-    drones.geometry.attributes.position.needsUpdate = true;
-  }
 }
 
 function onResize() {
@@ -904,33 +771,6 @@ function onClick(event: MouseEvent) {
       return;
     }
   }
-
-  if (drones && !isExplorationMode.value) {
-    raycaster.params.Points.threshold = RAYCASTER_POINTS_THRESHOLD;
-    const intersects = raycaster.intersectObject(drones);
-
-    if (intersects.length > 0) {
-      const intersect = intersects[0];
-      const index = intersect.index;
-
-      if (index !== undefined && !deadDrones.has(index)) {
-        const posAttribute = drones.geometry.attributes.position;
-        const x = posAttribute.getX(index);
-        const y = posAttribute.getY(index);
-        const z = posAttribute.getZ(index);
-
-        spawnSparks(new Vector3(x, y, z));
-
-        posAttribute.setXYZ(index, 0, SPARK_OFF_SCREEN_Y, 0);
-        posAttribute.needsUpdate = true;
-
-        deadDrones.add(index);
-
-        playPewSound();
-        droneScore.value += DRONE_SCORE_POINTS;
-      }
-    }
-  }
 }
 
 function onMouseMove(event: MouseEvent) {
@@ -948,6 +788,7 @@ function animate() {
 
   konamiManager.update(dt);
   gangWarManager.update(dt);
+  skyEffects.update(dt);
   gameModeManager.update(dt, time);
   trafficSystem.update();
   if (multiplayerManager) {
@@ -958,16 +799,17 @@ function animate() {
         camera.position.y,
         camera.position.z,
         camera.rotation.y,
-        "walking"
+        "walking",
       );
     } else if (isDrivingMode.value && activeCar.value) {
-      const heading = activeCar.value.userData.heading ?? activeCar.value.rotation.y;
+      const heading =
+        activeCar.value.userData.heading ?? activeCar.value.rotation.y;
       multiplayerManager.broadcast(
         activeCar.value.position.x,
         activeCar.value.position.y,
         activeCar.value.position.z,
         heading,
-        "driving"
+        "driving",
       );
     }
   }
@@ -1033,34 +875,6 @@ function animate() {
     }
     if (needsUpdate) {
       sparks.geometry.attributes.position.needsUpdate = true;
-    }
-  }
-
-  const isDroneMode = gameModeManager.getMode() instanceof DroneMode;
-
-  if (drones && !isDroneMode) {
-    const positions = drones.geometry.attributes.position.array;
-
-    if (droneTargetPositions) {
-      const oscTime = Date.now() * 0.001;
-
-      for (let i = 0; i < positions.length / 3; i++) {
-        if (deadDrones.has(i)) continue;
-
-        const offset = i;
-        const oscX = Math.sin(oscTime + offset) * DRONE_OSCILLATION_X;
-        const oscY = Math.cos(oscTime * 0.5 + offset) * DRONE_OSCILLATION_Y;
-        const oscZ = Math.sin(oscTime * 0.8 + offset) * DRONE_OSCILLATION_Z;
-
-        const targetX = droneTargetPositions[i * 3] + oscX;
-        const targetY = droneTargetPositions[i * 3 + 1] + oscY;
-        const targetZ = droneTargetPositions[i * 3 + 2] + oscZ;
-
-        positions[i * 3] += (targetX - positions[i * 3]) * DRONE_EASING;
-        positions[i * 3 + 1] += (targetY - positions[i * 3 + 1]) * DRONE_EASING;
-        positions[i * 3 + 2] += (targetZ - positions[i * 3 + 2]) * DRONE_EASING;
-      }
-      drones.geometry.attributes.position.needsUpdate = true;
     }
   }
 
@@ -1216,6 +1030,9 @@ onBeforeUnmount(() => {
   }
   if (multiplayerManager) {
     multiplayerManager.dispose();
+  }
+  if (skyEffects && skyEffects.dispose) {
+    skyEffects.dispose();
   }
 });
 </script>

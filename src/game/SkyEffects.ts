@@ -251,15 +251,14 @@ export class SkyEffects {
       if (this.skyDome.geometry) {
         this.skyDome.geometry.dispose();
       }
-      if (
-        this.skyDome.material &&
-        typeof (this.skyDome.material as any).dispose === "function"
-      ) {
+      if (this.skyDome.material) {
         const skyMat = this.skyDome.material as MeshBasicMaterial;
         if (skyMat.map) {
           skyMat.map.dispose();
         }
-        skyMat.dispose();
+        if (typeof skyMat.dispose === "function") {
+          skyMat.dispose();
+        }
       }
     }
 
@@ -268,25 +267,24 @@ export class SkyEffects {
       if (this.stars.geometry) {
         this.stars.geometry.dispose();
       }
-      if (
-        this.stars.material &&
-        typeof (this.stars.material as any).dispose === "function"
-      ) {
-        (this.stars.material as PointsMaterial).dispose();
+      if (this.stars.material) {
+        const starsMat = this.stars.material as PointsMaterial;
+        if (typeof starsMat.dispose === "function") {
+          starsMat.dispose();
+        }
       }
     }
 
     for (const cloud of this.cloudSprites) {
       this.scene.remove(cloud);
-      if (
-        cloud.material &&
-        typeof (cloud.material as any).dispose === "function"
-      ) {
+      if (cloud.material) {
         const mat = cloud.material as SpriteMaterial;
         if (mat.map) {
           mat.map.dispose();
         }
-        mat.dispose();
+        if (typeof mat.dispose === "function") {
+          mat.dispose();
+        }
       }
     }
 

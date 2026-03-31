@@ -1,15 +1,15 @@
 build:
-	bun run build
+	npm run build
 
 ci:
-	bun install
+	npm ci
 
 dev:
-	bun run dev
+	npm run dev
 
 preview:
 	$(MAKE) build
-	bun run serve
+	npm run serve
 
 lint:
-	bunx eslint .
+	npx eslint .

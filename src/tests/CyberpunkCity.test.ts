@@ -130,8 +130,20 @@ vi.mock("three", () => {
     BufferGeometry: vi.fn(() => ({
       setAttribute: vi.fn(),
       setFromPoints: vi.fn(),
+      dispose: vi.fn(),
+      attributes: {
+        position: {
+          array: new Float32Array(3000),
+          needsUpdate: false,
+        },
+        color: {
+          array: new Float32Array(3000),
+          needsUpdate: false,
+        },
+      },
     })),
     MeshBasicMaterial: vi.fn(() => ({
+      dispose: vi.fn(),
       clone: vi.fn(() => ({
         clone: vi.fn(),
       })),
@@ -205,6 +217,15 @@ vi.mock("three", () => {
       lookAt: vi.fn(),
     })),
     DoubleSide: 2,
+    BackSide: 1,
+    Sprite: vi.fn(() => ({
+      position: { set: vi.fn(), x: 0, y: 0, z: 0 },
+      scale: { set: vi.fn() },
+      userData: {},
+    })),
+    SpriteMaterial: vi.fn(() => ({
+      dispose: vi.fn(),
+    })),
     Mesh: vi.fn(() => ({
       position: {
         set: vi.fn(),
@@ -249,8 +270,25 @@ vi.mock("three", () => {
         dispose: vi.fn(),
       },
     })),
-    Float32BufferAttribute: vi.fn(),
-    BufferAttribute: vi.fn(),
+    Float32BufferAttribute: vi.fn(() => ({
+      array: new Float32Array(3000),
+      needsUpdate: false,
+      setXYZ: vi.fn(),
+      getX: vi.fn(() => 0),
+      getY: vi.fn(() => 0),
+      getZ: vi.fn(() => 0),
+    })),
+    BufferAttribute: vi.fn(() => ({
+      array: new Float32Array(3000),
+      needsUpdate: false,
+      setXYZ: vi.fn(),
+      setX: vi.fn(),
+      setY: vi.fn(),
+      setZ: vi.fn(),
+      getX: vi.fn(() => 0),
+      getY: vi.fn(() => 0),
+      getZ: vi.fn(() => 0),
+    })),
     CanvasTexture: vi.fn(() => ({
       wrapS: 0,
       wrapT: 0,
@@ -362,6 +400,14 @@ describe("CyberpunkCity.vue", () => {
       clearRect: vi.fn(),
       scale: vi.fn(),
       setTransform: vi.fn(),
+      createLinearGradient: vi.fn(() => ({
+        addColorStop: vi.fn(),
+      })),
+      createRadialGradient: vi.fn(() => ({
+        addColorStop: vi.fn(),
+      })),
+      globalAlpha: 1,
+      globalCompositeOperation: "source-over",
     } as unknown as CanvasRenderingContext2D;
 
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(

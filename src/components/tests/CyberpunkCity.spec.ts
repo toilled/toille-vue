@@ -26,7 +26,6 @@ vi.mock("vue", async (importOriginal) => {
         "isGameOver",
         "isMobile",
         "drivingScore",
-        "droneScore",
         "timeLeft",
         "distToTarget",
         "controls",
@@ -64,6 +63,14 @@ describe("CyberpunkCity.vue", () => {
       clearRect: vi.fn(),
       scale: vi.fn(),
       setTransform: vi.fn(),
+      createLinearGradient: vi.fn(() => ({
+        addColorStop: vi.fn(),
+      })),
+      createRadialGradient: vi.fn(() => ({
+        addColorStop: vi.fn(),
+      })),
+      globalAlpha: 1,
+      globalCompositeOperation: "source-over",
     } as unknown as CanvasRenderingContext2D;
 
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(

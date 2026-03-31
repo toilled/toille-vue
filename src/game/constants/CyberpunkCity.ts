@@ -33,15 +33,6 @@ export const INTRO_ORBIT_SPEED = 0.5;
 
 export const RAYCASTER_POINTS_THRESHOLD = 20;
 
-export const DRONE_SCORE_POINTS = 100;
-
-export const DRONE_OSCILLATION_X = 20;
-export const DRONE_OSCILLATION_Y = 10;
-export const DRONE_OSCILLATION_Z = 20;
-export const DRONE_EASING = 0.02;
-export const DRONE_POINT_SIZE = 300;
-export const DRONE_HIT_THRESHOLD = 300;
-
 export const AUDIO_VOLUME = 0.1;
 export const AUDIO_DISTANCE_FACTOR = 50;
 export const AUDIO_OSCILLATOR_FREQ_START = 880;

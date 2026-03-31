@@ -1,5 +1,7 @@
 <template>
-  <div v-if="(isDrivingMode ? drivingScore : droneScore) > 0" id="score-counter">SCORE: {{ isDrivingMode ? drivingScore : droneScore }}</div>
+  <div v-if="drivingScore > 0" id="score-counter">
+    SCORE: {{ drivingScore }}
+  </div>
   <div v-if="isDrivingMode" id="timer-counter">
     TIME: {{ Math.ceil(timeLeft) }}
   </div>
@@ -11,7 +13,6 @@
     v-if="isDrivingMode && isGameOver"
     :isGameOver="isGameOver"
     :drivingScore="drivingScore"
-    :droneScore="droneScore"
     :isDrivingMode="isDrivingMode"
     :leaderboard="leaderboard"
     @update-leaderboard="$emit('update-leaderboard', $event)"
@@ -25,7 +26,13 @@
   />
 
   <button
-    v-if="isGameMode || isDrivingMode || isExplorationMode || isFlyingTour || isCinematicMode"
+    v-if="
+      isGameMode ||
+      isDrivingMode ||
+      isExplorationMode ||
+      isFlyingTour ||
+      isCinematicMode
+    "
     id="return-button"
     @click="exitGameMode"
   >
@@ -155,36 +162,39 @@ import LeaderboardModal from "./LeaderboardModal.vue";
 import GameOverModal from "./GameOverModal.vue";
 
 const props = defineProps({
-    isDrivingMode: Boolean,
-    isGameMode: Boolean,
-    isExplorationMode: Boolean,
-    isFlyingTour: Boolean,
-    isCinematicMode: Boolean,
-    isGameOver: Boolean,
-    isMobile: Boolean,
-    drivingScore: Number,
-    droneScore: Number,
-    timeLeft: Number,
-    distToTarget: Number,
-    controls: {
-        type: Object as PropType<Controls>,
-        required: true
-    },
-    lookControls: {
-        type: Object as PropType<LookControls>,
-        required: true
-    },
-    leaderboard: {
-        type: Array as PropType<ScoreEntry[]>,
-        required: true
-    },
-    showLeaderboard: Boolean
+  isDrivingMode: Boolean,
+  isGameMode: Boolean,
+  isExplorationMode: Boolean,
+  isFlyingTour: Boolean,
+  isCinematicMode: Boolean,
+  isGameOver: Boolean,
+  isMobile: Boolean,
+  drivingScore: Number,
+  timeLeft: Number,
+  distToTarget: Number,
+  controls: {
+    type: Object as PropType<Controls>,
+    required: true,
+  },
+  lookControls: {
+    type: Object as PropType<LookControls>,
+    required: true,
+  },
+  leaderboard: {
+    type: Array as PropType<ScoreEntry[]>,
+    required: true,
+  },
+  showLeaderboard: Boolean,
 });
 
-const emit = defineEmits(["exit-game-mode", "update-leaderboard", "close-leaderboard"]);
+const emit = defineEmits([
+  "exit-game-mode",
+  "update-leaderboard",
+  "close-leaderboard",
+]);
 
 function exitGameMode() {
-    emit("exit-game-mode");
+  emit("exit-game-mode");
 }
 </script>
 

@@ -27,12 +27,12 @@ This is a simple Vue.js web application built with Vite and TypeScript. It serve
     ```
 3.  **Install dependencies:**
     ```bash
-    bun install
+    npm install
     ```
 
 ## Available Scripts
 
-*   **`bun run dev`**: Starts the development server.
-*   **`bun run build`**: Builds the application for production.
-*   **`bun run serve`**: Serves the production build locally.
-*   **`bun run test`**: Runs the unit tests.
+*   **`npm run dev`**: Starts the development server.
+*   **`npm run build`**: Builds the application for production.
+*   **`npm run serve`**: Serves the production build locally.
+*   **`npm run test`**: Runs the unit tests.

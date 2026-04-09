@@ -154,7 +154,7 @@ function handleKeydown(e: KeyboardEvent) {
   if (gameMode.value) return;
 
   if (e.key === "Escape") {
-    const gameRoutes = ["/game", "/noughts-and-crosses", "/checker", "/ask"];
+    const gameRoutes = ["/game", "/noughts-and-crosses", "/checker", "/ask", "/chat"];
     if (gameRoutes.includes(route.path)) {
       router.push("/hidden");
     }
@@ -298,6 +298,9 @@ watch(
         break;
       case "/ask":
         pageTitle = "Ask Me";
+        break;
+      case "/chat":
+        pageTitle = "Chat Room";
         break;
       default: {
         let routeName;

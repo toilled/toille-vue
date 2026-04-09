@@ -31,6 +31,7 @@ const routes = [
     component: () => import("./components/NoughtsAndCrosses.vue"),
   },
   { path: "/ask", component: () => import("./components/Ask.vue") },
+  { path: "/chat", component: () => import("./components/Chat.vue") },
   { path: "/:pathMatch(.*)*", component: PageContent },
 ];
 

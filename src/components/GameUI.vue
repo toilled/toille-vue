@@ -1,4 +1,7 @@
 <template>
+  <div id="quality-stats">
+    {{ qualityLevelName || "Medium" }} | {{ currentFps || 60 }} FPS
+  </div>
   <div v-if="drivingScore > 0" id="score-counter">
     SCORE: {{ drivingScore }}
   </div>
@@ -185,6 +188,8 @@ const props = defineProps({
     required: true,
   },
   showLeaderboard: Boolean,
+  qualityLevelName: String,
+  currentFps: Number,
 });
 
 const emit = defineEmits([
@@ -199,6 +204,19 @@ function exitGameMode() {
 </script>
 
 <style scoped>
+#quality-stats {
+  position: fixed !important;
+  top: 55px !important;
+  right: 20px !important;
+  color: #ffcc00 !important;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 16px;
+  font-weight: bold;
+  z-index: 9999 !important;
+  text-shadow: 0 0 5px #ffcc00;
+  pointer-events: none;
+}
+
 #score-counter {
   position: fixed;
   bottom: 20px;

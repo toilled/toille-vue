@@ -1,5 +1,8 @@
 <template>
   <div ref="canvasContainer" id="cyberpunk-city"></div>
+  <div v-if="!isMobile" id="quality-display">
+    {{ qualityLevelName }} | {{ currentFps }} FPS
+  </div>
   <GameUI
     :isDrivingMode="isDrivingMode"
     :isGameMode="isGameMode"
@@ -15,6 +18,8 @@
     :lookControls="lookControls"
     :leaderboard="leaderboard"
     :showLeaderboard="showLeaderboard"
+    :qualityLevelName="qualityLevelName"
+    :currentFps="currentFps"
     @exit-game-mode="exitGameMode"
     @update-leaderboard="updateLeaderboard"
     @close-leaderboard="showLeaderboard = false"
@@ -53,12 +58,9 @@ import {
   ConeGeometry,
   Object3D,
   MathUtils,
-  PCFSoftShadowMap,
-  ACESFilmicToneMapping,
 } from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
 import { GameModeManager } from "../game/GameModeManager";
-import { setupPostProcessing } from "../game/PostProcessingManager";
 import { DrivingMode } from "../game/modes/DrivingMode";
 import { ExplorationMode } from "../game/modes/ExplorationMode";
 import { FlyingTourMode } from "../game/modes/FlyingTourMode";
@@ -110,6 +112,14 @@ import {
   SPARK_SPAWN_POSITIONS_OFF_Y,
   CHASE_ARROW_POSITION_Z,
 } from "../game/constants/CyberpunkCity";
+import {
+  GraphicsQualityManager,
+  QUALITY_PRESETS,
+  GraphicsQualityLevel,
+  setupPostProcessingWithQuality,
+  updateRendererSettings,
+  type QualitySettings,
+} from "../game/GraphicsQualityManager";
 import { KonamiManager } from "../game/KonamiManager";
 import { GangWarManager } from "../game/GangWarManager";
 import { CityBuilder } from "../game/CityBuilder";
@@ -129,6 +139,8 @@ let renderer: WebGLRenderer;
 let composer: EffectComposer;
 let animationId: number;
 let isActive = false;
+let qualityManager: GraphicsQualityManager;
+let currentSettings: QualitySettings;
 
 let occupiedGrids = new Map<
   string,
@@ -164,6 +176,16 @@ let skyEffects: SkyEffects;
 
 const leaderboard = ref<ScoreEntry[]>([]);
 const showLeaderboard = ref(false);
+const qualityLevelName = ref("Medium");
+const currentFps = ref(60);
+
+function updateQualityDisplay() {
+  if (qualityManager) {
+    qualityLevelName.value = qualityManager.getQualityLevelName();
+    const metrics = qualityManager.getMetrics();
+    currentFps.value = metrics.fps;
+  }
+}
 
 let leaderboardCanvas: HTMLCanvasElement;
 let leaderboardTexture: CanvasTexture;
@@ -492,18 +514,36 @@ onMounted(() => {
   camera.position.set(0, 250, 600);
   camera.lookAt(0, 0, 0);
 
-  // Renderer setup
-  renderer = new WebGLRenderer({ antialias: false, alpha: false });
+  // Quality Manager
+  qualityManager = new GraphicsQualityManager(true);
+  (qualityManager as any).onAutoAdjust = (level: any) => {
+    qualityLevelName.value = qualityManager.getQualityLevelName();
+    currentSettings = qualityManager.getCurrentSettings();
+    applyQualitySettings();
+  };
+  currentSettings = qualityManager.getCurrentSettings();
+  qualityLevelName.value = qualityManager.getQualityLevelName();
+  currentFps.value = 60;
+
+  // Renderer setup with quality settings
+  renderer = new WebGLRenderer({
+    antialias: currentSettings.antialias,
+    alpha: false,
+  });
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = PCFSoftShadowMap;
-  renderer.toneMapping = ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.2;
+  updateRendererSettings(renderer, currentSettings);
   canvasContainer.value.appendChild(renderer.domElement);
 
-  // Post Processing
-  composer = setupPostProcessing(scene, camera, renderer);
+  // Post Processing with quality settings
+  composer = setupPostProcessingWithQuality(
+    scene,
+    camera,
+    renderer,
+    currentSettings,
+  );
+
+  // Start performance monitoring
+  qualityManager.startMonitoring();
 
   // Sky Effects
   skyEffects = new SkyEffects(scene);
@@ -619,6 +659,24 @@ function onKeyDown(event: KeyboardEvent) {
     exitGameMode();
     return;
   }
+
+  if (qualityManager) {
+    if (event.code === "BracketRight") {
+      qualityManager.adjustQuality(true);
+      qualityLevelName.value = qualityManager.getQualityLevelName();
+      currentSettings = qualityManager.getCurrentSettings();
+      applyQualitySettings();
+      return;
+    }
+    if (event.code === "BracketLeft") {
+      qualityManager.adjustQuality(false);
+      qualityLevelName.value = qualityManager.getQualityLevelName();
+      currentSettings = qualityManager.getCurrentSettings();
+      applyQualitySettings();
+      return;
+    }
+  }
+
   konamiManager.onKeyDown(event);
   gameModeManager.onKeyDown(event);
 }
@@ -704,6 +762,20 @@ function onResize() {
     composer.setSize(window.innerWidth, window.innerHeight);
   }
   updateIsMobile();
+}
+
+function applyQualitySettings() {
+  if (!renderer || !currentSettings) return;
+  updateRendererSettings(renderer, currentSettings);
+  const newComposer = setupPostProcessingWithQuality(
+    scene,
+    camera,
+    renderer,
+    currentSettings,
+  );
+  if (newComposer && composer) {
+    composer = newComposer;
+  }
 }
 
 function onPointerLockChange() {}
@@ -943,6 +1015,10 @@ function animate() {
   } else {
     renderer.render(scene, camera);
   }
+
+  if (Math.floor(now / 1000) !== Math.floor(lastTime.value / 1000)) {
+    updateQualityDisplay();
+  }
 }
 
 function playPewSound(pos?: Vector3) {
@@ -1018,6 +1094,9 @@ onBeforeUnmount(() => {
   document.removeEventListener("pointerlockchange", onPointerLockChange);
 
   cancelAnimationFrame(animationId);
+  if (qualityManager) {
+    qualityManager.stopMonitoring();
+  }
   if (renderer) {
     renderer.dispose();
   }
@@ -1045,5 +1124,24 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   z-index: -1;
+}
+
+#quality-display {
+  position: fixed !important;
+  top: 55px !important;
+  right: 20px !important;
+  color: #ffcc00 !important;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 16px;
+  font-weight: bold;
+  z-index: 9999 !important;
+  text-shadow: 0 0 5px #ffcc00;
+  pointer-events: none;
+}
+
+@media (max-width: 768px), (max-height: 500px) {
+  #quality-display {
+    display: none;
+  }
 }
 </style>

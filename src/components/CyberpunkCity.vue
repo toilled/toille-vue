@@ -1,6 +1,8 @@
 <template>
   <div ref="canvasContainer" id="cyberpunk-city"></div>
-  <div id="quality-display">{{ qualityLevelName }} | {{ currentFps }} FPS</div>
+  <div v-if="!isMobile" id="quality-display">
+    {{ qualityLevelName }} | {{ currentFps }} FPS
+  </div>
   <GameUI
     :isDrivingMode="isDrivingMode"
     :isGameMode="isGameMode"
@@ -1135,5 +1137,11 @@ onBeforeUnmount(() => {
   z-index: 9999 !important;
   text-shadow: 0 0 5px #ffcc00;
   pointer-events: none;
+}
+
+@media (max-width: 768px), (max-height: 500px) {
+  #quality-display {
+    display: none;
+  }
 }
 </style>

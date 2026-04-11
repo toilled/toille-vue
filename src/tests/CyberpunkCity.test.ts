@@ -54,6 +54,50 @@ vi.stubGlobal(
   },
 );
 
+// Mock GraphicsQualityManager
+vi.mock("../game/GraphicsQualityManager", () => ({
+  GraphicsQualityManager: vi.fn().mockImplementation(() => ({
+    getCurrentSettings: () => ({
+      name: "Medium",
+      level: 2,
+      pixelRatio: 1,
+      shadowMapSize: 1024,
+      shadowMapType: 2,
+      antialias: false,
+      antialiasSamples: 0,
+      bloomEnabled: true,
+      bloomThreshold: 0.4,
+      bloomStrength: 1.0,
+      bloomRadius: 0.5,
+      fxaaEnabled: true,
+      buildingDetail: 0.6,
+      carCount: 70,
+      sparkCount: 1000,
+      reflectionEnabled: false,
+      volumetricClouds: false,
+    }),
+    getQualityLevelName: () => "Medium",
+    getMetrics: () => ({ fps: 60, avgFrameTime: 16.67, gpuTier: 3 }),
+    startMonitoring: vi.fn(),
+    stopMonitoring: vi.fn(),
+    adjustQuality: vi.fn().mockReturnValue(true),
+    canIncreaseQuality: vi.fn().mockReturnValue(true),
+    canDecreaseQuality: vi.fn().mockReturnValue(true),
+  })),
+  GraphicsQualityLevel: {
+    MINIMUM: 0,
+    LOW: 1,
+    MEDIUM: 2,
+    HIGH: 3,
+    ULTRA: 4,
+  },
+  QUALITY_PRESETS: {},
+  setupPostProcessingWithQuality: vi.fn().mockReturnValue({
+    render: vi.fn(),
+  }),
+  updateRendererSettings: vi.fn(),
+}));
+
 // Mock Three.js
 vi.mock("three", () => {
   const THREE = {
@@ -362,6 +406,7 @@ vi.mock("three", () => {
     })),
     AdditiveBlending: 2000,
     PCFSoftShadowMap: 1,
+    PCFShadowMap: 2,
     ACESFilmicToneMapping: 1,
     Euler: vi.fn(() => ({
       set: vi.fn(),

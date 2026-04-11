@@ -47,11 +47,14 @@ export interface QualitySettings {
   lodEnabled: boolean;
 }
 
+const getPixelRatio = () =>
+  typeof window !== "undefined" ? Math.min(window.devicePixelRatio, 2) : 1;
+
 export const QUALITY_PRESETS: Record<GraphicsQualityLevel, QualitySettings> = {
   [GraphicsQualityLevel.ULTRA]: {
     name: "Ultra",
     level: 4,
-    pixelRatio: Math.min(window.devicePixelRatio, 2),
+    pixelRatio: getPixelRatio(),
     shadowMapSize: 4096,
     shadowMapType: PCFSoftShadowMap,
     antialias: true,
@@ -74,7 +77,7 @@ export const QUALITY_PRESETS: Record<GraphicsQualityLevel, QualitySettings> = {
   [GraphicsQualityLevel.HIGH]: {
     name: "High",
     level: 3,
-    pixelRatio: Math.min(window.devicePixelRatio, 1.5),
+    pixelRatio: getPixelRatio(),
     shadowMapSize: 2048,
     shadowMapType: PCFSoftShadowMap,
     antialias: true,
@@ -203,17 +206,21 @@ export class GraphicsQualityManager {
   }
 
   private detectInitialQuality(): void {
-    const gpuInfo = this.detectGPU();
-    const tier = this.classifyGPU(gpuInfo);
+    try {
+      const gpuInfo = this.detectGPU();
+      const tier = this.classifyGPU(gpuInfo);
 
-    if (tier >= GPUTier.HIGH_END) {
-      this.currentLevel = GraphicsQualityLevel.ULTRA;
-    } else if (tier >= GPUTier.MID_RANGE) {
-      this.currentLevel = GraphicsQualityLevel.HIGH;
-    } else if (tier >= GPUTier.INTEGRATED) {
+      if (tier >= GPUTier.HIGH_END) {
+        this.currentLevel = GraphicsQualityLevel.ULTRA;
+      } else if (tier >= GPUTier.MID_RANGE) {
+        this.currentLevel = GraphicsQualityLevel.HIGH;
+      } else if (tier >= GPUTier.INTEGRATED) {
+        this.currentLevel = GraphicsQualityLevel.MEDIUM;
+      } else {
+        this.currentLevel = GraphicsQualityLevel.LOW;
+      }
+    } catch {
       this.currentLevel = GraphicsQualityLevel.MEDIUM;
-    } else {
-      this.currentLevel = GraphicsQualityLevel.LOW;
     }
   }
 
@@ -222,22 +229,26 @@ export class GraphicsQualityManager {
       return { vendor: "unknown", renderer: "unknown" };
     }
 
-    const canvas = document.createElement("canvas");
-    const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
+    try {
+      const canvas = document.createElement("canvas");
+      const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
 
-    if (!gl) {
+      if (!gl) {
+        return { vendor: "unknown", renderer: "unknown" };
+      }
+
+      const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+      if (!debugInfo) {
+        return { vendor: "unknown", renderer: "unknown" };
+      }
+
+      const vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+      const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+
+      return { vendor, renderer: renderer.toLowerCase() };
+    } catch {
       return { vendor: "unknown", renderer: "unknown" };
     }
-
-    const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
-    if (!debugInfo) {
-      return { vendor: "unknown", renderer: "unknown" };
-    }
-
-    const vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
-    const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
-
-    return { vendor, renderer: renderer.toLowerCase() };
   }
 
   private classifyGPU(gpuInfo: { vendor: string; renderer: string }): GPUTier {

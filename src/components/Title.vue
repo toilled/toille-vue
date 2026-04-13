@@ -1,28 +1,32 @@
 <template>
   <ul>
     <li>
-      <hgroup>
-        <h1
-          class="title question"
-          :class="{ 'space-warp': animatingTitle }"
-          @mousedown="handleTitleClick"
-        >
-          {{ title }}
-        </h1>
-        <h2
-          class="title question"
-          :class="{ 'space-warp': animatingSubtitle }"
-          @mousedown="handleSubtitleClick"
-        >
-          {{ subtitle }}
-        </h2>
+      <hgroup class="title-container" ref="containerRef" @mousedown="handleTitleClick">
+        <ManimScene v-if="showManim" :construct="constructTitle" :width="500" :height="100" />
+        <template v-else>
+          <h1
+            class="title question"
+            :class="{ 'space-warp': animatingTitle }"
+          >
+            {{ title }}
+          </h1>
+          <h2
+            class="title question"
+            :class="{ 'space-warp': animatingSubtitle }"
+            @mousedown.stop="handleSubtitleClick"
+          >
+            {{ subtitle }}
+          </h2>
+        </template>
       </hgroup>
     </li>
   </ul>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
+import { ManimScene } from "manim-web/vue";
+import { Write, Text, Scene, FadeIn } from "manim-web";
 
 /**
  * @file Title.vue
@@ -30,24 +34,13 @@ import { ref } from "vue";
  * It emits events when the title or subtitle is clicked.
  */
 
-/**
- * @props {Object}
- * @property {string} title - The main title text.
- * @property {string} subtitle - The subtitle text.
- * @property {boolean} activity - A boolean prop (not directly used in script, but likely for parent logic).
- * @property {boolean} joke - A boolean prop (not directly used in script, but likely for parent logic).
- */
-defineProps<{
+const props = defineProps<{
   title: string;
   subtitle: string;
   activity: boolean;
   joke: boolean;
 }>();
 
-/**
- * @emits activity - Emitted when the main title is clicked.
- * @emits joke - Emitted when the subtitle is clicked.
- */
 const emit = defineEmits<{
   (e: "activity"): void;
   (e: "joke"): void;
@@ -55,13 +48,55 @@ const emit = defineEmits<{
 
 const animatingTitle = ref(false);
 const animatingSubtitle = ref(false);
+const showManim = ref(false);
+let timeoutId: any = null;
+
+onMounted(() => {
+  // Use Manim animation on initial load
+  showManim.value = true;
+  // Use a timeout as a fallback or primary way to hide manim
+  // The manim-web wait is async and can cause issues switching dom
+  timeoutId = setTimeout(() => {
+    showManim.value = false;
+  }, 4000); // 1.5s write + 1s fade + 1s wait + 0.5s buffer
+});
+
+onUnmounted(() => {
+  if (timeoutId) {
+    clearTimeout(timeoutId);
+  }
+});
+
+async function constructTitle(scene: Scene) {
+  const titleText = new Text(props.title, {
+    fontSize: 48,
+    color: '#00ffcc',
+    font: 'Courier New'
+  });
+
+  const subtitleText = new Text(props.subtitle, {
+    fontSize: 24,
+    color: '#ffffff',
+    font: 'Courier New'
+  });
+
+  titleText.moveTo({ x: 0, y: 10, z: 0 });
+  subtitleText.moveTo({ x: 0, y: -20, z: 0 });
+
+  await scene.play(new Write(titleText, { runTime: 1.5 }));
+  await scene.play(new FadeIn(subtitleText, { runTime: 1 }));
+
+  await scene.wait(1);
+}
 
 function handleTitleClick() {
+  if (showManim.value) return;
   emit("activity");
   triggerAnimation(animatingTitle);
 }
 
 function handleSubtitleClick() {
+  if (showManim.value) return;
   emit("joke");
   triggerAnimation(animatingSubtitle);
 }
@@ -76,6 +111,14 @@ function triggerAnimation(animatingRef: any) {
 </script>
 
 <style scoped>
+.title-container {
+  min-height: 100px; /* Keep space while loading */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .space-warp {
   animation: space-warp 1s ease-in-out;
 }

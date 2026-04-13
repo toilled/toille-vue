@@ -543,3 +543,23 @@ vi.stubGlobal(
   },
 );
 vi.stubGlobal("webkitAudioContext", (globalThis as any).AudioContext);
+
+vi.mock('manim-web', () => {
+  return {
+    Scene: class {},
+    Text: class {},
+    Write: class {},
+    FadeIn: class {},
+    AnimationGroup: class {},
+    ApplyMethod: class {}
+  };
+});
+
+vi.mock('manim-web/vue', () => {
+  return {
+    ManimScene: {
+      template: '<div></div>',
+      props: ['construct', 'width', 'height']
+    }
+  };
+});

@@ -3,7 +3,7 @@ import { mount } from "@vue/test-utils";
 import Title from "../Title.vue";
 
 describe("Title.vue", () => {
-  it("renders the title and subtitle", () => {
+  it("renders the title and subtitle", async () => {
     const wrapper = mount(Title, {
       props: {
         title: "Test Title",
@@ -12,6 +12,11 @@ describe("Title.vue", () => {
         joke: false,
       },
     });
+
+    // Simulate manim finishing
+    wrapper.vm.showManim = false;
+    await wrapper.vm.$nextTick();
+
     expect(wrapper.text()).toContain("Test Title");
     expect(wrapper.text()).toContain("Test Subtitle");
   });
@@ -25,6 +30,11 @@ describe("Title.vue", () => {
         joke: false,
       },
     });
+
+    // Simulate manim finishing
+    wrapper.vm.showManim = false;
+    await wrapper.vm.$nextTick();
+
     await wrapper.find(".title.question").trigger("mousedown");
     expect(wrapper.emitted("activity")).toBeTruthy();
   });
@@ -38,6 +48,11 @@ describe("Title.vue", () => {
             joke: false,
         },
     });
+
+    // Simulate manim finishing
+    wrapper.vm.showManim = false;
+    await wrapper.vm.$nextTick();
+
     await wrapper.find("h2.title.question").trigger("mousedown");
     expect(wrapper.emitted("joke")).toBeTruthy();
   });

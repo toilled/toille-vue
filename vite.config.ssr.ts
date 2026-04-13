@@ -4,7 +4,7 @@ import vue from "@vitejs/plugin-vue";
 export default defineConfig({
   plugins: [vue()],
   ssr: {
-    noExternal: true, // Bundle everything for Worker
+    noExternal: /^(?!manim-web).*/, // Bundle everything for Worker
     target: 'webworker',
   },
   build: {

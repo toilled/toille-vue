@@ -2,7 +2,7 @@
   <ul>
     <li>
       <hgroup class="title-container" ref="containerRef" @mousedown="handleTitleClick">
-        <ManimScene v-if="showManim" :construct="constructTitle" :width="500" :height="100" />
+        <ManimScene v-if="showManim && isClient" :construct="constructTitle" :width="500" :height="100" />
         <template v-else>
           <h1
             class="title question"
@@ -25,8 +25,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
-import { ManimScene } from "manim-web/vue";
-import { Write, Text, Scene, FadeIn } from "manim-web";
+import { defineAsyncComponent } from 'vue';
+const ManimScene = defineAsyncComponent(() => import('manim-web/vue').then(m => m.ManimScene || m.default || m));
+const isClient = typeof window !== 'undefined';
+// Dynamic import to avoid SSR issues
+import type { Scene } from "manim-web";
 
 /**
  * @file Title.vue
@@ -68,6 +71,9 @@ onUnmounted(() => {
 });
 
 async function constructTitle(scene: Scene) {
+  const manim = await import('manim-web');
+  const { Write, Text, FadeIn } = manim;
+
   const titleText = new Text(props.title, {
     fontSize: 48,
     color: '#00ffcc',

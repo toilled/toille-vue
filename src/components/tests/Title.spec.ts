@@ -1,8 +1,15 @@
 import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
 import Title from "../Title.vue";
+import { vi, beforeEach, afterEach } from "vitest";
 
 describe("Title.vue", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
   it("renders the title and subtitle", async () => {
     const wrapper = mount(Title, {
       props: {
@@ -14,7 +21,7 @@ describe("Title.vue", () => {
     });
 
     // Simulate manim finishing
-    wrapper.vm.showManim = false;
+    vi.advanceTimersByTime(4500);
     await wrapper.vm.$nextTick();
 
     expect(wrapper.text()).toContain("Test Title");
@@ -32,7 +39,7 @@ describe("Title.vue", () => {
     });
 
     // Simulate manim finishing
-    wrapper.vm.showManim = false;
+    vi.advanceTimersByTime(4500);
     await wrapper.vm.$nextTick();
 
     await wrapper.find(".title.question").trigger("mousedown");
@@ -50,7 +57,7 @@ describe("Title.vue", () => {
     });
 
     // Simulate manim finishing
-    wrapper.vm.showManim = false;
+    vi.advanceTimersByTime(4500);
     await wrapper.vm.$nextTick();
 
     await wrapper.find("h2.title.question").trigger("mousedown");

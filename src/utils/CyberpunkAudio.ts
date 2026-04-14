@@ -5,7 +5,7 @@ type NoteCallback = (type: string, data?: number) => void;
 export class CyberpunkAudio {
   private isPlaying: boolean = false;
   private nextNoteTime: number = 0;
-  private tempo: number = 110;
+  private tempo: number = 135;
   private lookahead: number = 25.0; // ms
   private scheduleAheadTime: number = 0.1; // s
   private timerID: number | null = null;
@@ -25,10 +25,10 @@ export class CyberpunkAudio {
   private root = 41.2;
   private scale = [
     this.root, // I
-    this.root * 1.2, // m3
-    this.root * 1.5, // V
-    this.root * 1.78, // b7
-    this.root * 2, // VIII
+    this.root * 1.059, // m2
+    this.root * 1.189, // m3
+    this.root * 1.498, // V
+    this.root * 1.782, // b7
   ];
 
   constructor() {
@@ -58,33 +58,23 @@ export class CyberpunkAudio {
 
     const motifLength = 32;
     for (let i = 0; i < 128; i++) {
-      if (i % 2 === 0) {
-        const motifPos = i % motifLength;
-        const isStrongBeat = motifPos % 16 === 0;
-        const isOffBeat = motifPos % 4 === 2;
+      const motifPos = i % motifLength;
 
-        let noteProbability = 0.5;
-        if (isStrongBeat) noteProbability = 0.9;
-        else if (isOffBeat) noteProbability = 0.7;
+      let noteProbability = 0.85;
 
-        const isVariationSection = i >= 64;
-        if (isVariationSection && i % 4 === 0) {
-          noteProbability += 0.2;
+      if (i % 16 === 3 || i % 16 === 11) noteProbability = 0.1;
+
+      if (this.random() < noteProbability) {
+        let noteIndex = 0;
+
+        const r = this.random();
+        if (i >= 64 && motifPos % 16 === 14) {
+          noteIndex = r > 0.5 ? 2 : 1;
+        } else if (i >= 96 && motifPos % 8 === 6) {
+          noteIndex = 3;
         }
 
-        if (this.random() < noteProbability) {
-          const r = this.random();
-          let noteIndex;
-          if (isStrongBeat) {
-            noteIndex = r > 0.7 ? 4 : 0;
-          } else {
-            if (r > 0.8) noteIndex = 3;
-            else if (r > 0.6) noteIndex = 2;
-            else if (r > 0.4) noteIndex = 1;
-            else noteIndex = 0;
-          }
-          this.bassPattern[i] = noteIndex + 1; // 1-based index
-        }
+        this.bassPattern[i] = noteIndex + 1; // 1-based index
       }
     }
   }
@@ -98,29 +88,22 @@ export class CyberpunkAudio {
       const offset = bar * 16;
 
       this.kickPattern[offset + 0] = 1.0;
+      this.kickPattern[offset + 4] = 1.0;
+      this.kickPattern[offset + 8] = 1.0;
+      this.kickPattern[offset + 12] = 1.0;
 
-      if (this.random() < 0.9) {
-        this.kickPattern[offset + 8] = 1.0;
-      }
-
-      if (this.random() < 0.3) {
-        this.kickPattern[offset + 10] = 0.8;
-      }
       if (this.random() < 0.3) {
         this.kickPattern[offset + 14] = 0.7;
       }
-
-      if ((bar + 1) % 4 === 0) {
-        if (this.random() < 0.5) this.kickPattern[offset + 11] = 0.6;
-        if (this.random() < 0.5) this.kickPattern[offset + 15] = 0.6;
+      if (bar % 4 === 3 && this.random() < 0.8) {
+        this.kickPattern[offset + 15] = 0.8;
       }
 
       this.snarePattern[offset + 4] = 1.0;
       this.snarePattern[offset + 12] = 1.0;
 
-      if (this.random() < 0.4) this.snarePattern[offset + 7] = 0.3;
-      if (this.random() < 0.3) this.snarePattern[offset + 9] = 0.3;
-      if (this.random() < 0.3) this.snarePattern[offset + 15] = 0.2;
+      if (this.random() < 0.2) this.snarePattern[offset + 7] = 0.3;
+      if (this.random() < 0.2) this.snarePattern[offset + 15] = 0.4;
 
       for (let i = 0; i < 16; i++) {
         const globalIndex = offset + i;
@@ -128,21 +111,16 @@ export class CyberpunkAudio {
         const isUpbeat = i % 4 === 2;
 
         if (isUpbeat) {
-          this.hiHatPattern[globalIndex] = 0.8;
+          this.hiHatPattern[globalIndex] = 0.9;
         } else if (isDownbeat) {
-          this.hiHatPattern[globalIndex] = 0.4;
+          this.hiHatPattern[globalIndex] = 0.5;
         } else {
-          this.hiHatPattern[globalIndex] = 0.2;
+          this.hiHatPattern[globalIndex] = 0.3;
         }
 
-        if (this.random() < 0.1) {
+        if (this.random() < 0.05) {
           this.hiHatPattern[globalIndex] = 0;
         }
-      }
-
-      if (this.random() < 0.2) {
-        const upbeatIndex = offset + 2 + Math.floor(this.random() * 4) * 4;
-        this.hiHatPattern[upbeatIndex] = 1.2;
       }
     }
   }
@@ -268,27 +246,35 @@ export class CyberpunkAudio {
 
   private playBass(time: number, freq: number) {
     if (!this.ctx || !this.dest) return;
-    const osc = this.ctx.createOscillator();
+    const osc1 = this.ctx.createOscillator();
+    const osc2 = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
     const filter = this.ctx.createBiquadFilter();
 
-    osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(freq, time);
+    osc1.type = "sawtooth";
+    osc2.type = "square";
+    // Detune osc2 slightly for a thicker sound
+    osc1.frequency.setValueAtTime(freq, time);
+    osc2.frequency.setValueAtTime(freq * 1.01, time);
 
     filter.type = "lowpass";
-    filter.frequency.setValueAtTime(200, time);
-    filter.frequency.exponentialRampToValueAtTime(800, time + 0.1);
-    filter.frequency.exponentialRampToValueAtTime(200, time + 0.2);
+    filter.frequency.setValueAtTime(100, time);
+    filter.frequency.exponentialRampToValueAtTime(1200, time + 0.05);
+    filter.frequency.exponentialRampToValueAtTime(100, time + 0.2);
 
-    gain.gain.setValueAtTime(0.3, time);
+    // Heavier bass
+    gain.gain.setValueAtTime(0.5, time);
     gain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
 
-    osc.connect(filter);
+    osc1.connect(filter);
+    osc2.connect(filter);
     filter.connect(gain);
     gain.connect(this.dest);
 
-    osc.start(time);
-    osc.stop(time + 0.25);
+    osc1.start(time);
+    osc2.start(time);
+    osc1.stop(time + 0.25);
+    osc2.stop(time + 0.25);
   }
 
   private playKick(time: number, velocity: number = 1.0) {
@@ -296,19 +282,21 @@ export class CyberpunkAudio {
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
 
-    osc.frequency.setValueAtTime(150, time);
-    osc.frequency.exponentialRampToValueAtTime(40, time + 0.1);
+    osc.frequency.setValueAtTime(200, time);
+    osc.frequency.exponentialRampToValueAtTime(30, time + 0.1);
 
-    const peakGain = 0.7 * velocity;
+    const peakGain = 1.0 * velocity;
     gain.gain.setValueAtTime(peakGain, time);
-    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
 
     osc.connect(gain);
     gain.connect(this.dest);
 
     osc.start(time);
-    osc.stop(time + 0.1);
+    osc.stop(time + 0.15);
   }
+
+
 
   private playSnare(time: number, velocity: number = 1.0) {
     if (!this.ctx || !this.snareBuffer || !this.dest) return;
@@ -321,7 +309,7 @@ export class CyberpunkAudio {
     noiseFilter.frequency.value = 1000;
 
     const noiseGain = this.ctx.createGain();
-    const peakNoiseGain = 0.4 * velocity;
+    const peakNoiseGain = 0.5 * velocity;
     noiseGain.gain.setValueAtTime(peakNoiseGain, time);
     noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
 
@@ -335,8 +323,9 @@ export class CyberpunkAudio {
     const oscGain = this.ctx.createGain();
     osc.type = "triangle";
     osc.frequency.setValueAtTime(250, time);
+    osc.frequency.exponentialRampToValueAtTime(100, time + 0.1);
 
-    const peakOscGain = 0.2 * velocity;
+    const peakOscGain = 0.3 * velocity;
     oscGain.gain.setValueAtTime(peakOscGain, time);
     oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
 

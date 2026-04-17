@@ -1,3 +1,4 @@
+import { random } from "../utils/Random";
 import {
     AdditiveBlending,
     BufferAttribute,
@@ -100,7 +101,7 @@ export class KonamiManager {
                 this.fireworkShowActive = false;
             } else {
                 // Spawn new rockets occasionally
-                if (Math.random() < 0.05) {
+                if (random.next() < 0.05) {
                     this.spawnFireworkRocket();
                 }
             }
@@ -169,8 +170,8 @@ export class KonamiManager {
         if (index === -1) return; // No pool space
 
         // Random ground position
-        const x = (Math.random() - 0.5) * 1000;
-        const z = (Math.random() - 0.5) * 1000;
+        const x = (random.next() - 0.5) * 1000;
+        const z = (random.next() - 0.5) * 1000;
         const y = 0;
 
         this.fwPositions[index * 3] = x;
@@ -178,10 +179,10 @@ export class KonamiManager {
         this.fwPositions[index * 3 + 2] = z;
 
         this.fwVelocities[index * 3] = 0;
-        this.fwVelocities[index * 3 + 1] = 4 + Math.random() * 2; // Launch speed
+        this.fwVelocities[index * 3 + 1] = 4 + random.next() * 2; // Launch speed
         this.fwVelocities[index * 3 + 2] = 0;
 
-        this.fwLifetimes[index] = 1.0 + Math.random() * 0.5; // Fuse time
+        this.fwLifetimes[index] = 1.0 + random.next() * 0.5; // Fuse time
         this.fwTypes[index] = 0; // Rocket
 
         // White trail color for rocket
@@ -196,9 +197,9 @@ export class KonamiManager {
         const z = this.fwPositions[rocketIndex * 3 + 2];
 
         // Pick a color for this explosion
-        const r = Math.random();
-        const g = Math.random();
-        const b = Math.random();
+        const r = random.next();
+        const g = random.next();
+        const b = random.next();
 
         const particleCount = 50;
         // Spawn explosion particles
@@ -209,9 +210,9 @@ export class KonamiManager {
                 this.fwPositions[i * 3 + 1] = y;
                 this.fwPositions[i * 3 + 2] = z;
 
-                const speed = 2 + Math.random() * 3;
-                const theta = Math.random() * Math.PI * 2;
-                const phi = Math.random() * Math.PI;
+                const speed = 2 + random.next() * 3;
+                const theta = random.next() * Math.PI * 2;
+                const phi = random.next() * Math.PI;
 
                 this.fwVelocities[i * 3] = Math.sin(phi) * Math.cos(theta) * speed;
                 this.fwVelocities[i * 3 + 1] = Math.cos(phi) * speed;

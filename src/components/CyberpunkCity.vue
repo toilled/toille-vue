@@ -62,6 +62,7 @@ import { setupPostProcessing } from "../game/PostProcessingManager";
 import { DrivingMode } from "../game/modes/DrivingMode";
 import { ExplorationMode } from "../game/modes/ExplorationMode";
 import { FlyingTourMode } from "../game/modes/FlyingTourMode";
+import { SnakeMode } from "../game/modes/SnakeMode";
 import { DemoMode } from "../game/modes/DemoMode";
 import { GameContext } from "../game/types";
 import { carAudio } from "../game/audio/CarAudio";
@@ -670,7 +671,14 @@ function startDemoMode() {
   gameModeManager.setMode(new DemoMode());
 }
 
-defineExpose({ startExplorationMode, startFlyingTour, startDemoMode });
+function startSnakeMode() {
+  isGameMode.value = true;
+  isDrivingMode.value = true;
+  emit("game-start");
+  gameModeManager.setMode(new SnakeMode());
+}
+
+defineExpose({ startExplorationMode, startFlyingTour, startDemoMode, startSnakeMode });
 
 function exitGameMode() {
   gameModeManager.clearMode();

@@ -21,6 +21,7 @@
         @explore="startExploration"
         @fly="startFlyingTour"
         @demo="startDemoMode"
+        @snake="startSnakeMode"
         @toggle-content="toggleContent"
       />
     </nav>
@@ -147,6 +148,12 @@ function startFlyingTour() {
 function startDemoMode() {
   if (cyberpunkCityRef.value && cyberpunkCityRef.value.startDemoMode) {
     cyberpunkCityRef.value.startDemoMode();
+  }
+}
+
+function startSnakeMode() {
+  if (cyberpunkCityRef.value && cyberpunkCityRef.value.startSnakeMode) {
+    cyberpunkCityRef.value.startSnakeMode();
   }
 }
 

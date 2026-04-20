@@ -11,6 +11,9 @@
       <div @click="$emit('demo')" class="icon-wrapper" title="64k Demo">
         <img src="/64k-icon.svg" alt="64k Demo" class="icon" />
       </div>
+      <div @click="$emit('snake')" class="icon-wrapper" title="Snake Mode">
+        <img src="/snake-icon.svg" alt="Snake Mode" class="icon" />
+      </div>
       <div @click="toggleSound" class="icon-wrapper" title="Toggle Sound">
         <img
           v-if="soundOn"
@@ -68,6 +71,7 @@ const emit = defineEmits<{
   (e: "fly"): void;
   (e: "toggle-content"): void;
   (e: "demo"): void;
+  (e: "snake"): void;
 }>();
 
 const soundOn = computed(() => audioManager.isSoundEnabled.value);

@@ -2,14 +2,16 @@
   <ul>
     <MenuItem v-for="page in pages" :key="page.link" :page="page" />
     <li class="icons-container">
-      <div @click="$emit('explore')" class="icon-wrapper" title="Explore City">
-        <img src="/person-icon.svg" alt="Explore City" class="icon" />
-      </div>
-      <div @click="$emit('fly')" class="icon-wrapper" title="Fly Tour">
-        <img src="/plane-icon.svg" alt="Fly Tour" class="icon" />
-      </div>
-      <div @click="$emit('demo')" class="icon-wrapper" title="64k Demo">
-        <img src="/64k-icon.svg" alt="64k Demo" class="icon" />
+      <div class="related-icons-container">
+        <div @click="$emit('explore')" class="icon-wrapper" title="Explore City">
+          <img src="/person-icon.svg" alt="Explore City" class="icon" />
+        </div>
+        <div @click="$emit('fly')" class="icon-wrapper" title="Fly Tour">
+          <img src="/plane-icon.svg" alt="Fly Tour" class="icon" />
+        </div>
+        <div @click="$emit('demo')" class="icon-wrapper" title="64k Demo">
+          <img src="/64k-icon.svg" alt="64k Demo" class="icon" />
+        </div>
       </div>
       <div @click="toggleSound" class="icon-wrapper" title="Toggle Sound">
         <img
@@ -87,6 +89,17 @@ ul {
   position: relative;
 }
 
+ul {
+  padding-right: 230px;
+}
+
+@media (max-width: 768px) {
+  ul {
+    padding-right: 0px;
+    padding-top: 50px;
+  }
+}
+
 .icons-container {
   position: absolute;
   right: 0;
@@ -94,6 +107,16 @@ ul {
   display: flex;
   gap: 10px;
   padding: 10px;
+  align-items: center;
+}
+
+.related-icons-container {
+  display: flex;
+  gap: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 4px 8px;
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .icon-wrapper {

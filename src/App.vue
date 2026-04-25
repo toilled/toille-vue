@@ -130,7 +130,7 @@ function toggleContent() {
   isContentVisible.value = !isContentVisible.value;
 }
 
-const cyberpunkCityRef = ref<any>(null);
+const cyberpunkCityRef = ref<InstanceType<typeof import("./components/CyberpunkCity.vue").default> | null>(null);
 
 function startExploration() {
   if (cyberpunkCityRef.value && cyberpunkCityRef.value.startExplorationMode) {

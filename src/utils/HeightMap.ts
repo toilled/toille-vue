@@ -118,3 +118,20 @@ export class HeightMap {
 
 export const getHeight = (x: number, z: number) => HeightMap.getInstance().getHeight(x, z);
 export const getNormal = (x: number, z: number) => HeightMap.getInstance().getNormal(x, z);
+
+interface CarLike {
+  position: { x: number; y: number; z: number };
+  up: { set: (x: number, y: number, z: number) => void };
+  lookAt: (x: number, y: number, z: number) => void;
+}
+
+export const applyCarOrientation = (car: CarLike, heading: number): void => {
+  const lookDist = 5;
+  car.position.y = getHeight(car.position.x, car.position.z) + 1;
+  const normal = getNormal(car.position.x, car.position.z);
+  car.up.set(normal.x, normal.y, normal.z);
+  const tx = car.position.x + Math.sin(heading) * lookDist;
+  const tz = car.position.z + Math.cos(heading) * lookDist;
+  const ty = getHeight(tx, tz) + 1;
+  car.lookAt(tx, ty, tz);
+};

@@ -16,7 +16,7 @@ import {
   START_OFFSET,
 } from "./config";
 import { carAudio } from "./audio/CarAudio";
-import { getHeight, getNormal } from "../utils/HeightMap";
+import { getHeight, applyCarOrientation } from "../utils/HeightMap";
 import { CarFactory } from "./CarFactory";
 
 export class TrafficSystem {
@@ -364,16 +364,8 @@ export class TrafficSystem {
   }
 
   private updateCarOrientation(car: Group) {
-    car.position.y = getHeight(car.position.x, car.position.z) + 1;
-    const normal = getNormal(car.position.x, car.position.z);
-    car.up.set(normal.x, normal.y, normal.z);
-
     const heading = car.userData.heading ?? 0;
-    const lookDist = 5;
-    const targetX = car.position.x + Math.sin(heading) * lookDist;
-    const targetZ = car.position.z + Math.cos(heading) * lookDist;
-    const targetY = getHeight(targetX, targetZ) + 1;
-    car.lookAt(targetX, targetY, targetZ);
+    applyCarOrientation(car, heading);
   }
 
   private checkCollisions() {

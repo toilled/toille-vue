@@ -571,7 +571,6 @@ onMounted(() => {
   window.addEventListener("keydown", onKeyDown);
   window.addEventListener("keyup", onKeyUp);
   window.addEventListener("mousemove", onMouseMove);
-  document.addEventListener("pointerlockchange", onPointerLockChange);
 
   // Initialize Game Context and Manager
   const context: GameContext = {
@@ -625,15 +624,6 @@ function onKeyDown(event: KeyboardEvent) {
 
 function onKeyUp(event: KeyboardEvent) {
   gameModeManager.onKeyUp(event);
-}
-
-function mulberry32(a: number) {
-  return function () {
-    var t = (a += 0x6d2b79f5);
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
 }
 
 watch(
@@ -705,8 +695,6 @@ function onResize() {
   }
   updateIsMobile();
 }
-
-function onPointerLockChange() {}
 
 function onClick(event: MouseEvent) {
   if (!camera) return;
@@ -1015,7 +1003,6 @@ onBeforeUnmount(() => {
   window.removeEventListener("keydown", onKeyDown);
   window.removeEventListener("keyup", onKeyUp);
   window.removeEventListener("mousemove", onMouseMove);
-  document.removeEventListener("pointerlockchange", onPointerLockChange);
 
   cancelAnimationFrame(animationId);
   if (renderer) {

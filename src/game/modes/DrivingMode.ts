@@ -16,7 +16,7 @@ import {
   SpotLight,
   Object3D,
 } from "three";
-import { getHeight, getNormal } from "../../utils/HeightMap";
+import { getHeight, getNormal, applyCarOrientation } from "../../utils/HeightMap";
 
 export class DrivingMode implements GameMode {
   context: GameContext | null = null;
@@ -281,16 +281,7 @@ export class DrivingMode implements GameMode {
     car.position.x += Math.sin(heading) * speed;
     car.position.z += Math.cos(heading) * speed;
 
-    car.position.y = getHeight(car.position.x, car.position.z) + 1;
-
-    // Apply orientation
-    const normal = getNormal(car.position.x, car.position.z);
-    car.up.set(normal.x, normal.y, normal.z);
-    const lookDist = 5;
-    const tx = car.position.x + Math.sin(heading) * lookDist;
-    const tz = car.position.z + Math.cos(heading) * lookDist;
-    const ty = getHeight(tx, tz) + 1;
-    car.lookAt(tx, ty, tz);
+    applyCarOrientation(car, heading);
 
     // Bounds
     if (car.position.x > BOUNDS) car.position.x = -BOUNDS;

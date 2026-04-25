@@ -17,6 +17,5 @@
     "noImplicitReturns": true,
     "exactOptionalPropertyTypes": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["src/game/PostProcessingManager.ts", "src/game/modes/DemoMode.ts"]
+  "include": ["src/**/*"]
 }

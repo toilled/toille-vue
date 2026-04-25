@@ -48,10 +48,10 @@ const props = defineProps<{
 }>();
 
 /**
- * @type {import('vue').Ref<any>}
+ * @type {import('vue').Ref<Record<string, unknown> | null>}
  * @description A reactive reference to the suggestion object fetched from the API.
  */
-const suggestion = ref<any>(null);
+const suggestion = ref<Record<string, unknown> | null>(null);
 
 /**
  * @type {import('vue').Ref<boolean>}

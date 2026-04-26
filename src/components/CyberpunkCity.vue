@@ -15,9 +15,13 @@
     :lookControls="lookControls"
     :leaderboard="leaderboard"
     :showLeaderboard="showLeaderboard"
+    :isMessageInputActive="isMessageInputActive"
+    ref="gameUIRef"
     @exit-game-mode="exitGameMode"
     @update-leaderboard="updateLeaderboard"
     @close-leaderboard="showLeaderboard = false"
+    @send-player-message="handlePlayerMessage"
+    @message-input-blur="onMessageInputBlur"
   />
 </template>
 
@@ -164,7 +168,8 @@ let skyEffects: SkyEffects;
 
 const leaderboard = ref<ScoreEntry[]>([]);
 const showLeaderboard = ref(false);
-
+const isMessageInputActive = ref(false);
+const gameUIRef = ref<InstanceType<typeof import("./GameUI.vue").default> | null>(null);
 let leaderboardCanvas: HTMLCanvasElement;
 let leaderboardTexture: CanvasTexture;
 
@@ -265,7 +270,9 @@ function updateLeaderboardTexture() {
 watch(
   leaderboard,
   () => {
-    updateLeaderboardTexture();
+    if (typeof leaderboardCanvas !== "undefined") {
+      updateLeaderboardTexture();
+    }
   },
   { deep: true },
 );
@@ -615,9 +622,35 @@ onMounted(() => {
 
 function onKeyDown(event: KeyboardEvent) {
   if (event.key === "Escape") {
-    exitGameMode();
+    if (isMessageInputActive.value) {
+      isMessageInputActive.value = false;
+      if (document.pointerLockElement !== document.body) {
+        document.body.requestPointerLock().catch(() => {});
+      }
+    } else {
+      exitGameMode();
+    }
     return;
   }
+
+  if (event.key.toLowerCase() === "t" && isExplorationMode.value) {
+    if (!isMessageInputActive.value) {
+      isMessageInputActive.value = true;
+      if (document.pointerLockElement === document.body) {
+        const exitPromise = document.exitPointerLock();
+        if (exitPromise?.catch) {
+          exitPromise.catch(() => {});
+        }
+      }
+      setTimeout(() => {
+        gameUIRef.value?.inputRef?.focus();
+      }, 50);
+    }
+    return;
+  }
+
+  if (isMessageInputActive.value) return;
+
   konamiManager.onKeyDown(event);
   gameModeManager.onKeyDown(event);
 }
@@ -683,6 +716,19 @@ function exitGameMode() {
   score.value = 0;
   drivingScore.value = 0;
   emit("game-end");
+}
+
+function handlePlayerMessage(message: string) {
+  if (multiplayerManager) {
+    multiplayerManager.broadcastMessage(message);
+  }
+}
+
+function onMessageInputBlur() {
+  isMessageInputActive.value = false;
+  if (document.pointerLockElement !== document.body) {
+    document.body.requestPointerLock().catch(() => {});
+  }
 }
 
 function onResize() {

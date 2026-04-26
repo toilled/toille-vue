@@ -86,6 +86,24 @@
     </div>
   </div>
 
+  <div v-if="isExplorationMode" id="message-hint">
+    Press T to send a message
+  </div>
+
+  <div v-if="isExplorationMode" id="message-input-container">
+    <input
+      id="message-input"
+      ref="inputRef"
+      v-model="playerMessage"
+      type="text"
+      :placeholder="isMessageInputActive ? 'Type a message...' : 'Type disabled'"
+      maxlength="50"
+      @keydown.enter="sendMessage"
+      @blur="onInputBlur"
+    />
+    <button id="send-message-btn" @click="sendMessage">SEND</button>
+  </div>
+
   <div v-if="isExplorationMode && isMobile" id="exploration-controls">
     <div class="control-group left">
       <div class="dpad">
@@ -185,16 +203,37 @@ const props = defineProps({
     required: true,
   },
   showLeaderboard: Boolean,
+  isMessageInputActive: Boolean,
 });
 
 const emit = defineEmits([
   "exit-game-mode",
   "update-leaderboard",
   "close-leaderboard",
+  "send-player-message",
+  "message-input-blur",
 ]);
+
+const playerMessage = ref("");
+const inputRef = ref<HTMLInputElement | null>(null);
+
+defineExpose({
+  inputRef,
+});
 
 function exitGameMode() {
   emit("exit-game-mode");
+}
+
+function sendMessage() {
+  if (playerMessage.value.trim()) {
+    emit("send-player-message", playerMessage.value.trim());
+    playerMessage.value = "";
+  }
+}
+
+function onInputBlur() {
+  emit("message-input-blur");
 }
 </script>
 
@@ -345,5 +384,65 @@ function exitGameMode() {
 .dpad-btn.right {
   top: 35px;
   right: 0;
+}
+
+#message-input-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
+
+#message-input {
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid #00ffcc;
+  color: #00ffcc;
+  padding: 8px 12px;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 14px;
+  width: 200px;
+  outline: none;
+}
+
+#message-input::placeholder {
+  color: rgba(0, 255, 204, 0.5);
+}
+
+#message-input:focus {
+  border-color: #ff00cc;
+  color: #ff00cc;
+}
+
+#send-message-btn {
+  background: rgba(0, 255, 204, 0.2);
+  border: 1px solid #00ffcc;
+  color: #00ffcc;
+  padding: 8px 12px;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#send-message-btn:hover {
+  background: rgba(0, 255, 204, 0.4);
+}
+
+#message-hint {
+  position: fixed;
+  top: 90px;
+  right: 100px;
+  color: rgba(0, 255, 204, 0.6);
+  font-family: "Courier New", Courier, monospace;
+  font-size: 12px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+#message-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>

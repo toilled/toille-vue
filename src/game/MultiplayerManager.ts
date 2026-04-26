@@ -1,5 +1,15 @@
 import mqtt from "mqtt";
-import { Scene, Group, Mesh, BoxGeometry, MeshStandardMaterial, Vector3 } from "three";
+import {
+  Scene,
+  Group,
+  Mesh,
+  BoxGeometry,
+  MeshStandardMaterial,
+  Vector3,
+  Sprite,
+  SpriteMaterial,
+  CanvasTexture,
+} from "three";
 import { CarFactory } from "./CarFactory";
 
 interface PlayerState {
@@ -9,6 +19,8 @@ interface PlayerState {
   heading: number;
   state: "walking" | "driving";
   timestamp: number;
+  message?: string;
+  messageTimestamp?: number;
 }
 
 interface RemotePlayer {
@@ -17,6 +29,8 @@ interface RemotePlayer {
   targetHeading: number;
   lastUpdate: number;
   currentState: "walking" | "driving";
+  messageSprite?: Sprite;
+  messageTimeout?: number;
 }
 
 export class MultiplayerManager {
@@ -64,7 +78,7 @@ export class MultiplayerManager {
     if (!player || player.currentState !== data.state) {
       // Create or Recreate player
       if (player) {
-        this.scene.remove(player.group);
+        this.removePlayerGroup(player.group);
       }
 
       let group: Group;
@@ -97,6 +111,30 @@ export class MultiplayerManager {
       player.targetHeading = data.heading;
       player.lastUpdate = now;
     }
+
+    // Handle message display
+    if (data.message && data.messageTimestamp) {
+      if (player.messageTimeout) {
+        clearTimeout(player.messageTimeout);
+      }
+      if (player.messageSprite) {
+        player.group.remove(player.messageSprite);
+        player.messageSprite.material.map?.dispose();
+        player.messageSprite.material.dispose();
+      }
+
+      player.messageSprite = this.createMessageSprite(data.message);
+      player.group.add(player.messageSprite);
+
+      player.messageTimeout = window.setTimeout(() => {
+        if (player.messageSprite) {
+          player.group.remove(player.messageSprite);
+          player.messageSprite.material.map?.dispose();
+          player.messageSprite.material.dispose();
+          player.messageSprite = undefined;
+        }
+      }, 4000);
+    }
   }
 
   public broadcast(x: number, y: number, z: number, heading: number, state: "walking" | "driving") {
@@ -116,6 +154,58 @@ export class MultiplayerManager {
       this.client.publish(this.topic, JSON.stringify(payload), { qos: 0 });
       this.lastBroadcastTime = now;
     }
+  }
+
+  public broadcastMessage(message: string) {
+    if (!this.client || !this.client.connected) return;
+
+    const now = Date.now();
+    const payload = {
+      id: this.myId,
+      x: 0,
+      y: 0,
+      z: 0,
+      heading: 0,
+      state: "walking",
+      timestamp: now,
+      message,
+      messageTimestamp: now,
+    };
+    this.client.publish(this.topic, JSON.stringify(payload), { qos: 0 });
+  }
+
+  private createMessageSprite(message: string): Sprite {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d")!;
+    canvas.width = 256;
+    canvas.height = 64;
+
+    ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+    ctx.fillRect(0, 0, 256, 64);
+
+    ctx.strokeStyle = "#00ffcc";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0, 0, 255, 63);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 24px Courier New";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    const maxWidth = 240;
+    let text = message;
+    if (ctx.measureText(text).width > maxWidth) {
+      text = text.substring(0, Math.floor(message.length * 0.7)) + "...";
+    }
+    ctx.fillText(text, 128, 32);
+
+    const texture = new CanvasTexture(canvas);
+    const material = new SpriteMaterial({ map: texture });
+    const sprite = new Sprite(material);
+    sprite.scale.set(6, 1.5, 1);
+    sprite.position.y = 5;
+
+    return sprite;
   }
 
   public update(_dt: number) {
@@ -150,6 +240,13 @@ export class MultiplayerManager {
       this.client.end();
     }
     for (const player of this.players.values()) {
+      if (player.messageTimeout) {
+        clearTimeout(player.messageTimeout);
+      }
+      if (player.messageSprite) {
+        player.messageSprite.material.map?.dispose();
+        player.messageSprite.material.dispose();
+      }
       this.removePlayerGroup(player.group);
     }
     this.players.clear();
@@ -168,6 +265,13 @@ export class MultiplayerManager {
           } else {
             child.material.dispose();
           }
+        }
+      } else if (child instanceof Sprite) {
+        if (child.material) {
+          if ((child.material as SpriteMaterial).map) {
+            ((child.material as SpriteMaterial).map as CanvasTexture)?.dispose();
+          }
+          child.material.dispose();
         }
       }
     });

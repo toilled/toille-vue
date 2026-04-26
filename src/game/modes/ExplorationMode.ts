@@ -26,10 +26,7 @@ export class ExplorationMode implements GameMode {
     this.isJumping = false;
 
     if (!context.isMobile.value && context.renderer) {
-      // We can't easily access document here unless we use global
-      // Ideally we should pass domElement or handle this in component
-      // But for now global document is fine for browser env
-      document.body.requestPointerLock();
+      document.body.requestPointerLock().catch(() => {});
     }
   }
 
@@ -166,7 +163,7 @@ export class ExplorationMode implements GameMode {
 
   cleanup() {
     if (document.pointerLockElement) {
-      document.exitPointerLock();
+      document.exitPointerLock().catch(() => {});
     }
   }
 
@@ -226,7 +223,7 @@ export class ExplorationMode implements GameMode {
     if (!this.context) return;
     if (!this.context.isMobile.value) {
       if (document.pointerLockElement !== document.body) {
-        document.body.requestPointerLock();
+        document.body.requestPointerLock().catch(() => {});
       }
     }
   }

@@ -45,8 +45,10 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
 import { useRoute } from "vue-router";
+import { useHead } from "@vueuse/head";
 import pages from "../configs/pages.json";
 import Paragraph from "./Paragraph.vue";
+import { Page } from "../interfaces/Page";
 
 /**
  * @file PageContent.vue
@@ -75,12 +77,43 @@ const page = computed(() => {
   if (route.params.name) {
     return (
       pages.find((p) => p.link.slice(1) === route.params.name)
-    );
+    ) as Page | undefined;
   }
   if (route.params.pathMatch) {
     return null;
   }
-  return pages[0];
+  return pages[0] as Page;
+});
+
+/**
+ * @description Sets dynamic head meta tags based on the current page.
+ */
+useHead({
+  title: computed(() => {
+    const pageTitle = page.value?.title || "404";
+    return `Elliot > ${pageTitle}`;
+  }),
+  meta: computed(() => {
+    const metaTags = [
+      {
+        name: "description",
+        content: page.value?.metaDescription || "The experimental website of Elliot Dickerson made in Vue.",
+      },
+    ];
+    if (page.value?.metaKeywords) {
+      metaTags.push({
+        name: "keywords",
+        content: page.value.metaKeywords,
+      });
+    }
+    if (page.value?.hidden) {
+      metaTags.push({
+        name: "robots",
+        content: "noindex",
+      });
+    }
+    return metaTags;
+  }),
 });
 
 /**

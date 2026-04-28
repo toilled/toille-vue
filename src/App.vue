@@ -254,12 +254,7 @@ onMounted(() => {
   });
 
   window.addEventListener("keydown", handleKeydown);
-  document.addEventListener("contextmenu", handleContextMenu);
 });
-
-const handleContextMenu = (e: Event) => {
-  e.preventDefault();
-};
 
 onErrorCaptured((err) => {
   console.error("App Error Captured:", err);
@@ -270,7 +265,6 @@ onErrorCaptured((err) => {
 onUnmounted(() => {
   clearTimeout(splashTimeout);
   window.removeEventListener("keydown", handleKeydown);
-  document.removeEventListener("contextmenu", handleContextMenu);
 });
 
 watch(

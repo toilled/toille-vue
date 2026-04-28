@@ -1,6 +1,9 @@
 <template>
-  <div class="container" role="main" aria-label="Catch the Button Game" id="main-content">
+  <div class="container" role="main" aria-label="Catch the Button Game">
     <h1>Catch the Button!</h1>
+    <div class="instructions">
+      <p>Click the button or press <kbd>Spacebar</kbd> as many times as you can. Reach <strong>{{ WIN_SCORE }}</strong> points to win!</p>
+    </div>
     <div class="game-info">
       <p>Score: <strong>{{ score }}</strong></p>
       <p v-if="highScore > 0" class="high-score">High Score: <strong>{{ highScore }}</strong></p>
@@ -119,6 +122,19 @@ const resetGame = () => {
   flex-direction: column;
   align-items: center;
   padding-top: 2rem;
+}
+.instructions {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+.instructions kbd {
+  padding: 0.15rem 0.4rem;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid var(--muted-border-color, #ccc);
+  border-radius: 3px;
+  font-size: 0.9em;
 }
 .game-info {
   display: flex;

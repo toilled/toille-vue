@@ -1,5 +1,5 @@
 <template>
-  <main class="container" role="main" aria-label="Ask Me Chat">
+  <main class="container" role="main" aria-label="Ask Me Chat" id="main-content">
     <article>
       <header>
         <h2>Ask Me</h2>

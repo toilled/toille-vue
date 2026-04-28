@@ -1,5 +1,5 @@
 <template>
-  <footer class="content-container" role="main" aria-label="Alcohol Checker Tool" id="main-content">
+  <footer class="content-container" role="main" aria-label="Alcohol Checker Tool">
     <article class="marginless">
       <header>Alcohol Checker</header>
       <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 1rem;">

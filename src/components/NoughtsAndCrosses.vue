@@ -1,6 +1,9 @@
 <template>
   <div class="container" role="main" aria-label="Noughts and Crosses Game">
     <h1>Noughts and Crosses</h1>
+    <div class="instructions" v-if="!winner">
+      <p>You are <strong>X</strong>. Click a cell to start playing!</p>
+    </div>
     <div class="game-info" aria-live="polite">
       <p v-if="!winner" class="turn-indicator">
         {{ isPlayerTurn ? 'Your turn (X)' : 'Bot is thinking...' }}
@@ -20,6 +23,7 @@
         v-for="(cell, index) in board"
         :key="index"
         class="cell"
+        role="gridcell"
         :aria-label="`Row ${Math.floor(index / 3) + 1}, Column ${(index % 3) + 1}, ${cell || 'empty'}`"
         :aria-disabled="cell !== null || !!winner"
         @click="makeMove(index)"
@@ -65,6 +69,12 @@ watch(winner, (newWinner) => {
   flex-direction: column;
   align-items: center;
   padding-top: 2rem;
+}
+.instructions {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  opacity: 0.9;
 }
 .game-info {
   text-align: center;

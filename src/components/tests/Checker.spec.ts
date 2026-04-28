@@ -1,9 +1,17 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mount } from "@vue/test-utils";
 import Checker from "../Checker.vue";
 
 describe("Checker.vue", () => {
-  vi.useFakeTimers();
+  beforeEach(() => {
+    vi.useFakeTimers();
+    localStorage.clear();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    localStorage.clear();
+  });
 
   it("renders correctly", () => {
     const wrapper = mount(Checker);
@@ -85,7 +93,5 @@ describe("Checker.vue", () => {
         options,
       ),
     );
-
-    vi.useRealTimers();
   });
 });

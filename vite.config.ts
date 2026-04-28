@@ -12,7 +12,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "jsdom",
-    setupFiles: ["./src/tests/setupThree.ts"],
+    setupFiles: ["./src/tests/setupThree.ts", "./src/tests/setupHead.ts"],
     exclude: ["e2e/**", "node_modules/**", "dist/**"],
   },
   server: {

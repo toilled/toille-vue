@@ -1,5 +1,5 @@
 <template>
-  <main>
+  <main id="main-content">
     <section>
       <article class="marginless">
         <header>
@@ -34,8 +34,17 @@
         <template v-else>
           <Paragraph
             :paragraph="`The page <strong>${route.params.name}</strong> does not exist!`"
-            :last="true"
+            :last="false"
           />
+          <div class="not-found-nav">
+            <h3>Available Pages:</h3>
+            <ul>
+              <li v-for="p in availablePages" :key="p.link">
+                <router-link :to="p.link">{{ p.icon }} {{ p.name }}</router-link>
+              </li>
+            </ul>
+            <router-link to="/" class="button outline">Go Home</router-link>
+          </div>
         </template>
       </article>
     </section>
@@ -85,6 +94,10 @@ const page = computed(() => {
   return pages[0] as Page;
 });
 
+const availablePages = computed(() => {
+  return pages.filter((p: Page) => !p.hidden);
+});
+
 /**
  * @description Sets dynamic head meta tags based on the current page.
  */
@@ -112,6 +125,21 @@ useHead({
         content: "noindex",
       });
     }
+    // Open Graph tags
+    metaTags.push(
+      { property: "og:title", content: page.value?.title || "Elliot Dickerson" },
+      { property: "og:description", content: page.value?.metaDescription || "The experimental website of Elliot Dickerson made in Vue." },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: `https://toille.uk${route.path}` },
+      { property: "og:image", content: "https://toille.uk/og-image.png" },
+    );
+    // Twitter Card tags
+    metaTags.push(
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: page.value?.title || "Elliot Dickerson" },
+      { name: "twitter:description", content: page.value?.metaDescription || "The experimental website of Elliot Dickerson made in Vue." },
+      { name: "twitter:image", content: "https://toille.uk/og-image.png" },
+    );
     return metaTags;
   }),
 });

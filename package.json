@@ -39,6 +39,8 @@
   },
   "dependencies": {
     "@picocss/pico": "^2",
+    "@vueuse/head": "^2.0.0",
+    "dompurify": "^3.4.1",
     "mqtt": "^5.15.1",
     "three": "^0.181.2",
     "vue": "^3.4.31",

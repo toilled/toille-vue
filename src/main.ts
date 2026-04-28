@@ -1,5 +1,6 @@
 import { createSSRApp } from "vue";
 import { createRouter, createWebHistory, createMemoryHistory } from "vue-router";
+import { createHead } from "@vueuse/head";
 import App from "./App.vue";
 import PageContent from "./components/PageContent.vue";
 
@@ -41,7 +42,9 @@ export function createApp() {
   });
 
   const app = createSSRApp(App);
+  const head = createHead();
   app.use(router);
+  app.use(head);
 
-  return { app, router };
+  return { app, router, head };
 }

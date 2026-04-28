@@ -1,9 +1,11 @@
-import { ref } from "vue";
+import { ref, computed } from "vue";
 
 export function useNoughtsAndCrosses() {
   const board = ref<string[]>(Array(9).fill(""));
   const currentPlayer = ref("X");
   const winner = ref<string | null>(null);
+
+  const isPlayerTurn = computed(() => currentPlayer.value === "X" && !winner.value);
 
   const makeMove = (index: number) => {
     if (board.value[index] || winner.value) return;
@@ -19,7 +21,9 @@ export function useNoughtsAndCrosses() {
     }
 
     currentPlayer.value = "O";
-    computerMove();
+    setTimeout(() => {
+      computerMove();
+    }, 500);
   };
 
   const computerMove = () => {
@@ -106,5 +110,6 @@ export function useNoughtsAndCrosses() {
     winner,
     makeMove,
     resetGame,
+    isPlayerTurn,
   };
 }

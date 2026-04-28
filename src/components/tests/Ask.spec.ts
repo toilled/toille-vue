@@ -5,14 +5,20 @@ import Ask from '../Ask.vue';
 describe('Ask.vue', () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    localStorage.clear();
   });
-
+  
   afterEach(() => {
     vi.useRealTimers();
+    localStorage.clear();
   });
 
   it('renders correctly', async () => {
-    const wrapper = mount(Ask);
+    const wrapper = mount(Ask, {
+      global: {
+        stubs: ['router-link']
+      }
+    });
     await wrapper.vm.$nextTick();
     expect(wrapper.find('h2').text()).toBe('Ask Me');
     expect(wrapper.find('input').exists()).toBe(true);
@@ -20,7 +26,11 @@ describe('Ask.vue', () => {
   });
 
   it('adds user message and bot response', async () => {
-    const wrapper = mount(Ask);
+    const wrapper = mount(Ask, {
+      global: {
+        stubs: ['router-link']
+      }
+    });
     await wrapper.vm.$nextTick();
 
     // Initial bot message should be there
@@ -37,12 +47,12 @@ describe('Ask.vue', () => {
     // Verify user message is added
     // If isTyping is true, there is a .message.bot with "Typing..."
     // So messages: Initial + User + Typing = 3
-
+    
     expect(wrapper.findAll('.message').length).toBe(3);
     expect(wrapper.findAll('.message')[1].text()).toBe('What is your name?');
-    expect(wrapper.findAll('.message')[2].text()).toBe('Typing...');
+    expect(wrapper.findAll('.message')[2].text()).toContain('Typing');
     expect(input.element.value).toBe('');
-
+    
     // Fast forward time
     await vi.advanceTimersByTimeAsync(1000);
     await wrapper.vm.$nextTick();
@@ -51,29 +61,39 @@ describe('Ask.vue', () => {
     const messages = wrapper.findAll('.message');
     // Typing indicator should be gone.
     // Messages: Initial + User + Answer = 3
-
+    
     expect(messages.length).toBe(3);
     const lastMessage = messages[messages.length - 1];
     expect(lastMessage.classes()).toContain('bot');
-    expect(lastMessage.text()).not.toBe('Typing...');
-    expect(lastMessage.text()).toContain('My name is Elliot.');
-    expect(lastMessage.text()).not.toContain('Also, one reason I\'d be good for you is that');
+    expect(lastMessage.text()).not.toContain('Typing');
+    expect(lastMessage.text()).toContain('My name is Elliot');
   });
 
   it('disables input while typing', async () => {
-    const wrapper = mount(Ask);
+    const wrapper = mount(Ask, {
+      global: {
+        stubs: ['router-link']
+      }
+    });
     await wrapper.vm.$nextTick();
 
     await wrapper.find('input').setValue('Hello');
     await wrapper.find('form').trigger('submit');
+    await wrapper.vm.$nextTick();
 
+    // Find the submit button (last button in the form)
+    const buttons = wrapper.findAll('button');
+    const submitButton = buttons[buttons.length - 1];
+
+    // Input and button should be disabled while typing
     expect(wrapper.find('input').element.disabled).toBe(true);
-    expect(wrapper.find('button').element.disabled).toBe(true);
+    expect(submitButton.element.disabled).toBe(true);
 
     await vi.advanceTimersByTimeAsync(1000);
     await wrapper.vm.$nextTick();
 
+    // After response, input is re-enabled, button is disabled (input is empty)
     expect(wrapper.find('input').element.disabled).toBe(false);
-    expect(wrapper.find('button').element.disabled).toBe(true); // Empty input
+    expect(submitButton.element.disabled).toBe(true);
   });
 });

@@ -37,7 +37,9 @@
             @enter="onEnter"
             @after-enter="onAfterEnter"
           >
-            <component :is="Component" :key="route.path" />
+            <ErrorBoundary>
+              <component :is="Component" :key="route.path" />
+            </ErrorBoundary>
           </Transition>
         </router-view>
       </div>
@@ -98,6 +100,7 @@ import Activity from "./components/Activity.vue";
 import Suggestion from "./components/Suggestion.vue";
 import TypingText from "./components/TypingText.vue";
 import SplashScreen from "./components/SplashScreen.vue";
+import ErrorBoundary from "./components/ErrorBoundary.vue";
 import pages from "./configs/pages.json";
 
 const CyberpunkCity = defineAsyncComponent(() => {
@@ -254,12 +257,7 @@ onMounted(() => {
   });
 
   window.addEventListener("keydown", handleKeydown);
-  document.addEventListener("contextmenu", handleContextMenu);
 });
-
-const handleContextMenu = (e: Event) => {
-  e.preventDefault();
-};
 
 onErrorCaptured((err) => {
   console.error("App Error Captured:", err);
@@ -270,7 +268,6 @@ onErrorCaptured((err) => {
 onUnmounted(() => {
   clearTimeout(splashTimeout);
   window.removeEventListener("keydown", handleKeydown);
-  document.removeEventListener("contextmenu", handleContextMenu);
 });
 
 watch(

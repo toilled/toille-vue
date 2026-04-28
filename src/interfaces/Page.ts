@@ -27,4 +27,12 @@ export interface Page {
    * @property {string} [icon] - Optional icon to display next to the title.
    */
   icon?: string;
+  /**
+   * @property {string} [metaDescription] - Optional meta description for SEO.
+   */
+  metaDescription?: string;
+  /**
+   * @property {string} [metaKeywords] - Optional meta keywords for SEO.
+   */
+  metaKeywords?: string;
 }

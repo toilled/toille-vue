@@ -1,16 +1,16 @@
-import { describe, it, expect, vi } from "vitest";
-import { mount } from "@vue/test-utils";
-import GameUI from "../GameUI.vue";
+import { describe, it, expect, vi } from 'vitest';
+import { mount } from '@vue/test-utils';
+import GameUI from '../GameUI.vue';
 
 // Mock ScoreService
-vi.mock("../../utils/ScoreService", () => ({
+vi.mock('../../utils/ScoreService', () => ({
   ScoreService: {
     getTopScores: vi.fn(),
     submitScore: vi.fn(),
   },
 }));
 
-describe("GameUI.vue Leaderboard Modal", () => {
+describe('GameUI.vue Leaderboard Modal', () => {
   let wrapper: ReturnType<typeof mount>;
 
   const mockControls = {
@@ -41,35 +41,35 @@ describe("GameUI.vue Leaderboard Modal", () => {
     controls: mockControls,
     lookControls: mockLookControls,
     leaderboard: [
-      { name: "P1", score: 100 },
-      { name: "P2", score: 50 },
+      { name: 'P1', score: 100 },
+      { name: 'P2', score: 50 },
     ],
     showLeaderboard: false,
   };
 
-  it("shows leaderboard modal when showLeaderboard is true", async () => {
+  it('shows leaderboard modal when showLeaderboard is true', async () => {
     wrapper = mount(GameUI, {
       props: { ...defaultProps, showLeaderboard: true },
     });
-    expect(wrapper.find("#leaderboard-modal").exists()).toBe(true);
-    expect(wrapper.text()).toContain("LEADERBOARD");
-    expect(wrapper.text()).toContain("P1");
-    expect(wrapper.text()).toContain("100");
+    expect(wrapper.find('#leaderboard-modal').exists()).toBe(true);
+    expect(wrapper.text()).toContain('LEADERBOARD');
+    expect(wrapper.text()).toContain('P1');
+    expect(wrapper.text()).toContain('100');
   });
 
-  it("hides leaderboard modal when showLeaderboard is false", async () => {
+  it('hides leaderboard modal when showLeaderboard is false', async () => {
     wrapper = mount(GameUI, {
       props: { ...defaultProps, showLeaderboard: false },
     });
-    expect(wrapper.find("#leaderboard-modal").exists()).toBe(false);
+    expect(wrapper.find('#leaderboard-modal').exists()).toBe(false);
   });
 
-  it("emits close-leaderboard when close button is clicked", async () => {
+  it('emits close-leaderboard when close button is clicked', async () => {
     wrapper = mount(GameUI, {
       props: { ...defaultProps, showLeaderboard: true },
     });
 
-    await wrapper.find(".close-btn").trigger("click");
-    expect(wrapper.emitted("close-leaderboard")).toBeTruthy();
+    await wrapper.find('.close-btn').trigger('click');
+    expect(wrapper.emitted('close-leaderboard')).toBeTruthy();
   });
 });

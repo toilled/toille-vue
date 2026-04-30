@@ -2,16 +2,20 @@
   <footer class="content-container" role="main" aria-label="Alcohol Checker Tool">
     <article class="marginless">
       <header>Alcohol Checker</header>
-      <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 1rem;">
+      <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 1rem">
         Estimate when you'll be under the drink-drive limit. One unit ≈ 1 hour to process.
       </p>
       <section class="grid">
         <button @click="add" class="outline" aria-label="Add one unit of alcohol">Add</button>
-        <button @click="subtract" class="outline" aria-label="Subtract one unit of alcohol">Subtract</button>
+        <button @click="subtract" class="outline" aria-label="Subtract one unit of alcohol">
+          Subtract
+        </button>
         <button @click="reset" class="outline" aria-label="Reset unit count to zero">Reset</button>
       </section>
       <table class="marginless" aria-describedby="table-caption">
-        <caption id="table-caption" class="visually-hidden">Alcohol consumption tracker showing units consumed and estimated times</caption>
+        <caption id="table-caption" class="visually-hidden">
+          Alcohol consumption tracker showing units consumed and estimated times
+        </caption>
         <thead>
           <tr>
             <th scope="col">Units consumed</th>
@@ -32,8 +36,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
-import { useHead } from "@vueuse/head";
+import { ref, onMounted, watch } from 'vue';
+import { useHead } from '@vueuse/head';
 
 /**
  * @file Checker.vue
@@ -42,14 +46,14 @@ import { useHead } from "@vueuse/head";
  */
 
 const MS_PER_UNIT = 60 * 60 * 1000;
-const STORAGE_KEY = "alcohol-checker-count";
+const STORAGE_KEY = 'alcohol-checker-count';
 const MAX_UNITS = 50;
 
 useHead({
-  title: "Elliot > Alcohol Checker",
+  title: 'Elliot > Alcohol Checker',
   meta: [
     {
-      name: "description",
+      name: 'description',
       content: "Calculate when you'll be sober enough to drive with this alcohol unit tracker",
     },
   ],
@@ -65,13 +69,13 @@ const count = ref(0);
  * @type {import('vue').Ref<string>}
  * @description A reactive reference to the formatted string for the borderline (drink-drive limit) time.
  */
-const limitTime = ref("");
+const limitTime = ref('');
 
 /**
  * @type {import('vue').Ref<string>}
  * @description A reactive reference to the formatted string for the estimated sober time.
  */
-const soberTime = ref("");
+const soberTime = ref('');
 
 /**
  * @description Updates the `limitTime` and `soberTime` based on the current `count` of alcohol units.
@@ -81,20 +85,22 @@ const soberTime = ref("");
  */
 function updateTimes() {
   const options = {
-    hour: "2-digit",
-    minute: "2-digit",
+    hour: '2-digit',
+    minute: '2-digit',
   } as const;
   const currentTime = new Date().getTime();
   if (count.value === 0) {
     limitTime.value = new Date(currentTime).toLocaleTimeString([], options);
     soberTime.value = new Date(currentTime).toLocaleTimeString([], options);
   } else {
-    limitTime.value = new Date(
-      currentTime + count.value * MS_PER_UNIT,
-    ).toLocaleTimeString([], options);
-    soberTime.value = new Date(
-      currentTime + (count.value + 1) * MS_PER_UNIT,
-    ).toLocaleTimeString([], options);
+    limitTime.value = new Date(currentTime + count.value * MS_PER_UNIT).toLocaleTimeString(
+      [],
+      options
+    );
+    soberTime.value = new Date(currentTime + (count.value + 1) * MS_PER_UNIT).toLocaleTimeString(
+      [],
+      options
+    );
   }
 }
 

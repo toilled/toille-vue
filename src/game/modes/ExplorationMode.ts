@@ -1,8 +1,8 @@
-import { GameContext, GameMode } from "../types";
-import { carAudio } from "../audio/CarAudio";
-import { BOUNDS, CELL_SIZE, START_OFFSET } from "../config";
-import { Vector3, Euler, Quaternion } from "three";
-import { getHeight } from "../../utils/HeightMap";
+import { GameContext, GameMode } from '../types';
+import { carAudio } from '../audio/CarAudio';
+import { BOUNDS, CELL_SIZE, START_OFFSET } from '../config';
+import { Vector3, Euler, Quaternion } from 'three';
+import { getHeight } from '../../utils/HeightMap';
 
 export class ExplorationMode implements GameMode {
   context: GameContext | null = null;
@@ -11,7 +11,7 @@ export class ExplorationMode implements GameMode {
   isTransitioning = false;
   isJumping = false;
   velocityY = 0;
-  playerRotation = new Euler(0, 0, 0, "YXZ");
+  playerRotation = new Euler(0, 0, 0, 'YXZ');
 
   // Constants
   gravity = 0.015;
@@ -35,8 +35,7 @@ export class ExplorationMode implements GameMode {
 
   update(_dt: number, _time: number) {
     if (!this.context) return;
-    const { camera, controls, isMobile, occupiedGrids, cars, lookControls } =
-      this.context;
+    const { camera, controls, isMobile, occupiedGrids, cars, lookControls } = this.context;
 
     if (this.isTransitioning) {
       const targetPos = new Vector3(0, 3, 0);
@@ -59,12 +58,12 @@ export class ExplorationMode implements GameMode {
     const frontVector = new Vector3(
       0,
       0,
-      Number(controls.value.backward) - Number(controls.value.forward),
+      Number(controls.value.backward) - Number(controls.value.forward)
     );
     const sideVector = new Vector3(
       Number(controls.value.left) - Number(controls.value.right),
       0,
-      0,
+      0
     );
 
     // Mobile Look Controls
@@ -75,10 +74,7 @@ export class ExplorationMode implements GameMode {
       if (lookControls.value.up) this.playerRotation.x += rotateSpeed;
       if (lookControls.value.down) this.playerRotation.x -= rotateSpeed;
 
-      this.playerRotation.x = Math.max(
-        -Math.PI / 2,
-        Math.min(Math.PI / 2, this.playerRotation.x),
-      );
+      this.playerRotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.playerRotation.x));
       camera.rotation.copy(this.playerRotation);
     }
 
@@ -101,10 +97,7 @@ export class ExplorationMode implements GameMode {
       const cZ = START_OFFSET + iz * CELL_SIZE;
       const dims = occupiedGrids.get(`${ix},${iz}`);
       if (dims) {
-        if (
-          Math.abs(nextX - cX) < dims.halfW + 2 &&
-          Math.abs(nextZ - cZ) < dims.halfD + 2
-        ) {
+        if (Math.abs(nextX - cX) < dims.halfW + 2 && Math.abs(nextZ - cZ) < dims.halfD + 2) {
           collided = true;
         }
       }
@@ -174,26 +167,26 @@ export class ExplorationMode implements GameMode {
     if (!this.context) return;
     const c = this.context.controls.value;
 
-    if (event.code === "Space" && !this.isJumping) {
+    if (event.code === 'Space' && !this.isJumping) {
       this.isJumping = true;
       this.velocityY = this.jumpStrength;
     }
 
     switch (event.key.toLowerCase()) {
-      case "w":
-      case "arrowup":
+      case 'w':
+      case 'arrowup':
         c.forward = true;
         break;
-      case "s":
-      case "arrowdown":
+      case 's':
+      case 'arrowdown':
         c.backward = true;
         break;
-      case "a":
-      case "arrowleft":
+      case 'a':
+      case 'arrowleft':
         c.left = true;
         break;
-      case "d":
-      case "arrowright":
+      case 'd':
+      case 'arrowright':
         c.right = true;
         break;
     }
@@ -203,20 +196,20 @@ export class ExplorationMode implements GameMode {
     if (!this.context) return;
     const c = this.context.controls.value;
     switch (event.key.toLowerCase()) {
-      case "w":
-      case "arrowup":
+      case 'w':
+      case 'arrowup':
         c.forward = false;
         break;
-      case "s":
-      case "arrowdown":
+      case 's':
+      case 'arrowdown':
         c.backward = false;
         break;
-      case "a":
-      case "arrowleft":
+      case 'a':
+      case 'arrowleft':
         c.left = false;
         break;
-      case "d":
-      case "arrowright":
+      case 'd':
+      case 'arrowright':
         c.right = false;
         break;
     }
@@ -240,10 +233,7 @@ export class ExplorationMode implements GameMode {
     this.playerRotation.y -= event.movementX * sensitivity;
     this.playerRotation.x -= event.movementY * sensitivity;
 
-    this.playerRotation.x = Math.max(
-      -Math.PI / 2,
-      Math.min(Math.PI / 2, this.playerRotation.x),
-    );
+    this.playerRotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.playerRotation.x));
     this.context.camera.rotation.copy(this.playerRotation);
   }
 }

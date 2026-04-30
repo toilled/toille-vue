@@ -1,12 +1,6 @@
-import { GameContext, GameMode } from "../types";
-import { carAudio } from "../audio/CarAudio";
-import {
-  BOUNDS,
-  CELL_SIZE,
-  START_OFFSET,
-  GRID_SIZE,
-  CITY_SIZE,
-} from "../config";
+import { GameContext, GameMode } from '../types';
+import { carAudio } from '../audio/CarAudio';
+import { BOUNDS, CELL_SIZE, START_OFFSET, GRID_SIZE, CITY_SIZE } from '../config';
 import {
   Vector3,
   Group,
@@ -15,8 +9,8 @@ import {
   Mesh,
   SpotLight,
   Object3D,
-} from "three";
-import { getHeight, getNormal, applyCarOrientation } from "../../utils/HeightMap";
+} from 'three';
+import { getHeight, getNormal, applyCarOrientation } from '../../utils/HeightMap';
 
 export class DrivingMode implements GameMode {
   context: GameContext | null = null;
@@ -35,8 +29,7 @@ export class DrivingMode implements GameMode {
       context.activeCar.value.userData.currentSpeed = 0;
       // Initialize heading if not present
       if (context.activeCar.value.userData.heading === undefined) {
-        context.activeCar.value.userData.heading =
-          context.activeCar.value.rotation.y;
+        context.activeCar.value.userData.heading = context.activeCar.value.rotation.y;
       }
 
       context.timeLeft.value = 30;
@@ -108,18 +101,16 @@ export class DrivingMode implements GameMode {
     let attempts = 0;
     while (!spawned && attempts < 20) {
       const roadIndex = Math.floor(Math.random() * (GRID_SIZE + 1));
-      const roadCoordinate =
-        START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
+      const roadCoordinate = START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
       const otherCoord = (Math.random() - 0.5) * CITY_SIZE;
 
-      const axis = Math.random() > 0.5 ? "x" : "z";
+      const axis = Math.random() > 0.5 ? 'x' : 'z';
       let x, z;
 
-      if (axis === "x") {
+      if (axis === 'x') {
         z = roadCoordinate; // Road runs x-axis
         x = otherCoord;
-        this.redCar.userData.heading =
-          Math.random() > 0.5 ? Math.PI / 2 : -Math.PI / 2;
+        this.redCar.userData.heading = Math.random() > 0.5 ? Math.PI / 2 : -Math.PI / 2;
       } else {
         x = roadCoordinate; // Road runs z-axis
         z = otherCoord;
@@ -127,9 +118,7 @@ export class DrivingMode implements GameMode {
       }
 
       // Check dist
-      const dist = Math.sqrt(
-        (x - player.position.x) ** 2 + (z - player.position.z) ** 2,
-      );
+      const dist = Math.sqrt((x - player.position.x) ** 2 + (z - player.position.z) ** 2);
       if (dist > 500) {
         const h = getHeight(x, z);
         this.redCar.position.set(x, h + 1, z);
@@ -164,8 +153,7 @@ export class DrivingMode implements GameMode {
     if (isGameOver.value) {
       // Force stop if game over
       car.userData.currentSpeed *= 0.95;
-      if (Math.abs(car.userData.currentSpeed) < 0.01)
-        car.userData.currentSpeed = 0;
+      if (Math.abs(car.userData.currentSpeed) < 0.01) car.userData.currentSpeed = 0;
       carAudio.update(car.userData.currentSpeed);
 
       const speed = car.userData.currentSpeed;
@@ -233,11 +221,7 @@ export class DrivingMode implements GameMode {
       navArrow.visible = true;
       navArrow.position.copy(car.position);
       navArrow.position.y += 15;
-      navArrow.lookAt(
-        checkpointMesh.position.x,
-        navArrow.position.y,
-        checkpointMesh.position.z,
-      );
+      navArrow.lookAt(checkpointMesh.position.x, navArrow.position.y, checkpointMesh.position.z);
     }
 
     // Car Physics
@@ -367,8 +351,7 @@ export class DrivingMode implements GameMode {
     this.redCar.position.x += Math.sin(currentRotation) * redSpeed;
     this.redCar.position.z += Math.cos(currentRotation) * redSpeed;
 
-    this.redCar.position.y =
-      getHeight(this.redCar.position.x, this.redCar.position.z) + 1;
+    this.redCar.position.y = getHeight(this.redCar.position.x, this.redCar.position.z) + 1;
 
     // Apply Orientation
     const normal = getNormal(this.redCar.position.x, this.redCar.position.z);
@@ -385,12 +368,8 @@ export class DrivingMode implements GameMode {
 
     // Find road center
     const roadHalf = CELL_SIZE / 2;
-    const gridX = Math.round(
-      (this.redCar.position.x - START_OFFSET - roadHalf) / CELL_SIZE,
-    );
-    const gridZ = Math.round(
-      (this.redCar.position.z - START_OFFSET - roadHalf) / CELL_SIZE,
-    );
+    const gridX = Math.round((this.redCar.position.x - START_OFFSET - roadHalf) / CELL_SIZE);
+    const gridZ = Math.round((this.redCar.position.z - START_OFFSET - roadHalf) / CELL_SIZE);
 
     const roadCenterX = START_OFFSET + gridX * CELL_SIZE + roadHalf;
     const roadCenterZ = START_OFFSET + gridZ * CELL_SIZE + roadHalf;
@@ -403,28 +382,20 @@ export class DrivingMode implements GameMode {
       // Driving North/South (Z-axis). Steer X towards player.
       let targetX = playerCar.position.x;
       // Clamp target to road bounds
-      targetX = Math.max(
-        roadCenterX - maxOffset,
-        Math.min(roadCenterX + maxOffset, targetX),
-      );
+      targetX = Math.max(roadCenterX - maxOffset, Math.min(roadCenterX + maxOffset, targetX));
 
       const diff = targetX - this.redCar.position.x;
       if (Math.abs(diff) > 0.1) {
-        this.redCar.position.x +=
-          Math.sign(diff) * Math.min(Math.abs(diff), lateralSpeed);
+        this.redCar.position.x += Math.sign(diff) * Math.min(Math.abs(diff), lateralSpeed);
       }
     } else {
       // Driving East/West (X-axis). Steer Z towards player.
       let targetZ = playerCar.position.z;
-      targetZ = Math.max(
-        roadCenterZ - maxOffset,
-        Math.min(roadCenterZ + maxOffset, targetZ),
-      );
+      targetZ = Math.max(roadCenterZ - maxOffset, Math.min(roadCenterZ + maxOffset, targetZ));
 
       const diff = targetZ - this.redCar.position.z;
       if (Math.abs(diff) > 0.1) {
-        this.redCar.position.z +=
-          Math.sign(diff) * Math.min(Math.abs(diff), lateralSpeed);
+        this.redCar.position.z += Math.sign(diff) * Math.min(Math.abs(diff), lateralSpeed);
       }
     }
 
@@ -472,8 +443,7 @@ export class DrivingMode implements GameMode {
         const px = this.redCar.position.x + dx * 100;
         const pz = this.redCar.position.z + dz * 100;
 
-        const d =
-          (px - playerCar.position.x) ** 2 + (pz - playerCar.position.z) ** 2;
+        const d = (px - playerCar.position.x) ** 2 + (pz - playerCar.position.z) ** 2;
 
         if (d < minDst) {
           minDst = d;
@@ -512,7 +482,7 @@ export class DrivingMode implements GameMode {
       else op = 1 - (dist - 200) / 400;
 
       arrow.traverse((c) => {
-        if ("material" in c && c.material) {
+        if ('material' in c && c.material) {
           (c.material as { opacity: number }).opacity = op;
         }
       });
@@ -527,8 +497,7 @@ export class DrivingMode implements GameMode {
       }
       this.context.navArrow.visible = false;
       if (this.context.chaseArrow) this.context.chaseArrow.visible = false;
-      if (this.context.checkpointMesh)
-        this.context.checkpointMesh.visible = false;
+      if (this.context.checkpointMesh) this.context.checkpointMesh.visible = false;
 
       if (this.redCar) {
         this.context.scene.remove(this.redCar);
@@ -549,20 +518,20 @@ export class DrivingMode implements GameMode {
     if (!this.context || this.context.isGameOver.value) return;
     const c = this.context.controls.value;
     switch (event.key.toLowerCase()) {
-      case "w":
-      case "arrowup":
+      case 'w':
+      case 'arrowup':
         c.forward = true;
         break;
-      case "s":
-      case "arrowdown":
+      case 's':
+      case 'arrowdown':
         c.backward = true;
         break;
-      case "a":
-      case "arrowleft":
+      case 'a':
+      case 'arrowleft':
         c.left = true;
         break;
-      case "d":
-      case "arrowright":
+      case 'd':
+      case 'arrowright':
         c.right = true;
         break;
     }
@@ -572,20 +541,20 @@ export class DrivingMode implements GameMode {
     if (!this.context || this.context.isGameOver.value) return;
     const c = this.context.controls.value;
     switch (event.key.toLowerCase()) {
-      case "w":
-      case "arrowup":
+      case 'w':
+      case 'arrowup':
         c.forward = false;
         break;
-      case "s":
-      case "arrowdown":
+      case 's':
+      case 'arrowdown':
         c.backward = false;
         break;
-      case "a":
-      case "arrowleft":
+      case 'a':
+      case 'arrowleft':
         c.left = false;
         break;
-      case "d":
-      case "arrowright":
+      case 'd':
+      case 'arrowright':
         c.right = false;
         break;
     }

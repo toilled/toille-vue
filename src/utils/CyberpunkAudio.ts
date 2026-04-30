@@ -1,4 +1,4 @@
-import { audioManager } from "./AudioManager";
+import { audioManager } from './AudioManager';
 
 type NoteCallback = (type: string, data?: number) => void;
 
@@ -162,7 +162,7 @@ export class CyberpunkAudio {
     this.initContext();
     if (!this.ctx) return;
 
-    if (this.ctx.state === "suspended") {
+    if (this.ctx.state === 'suspended') {
       this.ctx.resume();
     }
 
@@ -180,7 +180,7 @@ export class CyberpunkAudio {
       window.clearTimeout(this.timerID);
       this.timerID = null;
     }
-    if (this.ctx && this.ctx.state === "running") {
+    if (this.ctx && this.ctx.state === 'running') {
       this.ctx.suspend();
     }
   }
@@ -221,26 +221,26 @@ export class CyberpunkAudio {
       if (noteVal > 0) {
         const noteIndex = noteVal - 1;
         this.playBass(time, this.scale[noteIndex]);
-        triggerVisual("bass", noteIndex);
+        triggerVisual('bass', noteIndex);
       }
     }
 
     const kickVel = this.kickPattern[beatNumber];
     if (kickVel > 0) {
       this.playKick(time, kickVel);
-      triggerVisual("kick", kickVel);
+      triggerVisual('kick', kickVel);
     }
 
     const snareVel = this.snarePattern[beatNumber];
     if (snareVel > 0) {
       this.playSnare(time, snareVel);
-      triggerVisual("snare", snareVel);
+      triggerVisual('snare', snareVel);
     }
 
     const hatVel = this.hiHatPattern[beatNumber];
     if (hatVel > 0) {
       this.playHiHat(time, hatVel);
-      triggerVisual("hihat", hatVel);
+      triggerVisual('hihat', hatVel);
     }
   }
 
@@ -251,13 +251,13 @@ export class CyberpunkAudio {
     const gain = this.ctx.createGain();
     const filter = this.ctx.createBiquadFilter();
 
-    osc1.type = "sawtooth";
-    osc2.type = "square";
+    osc1.type = 'sawtooth';
+    osc2.type = 'square';
     // Detune osc2 slightly for a thicker sound
     osc1.frequency.setValueAtTime(freq, time);
     osc2.frequency.setValueAtTime(freq * 1.01, time);
 
-    filter.type = "lowpass";
+    filter.type = 'lowpass';
     filter.frequency.setValueAtTime(100, time);
     filter.frequency.exponentialRampToValueAtTime(1200, time + 0.05);
     filter.frequency.exponentialRampToValueAtTime(100, time + 0.2);
@@ -296,8 +296,6 @@ export class CyberpunkAudio {
     osc.stop(time + 0.15);
   }
 
-
-
   private playSnare(time: number, velocity: number = 1.0) {
     if (!this.ctx || !this.snareBuffer || !this.dest) return;
 
@@ -305,7 +303,7 @@ export class CyberpunkAudio {
     noise.buffer = this.snareBuffer;
 
     const noiseFilter = this.ctx.createBiquadFilter();
-    noiseFilter.type = "highpass";
+    noiseFilter.type = 'highpass';
     noiseFilter.frequency.value = 1000;
 
     const noiseGain = this.ctx.createGain();
@@ -321,7 +319,7 @@ export class CyberpunkAudio {
 
     const osc = this.ctx.createOscillator();
     const oscGain = this.ctx.createGain();
-    osc.type = "triangle";
+    osc.type = 'triangle';
     osc.frequency.setValueAtTime(250, time);
     osc.frequency.exponentialRampToValueAtTime(100, time + 0.1);
 
@@ -342,7 +340,7 @@ export class CyberpunkAudio {
     noise.buffer = this.hiHatBuffer;
 
     const filter = this.ctx.createBiquadFilter();
-    filter.type = "highpass";
+    filter.type = 'highpass';
     filter.frequency.value = 8000;
 
     const gain = this.ctx.createGain();

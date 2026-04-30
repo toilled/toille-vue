@@ -1,13 +1,13 @@
-import mqtt from "mqtt";
-import { Scene, Group, Mesh, BoxGeometry, MeshStandardMaterial, Vector3 } from "three";
-import { CarFactory } from "./CarFactory";
+import mqtt from 'mqtt';
+import { Scene, Group, Mesh, BoxGeometry, MeshStandardMaterial, Vector3 } from 'three';
+import { CarFactory } from './CarFactory';
 
 interface PlayerState {
   x: number;
   y: number;
   z: number;
   heading: number;
-  state: "walking" | "driving";
+  state: 'walking' | 'driving';
   timestamp: number;
 }
 
@@ -16,7 +16,7 @@ interface RemotePlayer {
   targetPos: Vector3;
   targetHeading: number;
   lastUpdate: number;
-  currentState: "walking" | "driving";
+  currentState: 'walking' | 'driving';
 }
 
 export class MultiplayerManager {
@@ -24,7 +24,7 @@ export class MultiplayerManager {
   private scene: Scene;
   private players: Map<string, RemotePlayer> = new Map();
   private myId: string;
-  private topic = "toille-vue/cyberpunk/players";
+  private topic = 'toille-vue/cyberpunk/players';
   private carFactory: CarFactory;
 
   private lastBroadcastTime = 0;
@@ -37,13 +37,13 @@ export class MultiplayerManager {
   }
 
   public connect() {
-    this.client = mqtt.connect("wss://broker.emqx.io:8084/mqtt");
+    this.client = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
 
-    this.client.on("connect", () => {
+    this.client.on('connect', () => {
       this.client?.subscribe(this.topic);
     });
 
-    this.client.on("message", (topic, message) => {
+    this.client.on('message', (topic, message) => {
       if (topic === this.topic) {
         try {
           const data = JSON.parse(message.toString());
@@ -68,7 +68,7 @@ export class MultiplayerManager {
       }
 
       let group: Group;
-      if (data.state === "driving") {
+      if (data.state === 'driving') {
         group = this.carFactory.createCar(false);
       } else {
         group = new Group();
@@ -99,7 +99,7 @@ export class MultiplayerManager {
     }
   }
 
-  public broadcast(x: number, y: number, z: number, heading: number, state: "walking" | "driving") {
+  public broadcast(x: number, y: number, z: number, heading: number, state: 'walking' | 'driving') {
     if (!this.client || !this.client.connected) return;
 
     const now = Date.now();

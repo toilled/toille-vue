@@ -14,25 +14,17 @@ import {
   HemisphereLight,
   Color,
   Texture,
-} from "three";
-import {
-  BLOCK_SIZE,
-  CELL_SIZE,
-  CITY_SIZE,
-  GRID_SIZE,
-  START_OFFSET,
-} from "./config";
-import { createGroundTexture } from "../utils/TextureGenerator";
-import { getHeight } from "../utils/HeightMap";
-import { CityMaterials } from "./CityMaterials";
+} from 'three';
+import { BLOCK_SIZE, CELL_SIZE, CITY_SIZE, GRID_SIZE, START_OFFSET } from './config';
+import { createGroundTexture } from '../utils/TextureGenerator';
+import { getHeight } from '../utils/HeightMap';
+import { CityMaterials } from './CityMaterials';
+import { EasterEggManager } from './EasterEggManager';
 
 export class CityBuilder {
   private scene: Scene;
   private buildings: Object3D[] = [];
-  private occupiedGrids = new Map<
-    string,
-    { halfW: number; halfD: number; isRound?: boolean }
-  >();
+  private occupiedGrids = new Map<string, { halfW: number; halfD: number; isRound?: boolean }>();
   private materials: CityMaterials;
 
   constructor(scene: Scene) {
@@ -44,10 +36,7 @@ export class CityBuilder {
     return this.buildings;
   }
 
-  public getOccupiedGrids(): Map<
-    string,
-    { halfW: number; halfD: number; isRound?: boolean }
-  > {
+  public getOccupiedGrids(): Map<string, { halfW: number; halfD: number; isRound?: boolean }> {
     return this.occupiedGrids;
   }
 
@@ -61,6 +50,9 @@ export class CityBuilder {
     this.createBuildings(lbTexture);
 
     // Setup Fog
+    const easterEggManager = new EasterEggManager(this.scene);
+    easterEggManager.spawnEasterEggs(this.occupiedGrids, this.buildings);
+
     this.scene.fog = new FogExp2(0x050510, isMobile ? 0.00057 : 0.001);
   }
 
@@ -91,12 +83,7 @@ export class CityBuilder {
 
   private createGround() {
     const groundTexture = createGroundTexture();
-    const planeGeometry = new PlaneGeometry(
-      CITY_SIZE * 2,
-      CITY_SIZE * 2,
-      128,
-      128,
-    );
+    const planeGeometry = new PlaneGeometry(CITY_SIZE * 2, CITY_SIZE * 2, 128, 128);
 
     const posAttribute = planeGeometry.attributes.position;
     for (let i = 0; i < posAttribute.count; i++) {
@@ -155,7 +142,7 @@ export class CityBuilder {
     }
 
     const style = this.determineStyle(isLeaderboardBuilding);
-    const isRound = style === "CYLINDRICAL" || style === "SPIRE";
+    const isRound = style === 'CYLINDRICAL' || style === 'SPIRE';
 
     this.occupiedGrids.set(`${x},${z}`, {
       halfW: w / 2,
@@ -177,14 +164,14 @@ export class CityBuilder {
       h,
       d,
       selectedMaterial,
-      thisBuildingMaterials,
+      thisBuildingMaterials
     );
 
-    if (style === "TIERED") {
+    if (style === 'TIERED') {
       this.addTiers(buildingGroup, w, h, d, thisBuildingMaterials);
-    } else if (style === "SPIRE") {
+    } else if (style === 'SPIRE') {
       this.addSpire(buildingGroup, w, h, d, selectedMaterial);
-    } else if (style === "GREEBLED") {
+    } else if (style === 'GREEBLED') {
       this.addGreebles(buildingGroup, w, h, d);
     }
 
@@ -199,22 +186,17 @@ export class CityBuilder {
   }
 
   private determineStyle(isLeaderboardBuilding: boolean): string {
-    if (isLeaderboardBuilding) return "SIMPLE";
+    if (isLeaderboardBuilding) return 'SIMPLE';
     const r = Math.random();
-    if (r > 0.9) return "SPIRE";
-    if (r > 0.75) return "TIERED";
-    if (r > 0.6) return "GREEBLED";
-    if (r > 0.45) return "CYLINDRICAL";
-    if (r > 0.35) return "TWISTED";
-    return "SIMPLE";
+    if (r > 0.9) return 'SPIRE';
+    if (r > 0.75) return 'TIERED';
+    if (r > 0.6) return 'GREEBLED';
+    if (r > 0.45) return 'CYLINDRICAL';
+    if (r > 0.35) return 'TWISTED';
+    return 'SIMPLE';
   }
 
-  private calculateGroundHeight(
-    xPos: number,
-    zPos: number,
-    w: number,
-    d: number,
-  ): number {
+  private calculateGroundHeight(xPos: number, zPos: number, w: number, d: number): number {
     const h1 = getHeight(xPos - w / 2, zPos - d / 2);
     const h2 = getHeight(xPos + w / 2, zPos - d / 2);
     const h3 = getHeight(xPos - w / 2, zPos + d / 2);
@@ -229,9 +211,7 @@ export class CityBuilder {
     return this.materials.audioMaterials[audioKeys[channelIndex]];
   }
 
-  private createMaterialArray(
-    selectedMaterial: MeshStandardMaterial,
-  ): MeshStandardMaterial[] {
+  private createMaterialArray(selectedMaterial: MeshStandardMaterial): MeshStandardMaterial[] {
     return [
       selectedMaterial,
       selectedMaterial,
@@ -249,27 +229,17 @@ export class CityBuilder {
     h: number,
     d: number,
     selectedMaterial: MeshStandardMaterial,
-    thisBuildingMaterials: MeshStandardMaterial[],
+    thisBuildingMaterials: MeshStandardMaterial[]
   ) {
-    if (style === "CYLINDRICAL") {
-      const cylMats = [
-        selectedMaterial,
-        this.materials.roofMaterial,
-        this.materials.roofMaterial,
-      ];
+    if (style === 'CYLINDRICAL') {
+      const cylMats = [selectedMaterial, this.materials.roofMaterial, this.materials.roofMaterial];
       const cyl = new Mesh(this.materials.cylinderGeo, cylMats);
       cyl.scale.set(w, h, d);
       cyl.castShadow = true;
       cyl.receiveShadow = true;
       buildingGroup.add(cyl);
-    } else if (style === "TWISTED") {
-      this.constructTwistedBuilding(
-        buildingGroup,
-        w,
-        h,
-        d,
-        thisBuildingMaterials,
-      );
+    } else if (style === 'TWISTED') {
+      this.constructTwistedBuilding(buildingGroup, w, h, d, thisBuildingMaterials);
     } else {
       const mainBlock = new Mesh(this.materials.boxGeo, thisBuildingMaterials);
       mainBlock.scale.set(w, h, d);
@@ -279,7 +249,7 @@ export class CityBuilder {
 
       const mainLine = new LineSegments(
         this.materials.edgesGeo,
-        Math.random() > 0.5 ? this.materials.edgeMat1 : this.materials.edgeMat2,
+        Math.random() > 0.5 ? this.materials.edgeMat1 : this.materials.edgeMat2
       );
       mainLine.scale.set(w, h, d);
       buildingGroup.add(mainLine);
@@ -291,7 +261,7 @@ export class CityBuilder {
     w: number,
     h: number,
     d: number,
-    materials: MeshStandardMaterial[],
+    materials: MeshStandardMaterial[]
   ) {
     const segments = 5 + Math.floor(Math.random() * 5);
     const segH = h / segments;
@@ -307,10 +277,7 @@ export class CityBuilder {
       seg.receiveShadow = true;
       buildingGroup.add(seg);
 
-      const segLine = new LineSegments(
-        this.materials.edgesGeo,
-        this.materials.edgeMat2,
-      );
+      const segLine = new LineSegments(this.materials.edgesGeo, this.materials.edgeMat2);
       segLine.scale.set(w * scaleFactor, segH, d * scaleFactor);
       segLine.position.y = currentY;
       segLine.rotation.y = rot;
@@ -326,7 +293,7 @@ export class CityBuilder {
     w: number,
     h: number,
     d: number,
-    materials: MeshStandardMaterial[],
+    materials: MeshStandardMaterial[]
   ) {
     const tiers = 1 + Math.floor(Math.random() * 2);
     let currentH = h;
@@ -345,10 +312,7 @@ export class CityBuilder {
       tierBlock.receiveShadow = true;
       buildingGroup.add(tierBlock);
 
-      const tierLine = new LineSegments(
-        this.materials.edgesGeo,
-        this.materials.topEdgeMat,
-      );
+      const tierLine = new LineSegments(this.materials.edgesGeo, this.materials.topEdgeMat);
       tierLine.scale.set(currentW, tierH, currentD);
       tierLine.position.y = currentH;
       buildingGroup.add(tierLine);
@@ -362,7 +326,7 @@ export class CityBuilder {
     w: number,
     h: number,
     d: number,
-    material: MeshStandardMaterial,
+    material: MeshStandardMaterial
   ) {
     const spireH = h * 0.5 + Math.random() * h;
     const spireW = w * 0.5;
@@ -376,10 +340,7 @@ export class CityBuilder {
     spire.receiveShadow = true;
     buildingGroup.add(spire);
 
-    const spireLine = new LineSegments(
-      this.materials.coneEdgesGeo,
-      this.materials.topEdgeMat,
-    );
+    const spireLine = new LineSegments(this.materials.coneEdgesGeo, this.materials.topEdgeMat);
     spireLine.scale.set(spireW, spireH, spireD);
     spireLine.position.y = h;
     spireLine.rotation.y = Math.PI / 4;
@@ -393,10 +354,7 @@ export class CityBuilder {
       const gh = 5 + Math.random() * 20;
       const gd = 5 + Math.random() * 10;
 
-      const gMesh = new Mesh(
-        this.materials.boxGeo,
-        this.materials.roofMaterial,
-      );
+      const gMesh = new Mesh(this.materials.boxGeo, this.materials.roofMaterial);
       gMesh.scale.set(gw, gh, gd);
       gMesh.castShadow = true;
       gMesh.receiveShadow = true;
@@ -419,10 +377,7 @@ export class CityBuilder {
 
       buildingGroup.add(gMesh);
 
-      const gLine = new LineSegments(
-        this.materials.edgesGeo,
-        this.materials.edgeMat2,
-      );
+      const gLine = new LineSegments(this.materials.edgesGeo, this.materials.edgeMat2);
       gLine.scale.set(gw, gh, gd);
       gLine.position.copy(gMesh.position);
       buildingGroup.add(gLine);
@@ -435,7 +390,7 @@ export class CityBuilder {
     isLeaderboard: boolean,
     h: number,
     w: number,
-    d: number,
+    d: number
   ) {
     // Neon Strips
     if (!isLeaderboard && h > 50 && Math.random() > 0.6) {
@@ -465,16 +420,13 @@ export class CityBuilder {
 
     // Antenna
     if (
-      style !== "SPIRE" &&
-      style !== "CYLINDRICAL" &&
-      style !== "TWISTED" &&
+      style !== 'SPIRE' &&
+      style !== 'CYLINDRICAL' &&
+      style !== 'TWISTED' &&
       Math.random() > 0.7
     ) {
       const antennaH = 20 + Math.random() * 50;
-      const antenna = new Mesh(
-        this.materials.boxGeo,
-        this.materials.antennaMat,
-      );
+      const antenna = new Mesh(this.materials.boxGeo, this.materials.antennaMat);
       antenna.scale.set(2, antennaH, 2);
       antenna.position.y = h;
       buildingGroup.add(antenna);
@@ -482,9 +434,7 @@ export class CityBuilder {
 
     // Billboard
     if (!isLeaderboard && h > 60 && Math.random() > 0.7) {
-      const texIndex = Math.floor(
-        Math.random() * this.materials.billboardMaterials.length,
-      );
+      const texIndex = Math.floor(Math.random() * this.materials.billboardMaterials.length);
       const bbMat = this.materials.billboardMaterials[texIndex];
 
       const bbW = 20 + Math.random() * 15;
@@ -498,34 +448,18 @@ export class CityBuilder {
 
       switch (face) {
         case 0:
-          billboard.position.set(
-            0,
-            h * (0.5 + Math.random() * 0.3),
-            d / 2 + offset,
-          );
+          billboard.position.set(0, h * (0.5 + Math.random() * 0.3), d / 2 + offset);
           break;
         case 1:
-          billboard.position.set(
-            0,
-            h * (0.5 + Math.random() * 0.3),
-            -d / 2 - offset,
-          );
+          billboard.position.set(0, h * (0.5 + Math.random() * 0.3), -d / 2 - offset);
           billboard.rotation.y = Math.PI;
           break;
         case 2:
-          billboard.position.set(
-            w / 2 + offset,
-            h * (0.5 + Math.random() * 0.3),
-            0,
-          );
+          billboard.position.set(w / 2 + offset, h * (0.5 + Math.random() * 0.3), 0);
           billboard.rotation.y = Math.PI / 2;
           break;
         default:
-          billboard.position.set(
-            -w / 2 - offset,
-            h * (0.5 + Math.random() * 0.3),
-            0,
-          );
+          billboard.position.set(-w / 2 - offset, h * (0.5 + Math.random() * 0.3), 0);
           billboard.rotation.y = -Math.PI / 2;
           break;
       }
@@ -539,7 +473,7 @@ export class CityBuilder {
     w: number,
     h: number,
     d: number,
-    lbTexture: Texture,
+    lbTexture: Texture
   ) {
     const lbW = w * 0.8;
     const lbH = lbW * 1.0;

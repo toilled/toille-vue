@@ -2,11 +2,18 @@
   <div class="container" role="main" aria-label="Catch the Button Game">
     <h1>Catch the Button!</h1>
     <div class="instructions">
-      <p>Click the button or press <kbd>Spacebar</kbd> as many times as you can. Reach <strong>{{ WIN_SCORE }}</strong> points to win!</p>
+      <p>
+        Click the button or press <kbd>Spacebar</kbd> as many times as you can. Reach
+        <strong>{{ WIN_SCORE }}</strong> points to win!
+      </p>
     </div>
     <div class="game-info">
-      <p>Score: <strong>{{ score }}</strong></p>
-      <p v-if="highScore > 0" class="high-score">High Score: <strong>{{ highScore }}</strong></p>
+      <p>
+        Score: <strong>{{ score }}</strong>
+      </p>
+      <p v-if="highScore > 0" class="high-score">
+        High Score: <strong>{{ highScore }}</strong>
+      </p>
     </div>
     <div v-if="gameWon" class="winner-banner" role="alert">
       <h2>🎉 You won! You reached {{ WIN_SCORE }} points!</h2>
@@ -29,12 +36,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted } from "vue";
-import { useHead } from "@vueuse/head";
+import { ref, reactive, onMounted, onUnmounted } from 'vue';
+import { useHead } from '@vueuse/head';
 
 const WIN_SCORE = 10;
 const MAX_POSITION = 90;
-const STORAGE_KEY_HIGH_SCORE = "mini-game-high-score";
+const STORAGE_KEY_HIGH_SCORE = 'mini-game-high-score';
 
 interface ButtonStyle {
   position: string;
@@ -49,19 +56,19 @@ const highScore = ref(0);
 const gameWon = ref(false);
 
 const buttonStyle = reactive<ButtonStyle>({
-  position: "absolute",
-  left: "50%",
-  top: "50%",
-  transform: "translate(-50%, -50%)",
-  transition: "all 0.3s ease",
+  position: 'absolute',
+  left: '50%',
+  top: '50%',
+  transform: 'translate(-50%, -50%)',
+  transition: 'all 0.3s ease',
 });
 
 useHead({
-  title: "Elliot > Catch the Button!",
+  title: 'Elliot > Catch the Button!',
   meta: [
     {
-      name: "description",
-      content: "Play Catch the Button - a reflex game built with Vue.js",
+      name: 'description',
+      content: 'Play Catch the Button - a reflex game built with Vue.js',
     },
   ],
 });
@@ -74,15 +81,15 @@ onMounted(() => {
       highScore.value = parsed;
     }
   }
-  window.addEventListener("keydown", handleKeydown);
+  window.addEventListener('keydown', handleKeydown);
 });
 
 onUnmounted(() => {
-  window.removeEventListener("keydown", handleKeydown);
+  window.removeEventListener('keydown', handleKeydown);
 });
 
 const handleKeydown = (e: KeyboardEvent) => {
-  if (e.code === "Space" && !gameWon.value) {
+  if (e.code === 'Space' && !gameWon.value) {
     e.preventDefault();
     moveButton();
   }
@@ -111,8 +118,8 @@ const moveButton = () => {
 const resetGame = () => {
   score.value = 0;
   gameWon.value = false;
-  buttonStyle.left = "50%";
-  buttonStyle.top = "50%";
+  buttonStyle.left = '50%';
+  buttonStyle.top = '50%';
 };
 </script>
 
@@ -131,7 +138,7 @@ const resetGame = () => {
 }
 .instructions kbd {
   padding: 0.15rem 0.4rem;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   border: 1px solid var(--muted-border-color, #ccc);
   border-radius: 3px;
   font-size: 0.9em;

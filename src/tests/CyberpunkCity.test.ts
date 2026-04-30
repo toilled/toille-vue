@@ -1,9 +1,9 @@
-import { mount, VueWrapper } from "@vue/test-utils";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import CyberpunkCity from "../components/CyberpunkCity.vue";
-import * as THREE from "three";
+import { mount, VueWrapper } from '@vue/test-utils';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import CyberpunkCity from '../components/CyberpunkCity.vue';
+import * as THREE from 'three';
 
-vi.mock("three/examples/jsm/postprocessing/EffectComposer", () => ({
+vi.mock('three/examples/jsm/postprocessing/EffectComposer', () => ({
   EffectComposer: class {
     constructor() {}
     addPass = vi.fn();
@@ -12,50 +12,50 @@ vi.mock("three/examples/jsm/postprocessing/EffectComposer", () => ({
   },
 }));
 
-vi.mock("three/examples/jsm/postprocessing/RenderPass", () => ({
+vi.mock('three/examples/jsm/postprocessing/RenderPass', () => ({
   RenderPass: class {
     constructor() {}
   },
 }));
 
-vi.mock("three/examples/jsm/postprocessing/UnrealBloomPass", () => ({
+vi.mock('three/examples/jsm/postprocessing/UnrealBloomPass', () => ({
   UnrealBloomPass: class {
     constructor() {}
   },
 }));
 
-vi.mock("three/examples/jsm/postprocessing/OutputPass", () => ({
+vi.mock('three/examples/jsm/postprocessing/OutputPass', () => ({
   OutputPass: class {
     constructor() {}
   },
 }));
 
 // Mock useRoute
-vi.mock("vue-router", () => ({
+vi.mock('vue-router', () => ({
   useRoute: vi.fn(() => ({
-    path: "/",
+    path: '/',
   })),
 }));
 
 vi.stubGlobal(
-  "requestAnimationFrame",
-  vi.fn((cb) => setTimeout(cb, 16)),
+  'requestAnimationFrame',
+  vi.fn((cb) => setTimeout(cb, 16))
 );
 vi.stubGlobal(
-  "cancelAnimationFrame",
-  vi.fn((id) => clearTimeout(id)),
+  'cancelAnimationFrame',
+  vi.fn((id) => clearTimeout(id))
 );
 vi.stubGlobal(
-  "ResizeObserver",
+  'ResizeObserver',
   class ResizeObserver {
     observe() {}
     unobserve() {}
     disconnect() {}
-  },
+  }
 );
 
 // Mock Three.js
-vi.mock("three", () => {
+vi.mock('three', () => {
   const THREE = {
     Scene: vi.fn(() => ({
       add: vi.fn(),
@@ -81,7 +81,7 @@ vi.mock("three", () => {
     WebGLRenderer: vi.fn(() => ({
       setSize: vi.fn(),
       render: vi.fn(),
-      domElement: document.createElement("canvas"),
+      domElement: document.createElement('canvas'),
       setPixelRatio: vi.fn(),
       dispose: vi.fn(),
       shadowMap: { enabled: false, type: 0 },
@@ -105,6 +105,7 @@ vi.mock("three", () => {
     BoxGeometry: vi.fn(() => ({
       translate: vi.fn(),
     })),
+    TorusGeometry: vi.fn(),
     CylinderGeometry: vi.fn(() => ({
       rotateX: vi.fn(),
       rotateZ: vi.fn(),
@@ -183,18 +184,10 @@ vi.mock("three", () => {
           sub: vi.fn(function (this: { x: number; y: number; z: number }) {
             return this;
           }),
-          normalize: vi.fn(function (this: {
-            x: number;
-            y: number;
-            z: number;
-          }) {
+          normalize: vi.fn(function (this: { x: number; y: number; z: number }) {
             return this;
           }),
-          multiplyScalar: vi.fn(function (this: {
-            x: number;
-            y: number;
-            z: number;
-          }) {
+          multiplyScalar: vi.fn(function (this: { x: number; y: number; z: number }) {
             return this;
           }),
           x: 0,
@@ -371,7 +364,7 @@ vi.mock("three", () => {
   return THREE;
 });
 
-describe("CyberpunkCity.vue", () => {
+describe('CyberpunkCity.vue', () => {
   let wrapper: VueWrapper;
 
   beforeEach(() => {
@@ -380,12 +373,12 @@ describe("CyberpunkCity.vue", () => {
 
     // Mock canvas context
     const mockContext = {
-      fillStyle: "",
-      strokeStyle: "",
+      fillStyle: '',
+      strokeStyle: '',
       lineWidth: 0,
-      font: "",
-      textAlign: "",
-      shadowColor: "",
+      font: '',
+      textAlign: '',
+      shadowColor: '',
       shadowBlur: 0,
       fillRect: vi.fn(),
       strokeRect: vi.fn(),
@@ -407,12 +400,12 @@ describe("CyberpunkCity.vue", () => {
         addColorStop: vi.fn(),
       })),
       globalAlpha: 1,
-      globalCompositeOperation: "source-over",
+      globalCompositeOperation: 'source-over',
     } as unknown as CanvasRenderingContext2D;
 
-    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      mockContext as any,
+      mockContext as any
     );
   });
 
@@ -422,27 +415,27 @@ describe("CyberpunkCity.vue", () => {
     }
   });
 
-  it("renders correctly", () => {
+  it('renders correctly', () => {
     wrapper = mount(CyberpunkCity);
     expect(wrapper.exists()).toBe(true);
-    expect(wrapper.find("div").exists()).toBe(true);
+    expect(wrapper.find('div').exists()).toBe(true);
   });
 
-  it("initializes Three.js scene on mount", () => {
+  it('initializes Three.js scene on mount', () => {
     wrapper = mount(CyberpunkCity);
     expect(THREE.Scene).toHaveBeenCalled();
     expect(THREE.PerspectiveCamera).toHaveBeenCalled();
     expect(THREE.WebGLRenderer).toHaveBeenCalled();
   });
 
-  it("cleans up on unmount", () => {
+  it('cleans up on unmount', () => {
     wrapper = mount(CyberpunkCity);
     wrapper.unmount();
     // Verification of cleanup would depend on implementation details,
     // but ensuring no errors on unmount is a good basic check.
   });
 
-  it("initializes spark positions off-screen", () => {
+  it('initializes spark positions off-screen', () => {
     wrapper = mount(CyberpunkCity);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

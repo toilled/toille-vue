@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { GangWarManager } from "../GangWarManager";
-import { Scene, Vector3 } from "three";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { GangWarManager } from '../GangWarManager';
+import { Scene, Vector3 } from 'three';
 
 // Mock Three.js classes that aren't fully mocked in setupThree
-vi.mock("three", async () => {
+vi.mock('three', async () => {
   class MockVector3 {
     x = 0;
     y = 0;
@@ -63,7 +63,7 @@ vi.mock("three", async () => {
     }
   }
 
-  const actual = await vi.importActual("three");
+  const actual = await vi.importActual('three');
   return {
     ...actual,
     CylinderGeometry: class {
@@ -91,7 +91,7 @@ vi.mock("three", async () => {
   };
 });
 
-describe("GangWarManager", () => {
+describe('GangWarManager', () => {
   let scene: Scene;
   let manager: GangWarManager;
   let spawnSparks: (pos: Vector3) => void;
@@ -107,21 +107,16 @@ describe("GangWarManager", () => {
 
     const occupiedGrids = new Map();
 
-    manager = new GangWarManager(
-      scene,
-      occupiedGrids,
-      spawnSparks,
-      playPewSound,
-    );
+    manager = new GangWarManager(scene, occupiedGrids, spawnSparks, playPewSound);
   });
 
-  it("should initialize with warriors", () => {
+  it('should initialize with warriors', () => {
     // 4 gangs * 20 warriors = 80
     expect(manager.warriors.length).toBe(80);
     expect(scene.add).toHaveBeenCalledTimes(80); // Groups added to scene
   });
 
-  it("should update warriors and create projectiles", () => {
+  it('should update warriors and create projectiles', () => {
     // Force warriors close to each other
     manager.warriors[0].group.position.set(0, 0, 0);
     manager.warriors[1].group.position.set(10, 0, 0);
@@ -141,10 +136,10 @@ describe("GangWarManager", () => {
     expect(scene.add).toHaveBeenCalled(); // Projectile added
   });
 
-  it("should respawn warriors when count is low", () => {
+  it('should respawn warriors when count is low', () => {
     // Kill all warriors of gang 0
     const gang0Warriors = manager.warriors.filter((w) => w.gangId === 0);
-    gang0Warriors.forEach((w) => (w.state = "DEAD"));
+    gang0Warriors.forEach((w) => (w.state = 'DEAD'));
 
     const initialCount = manager.warriors.length;
 
@@ -153,13 +148,11 @@ describe("GangWarManager", () => {
     expect(manager.warriors.length).toBeGreaterThan(initialCount);
 
     // Should have added 10 new ones
-    const newGang0Warriors = manager.warriors.filter(
-      (w) => w.gangId === 0 && w.state !== "DEAD",
-    );
+    const newGang0Warriors = manager.warriors.filter((w) => w.gangId === 0 && w.state !== 'DEAD');
     expect(newGang0Warriors.length).toBe(10);
   });
 
-  it("should create fight markers for combat clusters", () => {
+  it('should create fight markers for combat clusters', () => {
     // Setup a cluster of 4 warriors in COMBAT
     manager.warriors[0].group.position.set(0, 0, 0);
     manager.warriors[1].group.position.set(5, 0, 0);
@@ -167,7 +160,7 @@ describe("GangWarManager", () => {
     manager.warriors[3].group.position.set(5, 0, 5);
 
     [0, 1, 2, 3].forEach((i) => {
-      manager.warriors[i].state = "COMBAT";
+      manager.warriors[i].state = 'COMBAT';
       manager.warriors[i].hp = 3;
     });
 
@@ -185,7 +178,7 @@ describe("GangWarManager", () => {
     expect(scene.add).toHaveBeenCalled();
   });
 
-  it("should handle damage and death", () => {
+  it('should handle damage and death', () => {
     const w1 = manager.warriors[0];
     const w2 = manager.warriors[1];
     w2.gangId = (w1.gangId + 1) % 4;
@@ -198,7 +191,7 @@ describe("GangWarManager", () => {
     // Actually code says if (Math.random() > 0.7)
 
     // Spy on Math.random
-    const randSpy = vi.spyOn(Math, "random").mockReturnValue(0.9); // Ensure > 0.7
+    const randSpy = vi.spyOn(Math, 'random').mockReturnValue(0.9); // Ensure > 0.7
 
     manager.shoot(w2, w1);
 
@@ -206,9 +199,7 @@ describe("GangWarManager", () => {
     // w2 is at 2,0,0 ?
     // In setup: w2.group.position.set(2,0,0);
     // shoot uses startPos = shooter.group.position.clone() and adds gun height (y+=0.8)
-    expect(playPewSound).toHaveBeenCalledWith(
-      expect.objectContaining({ x: 2, y: 0.8, z: 0 }),
-    );
+    expect(playPewSound).toHaveBeenCalledWith(expect.objectContaining({ x: 2, y: 0.8, z: 0 }));
 
     const proj = manager.projectiles[0];
 
@@ -232,7 +223,7 @@ describe("GangWarManager", () => {
 
     // Kill
     manager.damageWarrior(w1, 10);
-    expect(w1.state).toBe("DEAD");
+    expect(w1.state).toBe('DEAD');
     expect(w1.group.rotation.x).toBe(Math.PI / 2);
   });
 });

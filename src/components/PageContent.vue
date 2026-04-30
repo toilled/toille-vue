@@ -52,12 +52,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
-import { useRoute } from "vue-router";
-import { useHead } from "@vueuse/head";
-import pages from "../configs/pages.json";
-import Paragraph from "./Paragraph.vue";
-import { Page } from "../interfaces/Page";
+import { ref, computed, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { useHead } from '@vueuse/head';
+import pages from '../configs/pages.json';
+import Paragraph from './Paragraph.vue';
+import { Page } from '../interfaces/Page';
 
 /**
  * @file PageContent.vue
@@ -84,9 +84,7 @@ const route = useRoute();
  */
 const page = computed(() => {
   if (route.params.name) {
-    return (
-      pages.find((p) => p.link.slice(1) === route.params.name)
-    ) as Page | undefined;
+    return pages.find((p) => p.link.slice(1) === route.params.name) as Page | undefined;
   }
   if (route.params.pathMatch) {
     return null;
@@ -103,42 +101,54 @@ const availablePages = computed(() => {
  */
 useHead({
   title: computed(() => {
-    const pageTitle = page.value?.title || "404";
+    const pageTitle = page.value?.title || '404';
     return `Elliot > ${pageTitle}`;
   }),
   meta: computed(() => {
     const metaTags = [
       {
-        name: "description",
-        content: page.value?.metaDescription || "The experimental website of Elliot Dickerson made in Vue.",
+        name: 'description',
+        content:
+          page.value?.metaDescription ||
+          'The experimental website of Elliot Dickerson made in Vue.',
       },
     ];
     if (page.value?.metaKeywords) {
       metaTags.push({
-        name: "keywords",
+        name: 'keywords',
         content: page.value.metaKeywords,
       });
     }
     if (page.value?.hidden) {
       metaTags.push({
-        name: "robots",
-        content: "noindex",
+        name: 'robots',
+        content: 'noindex',
       });
     }
     // Open Graph tags
     metaTags.push(
-      { property: "og:title", content: page.value?.title || "Elliot Dickerson" },
-      { property: "og:description", content: page.value?.metaDescription || "The experimental website of Elliot Dickerson made in Vue." },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: `https://toille.uk${route.path}` },
-      { property: "og:image", content: "https://toille.uk/og-image.png" },
+      { property: 'og:title', content: page.value?.title || 'Elliot Dickerson' },
+      {
+        property: 'og:description',
+        content:
+          page.value?.metaDescription ||
+          'The experimental website of Elliot Dickerson made in Vue.',
+      },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:url', content: `https://toille.uk${route.path}` },
+      { property: 'og:image', content: 'https://toille.uk/og-image.png' }
     );
     // Twitter Card tags
     metaTags.push(
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: page.value?.title || "Elliot Dickerson" },
-      { name: "twitter:description", content: page.value?.metaDescription || "The experimental website of Elliot Dickerson made in Vue." },
-      { name: "twitter:image", content: "https://toille.uk/og-image.png" },
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:title', content: page.value?.title || 'Elliot Dickerson' },
+      {
+        name: 'twitter:description',
+        content:
+          page.value?.metaDescription ||
+          'The experimental website of Elliot Dickerson made in Vue.',
+      },
+      { name: 'twitter:image', content: 'https://toille.uk/og-image.png' }
     );
     return metaTags;
   }),
@@ -153,5 +163,4 @@ function handleMouseDown() {
     showHint.value = false;
   }, 500);
 }
-
 </script>

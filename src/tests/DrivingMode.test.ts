@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { DrivingMode } from "../game/modes/DrivingMode";
-import * as THREE from "three";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { DrivingMode } from '../game/modes/DrivingMode';
+import * as THREE from 'three';
 
 const { mockCarAudio } = vi.hoisted(() => {
   return {
@@ -13,13 +13,13 @@ const { mockCarAudio } = vi.hoisted(() => {
   };
 });
 
-vi.mock("../game/audio/CarAudio", () => {
+vi.mock('../game/audio/CarAudio', () => {
   return {
     carAudio: mockCarAudio,
   };
 });
 
-describe("DrivingMode Physics", () => {
+describe('DrivingMode Physics', () => {
   let drivingMode: DrivingMode;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockContext: any;
@@ -72,7 +72,7 @@ describe("DrivingMode Physics", () => {
     drivingMode.init(mockContext);
   });
 
-  it("should decelerate due to friction when no input is given", () => {
+  it('should decelerate due to friction when no input is given', () => {
     // Set an initial speed
     const initialSpeed = 1.0;
     mockContext.activeCar.value.userData.currentSpeed = initialSpeed;
@@ -90,7 +90,7 @@ describe("DrivingMode Physics", () => {
     expect(newSpeed).toBeGreaterThan(0);
   });
 
-  it("should have reduced deceleration (higher friction coefficient)", () => {
+  it('should have reduced deceleration (higher friction coefficient)', () => {
     // This test validates the specific friction value change logic
     // We expect friction to be 0.99
 
@@ -107,7 +107,7 @@ describe("DrivingMode Physics", () => {
     // We use closeTo to avoid floating point issues
     expect(newSpeed).toBeCloseTo(0.99, 3);
   });
-  it("should decelerate slower when braking than accelerating", () => {
+  it('should decelerate slower when braking than accelerating', () => {
     // Forward speed
     const initialSpeed = 1.0;
     mockContext.activeCar.value.userData.currentSpeed = initialSpeed;
@@ -144,7 +144,7 @@ describe("DrivingMode Physics", () => {
     expect(accelerationGain).toBeGreaterThan(brakingDecay);
   });
 
-  it("should steer red car laterally towards player", () => {
+  it('should steer red car laterally towards player', () => {
     // Setup Red Car
     drivingMode.spawnRedCar();
     if (drivingMode.redCar) {
@@ -170,7 +170,7 @@ describe("DrivingMode Physics", () => {
     expect(drivingMode.redCar!.position.x).toBeGreaterThan(0.01);
   });
 
-  it("should turn at intersection even if off-center", () => {
+  it('should turn at intersection even if off-center', () => {
     drivingMode.spawnRedCar();
 
     // We verified that (0,0) is a valid intersection center (grid index 4).

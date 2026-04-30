@@ -14,8 +14,8 @@ import {
   AdditiveBlending,
   Color,
   SphereGeometry,
-} from "three";
-import { createCloudTexture } from "../utils/TextureGenerator";
+} from 'three';
+import { createCloudTexture } from '../utils/TextureGenerator';
 
 export interface SkyEffectConfig {
   cloudCount: number;
@@ -61,22 +61,22 @@ export class SkyEffects {
   private createSkyDome(): Mesh {
     const geometry = new SphereGeometry(2800, 32, 32);
 
-    const canvas = document.createElement("canvas");
+    const canvas = document.createElement('canvas');
     canvas.width = 512;
     canvas.height = 512;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (ctx && ctx.createLinearGradient) {
       const gradient = ctx.createLinearGradient(0, 0, 0, 512);
-      gradient.addColorStop(0, "#000022");
-      gradient.addColorStop(0.3, "#0a0025");
-      gradient.addColorStop(0.6, "#150030");
-      gradient.addColorStop(0.8, "#1a0035");
-      gradient.addColorStop(1, "#0a0015");
+      gradient.addColorStop(0, '#000022');
+      gradient.addColorStop(0.3, '#0a0025');
+      gradient.addColorStop(0.6, '#150030');
+      gradient.addColorStop(0.8, '#1a0035');
+      gradient.addColorStop(1, '#0a0015');
 
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, 512, 512);
 
-      ctx.fillStyle = "rgba(255, 0, 100, 0.03)";
+      ctx.fillStyle = 'rgba(255, 0, 100, 0.03)';
       for (let i = 0; i < 5; i++) {
         const x = Math.random() * 512;
         const y = 200 + Math.random() * 200;
@@ -86,7 +86,7 @@ export class SkyEffects {
         ctx.fill();
       }
 
-      ctx.fillStyle = "rgba(0, 255, 200, 0.02)";
+      ctx.fillStyle = 'rgba(0, 255, 200, 0.02)';
       for (let i = 0; i < 3; i++) {
         const x = Math.random() * 512;
         const y = 300 + Math.random() * 150;
@@ -136,8 +136,8 @@ export class SkyEffects {
       colors[i * 3 + 2] = color.b;
     }
 
-    geometry.setAttribute("position", new BufferAttribute(positions, 3));
-    geometry.setAttribute("color", new BufferAttribute(colors, 3));
+    geometry.setAttribute('position', new BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new BufferAttribute(colors, 3));
 
     const material = new PointsMaterial({
       size: 3,
@@ -199,19 +199,14 @@ export class SkyEffects {
         phase: number;
       };
       cloud.position.x =
-        userData.baseX +
-        Math.sin(this.time * userData.speed + userData.phase) *
-          userData.amplitude;
+        userData.baseX + Math.sin(this.time * userData.speed + userData.phase) * userData.amplitude;
       cloud.position.z =
         userData.baseZ +
-        Math.cos(this.time * userData.speed * 0.7 + userData.phase) *
-          userData.amplitude *
-          0.5;
+        Math.cos(this.time * userData.speed * 0.7 + userData.phase) * userData.amplitude * 0.5;
     }
 
     if (this.stars) {
-      const positions = this.stars.geometry.attributes.position
-        .array as Float32Array;
+      const positions = this.stars.geometry.attributes.position.array as Float32Array;
       const time = this.time * 0.1;
 
       for (let i = 0; i < this.config.starCount; i += 10) {
@@ -256,7 +251,7 @@ export class SkyEffects {
         if (skyMat.map) {
           skyMat.map.dispose();
         }
-        if (typeof skyMat.dispose === "function") {
+        if (typeof skyMat.dispose === 'function') {
           skyMat.dispose();
         }
       }
@@ -269,7 +264,7 @@ export class SkyEffects {
       }
       if (this.stars.material) {
         const starsMat = this.stars.material as PointsMaterial;
-        if (typeof starsMat.dispose === "function") {
+        if (typeof starsMat.dispose === 'function') {
           starsMat.dispose();
         }
       }
@@ -282,7 +277,7 @@ export class SkyEffects {
         if (mat.map) {
           mat.map.dispose();
         }
-        if (typeof mat.dispose === "function") {
+        if (typeof mat.dispose === 'function') {
           mat.dispose();
         }
       }

@@ -1,5 +1,5 @@
-import { Vector3, CatmullRomCurve3 } from "three";
-import { GameContext, GameMode } from "../types";
+import { Vector3, CatmullRomCurve3 } from 'three';
+import { GameContext, GameMode } from '../types';
 
 export class FlyingTourMode implements GameMode {
   context: GameContext | null = null;

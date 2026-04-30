@@ -1,11 +1,11 @@
-import { createSSRApp } from "vue";
-import { createRouter, createWebHistory, createMemoryHistory } from "vue-router";
-import { createHead } from "@vueuse/head";
-import App from "./App.vue";
-import PageContent from "./components/PageContent.vue";
+import { createSSRApp } from 'vue';
+import { createRouter, createWebHistory, createMemoryHistory } from 'vue-router';
+import { createHead } from '@vueuse/head';
+import App from './App.vue';
+import PageContent from './components/PageContent.vue';
 
-import "./assets/pico.min.css";
-import "./assets/main.css";
+import './assets/pico.min.css';
+import './assets/main.css';
 
 /**
  * @file main.ts
@@ -23,16 +23,16 @@ import "./assets/main.css";
  * - `/:pathMatch(.*)*` is a catch-all route for any other paths, also mapping to `PageContent` to display a 404 message.
  */
 const routes = [
-  { path: "/", component: PageContent, props: { name: "home" } },
-  { path: "/:name", component: PageContent, props: true },
-  { path: "/checker", component: () => import("./components/Checker.vue") },
-  { path: "/game", component: () => import("./components/MiniGame.vue") },
+  { path: '/', component: PageContent, props: { name: 'home' } },
+  { path: '/:name', component: PageContent, props: true },
+  { path: '/checker', component: () => import('./components/Checker.vue') },
+  { path: '/game', component: () => import('./components/MiniGame.vue') },
   {
-    path: "/noughts-and-crosses",
-    component: () => import("./components/NoughtsAndCrosses.vue"),
+    path: '/noughts-and-crosses',
+    component: () => import('./components/NoughtsAndCrosses.vue'),
   },
-  { path: "/ask", component: () => import("./components/Ask.vue") },
-  { path: "/:pathMatch(.*)*", component: PageContent },
+  { path: '/ask', component: () => import('./components/Ask.vue') },
+  { path: '/:pathMatch(.*)*', component: PageContent },
 ];
 
 export function createApp() {

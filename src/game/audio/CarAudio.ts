@@ -1,111 +1,111 @@
-import { audioManager } from "../../utils/AudioManager";
+import { audioManager } from '../../utils/AudioManager';
 
 export class CarAudio {
-    engineOsc: OscillatorNode | null = null;
-    engineGain: GainNode | null = null;
-    lfo: OscillatorNode | null = null;
-    lfoGain: GainNode | null = null;
-    isPlaying = false;
+  engineOsc: OscillatorNode | null = null;
+  engineGain: GainNode | null = null;
+  lfo: OscillatorNode | null = null;
+  lfoGain: GainNode | null = null;
+  isPlaying = false;
 
-    get ctx() {
-        return audioManager.ctx;
+  get ctx() {
+    return audioManager.ctx;
+  }
+
+  get dest() {
+    return audioManager.masterGain || audioManager.ctx?.destination;
+  }
+
+  init() {
+    audioManager.init();
+  }
+
+  start() {
+    if (!this.ctx) this.init();
+    if (!this.ctx) return;
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+    if (this.isPlaying) return;
+
+    // Engine rumble (Sawtooth with LFO for "purr")
+    this.engineOsc = this.ctx.createOscillator();
+    this.engineOsc.type = 'sawtooth';
+    this.engineOsc.frequency.value = 60; // Idle RPM
+
+    this.engineGain = this.ctx.createGain();
+    this.engineGain.gain.value = 0.1;
+
+    // LFO for modulation (the "chug-chug")
+    this.lfo = this.ctx.createOscillator();
+    this.lfo.type = 'sine';
+    this.lfo.frequency.value = 10;
+
+    this.lfoGain = this.ctx.createGain();
+    this.lfoGain.gain.value = 20; // Modulation depth
+
+    this.lfo.connect(this.lfoGain);
+    this.lfoGain.connect(this.engineOsc.frequency);
+
+    // Filter to dampen the harsh sawtooth
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 400;
+
+    if (this.dest) {
+      this.engineOsc.connect(filter);
+      filter.connect(this.engineGain);
+      this.engineGain.connect(this.dest);
+
+      this.engineOsc.start();
+      this.lfo.start();
+      this.isPlaying = true;
     }
+  }
 
-    get dest() {
-        return audioManager.masterGain || audioManager.ctx?.destination;
-    }
+  update(speed: number) {
+    if (!this.ctx || !this.engineOsc || !this.lfo || !this.engineGain) return;
 
-    init() {
-        audioManager.init();
-    }
+    // Pitch mapping
+    // Speed 0 -> 60Hz
+    // Speed 4 -> ~200Hz
+    const absSpeed = Math.abs(speed);
+    const targetFreq = 60 + absSpeed * 40;
+    const targetLfoRate = 10 + absSpeed * 5;
 
-    start() {
-        if (!this.ctx) this.init();
-        if (!this.ctx) return;
-        if (this.ctx.state === "suspended") this.ctx.resume();
-        if (this.isPlaying) return;
+    // Smooth transitions
+    const time = this.ctx.currentTime;
+    this.engineOsc.frequency.setTargetAtTime(targetFreq, time, 0.1);
+    this.lfo.frequency.setTargetAtTime(targetLfoRate, time, 0.1);
+  }
 
-        // Engine rumble (Sawtooth with LFO for "purr")
-        this.engineOsc = this.ctx.createOscillator();
-        this.engineOsc.type = "sawtooth";
-        this.engineOsc.frequency.value = 60; // Idle RPM
+  stop() {
+    if (!this.isPlaying) return;
+    if (this.engineOsc) this.engineOsc.stop();
+    if (this.lfo) this.lfo.stop();
+    this.engineOsc = null;
+    this.lfo = null;
+    this.isPlaying = false;
+  }
 
-        this.engineGain = this.ctx.createGain();
-        this.engineGain.gain.value = 0.1;
+  playCrash() {
+    if (!this.ctx) this.init();
+    if (!this.ctx || !this.dest) return;
 
-        // LFO for modulation (the "chug-chug")
-        this.lfo = this.ctx.createOscillator();
-        this.lfo.type = "sine";
-        this.lfo.frequency.value = 10;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
 
-        this.lfoGain = this.ctx.createGain();
-        this.lfoGain.gain.value = 20; // Modulation depth
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(100, t);
+    osc.frequency.exponentialRampToValueAtTime(10, t + 0.3);
 
-        this.lfo.connect(this.lfoGain);
-        this.lfoGain.connect(this.engineOsc.frequency);
+    gain.gain.setValueAtTime(0.5, t);
+    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
 
-        // Filter to dampen the harsh sawtooth
-        const filter = this.ctx.createBiquadFilter();
-        filter.type = "lowpass";
-        filter.frequency.value = 400;
+    osc.connect(gain);
+    gain.connect(this.dest);
 
-        if (this.dest) {
-            this.engineOsc.connect(filter);
-            filter.connect(this.engineGain);
-            this.engineGain.connect(this.dest);
-
-            this.engineOsc.start();
-            this.lfo.start();
-            this.isPlaying = true;
-        }
-    }
-
-    update(speed: number) {
-        if (!this.ctx || !this.engineOsc || !this.lfo || !this.engineGain) return;
-
-        // Pitch mapping
-        // Speed 0 -> 60Hz
-        // Speed 4 -> ~200Hz
-        const absSpeed = Math.abs(speed);
-        const targetFreq = 60 + absSpeed * 40;
-        const targetLfoRate = 10 + absSpeed * 5;
-
-        // Smooth transitions
-        const time = this.ctx.currentTime;
-        this.engineOsc.frequency.setTargetAtTime(targetFreq, time, 0.1);
-        this.lfo.frequency.setTargetAtTime(targetLfoRate, time, 0.1);
-    }
-
-    stop() {
-        if (!this.isPlaying) return;
-        if (this.engineOsc) this.engineOsc.stop();
-        if (this.lfo) this.lfo.stop();
-        this.engineOsc = null;
-        this.lfo = null;
-        this.isPlaying = false;
-    }
-
-    playCrash() {
-        if (!this.ctx) this.init();
-        if (!this.ctx || !this.dest) return;
-
-        const t = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-
-        osc.type = "sawtooth";
-        osc.frequency.setValueAtTime(100, t);
-        osc.frequency.exponentialRampToValueAtTime(10, t + 0.3);
-
-        gain.gain.setValueAtTime(0.5, t);
-        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
-
-        osc.connect(gain);
-        gain.connect(this.dest);
-
-        osc.start(t);
-        osc.stop(t + 0.3);
-    }
+    osc.start(t);
+    osc.stop(t + 0.3);
+  }
 }
 
 export const carAudio = new CarAudio();

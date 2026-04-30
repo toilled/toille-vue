@@ -1,23 +1,8 @@
-import {
-  Group,
-  Mesh,
-  MeshBasicMaterial,
-  PointLight,
-  Scene,
-  Object3D,
-  SpotLight,
-} from "three";
-import {
-  BOUNDS,
-  CELL_SIZE,
-  CITY_SIZE,
-  GRID_SIZE,
-  ROAD_WIDTH,
-  START_OFFSET,
-} from "./config";
-import { carAudio } from "./audio/CarAudio";
-import { getHeight, applyCarOrientation } from "../utils/HeightMap";
-import { CarFactory } from "./CarFactory";
+import { Group, Mesh, MeshBasicMaterial, PointLight, Scene, Object3D, SpotLight } from 'three';
+import { BOUNDS, CELL_SIZE, CITY_SIZE, GRID_SIZE, ROAD_WIDTH, START_OFFSET } from './config';
+import { carAudio } from './audio/CarAudio';
+import { getHeight, applyCarOrientation } from '../utils/HeightMap';
+import { CarFactory } from './CarFactory';
 
 export class TrafficSystem {
   private scene: Scene;
@@ -29,7 +14,7 @@ export class TrafficSystem {
   constructor(
     scene: Scene,
     carCount: number,
-    spawnSparks: (pos: { x: number; y: number; z: number }) => void,
+    spawnSparks: (pos: { x: number; y: number; z: number }) => void
   ) {
     this.scene = scene;
     this.carCount = carCount;
@@ -80,7 +65,7 @@ export class TrafficSystem {
       hlDist,
       hlAngle,
       hlPenumbra,
-      36,
+      36
     );
     this.createSpotLight(
       car,
@@ -92,7 +77,7 @@ export class TrafficSystem {
       hlDist,
       hlAngle,
       hlPenumbra,
-      36,
+      36
     );
 
     const tlColor = 0xff0000;
@@ -110,7 +95,7 @@ export class TrafficSystem {
       tlDist,
       tlAngle,
       0.5,
-      -16,
+      -16
     );
     this.createSpotLight(
       car,
@@ -122,7 +107,7 @@ export class TrafficSystem {
       tlDist,
       tlAngle,
       0.5,
-      -16,
+      -16
     );
   }
 
@@ -136,7 +121,7 @@ export class TrafficSystem {
     distance: number,
     angle: number,
     penumbra: number,
-    targetZOffset: number,
+    targetZOffset: number
   ) {
     const light = new SpotLight(color, intensity, distance, angle, penumbra, 1);
     light.position.set(x, y, z);
@@ -179,7 +164,7 @@ export class TrafficSystem {
 
     this.removeLightsFromCar(carGroup);
 
-    const axis = Math.random() > 0.5 ? "x" : "z";
+    const axis = Math.random() > 0.5 ? 'x' : 'z';
     const dir = Math.random() > 0.5 ? 1 : -1;
 
     const roadIndex = Math.floor(Math.random() * (GRID_SIZE + 1));
@@ -188,7 +173,7 @@ export class TrafficSystem {
 
     let x = 0,
       z = 0;
-    if (axis === "x") {
+    if (axis === 'x') {
       z = roadCoordinate + laneOffset;
       x = (Math.random() - 0.5) * CITY_SIZE;
       carGroup.rotation.y = dir === 1 ? Math.PI / 2 : -Math.PI / 2;
@@ -229,10 +214,7 @@ export class TrafficSystem {
     carGroup.traverse((child) => {
       if (child instanceof Mesh) {
         const mat = child.material;
-        if (
-          !Array.isArray(mat) &&
-          child.userData.originalOpacity !== undefined
-        ) {
+        if (!Array.isArray(mat) && child.userData.originalOpacity !== undefined) {
           mat.opacity = child.userData.originalOpacity;
         }
       }
@@ -289,7 +271,7 @@ export class TrafficSystem {
     const speed = car.userData.speed;
     const dir = car.userData.dir;
 
-    if (car.userData.axis === "x") {
+    if (car.userData.axis === 'x') {
       car.position.x += speed * dir;
       this.handlePoliceTurning(car, car.position.x);
 
@@ -308,24 +290,21 @@ export class TrafficSystem {
 
   private handlePoliceTurning(car: Group, currentPos: number) {
     if (car.userData.isPolice && car.userData.turnCooldown <= 0) {
-      const roadIndex = Math.round(
-        (currentPos - (START_OFFSET - CELL_SIZE / 2)) / CELL_SIZE,
-      );
+      const roadIndex = Math.round((currentPos - (START_OFFSET - CELL_SIZE / 2)) / CELL_SIZE);
       const roadCenter = START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
 
       if (Math.abs(currentPos - roadCenter) < car.userData.speed * 1.5) {
         if (Math.random() < 0.4) {
           const newDir = Math.random() > 0.5 ? 1 : -1;
-          const newLaneOffset =
-            (Math.random() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
+          const newLaneOffset = (Math.random() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
 
-          if (car.userData.axis === "x") {
+          if (car.userData.axis === 'x') {
             car.position.x = roadCenter + newLaneOffset;
-            car.userData.axis = "z";
+            car.userData.axis = 'z';
             car.userData.heading = newDir === 1 ? 0 : Math.PI;
           } else {
             car.position.z = roadCenter + newLaneOffset;
-            car.userData.axis = "x";
+            car.userData.axis = 'x';
             car.userData.heading = newDir === 1 ? Math.PI / 2 : -Math.PI / 2;
           }
           car.userData.dir = newDir;
@@ -336,7 +315,7 @@ export class TrafficSystem {
   }
 
   private fadeCar(car: Group) {
-    if (car.userData.axis === "x") {
+    if (car.userData.axis === 'x') {
       car.position.x += car.userData.speed * 0.5 * car.userData.dir;
     } else {
       car.position.z += car.userData.speed * 0.5 * car.userData.dir;
@@ -353,9 +332,7 @@ export class TrafficSystem {
           const mat = child.material;
           if (!Array.isArray(mat)) {
             const original =
-              child.userData.originalOpacity !== undefined
-                ? child.userData.originalOpacity
-                : 1.0;
+              child.userData.originalOpacity !== undefined ? child.userData.originalOpacity : 1.0;
             mat.opacity = original * car.userData.opacity;
           }
         }

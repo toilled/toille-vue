@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { KonamiManager } from "../KonamiManager";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { KonamiManager } from '../KonamiManager';
 
-vi.mock("three", () => {
+vi.mock('three', () => {
   return {
     Scene: vi.fn(() => ({
       add: vi.fn(),
@@ -40,10 +40,10 @@ vi.mock("three", () => {
 });
 
 // We need to import three to spy on it, AFTER the mock
-import * as THREE from "three";
-import type { Scene } from "three";
+import * as THREE from 'three';
+import type { Scene } from 'three';
 
-describe("KonamiManager", () => {
+describe('KonamiManager', () => {
   let scene: Scene;
 
   beforeEach(() => {
@@ -52,7 +52,7 @@ describe("KonamiManager", () => {
     new KonamiManager(scene);
   });
 
-  it("should initialize fireworks positions off-screen", () => {
+  it('should initialize fireworks positions off-screen', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const calls = (THREE.BufferAttribute as any).mock.calls;
     let fireworksPosFound = false;

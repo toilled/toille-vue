@@ -1,54 +1,54 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { mount } from "@vue/test-utils";
-import CyberpunkCity from "../CyberpunkCity.vue";
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { mount } from '@vue/test-utils';
+import CyberpunkCity from '../CyberpunkCity.vue';
 
 // Mock dependencies
-vi.mock("vue-router", () => ({
+vi.mock('vue-router', () => ({
   useRoute: () => ({
-    path: "/",
+    path: '/',
   }),
 }));
 
 // Mock defineAsyncComponent to return a stub for GameUI
-vi.mock("vue", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("vue")>();
+vi.mock('vue', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('vue')>();
   return {
     ...actual,
     defineAsyncComponent: () => ({
-      name: "GameUI",
+      name: 'GameUI',
       template: '<div id="game-ui-stub" />',
       props: [
-        "isDrivingMode",
-        "isGameMode",
-        "isExplorationMode",
-        "isFlyingTour",
-        "isCinematicMode",
-        "isGameOver",
-        "isMobile",
-        "drivingScore",
-        "timeLeft",
-        "distToTarget",
-        "controls",
-        "lookControls",
-        "leaderboard",
+        'isDrivingMode',
+        'isGameMode',
+        'isExplorationMode',
+        'isFlyingTour',
+        'isCinematicMode',
+        'isGameOver',
+        'isMobile',
+        'drivingScore',
+        'timeLeft',
+        'distToTarget',
+        'controls',
+        'lookControls',
+        'leaderboard',
       ],
-      emits: ["exit-game-mode", "update-leaderboard"],
+      emits: ['exit-game-mode', 'update-leaderboard'],
     }),
   };
 });
 
-describe("CyberpunkCity.vue", () => {
+describe('CyberpunkCity.vue', () => {
   let wrapper: ReturnType<typeof mount>;
 
   beforeEach(() => {
     // Mock canvas context
     const mockContext = {
-      fillStyle: "",
-      strokeStyle: "",
+      fillStyle: '',
+      strokeStyle: '',
       lineWidth: 0,
-      font: "",
-      textAlign: "",
-      shadowColor: "",
+      font: '',
+      textAlign: '',
+      shadowColor: '',
       shadowBlur: 0,
       fillRect: vi.fn(),
       strokeRect: vi.fn(),
@@ -70,12 +70,12 @@ describe("CyberpunkCity.vue", () => {
         addColorStop: vi.fn(),
       })),
       globalAlpha: 1,
-      globalCompositeOperation: "source-over",
+      globalCompositeOperation: 'source-over',
     } as unknown as CanvasRenderingContext2D;
 
-    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      () => mockContext as any,
+      () => mockContext as any
     );
 
     wrapper = mount(CyberpunkCity, {
@@ -88,8 +88,8 @@ describe("CyberpunkCity.vue", () => {
     vi.restoreAllMocks();
   });
 
-  it("renders correctly", () => {
-    expect(wrapper.find("#cyberpunk-city").exists()).toBe(true);
+  it('renders correctly', () => {
+    expect(wrapper.find('#cyberpunk-city').exists()).toBe(true);
     // GameUI is loaded asynchronously, but our mock stub should render
     // Wait for next tick potentially if async import wasn't mocked directly
     // Since we mocked defineAsyncComponent, it returns component definition immediately?
@@ -100,12 +100,12 @@ describe("CyberpunkCity.vue", () => {
     // In strict unit test, we just check scene initialization or use shallowMount
   });
 
-  it("initializes Three.js scene on mount", async () => {
+  it('initializes Three.js scene on mount', async () => {
     // Scene creation is side-effect, we can check if canvas has content or if Three mocks were called
     // But strictly, we assume if mount happened without error, it's fine for now given setupThree.ts
   });
 
-  it("cleans up on unmount", () => {
+  it('cleans up on unmount', () => {
     wrapper.unmount();
     // Verify cleanup if spies were attached
   });

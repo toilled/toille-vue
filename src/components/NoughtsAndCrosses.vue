@@ -15,7 +15,7 @@
       </div>
     </div>
     <div v-if="winner" class="winner" role="status" aria-live="assertive">
-      <h2>{{ winner === 'draw' ? "It's a draw!" : (winner === 'X' ? 'You win!' : 'You lose!') }}</h2>
+      <h2>{{ winner === 'draw' ? "It's a draw!" : winner === 'X' ? 'You win!' : 'You lose!' }}</h2>
       <button @click="resetGame">Play Again</button>
     </div>
     <div class="board" role="grid" aria-label="Game board">
@@ -27,7 +27,14 @@
         :aria-label="`Row ${Math.floor(index / 3) + 1}, Column ${(index % 3) + 1}, ${cell || 'empty'}`"
         :aria-disabled="cell !== null || !!winner"
         @click="makeMove(index)"
-        :style="{ color: cell === 'X' ? 'var(--primary, #1095c1)' : cell === 'O' ? 'var(--danger, #e74c3c)' : 'inherit' }"
+        :style="{
+          color:
+            cell === 'X'
+              ? 'var(--primary, #1095c1)'
+              : cell === 'O'
+                ? 'var(--danger, #e74c3c)'
+                : 'inherit',
+        }"
       >
         {{ cell }}
       </button>
@@ -38,7 +45,7 @@
 <script setup>
 import { useNoughtsAndCrosses } from '../composables/useNoughtsAndCrosses';
 import { ref, watch } from 'vue';
-import { useHead } from "@vueuse/head";
+import { useHead } from '@vueuse/head';
 
 const { board, winner, makeMove, resetGame, isPlayerTurn } = useNoughtsAndCrosses();
 
@@ -47,11 +54,11 @@ const botScore = ref(0);
 const draws = ref(0);
 
 useHead({
-  title: "Elliot > Noughts and Crosses",
+  title: 'Elliot > Noughts and Crosses',
   meta: [
     {
-      name: "description",
-      content: "Play Noughts and Crosses (Tic-Tac-Toe) against a bot",
+      name: 'description',
+      content: 'Play Noughts and Crosses (Tic-Tac-Toe) against a bot',
     },
   ],
 });
@@ -93,7 +100,7 @@ watch(winner, (newWinner) => {
 }
 .score {
   padding: 0.25rem 0.5rem;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
 }
 .board {
@@ -117,7 +124,7 @@ watch(winner, (newWinner) => {
   transition: background 0.2s;
 }
 .cell:hover:not(:disabled) {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
 }
 .cell:disabled {
   cursor: default;

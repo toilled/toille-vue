@@ -1,14 +1,14 @@
-import { CanvasTexture, NearestFilter, RepeatWrapping } from "three";
-import { ROAD_WIDTH, CELL_SIZE } from "../game/config";
+import { CanvasTexture, NearestFilter, RepeatWrapping } from 'three';
+import { ROAD_WIDTH, CELL_SIZE } from '../game/config';
 
 // Reusable Texture for Windows
 export function createWindowTexture() {
-  const canvas = document.createElement("canvas");
+  const canvas = document.createElement('canvas');
   canvas.width = 64;
   canvas.height = 128;
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext('2d');
   if (ctx) {
-    ctx.fillStyle = "#050505"; // Slightly lighter black
+    ctx.fillStyle = '#050505'; // Slightly lighter black
     ctx.fillRect(0, 0, 64, 128);
 
     const w = 4;
@@ -21,12 +21,12 @@ export function createWindowTexture() {
         if (Math.random() > 0.4) {
           const rand = Math.random();
           if (rand > 0.95)
-            ctx.fillStyle = "#ffffff"; // Bright White
+            ctx.fillStyle = '#ffffff'; // Bright White
           else if (rand > 0.8)
-            ctx.fillStyle = "#ffaa00"; // Warm Orange
+            ctx.fillStyle = '#ffaa00'; // Warm Orange
           else if (rand > 0.5)
-            ctx.fillStyle = "#00ccff"; // Cyan
-          else ctx.fillStyle = "#ff00cc"; // Magenta
+            ctx.fillStyle = '#00ccff'; // Cyan
+          else ctx.fillStyle = '#ff00cc'; // Magenta
 
           ctx.globalAlpha = 0.6 + Math.random() * 0.4;
           ctx.fillRect(x, y, w, h);
@@ -37,7 +37,7 @@ export function createWindowTexture() {
 
     // Add some "dark" buildings or sections
     if (Math.random() > 0.8) {
-      ctx.fillStyle = "rgba(0,0,0,0.8)";
+      ctx.fillStyle = 'rgba(0,0,0,0.8)';
       ctx.fillRect(0, 0, 64, 128);
     }
   }
@@ -49,12 +49,12 @@ export function createWindowTexture() {
 }
 
 export function createGroundTexture() {
-  const canvas = document.createElement("canvas");
+  const canvas = document.createElement('canvas');
   canvas.width = 1024; // Higher res
   canvas.height = 1024;
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext('2d');
   if (ctx) {
-    ctx.fillStyle = "#080808"; // Dark asphalt
+    ctx.fillStyle = '#080808'; // Dark asphalt
     ctx.fillRect(0, 0, 1024, 1024);
 
     // Roads are at the edges (tiled)
@@ -62,7 +62,7 @@ export function createGroundTexture() {
     const roadPx = 1024 * roadRatio;
     const halfRoad = roadPx / 2;
 
-    ctx.fillStyle = "#0a0a0a"; // Slightly lighter road color
+    ctx.fillStyle = '#0a0a0a'; // Slightly lighter road color
     // Horizontal
     ctx.fillRect(0, 0, 1024, halfRoad);
     ctx.fillRect(0, 1024 - halfRoad, 1024, halfRoad);
@@ -71,7 +71,7 @@ export function createGroundTexture() {
     ctx.fillRect(1024 - halfRoad, 0, halfRoad, 1024);
 
     // Dashed Center Lines
-    ctx.strokeStyle = "#444444";
+    ctx.strokeStyle = '#444444';
     ctx.lineWidth = 4;
     ctx.setLineDash([20, 20]);
 
@@ -100,7 +100,7 @@ export function createGroundTexture() {
     ctx.setLineDash([]);
 
     // Intersection Stop Lines
-    ctx.fillStyle = "#333333";
+    ctx.fillStyle = '#333333';
     const stopOffset = halfRoad * 0.8;
     const stopW = 8;
 
@@ -121,7 +121,7 @@ export function createGroundTexture() {
     ctx.fillRect(1024 - stopOffset, halfRoad, stopW, halfRoad);
 
     // Add noise / wet look
-    ctx.fillStyle = "rgba(255, 255, 255, 0.03)";
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
     for (let i = 0; i < 2000; i++) {
       ctx.fillRect(Math.random() * 1024, Math.random() * 1024, 2, 2);
     }
@@ -139,25 +139,25 @@ export function createBillboardTextures() {
   const textures: CanvasTexture[] = [];
   for (let i = 0; i < 8; i++) {
     // Increased count
-    const canvas = document.createElement("canvas");
+    const canvas = document.createElement('canvas');
     canvas.width = 128;
     canvas.height = 64;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (ctx) {
       // Dark background
-      ctx.fillStyle = "#000000";
+      ctx.fillStyle = '#000000';
       ctx.fillRect(0, 0, 128, 64);
 
       // Neon border
       const colors = [
-        "#ff00cc",
-        "#00ffcc",
-        "#ffff00",
-        "#ff0000",
-        "#00ff00",
-        "#aa00ff",
-        "#0000ff",
-        "#ff8800",
+        '#ff00cc',
+        '#00ffcc',
+        '#ffff00',
+        '#ff0000',
+        '#00ff00',
+        '#aa00ff',
+        '#0000ff',
+        '#ff8800',
       ];
       const color = colors[i % colors.length];
 
@@ -180,7 +180,7 @@ export function createBillboardTextures() {
           ctx.beginPath();
           ctx.arc(32, 32, 20, 0, Math.PI * 2);
           ctx.fill();
-          ctx.fillStyle = "#000";
+          ctx.fillStyle = '#000';
           ctx.beginPath();
           ctx.arc(32, 32, 10, 0, Math.PI * 2);
           ctx.fill();
@@ -202,18 +202,18 @@ export function createBillboardTextures() {
           }
           break;
         case 4: // Japanese-like chars (fake)
-          ctx.font = "40px serif";
-          ctx.fillText("CYBER", 10, 45);
+          ctx.font = '40px serif';
+          ctx.fillText('CYBER', 10, 45);
           break;
         default:
           // Random blocks
           for (let k = 0; k < 6; k++) {
-            ctx.fillStyle = k % 2 === 0 ? color : "#ffffff";
+            ctx.fillStyle = k % 2 === 0 ? color : '#ffffff';
             ctx.fillRect(
               10 + Math.random() * 100,
               10 + Math.random() * 40,
               10 + Math.random() * 20,
-              5 + Math.random() * 10,
+              5 + Math.random() * 10
             );
           }
           break;
@@ -226,30 +226,30 @@ export function createBillboardTextures() {
 }
 
 export function createCloudTexture() {
-  const canvas = document.createElement("canvas");
+  const canvas = document.createElement('canvas');
   canvas.width = 256;
   canvas.height = 128;
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext('2d');
   if (ctx && ctx.createRadialGradient) {
     ctx.clearRect(0, 0, 256, 128);
 
     const gradient = ctx.createRadialGradient(128, 64, 0, 128, 64, 128);
-    gradient.addColorStop(0, "rgba(60, 20, 80, 0.4)");
-    gradient.addColorStop(0.4, "rgba(40, 10, 60, 0.2)");
-    gradient.addColorStop(0.7, "rgba(20, 5, 40, 0.1)");
-    gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+    gradient.addColorStop(0, 'rgba(60, 20, 80, 0.4)');
+    gradient.addColorStop(0.4, 'rgba(40, 10, 60, 0.2)');
+    gradient.addColorStop(0.7, 'rgba(20, 5, 40, 0.1)');
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 256, 128);
 
-    ctx.globalCompositeOperation = "source-atop";
+    ctx.globalCompositeOperation = 'source-atop';
     for (let i = 0; i < 8; i++) {
       const x = 30 + Math.random() * 180;
       const y = 20 + Math.random() * 80;
       const r = 20 + Math.random() * 40;
       const glow = ctx.createRadialGradient(x, y, 0, x, y, r);
-      glow.addColorStop(0, "rgba(255, 0, 150, 0.15)");
-      glow.addColorStop(1, "rgba(255, 0, 150, 0)");
+      glow.addColorStop(0, 'rgba(255, 0, 150, 0.15)');
+      glow.addColorStop(1, 'rgba(255, 0, 150, 0)');
       ctx.fillStyle = glow;
       ctx.beginPath();
       ctx.arc(x, y, r, 0, Math.PI * 2);
@@ -261,8 +261,8 @@ export function createCloudTexture() {
       const y = 30 + Math.random() * 60;
       const r = 15 + Math.random() * 30;
       const glow = ctx.createRadialGradient(x, y, 0, x, y, r);
-      glow.addColorStop(0, "rgba(0, 255, 200, 0.1)");
-      glow.addColorStop(1, "rgba(0, 255, 200, 0)");
+      glow.addColorStop(0, 'rgba(0, 255, 200, 0.1)');
+      glow.addColorStop(1, 'rgba(0, 255, 200, 0)');
       ctx.fillStyle = glow;
       ctx.beginPath();
       ctx.arc(x, y, r, 0, Math.PI * 2);

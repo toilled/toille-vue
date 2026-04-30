@@ -1,4 +1,4 @@
-import { ref, watch } from "vue";
+import { ref, watch } from 'vue';
 
 interface WindowWithAudioContext extends Window {
   webkitAudioContext?: typeof AudioContext;
@@ -12,8 +12,7 @@ class AudioManager {
   init() {
     if (!this.ctx) {
       const AudioContext =
-        window.AudioContext ||
-        (window as WindowWithAudioContext).webkitAudioContext;
+        window.AudioContext || (window as WindowWithAudioContext).webkitAudioContext;
       if (AudioContext) {
         this.ctx = new AudioContext();
         this.masterGain = this.ctx.createGain();
@@ -25,10 +24,7 @@ class AudioManager {
 
   applyGain() {
     if (this.masterGain && this.ctx) {
-      this.masterGain.gain.setValueAtTime(
-        this.isSoundEnabled.value ? 1 : 0,
-        this.ctx.currentTime,
-      );
+      this.masterGain.gain.setValueAtTime(this.isSoundEnabled.value ? 1 : 0, this.ctx.currentTime);
     }
   }
 
@@ -37,7 +33,7 @@ class AudioManager {
     if (!this.ctx) {
       this.init();
     }
-    if (this.ctx && this.ctx.state === "suspended") {
+    if (this.ctx && this.ctx.state === 'suspended') {
       this.ctx.resume();
     }
     this.applyGain();

@@ -1,13 +1,7 @@
 <template>
-  <div v-if="drivingScore > 0" id="score-counter">
-    SCORE: {{ drivingScore }}
-  </div>
-  <div v-if="isDrivingMode" id="timer-counter">
-    TIME: {{ Math.ceil(timeLeft) }}
-  </div>
-  <div v-if="isDrivingMode" id="dist-counter">
-    DIST: {{ Math.ceil(distToTarget) }}m
-  </div>
+  <div v-if="drivingScore > 0" id="score-counter">SCORE: {{ drivingScore }}</div>
+  <div v-if="isDrivingMode" id="timer-counter">TIME: {{ Math.ceil(timeLeft) }}</div>
+  <div v-if="isDrivingMode" id="dist-counter">DIST: {{ Math.ceil(distToTarget) }}m</div>
 
   <GameOverModal
     v-if="isDrivingMode && isGameOver"
@@ -26,13 +20,7 @@
   />
 
   <button
-    v-if="
-      isGameMode ||
-      isDrivingMode ||
-      isExplorationMode ||
-      isFlyingTour ||
-      isCinematicMode
-    "
+    v-if="isGameMode || isDrivingMode || isExplorationMode || isFlyingTour || isCinematicMode"
     id="return-button"
     @click="exitGameMode"
   >
@@ -155,11 +143,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, PropType } from "vue";
-import { Controls, LookControls } from "../game/types";
-import { ScoreEntry } from "../utils/ScoreService";
-import LeaderboardModal from "./LeaderboardModal.vue";
-import GameOverModal from "./GameOverModal.vue";
+import { ref, watch, PropType } from 'vue';
+import { Controls, LookControls } from '../game/types';
+import { ScoreEntry } from '../utils/ScoreService';
+import LeaderboardModal from './LeaderboardModal.vue';
+import GameOverModal from './GameOverModal.vue';
 
 const props = defineProps({
   isDrivingMode: Boolean,
@@ -187,14 +175,10 @@ const props = defineProps({
   showLeaderboard: Boolean,
 });
 
-const emit = defineEmits([
-  "exit-game-mode",
-  "update-leaderboard",
-  "close-leaderboard",
-]);
+const emit = defineEmits(['exit-game-mode', 'update-leaderboard', 'close-leaderboard']);
 
 function exitGameMode() {
-  emit("exit-game-mode");
+  emit('exit-game-mode');
 }
 </script>
 
@@ -204,7 +188,7 @@ function exitGameMode() {
   bottom: 20px;
   right: 20px;
   color: #00ffcc;
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 24px;
   font-weight: bold;
   z-index: 10;
@@ -218,7 +202,7 @@ function exitGameMode() {
   left: 50%;
   transform: translateX(-50%);
   color: #ff00cc;
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 32px;
   font-weight: bold;
   z-index: 10;
@@ -232,7 +216,7 @@ function exitGameMode() {
   left: 50%;
   transform: translateX(-50%);
   color: #ffff00;
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 24px;
   font-weight: bold;
   z-index: 10;
@@ -248,7 +232,7 @@ function exitGameMode() {
   color: #ff00cc;
   border: 1px solid #ff00cc;
   padding: 10px 20px;
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 18px;
   font-weight: bold;
   cursor: pointer;

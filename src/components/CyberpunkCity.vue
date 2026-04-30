@@ -22,15 +22,9 @@
 </template>
 
 <script setup lang="ts">
-import {
-  onMounted,
-  onBeforeUnmount,
-  ref,
-  watch,
-  defineAsyncComponent,
-} from "vue";
-import { useRoute } from "vue-router";
-import { ScoreService, type ScoreEntry } from "../utils/ScoreService";
+import { onMounted, onBeforeUnmount, ref, watch, defineAsyncComponent } from 'vue';
+import { useRoute } from 'vue-router';
+import { ScoreService, type ScoreEntry } from '../utils/ScoreService';
 import {
   AdditiveBlending,
   BufferAttribute,
@@ -55,18 +49,18 @@ import {
   MathUtils,
   PCFSoftShadowMap,
   ACESFilmicToneMapping,
-} from "three";
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
-import { GameModeManager } from "../game/GameModeManager";
-import { setupPostProcessing } from "../game/PostProcessingManager";
-import { DrivingMode } from "../game/modes/DrivingMode";
-import { ExplorationMode } from "../game/modes/ExplorationMode";
-import { FlyingTourMode } from "../game/modes/FlyingTourMode";
-import { DemoMode } from "../game/modes/DemoMode";
-import { GameContext } from "../game/types";
-import { carAudio } from "../game/audio/CarAudio";
-import { cyberpunkAudio } from "../utils/CyberpunkAudio";
-import { BOUNDS, CELL_SIZE, START_OFFSET, GRID_SIZE } from "../game/config";
+} from 'three';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
+import { GameModeManager } from '../game/GameModeManager';
+import { setupPostProcessing } from '../game/PostProcessingManager';
+import { DrivingMode } from '../game/modes/DrivingMode';
+import { ExplorationMode } from '../game/modes/ExplorationMode';
+import { FlyingTourMode } from '../game/modes/FlyingTourMode';
+import { DemoMode } from '../game/modes/DemoMode';
+import { GameContext } from '../game/types';
+import { carAudio } from '../game/audio/CarAudio';
+import { cyberpunkAudio } from '../utils/CyberpunkAudio';
+import { BOUNDS, CELL_SIZE, START_OFFSET, GRID_SIZE } from '../game/config';
 import {
   LEADERBOARD_CANVAS_SIZE,
   MOBILE_BREAKPOINT,
@@ -109,17 +103,17 @@ import {
   EMISSIVE_LERP_FACTOR,
   SPARK_SPAWN_POSITIONS_OFF_Y,
   CHASE_ARROW_POSITION_Z,
-} from "../game/constants/CyberpunkCity";
-import { KonamiManager } from "../game/KonamiManager";
-import { GangWarManager } from "../game/GangWarManager";
-import { CityBuilder } from "../game/CityBuilder";
-import { TrafficSystem } from "../game/TrafficSystem";
-import { SkyEffects } from "../game/SkyEffects";
-import { getHeight } from "../utils/HeightMap";
-import { audioManager } from "../utils/AudioManager";
-import { MultiplayerManager } from "../game/MultiplayerManager";
+} from '../game/constants/CyberpunkCity';
+import { KonamiManager } from '../game/KonamiManager';
+import { GangWarManager } from '../game/GangWarManager';
+import { CityBuilder } from '../game/CityBuilder';
+import { TrafficSystem } from '../game/TrafficSystem';
+import { SkyEffects } from '../game/SkyEffects';
+import { getHeight } from '../utils/HeightMap';
+import { audioManager } from '../utils/AudioManager';
+import { MultiplayerManager } from '../game/MultiplayerManager';
 
-const GameUI = defineAsyncComponent(() => import("./GameUI.vue"));
+const GameUI = defineAsyncComponent(() => import('./GameUI.vue'));
 
 const canvasContainer = ref<HTMLDivElement | null>(null);
 
@@ -130,10 +124,7 @@ let composer: EffectComposer;
 let animationId: number;
 let isActive = false;
 
-let occupiedGrids = new Map<
-  string,
-  { halfW: number; halfD: number; isRound?: boolean }
->();
+let occupiedGrids = new Map<string, { halfW: number; halfD: number; isRound?: boolean }>();
 let cars: Group[] = [];
 let leaderboardMeshes: Mesh[] = [];
 
@@ -175,31 +166,31 @@ function updateLeaderboard(newScores: ScoreEntry[]) {
 
 function updateLeaderboardTexture() {
   if (!leaderboardCanvas) return;
-  const ctx = leaderboardCanvas.getContext("2d");
+  const ctx = leaderboardCanvas.getContext('2d');
   if (!ctx) return;
 
   // Reset transform to identity
   ctx.setTransform(1, 0, 0, 1, 0, 0);
 
   // Background
-  ctx.fillStyle = "#100010";
+  ctx.fillStyle = '#100010';
   ctx.fillRect(0, 0, LEADERBOARD_CANVAS_SIZE, LEADERBOARD_CANVAS_SIZE);
 
   // Scale everything by 2
   ctx.scale(2, 2);
 
   // Border
-  ctx.strokeStyle = "#00ffcc";
+  ctx.strokeStyle = '#00ffcc';
   ctx.lineWidth = 8;
   ctx.strokeRect(4, 4, 504, 504);
 
   // Title
-  ctx.fillStyle = "#00ffcc";
-  ctx.font = "bold 60px Arial";
-  ctx.textAlign = "center";
-  ctx.shadowColor = "#00ffcc";
+  ctx.fillStyle = '#00ffcc';
+  ctx.font = 'bold 60px Arial';
+  ctx.textAlign = 'center';
+  ctx.shadowColor = '#00ffcc';
   ctx.shadowBlur = 10;
-  ctx.fillText("LEADERBOARD", 256, 80);
+  ctx.fillText('LEADERBOARD', 256, 80);
   ctx.shadowBlur = 0;
 
   // Header Line
@@ -209,28 +200,28 @@ function updateLeaderboardTexture() {
   ctx.stroke();
 
   // Scores
-  ctx.font = "bold 40px Courier New";
-  ctx.textAlign = "left";
+  ctx.font = 'bold 40px Courier New';
+  ctx.textAlign = 'left';
   let y = 160;
 
   if (leaderboard.value.length === 0) {
-    ctx.textAlign = "center";
-    ctx.fillStyle = "#aaaaaa";
-    ctx.fillText("Loading...", 256, 250);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#aaaaaa';
+    ctx.fillText('Loading...', 256, 250);
   } else {
     leaderboard.value.forEach((entry, idx) => {
       switch (idx) {
         case 0:
-          ctx.fillStyle = "#ffff00"; // Gold
+          ctx.fillStyle = '#ffff00'; // Gold
           break;
         case 1:
-          ctx.fillStyle = "#cccccc"; // Silver
+          ctx.fillStyle = '#cccccc'; // Silver
           break;
         case 2:
-          ctx.fillStyle = "#cd7f32"; // Bronze
+          ctx.fillStyle = '#cd7f32'; // Bronze
           break;
         default:
-          ctx.fillStyle = "#ffffff";
+          ctx.fillStyle = '#ffffff';
           break;
       }
 
@@ -243,19 +234,19 @@ function updateLeaderboardTexture() {
       ctx.fillText(name, 110, y);
 
       // Right align score
-      ctx.textAlign = "right";
+      ctx.textAlign = 'right';
       ctx.fillText(scoreStr, 470, y);
-      ctx.textAlign = "left";
+      ctx.textAlign = 'left';
 
       y += 60;
     });
   }
 
   // Footer / Instructions
-  ctx.fillStyle = "#00ffcc";
-  ctx.font = "20px Arial";
-  ctx.textAlign = "center";
-  ctx.fillText("CRASH TO SUBMIT SCORE", 256, 480);
+  ctx.fillStyle = '#00ffcc';
+  ctx.font = '20px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('CRASH TO SUBMIT SCORE', 256, 480);
 
   if (leaderboardTexture) {
     leaderboardTexture.needsUpdate = true;
@@ -267,11 +258,11 @@ watch(
   () => {
     updateLeaderboardTexture();
   },
-  { deep: true },
+  { deep: true }
 );
 
 function createLeaderboardTexture() {
-  leaderboardCanvas = document.createElement("canvas");
+  leaderboardCanvas = document.createElement('canvas');
   leaderboardCanvas.width = LEADERBOARD_CANVAS_SIZE;
   leaderboardCanvas.height = LEADERBOARD_CANVAS_SIZE;
   leaderboardTexture = new CanvasTexture(leaderboardCanvas);
@@ -285,7 +276,7 @@ function createLeaderboardTexture() {
 const isMobile = ref(false);
 
 const updateIsMobile = () => {
-  if (typeof window !== "undefined") {
+  if (typeof window !== 'undefined') {
     isMobile.value = window.innerWidth <= MOBILE_BREAKPOINT;
   }
 };
@@ -312,7 +303,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["game-start", "game-end"]);
+const emit = defineEmits(['game-start', 'game-end']);
 
 const currentLookAt = new Vector3(0, 0, 0);
 
@@ -338,7 +329,7 @@ function createCheckpoint() {
     CHECKPOINT_HEIGHT,
     CHECKPOINT_SEGMENTS,
     1,
-    true,
+    true
   );
   const mat = new MeshBasicMaterial({
     color: 0x00ff00,
@@ -356,7 +347,7 @@ function createCheckpoint() {
     CHECKPOINT_CORE_RADIUS,
     CHECKPOINT_CORE_RADIUS,
     CHECKPOINT_HEIGHT,
-    CHECKPOINT_CORE_SEGMENTS,
+    CHECKPOINT_CORE_SEGMENTS
   );
   const coreMat = new MeshBasicMaterial({ color: 0xffffff });
   const core = new Mesh(coreGeo, coreMat);
@@ -374,7 +365,7 @@ function createNavArrow() {
       depthWrite: false,
       transparent: true,
       opacity: 0.9,
-    }),
+    })
   );
   cone.rotation.x = Math.PI / 2;
 
@@ -396,7 +387,7 @@ function createChaseArrow() {
       depthWrite: false,
       transparent: true,
       opacity: 0.0,
-    }),
+    })
   );
   cone.rotation.x = Math.PI / 2;
   cone.position.z = CHASE_ARROW_POSITION_Z;
@@ -412,18 +403,16 @@ function spawnCheckpoint() {
   const roadIndexX = Math.floor(Math.random() * (GRID_SIZE + 1));
   const roadIndexZ = Math.floor(Math.random() * (GRID_SIZE + 1));
 
-  const axis = Math.random() > 0.5 ? "x" : "z";
+  const axis = Math.random() > 0.5 ? 'x' : 'z';
   const roadCoordinate =
-    START_OFFSET +
-    (axis === "x" ? roadIndexX : roadIndexZ) * CELL_SIZE -
-    CELL_SIZE / 2;
+    START_OFFSET + (axis === 'x' ? roadIndexX : roadIndexZ) * CELL_SIZE - CELL_SIZE / 2;
 
   const limit = (GRID_SIZE * CELL_SIZE) / 2;
   const otherCoord = (Math.random() - 0.5) * 2 * limit * 0.9;
 
   let x = 0,
     z = 0;
-  if (axis === "x") {
+  if (axis === 'x') {
     z = roadCoordinate;
     x = otherCoord;
   } else {
@@ -460,16 +449,11 @@ function spawnSparks(position: Vector3) {
   posAttribute.needsUpdate = true;
 }
 
-function activateSpark(
-  i: number,
-  position: Vector3,
-  posAttribute: BufferAttribute,
-) {
+function activateSpark(i: number, position: Vector3, posAttribute: BufferAttribute) {
   sparkLifetimes[i] = 1.0;
   posAttribute.setXYZ(i, position.x, position.y, position.z);
   sparkVelocities[i * 3] = (Math.random() - 0.5) * SPARK_RANDOM_VELOCITY;
-  sparkVelocities[i * 3 + 1] =
-    Math.random() * SPARK_RANDOM_VELOCITY + SPARK_MIN_VELOCITY;
+  sparkVelocities[i * 3 + 1] = Math.random() * SPARK_RANDOM_VELOCITY + SPARK_MIN_VELOCITY;
   sparkVelocities[i * 3 + 2] = (Math.random() - 0.5) * SPARK_RANDOM_VELOCITY;
 }
 
@@ -487,7 +471,7 @@ onMounted(() => {
     CAMERA_FOV,
     window.innerWidth / window.innerHeight,
     CAMERA_NEAR,
-    CAMERA_FAR,
+    CAMERA_FAR
   );
   camera.position.set(0, 250, 600);
   camera.lookAt(0, 0, 0);
@@ -531,7 +515,7 @@ onMounted(() => {
 
   // Initialize Sparks
   const sparkGeo = new BufferGeometry();
-  sparkGeo.setAttribute("position", new BufferAttribute(sparkPositions, 3));
+  sparkGeo.setAttribute('position', new BufferAttribute(sparkPositions, 3));
 
   const sparkMat = new PointsMaterial({
     color: 0xffaa00,
@@ -551,12 +535,7 @@ onMounted(() => {
   konamiManager = new KonamiManager(scene);
 
   // Initialize Gang Wars
-  gangWarManager = new GangWarManager(
-    scene,
-    occupiedGrids,
-    spawnSparks,
-    playPewSound,
-  );
+  gangWarManager = new GangWarManager(scene, occupiedGrids, spawnSparks, playPewSound);
 
   // Initialize Multiplayer
   multiplayerManager = new MultiplayerManager(scene);
@@ -566,11 +545,11 @@ onMounted(() => {
   createNavArrow();
   createChaseArrow();
 
-  window.addEventListener("resize", onResize);
-  window.addEventListener("click", onClick);
-  window.addEventListener("keydown", onKeyDown);
-  window.addEventListener("keyup", onKeyUp);
-  window.addEventListener("mousemove", onMouseMove);
+  window.addEventListener('resize', onResize);
+  window.addEventListener('click', onClick);
+  window.addEventListener('keydown', onKeyDown);
+  window.addEventListener('keyup', onKeyUp);
+  window.addEventListener('mousemove', onMouseMove);
 
   // Initialize Game Context and Manager
   const context: GameContext = {
@@ -614,7 +593,7 @@ onMounted(() => {
 });
 
 function onKeyDown(event: KeyboardEvent) {
-  if (event.key === "Escape") {
+  if (event.key === 'Escape') {
     exitGameMode();
     return;
   }
@@ -632,7 +611,7 @@ watch(
     if (oldVal === true && newVal === false) {
       startTime.value = Date.now();
     }
-  },
+  }
 );
 
 watch(activeCar, (newCar, oldCar) => {
@@ -643,20 +622,20 @@ watch(activeCar, (newCar, oldCar) => {
 function startExplorationMode() {
   isGameMode.value = true;
   isExplorationMode.value = true;
-  emit("game-start");
+  emit('game-start');
   gameModeManager.setMode(new ExplorationMode());
 }
 
 function startFlyingTour() {
   isGameMode.value = true;
   isFlyingTour.value = true;
-  emit("game-start");
+  emit('game-start');
   gameModeManager.setMode(new FlyingTourMode());
 }
 
 function startDemoMode() {
   isGameMode.value = true;
-  emit("game-start");
+  emit('game-start');
   gameModeManager.setMode(new DemoMode());
 }
 
@@ -682,7 +661,7 @@ function exitGameMode() {
   isGameOver.value = false;
   score.value = 0;
   drivingScore.value = 0;
-  emit("game-end");
+  emit('game-end');
 }
 
 function onResize() {
@@ -709,16 +688,14 @@ function onClick(event: MouseEvent) {
   raycaster.setFromCamera(pointer, camera);
 
   if (gangWarManager && gangWarManager.fightMarkers.length > 0) {
-    const markerIntersects = raycaster.intersectObjects(
-      gangWarManager.fightMarkers,
-    );
+    const markerIntersects = raycaster.intersectObjects(gangWarManager.fightMarkers);
     if (markerIntersects.length > 0) {
       const hit = markerIntersects[0].object;
       if (hit.userData.isFightMarker && hit.userData.target) {
         isGameMode.value = true;
         isCinematicMode.value = true;
         cinematicTarget.copy(hit.userData.target);
-        emit("game-start");
+        emit('game-start');
         return;
       }
     }
@@ -728,20 +705,20 @@ function onClick(event: MouseEvent) {
   cars.forEach((c) =>
     c.traverse((child) => {
       if (child instanceof Mesh) carMeshes.push(child);
-    }),
+    })
   );
 
   const carIntersects = raycaster.intersectObjects(carMeshes);
   if (carIntersects.length > 0) {
     const hit = carIntersects[0].object;
     let target = hit;
-    while (target.parent && target.parent.type !== "Scene") {
+    while (target.parent && target.parent.type !== 'Scene') {
       target = target.parent;
     }
 
     if (target instanceof Group && target.userData.speed !== undefined) {
       isDrivingMode.value = true;
-      emit("game-start");
+      emit('game-start');
 
       activeCar.value = target;
       target.userData.isPlayerControlled = true;
@@ -787,17 +764,16 @@ function animate() {
         camera.position.y,
         camera.position.z,
         camera.rotation.y,
-        "walking",
+        'walking'
       );
     } else if (isDrivingMode.value && activeCar.value) {
-      const heading =
-        activeCar.value.userData.heading ?? activeCar.value.rotation.y;
+      const heading = activeCar.value.userData.heading ?? activeCar.value.rotation.y;
       multiplayerManager.broadcast(
         activeCar.value.position.x,
         activeCar.value.position.y,
         activeCar.value.position.z,
         heading,
-        "driving",
+        'driving'
       );
     }
   }
@@ -810,7 +786,7 @@ function animate() {
         mat.emissiveIntensity = MathUtils.lerp(
           mat.emissiveIntensity,
           EMISSIVE_INTENSITY_TARGET,
-          EMISSIVE_LERP_FACTOR,
+          EMISSIVE_LERP_FACTOR
         );
       }
     }
@@ -835,9 +811,7 @@ function animate() {
         }
 
         const ix = Math.round((positions[i * 3] - START_OFFSET) / CELL_SIZE);
-        const iz = Math.round(
-          (positions[i * 3 + 2] - START_OFFSET) / CELL_SIZE,
-        );
+        const iz = Math.round((positions[i * 3 + 2] - START_OFFSET) / CELL_SIZE);
 
         if (occupiedGrids.has(`${ix},${iz}`)) {
           const cX = START_OFFSET + ix * CELL_SIZE;
@@ -875,33 +849,24 @@ function animate() {
 
       camera.position.x += (tx - camera.position.x) * CAMERA_LERP_FACTOR;
       camera.position.z += (tz - camera.position.z) * CAMERA_LERP_FACTOR;
-      camera.position.y +=
-        (CAMERA_CINEMATIC_Y - camera.position.y) * CAMERA_LERP_FACTOR;
+      camera.position.y += (CAMERA_CINEMATIC_Y - camera.position.y) * CAMERA_LERP_FACTOR;
 
       currentLookAt.lerp(cinematicTarget, CAMERA_LERP_FACTOR);
       camera.lookAt(currentLookAt);
     } else {
-      const orbitRadius = isMobile.value
-        ? ORBIT_RADIUS_MOBILE
-        : ORBIT_RADIUS_DESKTOP;
+      const orbitRadius = isMobile.value ? ORBIT_RADIUS_MOBILE : ORBIT_RADIUS_DESKTOP;
       camera.position.x = Math.sin(time * ORBIT_SPEED) * orbitRadius;
       camera.position.z = Math.cos(time * ORBIT_SPEED) * orbitRadius;
 
-      const targetY = isMobile.value
-        ? CAMERA_TARGET_Y_MOBILE
-        : CAMERA_TARGET_Y_DESKTOP;
+      const targetY = isMobile.value ? CAMERA_TARGET_Y_MOBILE : CAMERA_TARGET_Y_DESKTOP;
 
       const introProgress =
-        startTime.value === 0
-          ? 0
-          : Math.min(1, (now - startTime.value) / INTRO_DURATION_MS);
+        startTime.value === 0 ? 0 : Math.min(1, (now - startTime.value) / INTRO_DURATION_MS);
 
       if (startTime.value === 0) {
         camera.position.y = CAMERA_START_Y;
-        camera.position.x =
-          Math.sin(time * ORBIT_SPEED + Math.PI * 2) * orbitRadius;
-        camera.position.z =
-          Math.cos(time * ORBIT_SPEED + Math.PI * 2) * orbitRadius;
+        camera.position.x = Math.sin(time * ORBIT_SPEED + Math.PI * 2) * orbitRadius;
+        camera.position.z = Math.cos(time * ORBIT_SPEED + Math.PI * 2) * orbitRadius;
       } else if (introProgress < 1) {
         const ease = 1 - Math.pow(1 - introProgress, 3);
         const startY = CAMERA_START_Y;
@@ -909,14 +874,11 @@ function animate() {
         camera.position.y = currentY;
 
         const spiralAngle = (1 - ease) * Math.PI * 2;
-        camera.position.x =
-          Math.sin(time * ORBIT_SPEED + spiralAngle) * orbitRadius;
-        camera.position.z =
-          Math.cos(time * ORBIT_SPEED + spiralAngle) * orbitRadius;
+        camera.position.x = Math.sin(time * ORBIT_SPEED + spiralAngle) * orbitRadius;
+        camera.position.z = Math.cos(time * ORBIT_SPEED + spiralAngle) * orbitRadius;
       } else {
         if (Math.abs(camera.position.y - targetY) > 1) {
-          camera.position.y +=
-            (targetY - camera.position.y) * CAMERA_LERP_FACTOR;
+          camera.position.y += (targetY - camera.position.y) * CAMERA_LERP_FACTOR;
         }
       }
 
@@ -940,21 +902,18 @@ function playPewSound(pos?: Vector3) {
 
   if (!audioCtx || !dest) return;
 
-  if (audioCtx.state === "suspended") {
+  if (audioCtx.state === 'suspended') {
     audioCtx.resume();
   }
 
   const oscillator = audioCtx.createOscillator();
   const gainNode = audioCtx.createGain();
 
-  oscillator.type = "sawtooth";
-  oscillator.frequency.setValueAtTime(
-    AUDIO_OSCILLATOR_FREQ_START,
-    audioCtx.currentTime,
-  );
+  oscillator.type = 'sawtooth';
+  oscillator.frequency.setValueAtTime(AUDIO_OSCILLATOR_FREQ_START, audioCtx.currentTime);
   oscillator.frequency.exponentialRampToValueAtTime(
     AUDIO_OSCILLATOR_FREQ_END,
-    audioCtx.currentTime + AUDIO_SWEEP_DURATION,
+    audioCtx.currentTime + AUDIO_SWEEP_DURATION
   );
 
   let volume = AUDIO_VOLUME;
@@ -967,10 +926,7 @@ function playPewSound(pos?: Vector3) {
   }
 
   gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
-  gainNode.gain.exponentialRampToValueAtTime(
-    0.001,
-    audioCtx.currentTime + AUDIO_SWEEP_DURATION,
-  );
+  gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + AUDIO_SWEEP_DURATION);
 
   oscillator.connect(gainNode);
   gainNode.connect(dest);
@@ -982,15 +938,15 @@ function playPewSound(pos?: Vector3) {
 function onAudioNote(type: string, data?: any) {
   if (!cityBuilder) return;
   const materials = cityBuilder.getAudioMaterials();
-  let key = "";
-  if (type === "bass") {
+  let key = '';
+  if (type === 'bass') {
     key = `bass${data}`;
   } else {
     key = type;
   }
   if (materials[key]) {
     let boost = EMISSIVE_INTENSITY_BOOST_BASS;
-    if (type === "hihat") boost = EMISSIVE_INTENSITY_BOOST_HIHAT;
+    if (type === 'hihat') boost = EMISSIVE_INTENSITY_BOOST_HIHAT;
     materials[key].emissiveIntensity = boost;
   }
 }
@@ -998,11 +954,11 @@ function onAudioNote(type: string, data?: any) {
 onBeforeUnmount(() => {
   cyberpunkAudio.removeListener(onAudioNote);
   isActive = false;
-  window.removeEventListener("resize", onResize);
-  window.removeEventListener("click", onClick);
-  window.removeEventListener("keydown", onKeyDown);
-  window.removeEventListener("keyup", onKeyUp);
-  window.removeEventListener("mousemove", onMouseMove);
+  window.removeEventListener('resize', onResize);
+  window.removeEventListener('click', onClick);
+  window.removeEventListener('keydown', onKeyDown);
+  window.removeEventListener('keyup', onKeyUp);
+  window.removeEventListener('mousemove', onMouseMove);
 
   cancelAnimationFrame(animationId);
   if (renderer) {

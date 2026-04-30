@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed } from 'vue';
 
 /**
  * @file Suggestion.vue
@@ -69,7 +69,7 @@ const hideHint = ref(false);
  * @type {import('vue').ComputedRef<string>}
  * @description A computed property that generates the hover hint text based on the `valueName` prop.
  */
-const hoverHintText = computed(() => "Click for a new " + props.valueName);
+const hoverHintText = computed(() => 'Click for a new ' + props.valueName);
 
 /**
  * @description Fetches a suggestion from the provided URL and updates the component's state.
@@ -79,7 +79,7 @@ async function fetchSuggestion() {
   loading.value = true;
   try {
     const response = await fetch(props.url, {
-      headers: { Accept: "application/json" },
+      headers: { Accept: 'application/json' },
     });
     suggestion.value = await response.json();
   } catch (error) {

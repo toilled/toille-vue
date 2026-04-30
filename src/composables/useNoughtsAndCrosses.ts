@@ -1,11 +1,11 @@
-import { ref, computed } from "vue";
+import { ref, computed } from 'vue';
 
 export function useNoughtsAndCrosses() {
-  const board = ref<string[]>(Array(9).fill(""));
-  const currentPlayer = ref("X");
+  const board = ref<string[]>(Array(9).fill(''));
+  const currentPlayer = ref('X');
   const winner = ref<string | null>(null);
 
-  const isPlayerTurn = computed(() => currentPlayer.value === "X" && !winner.value);
+  const isPlayerTurn = computed(() => currentPlayer.value === 'X' && !winner.value);
 
   const makeMove = (index: number) => {
     if (board.value[index] || winner.value) return;
@@ -16,11 +16,11 @@ export function useNoughtsAndCrosses() {
       return;
     }
     if (board.value.every((cell) => cell)) {
-      winner.value = "draw";
+      winner.value = 'draw';
       return;
     }
 
-    currentPlayer.value = "O";
+    currentPlayer.value = 'O';
     setTimeout(() => {
       computerMove();
     }, 500);
@@ -30,9 +30,9 @@ export function useNoughtsAndCrosses() {
     let bestScore = -Infinity;
     let move: number | undefined;
     for (let i = 0; i < 9; i++) {
-      if (board.value[i] === "") {
+      if (board.value[i] === '') {
         const newBoard = [...board.value];
-        newBoard[i] = "O";
+        newBoard[i] = 'O';
         const score = minimax(newBoard, 0, false);
         if (score > bestScore) {
           bestScore = score;
@@ -42,28 +42,28 @@ export function useNoughtsAndCrosses() {
     }
 
     if (move !== undefined) {
-      board.value[move] = "O";
-      if (checkWinner(board.value, "O")) {
-        winner.value = "O";
+      board.value[move] = 'O';
+      if (checkWinner(board.value, 'O')) {
+        winner.value = 'O';
       } else if (board.value.every((cell) => cell)) {
-        winner.value = "draw";
+        winner.value = 'draw';
       }
     }
 
-    currentPlayer.value = "X";
+    currentPlayer.value = 'X';
   };
 
   const minimax = (board: string[], depth: number, isMaximizing: boolean) => {
-    if (checkWinner(board, "O")) return 10 - depth;
-    if (checkWinner(board, "X")) return depth - 10;
+    if (checkWinner(board, 'O')) return 10 - depth;
+    if (checkWinner(board, 'X')) return depth - 10;
     if (board.every((cell) => cell)) return 0;
 
     if (isMaximizing) {
       let bestScore = -Infinity;
       for (let i = 0; i < 9; i++) {
-        if (board[i] === "") {
+        if (board[i] === '') {
           const newBoard = [...board];
-          newBoard[i] = "O";
+          newBoard[i] = 'O';
           const score = minimax(newBoard, depth + 1, false);
           bestScore = Math.max(score, bestScore);
         }
@@ -72,9 +72,9 @@ export function useNoughtsAndCrosses() {
     } else {
       let bestScore = Infinity;
       for (let i = 0; i < 9; i++) {
-        if (board[i] === "") {
+        if (board[i] === '') {
           const newBoard = [...board];
-          newBoard[i] = "X";
+          newBoard[i] = 'X';
           const score = minimax(newBoard, depth + 1, true);
           bestScore = Math.min(score, bestScore);
         }
@@ -95,13 +95,13 @@ export function useNoughtsAndCrosses() {
       [2, 4, 6],
     ];
     return winConditions.some((combination) =>
-      combination.every((index) => board[index] === player),
+      combination.every((index) => board[index] === player)
     );
   };
 
   const resetGame = () => {
-    board.value = Array(9).fill("");
-    currentPlayer.value = "X";
+    board.value = Array(9).fill('');
+    currentPlayer.value = 'X';
     winner.value = null;
   };
 

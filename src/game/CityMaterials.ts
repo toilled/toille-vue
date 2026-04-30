@@ -8,11 +8,8 @@ import {
   BoxGeometry,
   ConeGeometry,
   CylinderGeometry,
-} from "three";
-import {
-  createBillboardTextures,
-  createWindowTexture,
-} from "../utils/TextureGenerator";
+} from 'three';
+import { createBillboardTextures, createWindowTexture } from '../utils/TextureGenerator';
 
 export class CityMaterials {
   public windowTexture: CanvasTexture;
@@ -54,7 +51,7 @@ export class CityMaterials {
     });
 
     // Initialize audio materials
-    const audioKeys = ["kick", "snare", "hihat", "bass0", "bass1", "bass2", "bass3", "bass4"];
+    const audioKeys = ['kick', 'snare', 'hihat', 'bass0', 'bass1', 'bass2', 'bass3', 'bass4'];
     audioKeys.forEach((key) => {
       this.audioMaterials[key] = this.buildingMaterial.clone();
     });
@@ -89,7 +86,7 @@ export class CityMaterials {
           side: DoubleSide,
           transparent: true,
           opacity: 0.9,
-        }),
+        })
     );
 
     this.coneGeo = new ConeGeometry(0.7, 1, 4);

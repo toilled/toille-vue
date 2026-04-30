@@ -10,18 +10,18 @@
 </template>
 
 <script setup lang="ts">
-import { PropType } from "vue";
-import { ScoreEntry } from "../utils/ScoreService";
+import { PropType } from 'vue';
+import { ScoreEntry } from '../utils/ScoreService';
 
 defineProps({
-    leaderboard: {
-        type: Array as PropType<ScoreEntry[]>,
-        required: true
-    },
-    showLeaderboard: Boolean
+  leaderboard: {
+    type: Array as PropType<ScoreEntry[]>,
+    required: true,
+  },
+  showLeaderboard: Boolean,
 });
 
-defineEmits(["close-leaderboard"]);
+defineEmits(['close-leaderboard']);
 </script>
 
 <style scoped>
@@ -31,7 +31,7 @@ defineEmits(["close-leaderboard"]);
   left: 50%;
   transform: translate(-50%, -50%);
   color: #00ffcc;
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 24px;
   font-weight: bold;
   z-index: 100;

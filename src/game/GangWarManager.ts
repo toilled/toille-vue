@@ -7,9 +7,9 @@ import {
   CylinderGeometry,
   SphereGeometry,
   BoxGeometry,
-} from "three";
-import { CELL_SIZE, START_OFFSET, GRID_SIZE, BLOCK_SIZE } from "./config";
-import { getHeight } from "../utils/HeightMap";
+} from 'three';
+import { CELL_SIZE, START_OFFSET, GRID_SIZE, BLOCK_SIZE } from './config';
+import { getHeight } from '../utils/HeightMap';
 
 interface GangConfig {
   id: number;
@@ -18,10 +18,10 @@ interface GangConfig {
 }
 
 const GANGS: GangConfig[] = [
-  { id: 0, color: 0x00ff00, name: "Neon Vipers" }, // Green
-  { id: 1, color: 0xff00ff, name: "Cyber Punks" }, // Magenta
-  { id: 2, color: 0x00ffff, name: "Data Ghosts" }, // Cyan
-  { id: 3, color: 0xff0000, name: "Red Dragons" }, // Red
+  { id: 0, color: 0x00ff00, name: 'Neon Vipers' }, // Green
+  { id: 1, color: 0xff00ff, name: 'Cyber Punks' }, // Magenta
+  { id: 2, color: 0x00ffff, name: 'Data Ghosts' }, // Cyan
+  { id: 3, color: 0xff0000, name: 'Red Dragons' }, // Red
 ];
 
 class Projectile {
@@ -43,7 +43,7 @@ class Warrior {
   group: Group;
   gangId: number;
   hp: number = 3;
-  state: "IDLE" | "COMBAT" | "DEAD" = "IDLE";
+  state: 'IDLE' | 'COMBAT' | 'DEAD' = 'IDLE';
   target: Warrior | null = null;
   cooldown: number = 0;
   speed: number = 5 + Math.random() * 5;
@@ -92,19 +92,13 @@ export class GangWarManager {
   arrowGeo: CylinderGeometry;
   arrowMat: MeshBasicMaterial;
 
-  occupiedGrids: Map<
-    string,
-    { halfW: number; halfD: number; isRound?: boolean }
-  >;
+  occupiedGrids: Map<string, { halfW: number; halfD: number; isRound?: boolean }>;
 
   constructor(
     scene: Scene,
-    occupiedGrids: Map<
-      string,
-      { halfW: number; halfD: number; isRound?: boolean }
-    >,
+    occupiedGrids: Map<string, { halfW: number; halfD: number; isRound?: boolean }>,
     spawnSparks: (pos: Vector3) => void,
-    playPewSound: (pos?: Vector3) => void,
+    playPewSound: (pos?: Vector3) => void
   ) {
     this.scene = scene;
     this.occupiedGrids = occupiedGrids;
@@ -193,10 +187,7 @@ export class GangWarManager {
     const head = new Mesh(this.headGeo, mat);
     head.position.y = 1.5;
 
-    const gun = new Mesh(
-      this.gunGeo,
-      new MeshBasicMaterial({ color: 0x555555 }),
-    );
+    const gun = new Mesh(this.gunGeo, new MeshBasicMaterial({ color: 0x555555 }));
     gun.position.set(0.6, 0.8, 0.5);
 
     group.add(body);
@@ -218,18 +209,18 @@ export class GangWarManager {
 
     // Update Warriors
     for (const warrior of this.warriors) {
-      if (warrior.state === "DEAD") continue;
+      if (warrior.state === 'DEAD') continue;
 
       // Check if target is still valid
       if (warrior.target) {
-        if (warrior.target.state === "DEAD") {
+        if (warrior.target.state === 'DEAD') {
           warrior.target = null;
-          warrior.state = "IDLE";
+          warrior.state = 'IDLE';
         } else if (!this.isValidTarget(warrior, warrior.target)) {
           // Keep target but switch to chasing?
           // For now, if out of range, drop target and maybe find new one or move closer
           warrior.target = null;
-          warrior.state = "IDLE";
+          warrior.state = 'IDLE';
         }
       }
 
@@ -238,7 +229,7 @@ export class GangWarManager {
       }
 
       if (warrior.target) {
-        warrior.state = "COMBAT";
+        warrior.state = 'COMBAT';
         this.updateCombat(warrior, dt);
       } else {
         this.updateIdle(warrior, dt);
@@ -263,12 +254,10 @@ export class GangWarManager {
       // Check collision with warriors
       // Simple distance check
       for (const warrior of this.warriors) {
-        if (warrior.state === "DEAD") continue;
+        if (warrior.state === 'DEAD') continue;
         if (warrior.gangId === proj.shooterId) continue; // Don't hit friends
 
-        const distSq = warrior.group.position.distanceToSquared(
-          proj.mesh.position,
-        );
+        const distSq = warrior.group.position.distanceToSquared(proj.mesh.position);
         if (distSq < 2 * 2) {
           // Hit radius
           this.damageWarrior(warrior, proj.damage);
@@ -291,9 +280,7 @@ export class GangWarManager {
 
   isValidTarget(w: Warrior, target: Warrior): boolean {
     const range = 150; // Increased range
-    return (
-      w.group.position.distanceToSquared(target.group.position) < range * range
-    );
+    return w.group.position.distanceToSquared(target.group.position) < range * range;
   }
 
   findTarget(w: Warrior) {
@@ -303,7 +290,7 @@ export class GangWarManager {
 
     for (const other of this.warriors) {
       if (other.gangId === w.gangId) continue;
-      if (other.state === "DEAD") continue;
+      if (other.state === 'DEAD') continue;
 
       const d = w.group.position.distanceToSquared(other.group.position);
       if (d < searchRange * searchRange && d < minDist) {
@@ -390,14 +377,13 @@ export class GangWarManager {
       // Flash red
       (w.body.material as MeshBasicMaterial).color.setHex(0xff0000);
       w.flashTimerId = setTimeout(() => {
-        if (w.state !== "DEAD")
-          (w.body.material as MeshBasicMaterial).color.setHex(0x111111);
+        if (w.state !== 'DEAD') (w.body.material as MeshBasicMaterial).color.setHex(0x111111);
       }, 100);
     }
   }
 
   killWarrior(w: Warrior) {
-    w.state = "DEAD";
+    w.state = 'DEAD';
     w.clearFlashTimer();
     w.group.rotation.x = Math.PI / 2; // Fall over
     const h = getHeight(w.group.position.x, w.group.position.z);
@@ -414,7 +400,7 @@ export class GangWarManager {
     GANGS.forEach((g) => counts.set(g.id, 0));
 
     this.warriors.forEach((w) => {
-      if (w.state !== "DEAD") {
+      if (w.state !== 'DEAD') {
         counts.set(w.gangId, (counts.get(w.gangId) || 0) + 1);
       }
     });
@@ -451,9 +437,7 @@ export class GangWarManager {
     this.fightMarkers = [];
 
     // Identify clusters of combat
-    const combatants = this.warriors.filter(
-      (w) => w.state === "COMBAT" && w.hp > 0,
-    );
+    const combatants = this.warriors.filter((w) => w.state === 'COMBAT' && w.hp > 0);
     if (combatants.length === 0) return;
 
     // Simple clustering: Grid based? Or just proximity
@@ -473,9 +457,8 @@ export class GangWarManager {
         if (visited.has(j)) continue;
 
         if (
-          combatants[i].group.position.distanceToSquared(
-            combatants[j].group.position,
-          ) < clusterRangeSq
+          combatants[i].group.position.distanceToSquared(combatants[j].group.position) <
+          clusterRangeSq
         ) {
           center.add(combatants[j].group.position);
           count++;

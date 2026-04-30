@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref } from 'vue';
 
 /**
  * @file Title.vue
@@ -49,20 +49,20 @@ defineProps<{
  * @emits joke - Emitted when the subtitle is clicked.
  */
 const emit = defineEmits<{
-  (e: "activity"): void;
-  (e: "joke"): void;
+  (e: 'activity'): void;
+  (e: 'joke'): void;
 }>();
 
 const animatingTitle = ref(false);
 const animatingSubtitle = ref(false);
 
 function handleTitleClick() {
-  emit("activity");
+  emit('activity');
   triggerAnimation(animatingTitle);
 }
 
 function handleSubtitleClick() {
-  emit("joke");
+  emit('joke');
   triggerAnimation(animatingSubtitle);
 }
 

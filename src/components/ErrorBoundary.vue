@@ -8,21 +8,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onErrorCaptured } from "vue";
+import { ref, onErrorCaptured } from 'vue';
 
 const hasError = ref(false);
-const errorMessage = ref("");
+const errorMessage = ref('');
 
 onErrorCaptured((err: Error) => {
   hasError.value = true;
-  errorMessage.value = err.message || "An unexpected error occurred";
-  console.error("Error caught by boundary:", err);
+  errorMessage.value = err.message || 'An unexpected error occurred';
+  console.error('Error caught by boundary:', err);
   return false;
 });
 
 function resetError() {
   hasError.value = false;
-  errorMessage.value = "";
+  errorMessage.value = '';
 }
 </script>
 

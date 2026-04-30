@@ -1,10 +1,10 @@
-import { vi } from "vitest";
+import { vi } from 'vitest';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 // @ts-expect-error: Mocking complex overload structure
 HTMLCanvasElement.prototype.getContext = vi.fn((contextId: string) => {
-  if (contextId === "2d") {
+  if (contextId === '2d') {
     return {
       fillRect: vi.fn(),
       clearRect: vi.fn(),
@@ -32,22 +32,22 @@ HTMLCanvasElement.prototype.getContext = vi.fn((contextId: string) => {
       strokeRect: vi.fn(),
       setLineDash: vi.fn(),
       fillText: vi.fn(), // Added fillText
-      fillStyle: "",
-      strokeStyle: "",
+      fillStyle: '',
+      strokeStyle: '',
       lineWidth: 0,
-      shadowColor: "",
+      shadowColor: '',
       shadowBlur: 0,
     } as unknown as CanvasRenderingContext2D;
   }
   return null;
 });
 
-vi.mock("three", async () => {
-  const actual = await vi.importActual("three");
+vi.mock('three', async () => {
+  const actual = await vi.importActual('three');
   return {
     ...(actual as Record<string, unknown>),
     WebGLRenderer: class {
-      domElement = document.createElement("canvas");
+      domElement = document.createElement('canvas');
       shadowMap = { enabled: false, type: 0 };
       toneMapping = 0;
       toneMappingExposure = 1;
@@ -58,6 +58,11 @@ vi.mock("three", async () => {
       dispose = vi.fn();
       setAnimationLoop = vi.fn();
       constructor(_parameters?: any) {}
+    },
+    TorusGeometry: class {
+      constructor() {}
+      translate() {}
+      rotateZ() {}
     },
     CylinderGeometry: class {
       parameters: any;
@@ -149,7 +154,7 @@ vi.mock("three", async () => {
           this: { x: number; y: number; z: number },
           x: number,
           y: number,
-          z: number,
+          z: number
         ) {
           this.x = x;
           this.y = y;
@@ -158,7 +163,7 @@ vi.mock("three", async () => {
         }),
         copy: vi.fn(function (
           this: { x: number; y: number; z: number },
-          v: { x: number; y: number; z: number },
+          v: { x: number; y: number; z: number }
         ) {
           this.x = v.x;
           this.y = v.y;
@@ -213,7 +218,7 @@ vi.mock("three", async () => {
           this: { x: number; y: number; z: number },
           x: number,
           y: number,
-          z: number,
+          z: number
         ) {
           this.x = x;
           this.y = y;
@@ -222,7 +227,7 @@ vi.mock("three", async () => {
         }),
         copy: vi.fn(function (
           this: { x: number; y: number; z: number },
-          v: { x: number; y: number; z: number },
+          v: { x: number; y: number; z: number }
         ) {
           this.x = v.x;
           this.y = v.y;
@@ -281,8 +286,7 @@ vi.mock("three", async () => {
     MeshBasicMaterial: class {
       color = { getHex: vi.fn(() => 0xffffff) };
       constructor(params?: any) {
-        if (params?.color !== undefined)
-          this.color.getHex = vi.fn(() => params.color);
+        if (params?.color !== undefined) this.color.getHex = vi.fn(() => params.color);
       }
       clone() {
         return this;
@@ -397,7 +401,7 @@ vi.mock("three", async () => {
   };
 });
 
-vi.mock("three/examples/jsm/postprocessing/EffectComposer", () => ({
+vi.mock('three/examples/jsm/postprocessing/EffectComposer', () => ({
   EffectComposer: class {
     constructor() {}
     addPass = vi.fn();
@@ -410,13 +414,13 @@ vi.mock("three/examples/jsm/postprocessing/EffectComposer", () => ({
   },
 }));
 
-vi.mock("three/examples/jsm/postprocessing/RenderPass", () => ({
+vi.mock('three/examples/jsm/postprocessing/RenderPass', () => ({
   RenderPass: class {
     constructor() {}
   },
 }));
 
-vi.mock("three/examples/jsm/postprocessing/UnrealBloomPass", () => ({
+vi.mock('three/examples/jsm/postprocessing/UnrealBloomPass', () => ({
   UnrealBloomPass: class {
     strength = 1.5;
     radius = 0.4;
@@ -425,7 +429,7 @@ vi.mock("three/examples/jsm/postprocessing/UnrealBloomPass", () => ({
   },
 }));
 
-vi.mock("three/examples/jsm/postprocessing/AfterimagePass", () => ({
+vi.mock('three/examples/jsm/postprocessing/AfterimagePass', () => ({
   AfterimagePass: class {
     enabled = false;
     uniforms = { damp: { value: 0.96 } };
@@ -433,7 +437,7 @@ vi.mock("three/examples/jsm/postprocessing/AfterimagePass", () => ({
   },
 }));
 
-vi.mock("three/examples/jsm/postprocessing/GlitchPass", () => ({
+vi.mock('three/examples/jsm/postprocessing/GlitchPass', () => ({
   GlitchPass: class {
     enabled = false;
     goWild = false;
@@ -441,52 +445,52 @@ vi.mock("three/examples/jsm/postprocessing/GlitchPass", () => ({
   },
 }));
 
-vi.mock("three/examples/jsm/postprocessing/OutputPass", () => ({
+vi.mock('three/examples/jsm/postprocessing/OutputPass', () => ({
   OutputPass: class {
     constructor() {}
   },
 }));
 
 vi.stubGlobal(
-  "requestAnimationFrame",
-  vi.fn((cb) => setTimeout(cb, 16)),
+  'requestAnimationFrame',
+  vi.fn((cb) => setTimeout(cb, 16))
 );
 vi.stubGlobal(
-  "cancelAnimationFrame",
-  vi.fn((id) => clearTimeout(id)),
+  'cancelAnimationFrame',
+  vi.fn((id) => clearTimeout(id))
 );
 
 vi.stubGlobal(
-  "ResizeObserver",
+  'ResizeObserver',
   class ResizeObserver {
     observe() {}
     unobserve() {}
     disconnect() {}
-  },
+  }
 );
 
 vi.stubGlobal(
-  "fetch",
+  'fetch',
   vi.fn(() =>
     Promise.resolve({
       json: () => Promise.resolve({}),
-      text: () => Promise.resolve(""),
+      text: () => Promise.resolve(''),
       ok: true,
       headers: {
         get: vi.fn(),
       },
-    }),
-  ),
+    })
+  )
 );
 
 vi.stubGlobal(
-  "AudioContext",
+  'AudioContext',
   class AudioContext {
-    state = "suspended";
+    state = 'suspended';
     currentTime = 0;
     createOscillator() {
       return {
-        type: "sine",
+        type: 'sine',
         frequency: {
           setValueAtTime: vi.fn(),
           exponentialRampToValueAtTime: vi.fn(),
@@ -509,7 +513,7 @@ vi.stubGlobal(
     }
     createBiquadFilter() {
       return {
-        type: "lowpass",
+        type: 'lowpass',
         frequency: {
           setValueAtTime: vi.fn(),
           exponentialRampToValueAtTime: vi.fn(),
@@ -526,20 +530,20 @@ vi.stubGlobal(
       return { buffer: null, connect: vi.fn(), start: vi.fn(), stop: vi.fn() };
     }
     resume() {
-      this.state = "running";
+      this.state = 'running';
       return Promise.resolve();
     }
     suspend() {
-      this.state = "suspended";
+      this.state = 'suspended';
       return Promise.resolve();
     }
     close() {
       // Added close method
-      this.state = "closed";
+      this.state = 'closed';
       return Promise.resolve();
     }
     destination = {};
     sampleRate = 44100;
-  },
+  }
 );
-vi.stubGlobal("webkitAudioContext", (globalThis as any).AudioContext);
+vi.stubGlobal('webkitAudioContext', (globalThis as any).AudioContext);

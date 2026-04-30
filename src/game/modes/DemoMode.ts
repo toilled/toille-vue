@@ -1,8 +1,8 @@
-import { GameMode, GameContext } from "../types";
-import { Vector3, MathUtils, Group, Mesh, Object3D } from "three";
-import { cyberpunkAudio } from "../../utils/CyberpunkAudio";
-import { AfterimagePass } from "three/examples/jsm/postprocessing/AfterimagePass";
-import { GlitchPass } from "three/examples/jsm/postprocessing/GlitchPass";
+import { GameMode, GameContext } from '../types';
+import { Vector3, MathUtils, Group, Mesh, Object3D } from 'three';
+import { cyberpunkAudio } from '../../utils/CyberpunkAudio';
+import { AfterimagePass } from 'three/examples/jsm/postprocessing/AfterimagePass';
+import { GlitchPass } from 'three/examples/jsm/postprocessing/GlitchPass';
 
 interface BloomPass {
   strength: number;
@@ -12,11 +12,11 @@ interface BloomPass {
 
 function isBloomPass(pass: unknown): pass is BloomPass {
   return (
-    typeof pass === "object" &&
+    typeof pass === 'object' &&
     pass !== null &&
-    "strength" in pass &&
-    "radius" in pass &&
-    "threshold" in pass
+    'strength' in pass &&
+    'radius' in pass &&
+    'threshold' in pass
   );
 }
 
@@ -35,8 +35,7 @@ export class DemoMode implements GameMode {
 
   private sparkTargets: Vector3[] = [];
 
-  private onAudioNoteBound = (type: string, data?: number) =>
-    this.onAudioNote(type, data);
+  private onAudioNoteBound = (type: string, data?: number) => this.onAudioNote(type, data);
 
   init(context: GameContext): void {
     this.context = context;
@@ -63,7 +62,7 @@ export class DemoMode implements GameMode {
       }
 
       this.afterimagePass = new AfterimagePass();
-      this.afterimagePass.uniforms["damp"].value = 0.8;
+      this.afterimagePass.uniforms['damp'].value = 0.8;
       this.afterimagePass.enabled = false;
       this.context.composer.addPass(this.afterimagePass);
 
@@ -105,13 +104,13 @@ export class DemoMode implements GameMode {
           // Using constructor name as a heuristic since instanceOf might fail if imports differ in tests/runtime
           const isCone =
             child.geometry &&
-            (child.geometry.type === "ConeGeometry" ||
-              child.geometry.constructor.name === "ConeGeometry");
+            (child.geometry.type === 'ConeGeometry' ||
+              child.geometry.constructor.name === 'ConeGeometry');
 
           // Check for thin BoxGeometry at the top (Antenna)
           const isAntenna =
             child.geometry &&
-            child.geometry.type === "BoxGeometry" &&
+            child.geometry.type === 'BoxGeometry' &&
             child.scale.x < 5 &&
             child.scale.z < 5 &&
             child.scale.y > 20;
@@ -119,16 +118,11 @@ export class DemoMode implements GameMode {
           let topY = worldPos.y;
 
           // Add half height
-          if (
-            child.geometry &&
-            child.geometry.parameters &&
-            child.geometry.parameters.height
-          ) {
+          if (child.geometry && child.geometry.parameters && child.geometry.parameters.height) {
             // Scaled height
             topY += (child.geometry.parameters.height * child.scale.y) / 2;
           } else if (child.geometry && child.geometry.boundingBox) {
-            topY =
-              child.geometry.boundingBox.max.y * child.scale.y + worldPos.y;
+            topY = child.geometry.boundingBox.max.y * child.scale.y + worldPos.y;
           }
 
           if (isCone || isAntenna) {
@@ -163,8 +157,8 @@ export class DemoMode implements GameMode {
           new Vector3(
             (Math.random() - 0.5) * 2000,
             300 + Math.random() * 200,
-            (Math.random() - 0.5) * 2000,
-          ),
+            (Math.random() - 0.5) * 2000
+          )
         );
       }
     }
@@ -182,9 +176,7 @@ export class DemoMode implements GameMode {
 
     this.updateScene(dt, time);
 
-    this.context.camera.position
-      .copy(this.cameraBasePosition)
-      .add(this.cameraShake);
+    this.context.camera.position.copy(this.cameraBasePosition).add(this.cameraShake);
 
     this.cameraShake.lerp(new Vector3(0, 0, 0), dt * 5);
 
@@ -192,7 +184,7 @@ export class DemoMode implements GameMode {
       this.bloomPass.strength = MathUtils.lerp(
         this.bloomPass.strength,
         this.originalBloomStrength,
-        dt * 5,
+        dt * 5
       );
     }
 
@@ -225,7 +217,7 @@ export class DemoMode implements GameMode {
   onMouseMove(_event: MouseEvent): void {}
 
   private onAudioNote(type: string, _data?: number) {
-    if (type === "kick") {
+    if (type === 'kick') {
       if (this.bloomPass) {
         this.bloomPass.strength = 3.0;
       }
@@ -236,7 +228,7 @@ export class DemoMode implements GameMode {
       }
     }
 
-    if (type === "snare") {
+    if (type === 'snare') {
       if (this.bloomPass) {
         this.bloomPass.strength = 2.5;
       }
@@ -246,10 +238,7 @@ export class DemoMode implements GameMode {
       if (this.sparkTargets.length > 0) {
         // Pick a few random spires
         for (let k = 0; k < 3; k++) {
-          const target =
-            this.sparkTargets[
-              Math.floor(Math.random() * this.sparkTargets.length)
-            ];
+          const target = this.sparkTargets[Math.floor(Math.random() * this.sparkTargets.length)];
           // Burst upwards/outwards from the tip
           for (let i = 0; i < 5; i++) {
             this.context.spawnSparks(target.clone());
@@ -258,7 +247,7 @@ export class DemoMode implements GameMode {
       }
     }
 
-    if (type === "hihat") {
+    if (type === 'hihat') {
       this.cameraShake.z += (Math.random() - 0.5) * 2;
     }
   }
@@ -285,7 +274,7 @@ export class DemoMode implements GameMode {
 
         if (this.afterimagePass) {
           this.afterimagePass.enabled = true;
-          this.afterimagePass.uniforms["damp"].value = 0.85;
+          this.afterimagePass.uniforms['damp'].value = 0.85;
         }
         break;
       }
@@ -300,7 +289,7 @@ export class DemoMode implements GameMode {
         cam.lookAt(0, 0, 0);
         if (this.afterimagePass) {
           this.afterimagePass.enabled = true;
-          this.afterimagePass.uniforms["damp"].value = 0.7;
+          this.afterimagePass.uniforms['damp'].value = 0.7;
         }
         break;
       }

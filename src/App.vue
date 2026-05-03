@@ -61,6 +61,7 @@
     ref="cyberpunkCityRef"
     @game-start="gameMode = true"
     @game-end="gameMode = false"
+    @loading-complete="showSplash = false"
   />
   <Transition name="fade">
     <Checker v-if="checker" :class="{ 'fade-out': gameMode }" />
@@ -226,13 +227,8 @@ function toggleJoke() {
   joke.value = !joke.value;
 }
 
-let splashTimeout: ReturnType<typeof setTimeout>;
-
 onMounted(() => {
   isClient.value = true;
-  splashTimeout = setTimeout(() => {
-    showSplash.value = false;
-  }, 500);
 
   setTimeout(() => {
     showHint.value = true;
@@ -266,7 +262,6 @@ onErrorCaptured((err) => {
 });
 
 onUnmounted(() => {
-  clearTimeout(splashTimeout);
   window.removeEventListener("keydown", handleKeydown);
 });
 

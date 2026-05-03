@@ -312,7 +312,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["game-start", "game-end"]);
+const emit = defineEmits(["game-start", "game-end", "loading-complete"]);
 
 const currentLookAt = new Vector3(0, 0, 0);
 
@@ -611,6 +611,8 @@ onMounted(() => {
   });
 
   cyberpunkAudio.addListener(onAudioNote);
+
+  emit("loading-complete");
 });
 
 function onKeyDown(event: KeyboardEvent) {

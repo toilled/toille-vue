@@ -1,5 +1,10 @@
 <template>
-  <div ref="canvasContainer" id="cyberpunk-city"></div>
+  <div id="cyberpunk-city-wrapper">
+    <div ref="canvasContainer" id="cyberpunk-city"></div>
+    <Transition name="glitch-fade">
+      <SplashScreen v-if="showSplash" />
+    </Transition>
+  </div>
   <GameUI
     :isDrivingMode="isDrivingMode"
     :isGameMode="isGameMode"
@@ -30,6 +35,7 @@ import {
   defineAsyncComponent,
 } from "vue";
 import { useRoute } from "vue-router";
+import SplashScreen from "./SplashScreen.vue";
 import { ScoreService, type ScoreEntry } from "../utils/ScoreService";
 import {
   AdditiveBlending,
@@ -305,14 +311,10 @@ const lookControls = ref({
   down: false,
 });
 
-const props = defineProps({
-  showSplash: {
-    type: Boolean,
-    default: true,
-  },
-});
+const props = defineProps({});
 
-const emit = defineEmits(["game-start", "game-end", "loading-complete"]);
+const emit = defineEmits(["game-start", "game-end"]);
+const showSplash = ref(true);
 
 const currentLookAt = new Vector3(0, 0, 0);
 
@@ -600,9 +602,6 @@ onMounted(() => {
   gameModeManager = new GameModeManager(context);
 
   isActive = true;
-  if (!props.showSplash) {
-    startTime.value = Date.now();
-  }
   animate();
 
   ScoreService.getTopScores().then((scores) => {
@@ -612,7 +611,7 @@ onMounted(() => {
 
   cyberpunkAudio.addListener(onAudioNote);
 
-  emit("loading-complete");
+  showSplash.value = false;
 });
 
 function onKeyDown(event: KeyboardEvent) {
@@ -628,14 +627,11 @@ function onKeyUp(event: KeyboardEvent) {
   gameModeManager.onKeyUp(event);
 }
 
-watch(
-  () => props.showSplash,
-  (newVal, oldVal) => {
-    if (oldVal === true && newVal === false) {
-      startTime.value = Date.now();
-    }
-  },
-);
+watch(showSplash, (newVal, oldVal) => {
+  if (oldVal === true && newVal === false) {
+    startTime.value = Date.now();
+  }
+});
 
 watch(activeCar, (newCar, oldCar) => {
   if (oldCar) trafficSystem.removeLightsFromCar(oldCar);
@@ -1027,12 +1023,79 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-#cyberpunk-city {
+#cyberpunk-city-wrapper {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   z-index: -1;
+}
+
+#cyberpunk-city {
+  width: 100%;
+  height: 100%;
+}
+
+.glitch-fade-leave-active {
+  animation: glitch-fade-out 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+@keyframes glitch-fade-out {
+  0% {
+    opacity: 1;
+    transform: translate(0);
+    clip-path: inset(0 0 0 0);
+  }
+  10% {
+    opacity: 1;
+    transform: translate(-2px, 2px);
+    clip-path: inset(10% 0 80% 0);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(2px, -2px);
+    clip-path: inset(80% 0 10% 0);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(-2px, 2px);
+    clip-path: inset(10% 0 80% 0);
+  }
+  40% {
+    opacity: 1;
+    transform: translate(2px, -2px);
+    clip-path: inset(80% 0 10% 0);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-2px, 2px);
+    clip-path: inset(10% 0 80% 0);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(2px, -2px);
+    clip-path: inset(80% 0 10% 0);
+  }
+  70% {
+    opacity: 1;
+    transform: translate(-2px, 2px);
+    clip-path: inset(10% 0 80% 0);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(2px, -2px);
+    clip-path: inset(80% 0 10% 0);
+  }
+  90% {
+    opacity: 1;
+    transform: translate(-2px, 2px);
+    clip-path: inset(10% 0 80% 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(0);
+    clip-path: inset(0 0 0 0);
+  }
 }
 </style>

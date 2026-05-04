@@ -3,7 +3,6 @@
     id="content-wrapper"
     :class="{
       'fade-out': gameMode,
-      'welcome-animation': !showSplash && !gameMode,
     }"
   >
     <nav>
@@ -57,11 +56,9 @@
   </div>
   <CyberpunkCity
     v-if="isClient"
-    :showSplash="showSplash"
     ref="cyberpunkCityRef"
     @game-start="gameMode = true"
     @game-end="gameMode = false"
-    @loading-complete="showSplash = false"
   />
   <Transition name="fade">
     <Checker v-if="checker" :class="{ 'fade-out': gameMode }" />
@@ -77,9 +74,6 @@
       valueName="joke"
       title="Have a laugh!"
     />
-  </Transition>
-  <Transition name="glitch-fade">
-    <SplashScreen v-if="showSplash" />
   </Transition>
 </template>
 
@@ -100,7 +94,6 @@ import Checker from "./components/Checker.vue";
 import Activity from "./components/Activity.vue";
 import Suggestion from "./components/Suggestion.vue";
 import TypingText from "./components/TypingText.vue";
-import SplashScreen from "./components/SplashScreen.vue";
 import ErrorBoundary from "./components/ErrorBoundary.vue";
 import pages from "./configs/pages.json";
 
@@ -122,7 +115,6 @@ const checker = ref(false);
 const activity = ref(false);
 const joke = ref(false);
 const showHint = ref(false);
-const showSplash = ref(true);
 const route = useRoute();
 const router = useRouter();
 const transitionName = ref("cards");
@@ -257,7 +249,6 @@ onMounted(() => {
 
 onErrorCaptured((err) => {
   console.error("App Error Captured:", err);
-  showSplash.value = false;
   return true;
 });
 
@@ -343,83 +334,6 @@ watch(
   opacity: 0;
   pointer-events: none;
   transition: opacity 2s ease;
-}
-
-.welcome-animation {
-  animation: content-welcome 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-}
-
-@keyframes content-welcome {
-  0% {
-    opacity: 0;
-    transform: translateY(50px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.glitch-fade-leave-active {
-  animation: glitch-fade-out 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-}
-
-@keyframes glitch-fade-out {
-  0% {
-    opacity: 1;
-    transform: translate(0);
-    clip-path: inset(0 0 0 0);
-  }
-  10% {
-    opacity: 1;
-    transform: translate(-2px, 2px);
-    clip-path: inset(10% 0 80% 0);
-  }
-  20% {
-    opacity: 1;
-    transform: translate(2px, -2px);
-    clip-path: inset(80% 0 10% 0);
-  }
-  30% {
-    opacity: 1;
-    transform: translate(-2px, 2px);
-    clip-path: inset(10% 0 80% 0);
-  }
-  40% {
-    opacity: 1;
-    transform: translate(2px, -2px);
-    clip-path: inset(80% 0 10% 0);
-  }
-  50% {
-    opacity: 1;
-    transform: translate(-2px, 2px);
-    clip-path: inset(10% 0 80% 0);
-  }
-  60% {
-    opacity: 1;
-    transform: translate(2px, -2px);
-    clip-path: inset(80% 0 10% 0);
-  }
-  70% {
-    opacity: 1;
-    transform: translate(-2px, 2px);
-    clip-path: inset(10% 0 80% 0);
-  }
-  80% {
-    opacity: 1;
-    transform: translate(2px, -2px);
-    clip-path: inset(80% 0 10% 0);
-  }
-  90% {
-    opacity: 1;
-    transform: translate(-2px, 2px);
-    clip-path: inset(10% 0 80% 0);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(0);
-    clip-path: inset(0 0 0 0);
-  }
 }
 
 .cyberpunk-glitch-enter-active {

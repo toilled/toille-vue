@@ -89,12 +89,10 @@ import {
   CAMERA_NEAR,
   CAMERA_START_Y,
   CAMERA_TARGET_Y_DESKTOP,
-  CAMERA_TARGET_Y_MOBILE,
   CAMERA_CINEMATIC_Y,
   CAMERA_LERP_FACTOR,
   CAMERA_LOOK_AT_LERP,
   ORBIT_RADIUS_DESKTOP,
-  ORBIT_RADIUS_MOBILE,
   ORBIT_SPEED,
   INTRO_DURATION_MS,
   INTRO_ORBIT_RADIUS,
@@ -879,15 +877,11 @@ function animate() {
       currentLookAt.lerp(cinematicTarget, CAMERA_LERP_FACTOR);
       camera.lookAt(currentLookAt);
     } else {
-      const orbitRadius = isMobile.value
-        ? ORBIT_RADIUS_MOBILE
-        : ORBIT_RADIUS_DESKTOP;
+      const orbitRadius = ORBIT_RADIUS_DESKTOP;
       camera.position.x = Math.sin(time * ORBIT_SPEED) * orbitRadius;
       camera.position.z = Math.cos(time * ORBIT_SPEED) * orbitRadius;
 
-      const targetY = isMobile.value
-        ? CAMERA_TARGET_Y_MOBILE
-        : CAMERA_TARGET_Y_DESKTOP;
+      const targetY = CAMERA_TARGET_Y_DESKTOP;
 
       const introProgress =
         startTime.value === 0

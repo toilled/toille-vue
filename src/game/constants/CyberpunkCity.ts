@@ -18,13 +18,11 @@ export const CAMERA_FAR = 3000;
 export const CAMERA_NEAR = 1;
 export const CAMERA_START_Y = 1000;
 export const CAMERA_TARGET_Y_DESKTOP = 250;
-export const CAMERA_TARGET_Y_MOBILE = 350;
 export const CAMERA_CINEMATIC_Y = 150;
 export const CAMERA_LERP_FACTOR = 0.05;
 export const CAMERA_LOOK_AT_LERP = 0.02;
 
 export const ORBIT_RADIUS_DESKTOP = 800;
-export const ORBIT_RADIUS_MOBILE = 1400;
 export const ORBIT_SPEED = 0.1;
 
 export const INTRO_DURATION_MS = 4000;

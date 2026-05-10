@@ -106,8 +106,11 @@ function triggerAnimation(animatingRef: any) {
 
 @media (max-width: 768px) {
   .site-title {
-    align-items: center;
-    text-align: center;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
   }
   .site-title h1 {
     font-size: 1.35rem;

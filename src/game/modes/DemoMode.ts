@@ -1,6 +1,7 @@
 import { GameMode, GameContext } from "../types";
 import { Vector3, MathUtils, Group, Mesh, Object3D } from "three";
 import { cyberpunkAudio } from "../../utils/CyberpunkAudio";
+import { audioManager } from "../../utils/AudioManager";
 import { AfterimagePass } from "three/examples/jsm/postprocessing/AfterimagePass";
 import { GlitchPass } from "three/examples/jsm/postprocessing/GlitchPass";
 
@@ -203,6 +204,10 @@ export class DemoMode implements GameMode {
 
   cleanup(): void {
     cyberpunkAudio.removeListener(this.onAudioNoteBound);
+
+    if (!audioManager.isSoundEnabled.value) {
+      cyberpunkAudio.pause();
+    }
 
     if (this.bloomPass) {
       this.bloomPass.strength = this.originalBloomStrength;

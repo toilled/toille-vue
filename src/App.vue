@@ -1,80 +1,87 @@
 <template>
-  <div
-    id="content-wrapper"
-    :class="{
-      'fade-out': gameMode,
-    }"
-  >
-    <nav>
-      <Title
-        :title="titles.title"
-        :subtitle="titles.subtitle"
-        :activity="activity"
-        :joke="joke"
-        @activity="toggleActivity"
-        @joke="toggleJoke"
-      />
-      <Menu
-        :pages="visiblePages"
-        :content-visible="isContentVisible"
-        @explore="startExploration"
-        @fly="startFlyingTour"
-        @demo="startDemoMode"
-        @toggle-content="toggleContent"
-      />
-    </nav>
-    <Transition name="cyberpunk-glitch">
-      <div
-        class="router-view-container"
-        ref="containerRef"
-        v-show="isContentVisible"
-      >
-        <router-view v-slot="{ Component, route }">
-          <Transition
-            :name="transitionName"
-            @before-leave="onBeforeLeave"
-            @enter="onEnter"
-            @after-enter="onAfterEnter"
+  <div id="content-wrapper" :class="{ 'fade-out': gameMode }">
+    <header class="app-header">
+      <nav class="container header-nav">
+        <Title
+          :title="titles.title"
+          :subtitle="titles.subtitle"
+          :activity="activity"
+          :joke="joke"
+          @activity="toggleActivity"
+          @joke="toggleJoke"
+        />
+        <Menu
+          :pages="visiblePages"
+          :content-visible="isContentVisible"
+          @explore="startExploration"
+          @fly="startFlyingTour"
+          @demo="startDemoMode"
+          @toggle-content="toggleContent"
+        />
+      </nav>
+    </header>
+
+    <main class="app-main">
+      <div class="container">
+        <Transition name="cyberpunk-glitch">
+          <div
+            class="router-view-container"
+            ref="containerRef"
+            v-show="isContentVisible"
           >
-            <ErrorBoundary>
-              <component :is="Component" :key="route.path" />
-            </ErrorBoundary>
-          </Transition>
-        </router-view>
+            <router-view v-slot="{ Component, route }">
+              <Transition
+                :name="transitionName"
+                @before-leave="onBeforeLeave"
+                @enter="onEnter"
+                @after-enter="onAfterEnter"
+              >
+                <ErrorBoundary>
+                  <component :is="Component" :key="route.path" />
+                </ErrorBoundary>
+              </Transition>
+            </router-view>
+          </div>
+        </Transition>
       </div>
-    </Transition>
+    </main>
+
     <Transition name="fade">
       <footer
+        class="app-footer"
         v-if="noFootersShowing && showHint"
         v-show="isContentVisible"
         @click="checker = !checker"
-        class="content-container"
       >
-        <TypingText text="The titles might be clickable..." />
+        <div class="container">
+          <TypingText text="The titles might be clickable..." />
+        </div>
       </footer>
     </Transition>
+
+    <Transition name="fade">
+      <Checker v-if="checker" :class="{ 'fade-out': gameMode }" />
+    </Transition>
+    <Transition name="fade">
+      <Activity v-show="activity" :class="{ 'fade-out': gameMode }" />
+    </Transition>
+    <Transition name="fade">
+      <Suggestion
+        v-show="joke"
+        :class="{ 'fade-out': gameMode }"
+        url="https://icanhazdadjoke.com/"
+        valueName="joke"
+        title="Have a laugh!"
+      />
+    </Transition>
   </div>
+
   <CyberpunkCity
     v-if="showCity"
     ref="cyberpunkCityRef"
     @game-start="gameMode = true"
     @game-end="gameMode = false"
   />
-  <Transition name="fade">
-    <Checker v-if="checker" :class="{ 'fade-out': gameMode }" />
-  </Transition>
-  <Transition name="fade">
-    <Activity v-show="activity" :class="{ 'fade-out': gameMode }" />
-  </Transition>
-  <Transition name="fade">
-    <Suggestion
-      v-show="joke"
-      :class="{ 'fade-out': gameMode }"
-      url="https://icanhazdadjoke.com/"
-      valueName="joke"
-      title="Have a laugh!"
-    />
-  </Transition>
 </template>
 
 <script setup lang="ts">
@@ -318,8 +325,42 @@ watch(
 </script>
 
 <style>
-.title {
-  margin-bottom: 0;
+/* ============================================
+   Layout Structure
+   ============================================ */
+#content-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(12px);
+  background: rgba(5, 5, 16, 0.8);
+  border-bottom: 1px solid rgba(0, 255, 204, 0.15);
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.app-main {
+  padding: 2rem 0;
+}
+
+.app-footer {
+  padding: 1.5rem 0;
+  text-align: center;
+  border-top: 1px solid rgba(0, 255, 204, 0.1);
+  opacity: 0.6;
+  font-size: 0.85rem;
 }
 
 .fade-enter-active,
@@ -388,6 +429,17 @@ watch(
     opacity: 0;
     transform: scaleY(0.1) skewX(60deg);
     clip-path: inset(50% 0 50% 0);
+  }
+}
+
+@media (max-width: 600px) {
+  .app-main {
+    padding: 1rem 0;
+  }
+  .header-nav {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
   }
 }
 </style>

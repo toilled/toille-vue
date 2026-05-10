@@ -1,42 +1,25 @@
 <template>
-  <ul>
-    <li>
-      <hgroup>
-        <h1
-          class="title question"
-          :class="{ 'space-warp': animatingTitle }"
-          @mousedown="handleTitleClick"
-        >
-          {{ title }}
-        </h1>
-        <h2
-          class="title question"
-          :class="{ 'space-warp': animatingSubtitle }"
-          @mousedown="handleSubtitleClick"
-        >
-          {{ subtitle }}
-        </h2>
-      </hgroup>
-    </li>
-  </ul>
+  <hgroup class="site-title">
+    <h1
+      class="title question"
+      :class="{ 'space-warp': animatingTitle }"
+      @mousedown="handleTitleClick"
+    >
+      {{ title }}
+    </h1>
+    <h2
+      class="subtitle question"
+      :class="{ 'space-warp': animatingSubtitle }"
+      @mousedown="handleSubtitleClick"
+    >
+      {{ subtitle }}
+    </h2>
+  </hgroup>
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
 
-/**
- * @file Title.vue
- * @description A component that displays a title and a subtitle.
- * It emits events when the title or subtitle is clicked.
- */
-
-/**
- * @props {Object}
- * @property {string} title - The main title text.
- * @property {string} subtitle - The subtitle text.
- * @property {boolean} activity - A boolean prop (not directly used in script, but likely for parent logic).
- * @property {boolean} joke - A boolean prop (not directly used in script, but likely for parent logic).
- */
 defineProps<{
   title: string;
   subtitle: string;
@@ -44,10 +27,6 @@ defineProps<{
   joke: boolean;
 }>();
 
-/**
- * @emits activity - Emitted when the main title is clicked.
- * @emits joke - Emitted when the subtitle is clicked.
- */
 const emit = defineEmits<{
   (e: "activity"): void;
   (e: "joke"): void;
@@ -71,11 +50,33 @@ function triggerAnimation(animatingRef: any) {
   animatingRef.value = true;
   setTimeout(() => {
     animatingRef.value = false;
-  }, 1000); // Duration matches CSS animation
+  }, 1000);
 }
 </script>
 
 <style scoped>
+.site-title {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.site-title h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+}
+
+.site-title h2 {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.3;
+  font-weight: 400;
+  opacity: 0.7;
+}
+
 .space-warp {
   animation: space-warp 1s ease-in-out;
 }
@@ -100,6 +101,15 @@ function triggerAnimation(animatingRef: any) {
   100% {
     transform: scale(1);
     filter: hue-rotate(360deg);
+  }
+}
+
+@media (max-width: 600px) {
+  .site-title h1 {
+    font-size: 1.1rem;
+  }
+  .site-title h2 {
+    font-size: 0.75rem;
   }
 }
 </style>

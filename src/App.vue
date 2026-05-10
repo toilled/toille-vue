@@ -432,7 +432,7 @@ watch(
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .app-main {
     padding: 1rem 0;
   }

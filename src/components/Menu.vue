@@ -214,20 +214,43 @@ const toggleCityBackground = () => {
   filter: invert(1);
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .nav-wrapper {
+    flex-wrap: wrap;
     gap: 0.5rem;
+    justify-content: center;
   }
   .nav-links {
-    gap: 0;
+    justify-content: center;
   }
   .nav-tools {
-    padding-left: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
     gap: 0.25rem;
+  }
+  .icon-wrapper {
+    padding: 0.2rem;
   }
   .icon {
     width: 20px;
     height: 20px;
+  }
+}
+
+@media (max-width: 400px) {
+  .nav-links {
+    flex-wrap: wrap;
+    gap: 0.1rem;
+  }
+  .nav-tools {
+    gap: 0.15rem;
+  }
+  .icon {
+    width: 18px;
+    height: 18px;
   }
 }
 </style>

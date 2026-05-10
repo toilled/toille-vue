@@ -104,12 +104,16 @@ function triggerAnimation(animatingRef: any) {
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+  .site-title {
+    align-items: center;
+    text-align: center;
+  }
   .site-title h1 {
-    font-size: 1.1rem;
+    font-size: 1.35rem;
   }
   .site-title h2 {
-    font-size: 0.75rem;
+    font-size: 0.9rem;
   }
 }
 </style>

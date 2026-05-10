@@ -263,7 +263,16 @@ const toggleCityBackground = () => {
     justify-content: center;
   }
   .nav-links {
-    justify-content: center;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    flex: 1;
+    gap: 0.15rem;
+  }
+  .nav-links::-webkit-scrollbar {
+    display: none;
   }
   .tools-toggle {
     display: flex;
@@ -292,7 +301,7 @@ const toggleCityBackground = () => {
 
 @media (max-width: 400px) {
   .nav-links {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 0.1rem;
   }
   .nav-tools {

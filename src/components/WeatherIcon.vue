@@ -173,9 +173,7 @@ const hourlyForecast = ref<HourlyData[]>([]);
 
 const fetchWeather = async () => {
   try {
-    const res = await fetch(
-      'https://api.open-meteo.com/v1/forecast?latitude=51.9001&longitude=-2.0877&current_weather=true&hourly=temperature_2m,rain&timezone=Europe%2FLondon'
-    );
+    const res = await fetch('/api/weather');
     if (!res.ok) throw new Error('Failed to fetch weather');
 
     const data = await res.json();

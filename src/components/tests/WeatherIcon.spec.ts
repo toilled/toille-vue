@@ -50,9 +50,7 @@ describe("WeatherIcon.vue", () => {
 
     await flushPromises();
 
-    expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining("api.open-meteo.com"),
-    );
+    expect(fetch).toHaveBeenCalledWith("/api/weather");
     expect(wrapper.find(".icon-wrapper").attributes("title")).toBe(
       "Clear Sky (20°C) in Cheltenham, UK",
     );

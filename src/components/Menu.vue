@@ -2,13 +2,13 @@
   <ul>
     <MenuItem v-for="page in pages" :key="page.link" :page="page" />
     <li class="icons-container">
-      <div @click="$emit('explore')" class="icon-wrapper" title="Explore City">
+      <div @click="$emit('explore')" class="icon-wrapper" :class="{ disabled: !cityOn }" title="Explore City">
         <img src="/person-icon.svg" alt="Explore City" class="icon" />
       </div>
-      <div @click="$emit('fly')" class="icon-wrapper" title="Fly Tour">
+      <div @click="$emit('fly')" class="icon-wrapper" :class="{ disabled: !cityOn }" title="Fly Tour">
         <img src="/plane-icon.svg" alt="Fly Tour" class="icon" />
       </div>
-      <div @click="$emit('demo')" class="icon-wrapper" title="64k Demo">
+      <div @click="$emit('demo')" class="icon-wrapper" :class="{ disabled: !cityOn }" title="64k Demo">
         <img src="/64k-icon.svg" alt="64k Demo" class="icon" />
       </div>
       <div @click="toggleSound" class="icon-wrapper" title="Toggle Sound">
@@ -36,6 +36,17 @@
            <path d="M6.75 12c0-.619.107-1.215.304-1.764l-3.1-3.1a11.25 11.25 0 00-2.63 4.31c-.12.362-.12.752 0 1.114 1.489 4.467 5.704 7.69 10.675 7.69 1.5 0 2.933-.294 4.242-.827l-2.477-2.477A5.25 5.25 0 016.75 12z" />
          </svg>
       </div>
+      <div @click="toggleCityBackground" class="icon-wrapper" title="Toggle City Background">
+        <svg v-if="cityOn" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon">
+          <circle cx="18" cy="5" r="2" />
+          <path d="M2 22l5-8 4 5 4-7 5 10" />
+        </svg>
+        <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon">
+          <circle cx="18" cy="5" r="2" />
+          <path d="M2 22l5-8 4 5 4-7 5 10" />
+          <line x1="3" y1="3" x2="21" y2="21" />
+        </svg>
+      </div>
       <WeatherIcon class="icon" />
     </li>
   </ul>
@@ -48,6 +59,7 @@ import WeatherIcon from "./WeatherIcon.vue";
 import { Page } from "../interfaces/Page";
 import { cyberpunkAudio } from "../utils/CyberpunkAudio";
 import { audioManager } from "../utils/AudioManager";
+import { cityBackground } from "../utils/CityBackgroundManager";
 
 /**
  * @file Menu.vue
@@ -71,6 +83,7 @@ const emit = defineEmits<{
 }>();
 
 const soundOn = computed(() => audioManager.isSoundEnabled.value);
+const cityOn = computed(() => cityBackground.isEnabled.value);
 
 const toggleSound = () => {
   audioManager.toggleSound();
@@ -79,6 +92,10 @@ const toggleSound = () => {
   } else {
     cyberpunkAudio.pause();
   }
+};
+
+const toggleCityBackground = () => {
+  cityBackground.toggle();
 };
 </script>
 
@@ -101,6 +118,12 @@ ul {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.icon-wrapper.disabled {
+  opacity: 0.3;
+  cursor: default;
+  pointer-events: none;
 }
 
 .icon {

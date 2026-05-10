@@ -38,7 +38,7 @@ describe("Title.vue", () => {
             joke: false,
         },
     });
-    await wrapper.find("h2.title.question").trigger("mousedown");
+    await wrapper.find("h2.subtitle.question").trigger("mousedown");
     expect(wrapper.emitted("joke")).toBeTruthy();
   });
 });

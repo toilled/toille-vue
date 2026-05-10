@@ -1,7 +1,7 @@
 <template>
   <main id="main-content">
     <section>
-      <article class="marginless">
+      <article class="marginless page-content-card">
         <header>
           <h2 class="title" @mousedown="handleMouseDown">
             <template v-if="page">
@@ -9,12 +9,7 @@
               <Transition name="fade">
                 <span
                   v-if="showHint"
-                  style="
-                    font-weight: 100;
-                    font-style: italic;
-                    font-size: 0.6em;
-                    vertical-align: middle;
-                  "
+                  class="page-hint"
                 >
                   - Nothing here
                 </span>
@@ -23,29 +18,31 @@
             <template v-else> 404 - Page not found </template>
           </h2>
         </header>
-        <template v-if="page">
-          <Paragraph
-            v-for="(paragraph, index) in page.body"
-            :key="index"
-            :paragraph="paragraph"
-            :last="index + 1 === page.body.length"
-          />
-        </template>
-        <template v-else>
-          <Paragraph
-            :paragraph="`The page <strong>${route.params.name}</strong> does not exist!`"
-            :last="false"
-          />
-          <div class="not-found-nav">
-            <h3>Available Pages:</h3>
-            <ul>
-              <li v-for="p in availablePages" :key="p.link">
-                <router-link :to="p.link">{{ p.icon }} {{ p.name }}</router-link>
-              </li>
-            </ul>
-            <router-link to="/" class="button outline">Go Home</router-link>
-          </div>
-        </template>
+        <div class="page-body">
+          <template v-if="page">
+            <Paragraph
+              v-for="(paragraph, index) in page.body"
+              :key="index"
+              :paragraph="paragraph"
+              :last="index + 1 === page.body.length"
+            />
+          </template>
+          <template v-else>
+            <Paragraph
+              :paragraph="`The page <strong>${route.params.name}</strong> does not exist!`"
+              :last="false"
+            />
+            <div class="not-found-nav">
+              <h3>Available Pages:</h3>
+              <ul>
+                <li v-for="p in availablePages" :key="p.link">
+                  <router-link :to="p.link">{{ p.icon }} {{ p.name }}</router-link>
+                </li>
+              </ul>
+              <router-link to="/" class="button outline">Go Home</router-link>
+            </div>
+          </template>
+        </div>
       </article>
     </section>
   </main>
@@ -155,3 +152,34 @@ function handleMouseDown() {
 }
 
 </script>
+
+<style scoped>
+.page-content-card {
+  padding: 1.5rem 2rem;
+}
+
+.page-content-card > header {
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.page-hint {
+  font-weight: 100;
+  font-style: italic;
+  font-size: 0.6em;
+  vertical-align: middle;
+}
+
+.page-body {
+  font-size: 0.95rem;
+}
+
+@media (max-width: 600px) {
+  .page-content-card {
+    padding: 1rem 1.25rem;
+  }
+  .page-body {
+    font-size: 0.9rem;
+  }
+}
+</style>

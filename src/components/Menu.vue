@@ -3,7 +3,18 @@
     <ul class="nav-links">
       <MenuItem v-for="page in pages" :key="page.link" :page="page" />
     </ul>
-    <div class="nav-tools">
+    <button
+      class="tools-toggle"
+      @click="showTools = !showTools"
+      :class="{ expanded: showTools }"
+      aria-label="Toggle tools"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="toggle-icon">
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <line x1="12" y1="5" x2="12" y2="19" />
+      </svg>
+    </button>
+    <div class="nav-tools" :class="{ show: showTools }">
       <div
         @click="$emit('explore')"
         class="icon-wrapper"
@@ -144,6 +155,8 @@ const emit = defineEmits<{
   (e: "demo"): void;
 }>();
 
+const showTools = ref(false);
+
 const soundOn = computed(() => audioManager.isSoundEnabled.value);
 const cityOn = computed(() => cityBackground.isEnabled.value);
 
@@ -187,6 +200,35 @@ const toggleCityBackground = () => {
   opacity: 0.8;
 }
 
+.tools-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--pico-border-color, #00ffcc);
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0.25rem;
+  margin-left: auto;
+  color: #00ffcc;
+  transition: all 0.2s ease;
+}
+
+.can-hover .tools-toggle:hover {
+  background: rgba(0, 255, 204, 0.1);
+  box-shadow: 0 0 8px rgba(0, 255, 204, 0.3);
+}
+
+.toggle-icon {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.3s ease;
+}
+
+.tools-toggle.expanded .toggle-icon {
+  transform: rotate(45deg);
+}
+
 .icon-wrapper {
   cursor: pointer;
   display: flex;
@@ -223,13 +265,21 @@ const toggleCityBackground = () => {
   .nav-links {
     justify-content: center;
   }
+  .tools-toggle {
+    display: flex;
+  }
   .nav-tools {
+    display: none;
+    width: 100%;
     flex-wrap: wrap;
     justify-content: center;
     margin-left: 0;
     padding-left: 0;
     border-left: none;
     gap: 0.25rem;
+  }
+  .nav-tools.show {
+    display: flex;
   }
   .icon-wrapper {
     padding: 0.2rem;

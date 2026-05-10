@@ -389,26 +389,26 @@ onUnmounted(() => {
   clearTimeout(scrollLockTimeout);
 });
 
+function getTitleForPath(path: string): string {
+  switch (path) {
+    case "/noughts-and-crosses":
+      return "Noughts and Crosses";
+    case "/checker":
+      return "Checker";
+    case "/ask":
+      return "Ask Me";
+    default:
+      const page = visiblePages.value.find(
+        (p: Page) => getSectionIdFromPage(p) === activeSection.value
+      );
+      return page ? page.title : "Elliot Dickerson";
+  }
+}
+
 watch(
   () => route.path,
   (newPath) => {
-    let pageTitle;
-
-    switch (newPath) {
-      case "/noughts-and-crosses":
-        pageTitle = "Noughts and Crosses";
-        break;
-      case "/checker":
-        pageTitle = "Checker";
-        break;
-      case "/ask":
-        pageTitle = "Ask Me";
-        break;
-      default:
-        pageTitle = "Elliot Dickerson";
-        break;
-    }
-
+    const pageTitle = getTitleForPath(newPath);
     if (typeof document !== "undefined") {
       document.title = "Elliot > " + pageTitle;
     }
@@ -417,13 +417,11 @@ watch(
 );
 
 watch(activeSection, (newSection) => {
-  const page = visiblePages.value.find(
-    (p: Page) => getSectionIdFromPage(p) === newSection
-  );
-  if (page && typeof document !== "undefined") {
-    document.title = "Elliot > " + page.title;
+  const pageTitle = getTitleForPath(route.path);
+  if (typeof document !== "undefined") {
+    document.title = "Elliot > " + pageTitle;
   }
-});
+}, { immediate: true });
 </script>
 
 <style>

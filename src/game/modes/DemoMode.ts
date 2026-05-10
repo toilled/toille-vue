@@ -202,7 +202,6 @@ export class DemoMode implements GameMode {
   }
 
   cleanup(): void {
-    cyberpunkAudio.pause();
     cyberpunkAudio.removeListener(this.onAudioNoteBound);
 
     if (this.bloomPass) {

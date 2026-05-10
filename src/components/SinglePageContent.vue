@@ -201,7 +201,6 @@ const displayPages = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  padding-bottom: min(20vh, 200px);
 }
 
 .page-section {

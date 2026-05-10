@@ -155,6 +155,34 @@ function startDemoMode() {
   }
 }
 
+function navigatePage(direction: "next" | "prev") {
+  const currentIndex = visiblePages.value.findIndex(
+    (page: Page) => page.link === route.path,
+  );
+  if (direction === "next" && currentIndex !== -1 && currentIndex < visiblePages.value.length - 1) {
+    router.push(visiblePages.value[currentIndex + 1].link);
+  } else if (direction === "prev" && currentIndex > 0) {
+    router.push(visiblePages.value[currentIndex - 1].link);
+  }
+}
+
+let touchStartX = 0;
+let touchStartY = 0;
+
+function handleTouchStart(e: TouchEvent) {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}
+
+function handleTouchEnd(e: TouchEvent) {
+  if (gameMode.value) return;
+  const deltaX = e.changedTouches[0].clientX - touchStartX;
+  const deltaY = e.changedTouches[0].clientY - touchStartY;
+  if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+    navigatePage(deltaX < 0 ? "next" : "prev");
+  }
+}
+
 function handleKeydown(e: KeyboardEvent) {
   if (gameMode.value) return;
 
@@ -166,24 +194,12 @@ function handleKeydown(e: KeyboardEvent) {
   }
 
   switch (e.key) {
-    case "ArrowRight": {
-      const currentIndex = visiblePages.value.findIndex(
-        (page: Page) => page.link === route.path,
-      );
-      if (currentIndex !== -1 && currentIndex < visiblePages.value.length - 1) {
-        router.push(visiblePages.value[currentIndex + 1].link);
-      }
+    case "ArrowRight":
+      navigatePage("next");
       break;
-    }
-    case "ArrowLeft": {
-      const currentIndex = visiblePages.value.findIndex(
-        (page: Page) => page.link === route.path,
-      );
-      if (currentIndex > 0) {
-        router.push(visiblePages.value[currentIndex - 1].link);
-      }
+    case "ArrowLeft":
+      navigatePage("prev");
       break;
-    }
   }
 }
 
@@ -254,6 +270,12 @@ onMounted(() => {
   });
 
   window.addEventListener("keydown", handleKeydown);
+
+  const contentEl = document.getElementById("content-wrapper");
+  if (contentEl) {
+    contentEl.addEventListener("touchstart", handleTouchStart, { passive: true });
+    contentEl.addEventListener("touchend", handleTouchEnd, { passive: true });
+  }
 });
 
 onErrorCaptured((err) => {
@@ -263,6 +285,11 @@ onErrorCaptured((err) => {
 
 onUnmounted(() => {
   window.removeEventListener("keydown", handleKeydown);
+  const contentEl = document.getElementById("content-wrapper");
+  if (contentEl) {
+    contentEl.removeEventListener("touchstart", handleTouchStart);
+    contentEl.removeEventListener("touchend", handleTouchEnd);
+  }
 });
 
 watch(

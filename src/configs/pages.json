@@ -49,7 +49,7 @@
     "body": [
       "Welcome to the hidden page! This area isn't linked in the main navigation, but it's here for those curious enough to find it.",
       "Here are some fun projects and games I've built:",
-      "<ul><li>Alcohol Checker - Calculate when you'll be sober enough to drive</li><li>Catch the Button - A simple reflex game to test your clicking speed</li><li>Noughts and Crosses - Classic tic-tac-toe against a bot</li><li>Ask Me - Chat with an automated assistant about my background</li></ul>",
+      "<ul><li>Alcohol Checker - Calculate when you'll be sober enough to drive</li><li>Noughts and Crosses - Classic tic-tac-toe against a bot</li><li>Ask Me - Chat with an automated assistant about my background</li></ul>",
       "Enjoy exploring these little experiments!"
     ]
   }

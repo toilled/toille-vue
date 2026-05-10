@@ -1024,6 +1024,8 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   z-index: -1;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 #cyberpunk-city {

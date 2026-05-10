@@ -55,7 +55,7 @@
     </Transition>
   </div>
   <CyberpunkCity
-    v-if="isClient"
+    v-if="showCity"
     ref="cyberpunkCityRef"
     @game-start="gameMode = true"
     @game-end="gameMode = false"
@@ -103,6 +103,7 @@ const CyberpunkCity = defineAsyncComponent(() => {
   }
   return import("./components/CyberpunkCity.vue");
 });
+import { cityBackground } from "./utils/CityBackgroundManager";
 import titles from "./configs/titles.json";
 import { Page } from "./interfaces/Page";
 
@@ -121,6 +122,7 @@ const transitionName = ref("cards");
 const gameMode = ref(false);
 const isContentVisible = ref(true);
 const isClient = ref(false);
+const showCity = computed(() => isClient.value && cityBackground.isEnabled.value);
 
 function toggleContent() {
   isContentVisible.value = !isContentVisible.value;

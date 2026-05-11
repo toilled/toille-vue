@@ -56,27 +56,6 @@
             :skills="toolsSkills"
             category="Tools & Platforms"
           />
-
-          <SectionDivider icon="💼" />
-          <h4 class="sub-heading">Experience Overview</h4>
-          <div class="timeline">
-            <div class="timeline-item">
-              <div class="timeline-marker"></div>
-              <div class="timeline-content">
-                <h5>Software Engineer</h5>
-                <p class="timeline-company">RM</p>
-                <p class="timeline-period">Current</p>
-              </div>
-            </div>
-            <div class="timeline-item">
-              <div class="timeline-marker"></div>
-              <div class="timeline-content">
-                <h5>14+ Years Experience</h5>
-                <p class="timeline-company">Software & Web Development</p>
-                <p class="timeline-period">Career</p>
-              </div>
-            </div>
-          </div>
         </template>
 
         <SectionDivider v-if="getSectionId(page) === 'interests'" icon="✨" />

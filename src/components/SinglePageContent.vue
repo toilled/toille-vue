@@ -24,20 +24,26 @@
           />
         </div>
 
-        <SectionDivider v-if="getSectionId(page) === 'home'" icon="🎮" />
+        <SectionDivider v-if="getSectionId(page) === 'home'" icon="🛠️" />
         <template v-if="getSectionId(page) === 'home'">
-          <h4 class="sub-heading">Explore This Site</h4>
+          <h4 class="sub-heading">Built With</h4>
           <FeatureCard
-            icon="🧮"
-            title="Noughts & Crosses"
-            description="Play tic-tac-toe against an unbeatable AI"
-            link="/noughts-and-crosses"
+            icon="💚"
+            title="Vue.js"
+            description="Progressive JavaScript framework for building the UI"
+            link="https://vuejs.org"
           />
           <FeatureCard
-            icon="🤖"
-            title="Ask Me Anything"
-            description="Chat with a bot that knows about my background"
-            link="/ask"
+            icon="🎲"
+            title="Three.js"
+            description="3D library powering the interactive cyberpunk city"
+            link="https://threejs.org"
+          />
+          <FeatureCard
+            icon="📘"
+            title="TypeScript"
+            description="Type-safe JavaScript for scalable development"
+            link="https://www.typescriptlang.org"
           />
         </template>
 
@@ -116,26 +122,28 @@ import SectionDivider from "./SectionDivider.vue";
 import { Page } from "../interfaces/Page";
 
 const backendSkills = [
+  { name: "Laravel", icon: "/laravel-icon.svg" },
+  { name: "MySQL", icon: "/mysql-icon.svg" },
   { name: "PHP", icon: "🐘" },
-  { name: "Laravel", icon: "🔧" },
-  { name: "Symfony", icon: "🎵" },
-  { name: "MySQL", icon: "🗄️" },
+  { name: "Symfony", icon: "/symfony-icon.svg" },
+  { name: "Yii", icon: "/yii-icon.svg" },
 ];
 
 const frontendSkills = [
-  { name: "Vue.js", icon: "💚" },
+  { name: "JavaScript", icon: "/javascript-icon.svg" },
   { name: "React", icon: "⚛️" },
-  { name: "SolidJS", icon: "🔷" },
-  { name: "JavaScript", icon: "📜" },
-  { name: "TypeScript", icon: "📘" },
-  { name: "Three.js", icon: "🎲" },
+  { name: "SolidJS", icon: "/solidjs-icon.svg" },
+  { name: "Three.js", icon: "/threejs-icon.svg" },
+  { name: "TypeScript", icon: "/typescript-icon.svg" },
+  { name: "Vue.js", icon: "/vuejs-icon.svg" },
 ];
 
 const toolsSkills = [
-  { name: "Git", icon: "🌿" },
+  { name: "Cloudflare", icon: "/cloudflare-icon.svg" },
   { name: "Docker", icon: "🐳" },
-  { name: "Cloudflare", icon: "☁️" },
-  { name: "MQTT", icon: "📡" },
+  { name: "Git", icon: "/git-icon.svg" },
+  { name: "Linux", icon: "🐧" },
+  { name: "MQTT", icon: "/mqtt-icon.svg" },
 ];
 
 const showcaseProjects = [

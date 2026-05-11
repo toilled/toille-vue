@@ -3,7 +3,8 @@
     <div v-if="category" class="skill-category">{{ category }}</div>
     <div class="skill-tags">
       <span v-for="(skill, index) in skills" :key="index" class="skill-tag">
-        <span v-if="skill.icon" class="skill-icon">{{ skill.icon }}</span>
+        <img v-if="skill.icon && skill.icon.includes('/')" :src="skill.icon" alt="" class="skill-icon-img" />
+        <span v-else-if="skill.icon" class="skill-icon">{{ skill.icon }}</span>
         <span class="skill-name">{{ skill.name }}</span>
       </span>
     </div>
@@ -64,6 +65,12 @@ defineProps<{
 
 .skill-icon {
   font-size: 1rem;
+}
+
+.skill-icon-img {
+  width: 1rem;
+  height: 1rem;
+  display: block;
 }
 
 .skill-name {

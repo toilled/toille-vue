@@ -7,8 +7,8 @@
     "metaDescription": "Welcome to Elliot Dickerson's professional portfolio and experimental playground featuring web projects, 3D experiences, and more.",
     "metaKeywords": "Vue.js, web development, software engineering, 3D web, portfolio",
     "body": [
-      "Welcome to my personal portfolio and experimental sandbox. This site serves as a platform for demonstrating modern web development techniques, testing innovative concepts, and showcasing interactive experiences.",
-      "As a Software Engineer at RM, I am dedicated to building robust, scalable applications and contributing to impactful technology solutions. This space reflects my ongoing journey of professional development and technical exploration."
+      "Welcome to my personal portfolio and experimental sandbox. This site serves as a platform for demonstrating <strong>modern web development techniques</strong>, testing <em>innovative concepts</em>, and showcasing interactive experiences.",
+      "As a Software Engineer at RM, I am dedicated to building robust, scalable applications and contributing to impactful technology solutions. <mark>This space reflects my ongoing journey of professional development and technical exploration.</mark>"
     ]
   },
   {
@@ -19,10 +19,10 @@
     "metaDescription": "Learn about Elliot Dickerson, a Software Engineer with a BSc (Hons) and 14 years of experience in full-stack web development.",
     "metaKeywords": "software engineer, PHP, Laravel, Symfony, Vue.js, React, full-stack, development experience",
     "body": [
-      "I am a passionate Software Engineer with a BSc (Hons) degree and over 14 years of professional experience in software architecture and full-stack web development.",
+      "I am a passionate Software Engineer with a <strong>BSc (Hons) degree</strong> and over <mark>14 years of professional experience</mark> in software architecture and full-stack web development.",
       "My expertise lies primarily in PHP, alongside extensive knowledge of modern JavaScript ecosystems. I excel in database design with MySQL and maintain rigorous standards using version control systems like Git.",
-      "Throughout my career, I have successfully delivered projects utilizing a diverse array of frameworks and technologies, most notably:<ul><li>PHP frameworks including Laravel and Symfony for robust backend architectures</li><li>Modern frontend libraries such as React, SolidJS, and Vue.js for dynamic, responsive user interfaces</li></ul>",
-      "In my current role as a Software Engineer at RM, I leverage this experience to solve complex challenges, drive technical innovation, and deliver high-quality software solutions."
+      "Throughout my career, I have successfully delivered projects utilizing a diverse array of frameworks and technologies, most notably:<ul><li>PHP frameworks including <strong>Laravel</strong> and <strong>Symfony</strong> for robust backend architectures</li><li>Modern frontend libraries such as <strong>React</strong>, <strong>SolidJS</strong>, and <strong>Vue.js</strong> for dynamic, responsive user interfaces</li></ul>",
+      "<blockquote>In my current role as a Software Engineer at RM, I leverage this experience to solve complex challenges, drive technical innovation, and deliver high-quality software solutions.</blockquote>"
     ]
   },
   {
@@ -34,8 +34,8 @@
     "metaKeywords": "coding, software engineering, music production, Three.js, webGL, creative coding",
     "body": [
       "Beyond my professional commitments, I am deeply invested in continuous learning and exploring the frontiers of web technology. Personal coding projects offer an invaluable avenue for prototyping new ideas and experimenting with emerging tools.",
-      "Currently, I am fascinated by the intersection of web development and 3D computer graphics, utilizing libraries like Three.js to create immersive, performant experiences—such as the procedural cyberpunk city featured on this site.",
-      "Music is my other primary creative outlet. As a multi-instrumentalist with a focus on guitar, I compose and produce original music, blending technical precision with artistic expression. You can listen to some of my compositions on my <a href=\"https://www.youtube.com/@toilled\" class=\"contrast\" target=\"_blank\" rel=\"noopener noreferrer\">YouTube channel</a>."
+      "Currently, I am fascinated by the intersection of web development and <strong>3D computer graphics</strong>, utilizing libraries like <em>Three.js</em> to create immersive, performant experiences—such as the <mark>procedural cyberpunk city</mark> featured on this site.",
+      "Music is my other primary creative outlet. As a multi-instrumentalist with a focus on guitar, I compose and produce original music, blending technical precision with artistic expression. You can listen to some of my compositions on my <a href=\"https://www.youtube.com/@toilled\" class=\"contrast\" target=\"_blank\" rel=\"noopener noreferrer\"><strong>YouTube channel</strong></a>."
     ]
   },
   {
@@ -47,10 +47,10 @@
     "metaDescription": "An archive of experimental mini-projects, interactive tools, and lightweight web games.",
     "metaKeywords": "experiments, web games, utilities, mini-projects, portfolio archive",
     "body": [
-      "You have discovered the hidden archive. This unlisted section serves as a repository for smaller experiments, utility tools, and lightweight browser games developed over time.",
+      "You have discovered the <strong>hidden archive</strong>. This unlisted section serves as a repository for smaller experiments, utility tools, and lightweight browser games developed over time.",
       "Explore the collection below:",
-      "<ul><li>Alcohol Checker - A utility tool calculating approximate sobriety timelines</li><li>Catch the Button - A DOM-manipulation reflex test tracking interaction speeds</li><li>Noughts and Crosses - A classic implementation featuring algorithmic bot logic</li><li>Ask Me - An automated conversational interface detailing my professional background</li></ul>",
-      "These projects, while simple, represent practical applications of various frontend development concepts."
+      "<ul><li><strong>Alcohol Checker</strong> - A utility tool calculating approximate sobriety timelines</li><li><strong>Catch the Button</strong> - A DOM-manipulation reflex test tracking interaction speeds</li><li><strong>Noughts and Crosses</strong> - A classic implementation featuring algorithmic bot logic</li><li><strong>Ask Me</strong> - An automated conversational interface detailing my professional background</li></ul>",
+      "<em>These projects, while simple, represent practical applications of various frontend development concepts.</em>"
     ]
   }
 ]

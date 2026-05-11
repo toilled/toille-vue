@@ -4,11 +4,11 @@
     "link": "/",
     "title": "Home",
     "icon": "🏠",
-    "metaDescription": "Welcome to Elliot Dickerson's experimental Vue.js website featuring projects, games, and more.",
-    "metaKeywords": "Vue.js, web development, software engineer, projects, games",
+    "metaDescription": "Welcome to Elliot Dickerson's professional portfolio and experimental playground featuring web projects, 3D experiences, and more.",
+    "metaKeywords": "Vue.js, web development, software engineering, 3D web, portfolio",
     "body": [
-      "Welcome to my experimental Vue.js playground! This site is where I test new ideas, experiment with features, and build small projects.",
-      "I recently joined RM as a Software Engineer and am excited to contribute to the team's success. This role provides a great platform for professional growth."
+      "Welcome to my personal portfolio and experimental sandbox. This site serves as a platform for demonstrating modern web development techniques, testing innovative concepts, and showcasing interactive experiences.",
+      "As a Software Engineer at RM, I am dedicated to building robust, scalable applications and contributing to impactful technology solutions. This space reflects my ongoing journey of professional development and technical exploration."
     ]
   },
   {
@@ -16,13 +16,13 @@
     "link": "/about",
     "title": "About Me",
     "icon": "👤",
-    "metaDescription": "Learn about Elliot Dickerson - BSc (Hons) graduate with 14 years of PHP and JavaScript development experience.",
-    "metaKeywords": "software engineer, PHP, Laravel, Symfony, VueJS, React, experience",
+    "metaDescription": "Learn about Elliot Dickerson, a Software Engineer with a BSc (Hons) and 14 years of experience in full-stack web development.",
+    "metaKeywords": "software engineer, PHP, Laravel, Symfony, Vue.js, React, full-stack, development experience",
     "body": [
-      "I'm a BSc (Hons) graduate who has been working with computers professionally for most of my career.",
-      "With 14 years of experience in software and web development, I've primarily focused on PHP while also working extensively with JavaScript. I'm proficient with version control systems like Git and have strong MySQL database management skills.",
-      "Throughout my career, I've gained experience with multiple frameworks and libraries, notably:<ul><li>Laravel and Symfony for PHP development</li><li>React, SolidJS and VueJS for building dynamic user interfaces</li></ul>",
-      "I am currently working at RM as a Software Engineer, where I'm excited to tackle new challenges and contribute to innovative projects."
+      "I am a passionate Software Engineer with a BSc (Hons) degree and over 14 years of professional experience in software architecture and full-stack web development.",
+      "My expertise lies primarily in PHP, alongside extensive knowledge of modern JavaScript ecosystems. I excel in database design with MySQL and maintain rigorous standards using version control systems like Git.",
+      "Throughout my career, I have successfully delivered projects utilizing a diverse array of frameworks and technologies, most notably:<ul><li>PHP frameworks including Laravel and Symfony for robust backend architectures</li><li>Modern frontend libraries such as React, SolidJS, and Vue.js for dynamic, responsive user interfaces</li></ul>",
+      "In my current role as a Software Engineer at RM, I leverage this experience to solve complex challenges, drive technical innovation, and deliver high-quality software solutions."
     ]
   },
   {
@@ -30,27 +30,27 @@
     "link": "/interests",
     "title": "My Interests",
     "icon": "🎸",
-    "metaDescription": "Discover Elliot's interests in coding, music, and creative projects including original guitar compositions.",
-    "metaKeywords": "coding, music, guitar, YouTube, hobbies, creative projects",
+    "metaDescription": "Discover Elliot's technical and creative pursuits, from 3D web development to music composition.",
+    "metaKeywords": "coding, software engineering, music production, Three.js, webGL, creative coding",
     "body": [
-      "When I'm not coding professionally, I love working on personal coding projects. It's a great way to explore new technologies and experiment with innovative concepts.",
-      "Music is another big passion of mine. I play several instruments, with guitar being my main focus. I enjoy composing original music and have shared some pieces on my <a href=\"https://www.youtube.com/@toilled\" class=\"contrast\" target=\"_blank\" rel=\"noopener noreferrer\">YouTube channel</a>.",
-      "I'm also currently exploring new technologies like Three.js for 3D graphics and experimenting with creative web experiences. The cyberpunk city on this site is one such experiment!"
+      "Beyond my professional commitments, I am deeply invested in continuous learning and exploring the frontiers of web technology. Personal coding projects offer an invaluable avenue for prototyping new ideas and experimenting with emerging tools.",
+      "Currently, I am fascinated by the intersection of web development and 3D computer graphics, utilizing libraries like Three.js to create immersive, performant experiences—such as the procedural cyberpunk city featured on this site.",
+      "Music is my other primary creative outlet. As a multi-instrumentalist with a focus on guitar, I compose and produce original music, blending technical precision with artistic expression. You can listen to some of my compositions on my <a href=\"https://www.youtube.com/@toilled\" class=\"contrast\" target=\"_blank\" rel=\"noopener noreferrer\">YouTube channel</a>."
     ]
   },
   {
     "name": "Hidden",
     "link": "/hidden",
-    "title": "Hidden",
+    "title": "Hidden Archive",
     "icon": "🕵️‍♂️",
     "hidden": true,
-    "metaDescription": "Secret page with links to fun projects and games built with Vue.js.",
-    "metaKeywords": "hidden, games, tools, projects, secret",
+    "metaDescription": "An archive of experimental mini-projects, interactive tools, and lightweight web games.",
+    "metaKeywords": "experiments, web games, utilities, mini-projects, portfolio archive",
     "body": [
-      "Welcome to the hidden page! This area isn't linked in the main navigation, but it's here for those curious enough to find it.",
-      "Here are some fun projects and games I've built:",
-      "<ul><li>Alcohol Checker - Calculate when you'll be sober enough to drive</li><li>Catch the Button - A simple reflex game to test your clicking speed</li><li>Noughts and Crosses - Classic tic-tac-toe against a bot</li><li>Ask Me - Chat with an automated assistant about my background</li></ul>",
-      "Enjoy exploring these little experiments!"
+      "You have discovered the hidden archive. This unlisted section serves as a repository for smaller experiments, utility tools, and lightweight browser games developed over time.",
+      "Explore the collection below:",
+      "<ul><li>Alcohol Checker - A utility tool calculating approximate sobriety timelines</li><li>Catch the Button - A DOM-manipulation reflex test tracking interaction speeds</li><li>Noughts and Crosses - A classic implementation featuring algorithmic bot logic</li><li>Ask Me - An automated conversational interface detailing my professional background</li></ul>",
+      "These projects, while simple, represent practical applications of various frontend development concepts."
     ]
   }
 ]

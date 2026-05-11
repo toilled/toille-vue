@@ -1,24 +1,39 @@
 <template>
   <li class="menu-item">
-    <router-link :to="page.link" @mousedown.prevent>{{ page.name }}</router-link>
+    <a
+      :href="'#' + sectionId"
+      @click.prevent="handleClick"
+      :class="{ active: isActive }"
+      >{{ page.name }}</a
+    >
   </li>
 </template>
 
 <script setup lang="ts">
+import { computed, inject, type Ref } from "vue";
 import { Page } from "../interfaces/Page";
 
-/**
- * @file MenuItem.vue
- * @description A component that displays a single menu item as a router link.
- */
-
-/**
- * @props {Object}
- * @property {Page} page - The page object containing the link and name for the menu item.
- */
-defineProps<{
+const props = defineProps<{
   page: Page;
 }>();
+
+const activeSection = inject<Ref<string>>("activeSection");
+const navigateToSection = inject<(id: string, behavior?: ScrollBehavior) => void>("navigateToSection");
+
+const sectionId = computed(() => {
+  if (props.page.link === "/") return "home";
+  return props.page.link.replace(/^\//, "");
+});
+
+const isActive = computed(() => {
+  return activeSection?.value === sectionId.value;
+});
+
+function handleClick() {
+  if (navigateToSection) {
+    navigateToSection(sectionId.value);
+  }
+}
 </script>
 
 <style scoped>
@@ -33,19 +48,17 @@ defineProps<{
   color: inherit;
   border-radius: 8px;
   transition: all 0.3s ease;
-  border: 1px solid transparent; /* Reserve space for border */
+  border: 1px solid transparent;
 }
 
-/* Hover Effect: Subtle Space Glow */
 .can-hover .menu-item a:hover {
-  background: rgba(20, 30, 60, 0.6); /* Deep space blue/purple */
-  box-shadow: 0 0 15px rgba(100, 149, 237, 0.5), /* Cornflower blue glow */
-              0 0 5px rgba(255, 255, 255, 0.2); /* Inner white hint */
+  background: rgba(20, 30, 60, 0.6);
+  box-shadow: 0 0 15px rgba(100, 149, 237, 0.5),
+              0 0 5px rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
   border-color: rgba(100, 149, 237, 0.3);
 }
 
-/* Active/Click Effect: Intense Burst */
 .menu-item a:active {
   background: rgba(40, 60, 100, 0.8);
   box-shadow: 0 0 25px rgba(100, 149, 237, 0.8),
@@ -54,8 +67,7 @@ defineProps<{
   border-color: rgba(100, 149, 237, 0.8);
 }
 
-/* Current Page Indicator */
-.menu-item a.router-link-active {
+.menu-item a.active {
   background: rgba(30, 45, 80, 0.7);
   box-shadow: 0 0 10px rgba(100, 149, 237, 0.4);
   border-color: rgba(100, 149, 237, 0.5);

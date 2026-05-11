@@ -87,6 +87,8 @@ article {
   backdrop-filter: blur(8px);
   border-radius: 8px;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 article:hover {

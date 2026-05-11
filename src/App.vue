@@ -1,6 +1,6 @@
 <template>
   <div id="content-wrapper" :class="{ 'fade-out': gameMode }">
-    <header class="app-header">
+    <header ref="headerRef" class="app-header">
       <nav class="container header-nav">
         <Title
           :title="titles.title"
@@ -30,16 +30,9 @@
             v-show="isContentVisible"
           >
             <router-view v-slot="{ Component, route }">
-              <Transition
-                :name="transitionName"
-                @before-leave="onBeforeLeave"
-                @enter="onEnter"
-                @after-enter="onAfterEnter"
-              >
-                <ErrorBoundary>
-                  <component :is="Component" :key="route.path" />
-                </ErrorBoundary>
-              </Transition>
+              <ErrorBoundary>
+                <component :is="Component" :key="route.path" />
+              </ErrorBoundary>
             </router-view>
           </div>
         </Transition>
@@ -93,6 +86,7 @@ import {
   watch,
   defineAsyncComponent,
   onErrorCaptured,
+  provide,
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Title from "./components/Title.vue";
@@ -125,11 +119,57 @@ const joke = ref(false);
 const showHint = ref(false);
 const route = useRoute();
 const router = useRouter();
-const transitionName = ref("cards");
 const gameMode = ref(false);
 const isContentVisible = ref(true);
 const isClient = ref(false);
 const showCity = computed(() => isClient.value && cityBackground.isEnabled.value);
+const activeSection = ref("home");
+let scrollSpyLocked = false;
+let scrollLockTimeout: ReturnType<typeof setTimeout>;
+const headerRef = ref<HTMLElement | null>(null);
+
+function getHeaderHeight(): number {
+  if (!headerRef.value) {
+    return 160;
+  }
+  return headerRef.value.offsetHeight + 8;
+}
+
+function getScrollOffset(): number {
+  if (!headerRef.value) {
+    return 160 + 16;
+  }
+  return headerRef.value.offsetHeight + 24;
+}
+
+function lockScrollSpy(duration: number = 1200) {
+  scrollSpyLocked = true;
+  clearTimeout(scrollLockTimeout);
+  scrollLockTimeout = setTimeout(() => {
+    scrollSpyLocked = false;
+    updateActiveSection();
+  }, duration);
+}
+
+function scrollToSection(sectionId: string, behavior: ScrollBehavior = "smooth") {
+  const element = document.getElementById(sectionId);
+  if (element) {
+    const scrollOffset = getScrollOffset();
+    const elementPosition = element.getBoundingClientRect().top;
+    const offsetPosition = elementPosition + window.pageYOffset - scrollOffset;
+
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: behavior,
+    });
+    history.pushState(null, "", `#${sectionId}`);
+    activeSection.value = sectionId;
+    lockScrollSpy(1200);
+  }
+}
+
+provide("activeSection", activeSection);
+provide("navigateToSection", scrollToSection);
 
 function toggleContent() {
   isContentVisible.value = !isContentVisible.value;
@@ -156,13 +196,20 @@ function startDemoMode() {
 }
 
 function navigatePage(direction: "next" | "prev") {
-  const currentIndex = visiblePages.value.findIndex(
-    (page: Page) => page.link === route.path,
+  const sectionIds = visiblePages.value.map((p: Page) =>
+    p.link === "/" ? "home" : p.link.replace(/^\//, "")
   );
-  if (direction === "next" && currentIndex !== -1 && currentIndex < visiblePages.value.length - 1) {
-    router.push(visiblePages.value[currentIndex + 1].link);
+  const currentIndex = sectionIds.indexOf(activeSection.value);
+  let nextIndex = currentIndex;
+
+  if (direction === "next" && currentIndex < sectionIds.length - 1) {
+    nextIndex = currentIndex + 1;
   } else if (direction === "prev" && currentIndex > 0) {
-    router.push(visiblePages.value[currentIndex - 1].link);
+    nextIndex = currentIndex - 1;
+  }
+
+  if (nextIndex !== currentIndex) {
+    scrollToSection(sectionIds[nextIndex]);
   }
 }
 
@@ -187,49 +234,22 @@ function handleKeydown(e: KeyboardEvent) {
   if (gameMode.value) return;
 
   if (e.key === "Escape") {
-    const gameRoutes = ["/game", "/noughts-and-crosses", "/checker", "/ask"];
+    const gameRoutes = ["/noughts-and-crosses", "/checker", "/ask"];
     if (gameRoutes.includes(route.path)) {
-      router.push("/hidden");
+      router.push("/");
     }
   }
 
-  switch (e.key) {
-    case "ArrowRight":
-      navigatePage("next");
-      break;
-    case "ArrowLeft":
-      navigatePage("prev");
-      break;
+  if (route.path === "/" || route.path === "") {
+    switch (e.key) {
+      case "ArrowRight":
+        navigatePage("next");
+        break;
+      case "ArrowLeft":
+        navigatePage("prev");
+        break;
+    }
   }
-}
-
-function onBeforeLeave(el: Element) {
-  if (containerRef.value) {
-    const { height } = getComputedStyle(el);
-    containerRef.value.style.height = height;
-  }
-}
-
-function onEnter(el: Element) {
-  if (containerRef.value) {
-    const { height } = getComputedStyle(el);
-    containerRef.value.style.height = height;
-  }
-}
-
-function onAfterEnter() {
-  if (containerRef.value) {
-    containerRef.value.style.height = "";
-  }
-}
-
-function getPageIndex(routeName: any) {
-  if (routeName === "/") {
-    return pages.findIndex((page) => page.link === "/");
-  }
-
-  const index = pages.findIndex((page) => page.link.slice(1) === routeName);
-  return index === -1 ? Object.keys(pages).length : index;
 }
 
 const noFootersShowing = computed(() => {
@@ -244,6 +264,77 @@ function toggleJoke() {
   joke.value = !joke.value;
 }
 
+function getSectionIdFromPage(page: Page): string {
+  if (page.link === "/") return "home";
+  return page.link.replace(/^\//, "");
+}
+
+function updateActiveSection() {
+  if (scrollSpyLocked) return;
+
+  const sectionIds = visiblePages.value.map(getSectionIdFromPage);
+  if (sectionIds.length === 0) return;
+
+  const activeLine = getScrollOffset();
+  let currentActive = sectionIds[0];
+  let lastCrossedIndex = 0;
+  let closestIndex = 0;
+  let closestDistance = Infinity;
+
+  for (let i = 0; i < sectionIds.length; i++) {
+    const id = sectionIds[i];
+    const el = document.getElementById(id);
+    if (!el) continue;
+
+    const rect = el.getBoundingClientRect();
+
+    const distance = Math.abs(rect.top - activeLine);
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestIndex = i;
+    }
+
+    if (rect.top <= activeLine + 8) {
+      lastCrossedIndex = i;
+    }
+  }
+
+  if (closestDistance <= 20) {
+    currentActive = sectionIds[closestIndex];
+  } else {
+    currentActive = sectionIds[lastCrossedIndex];
+  }
+
+  if (currentActive !== activeSection.value) {
+    activeSection.value = currentActive;
+  }
+}
+
+function handleInitialHash() {
+  const hash = window.location.hash.replace(/^#/, "");
+  if (hash) {
+    setTimeout(() => {
+      const el = document.getElementById(hash);
+      if (el) {
+        const scrollOffset = getScrollOffset();
+        const elementPosition = el.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - scrollOffset;
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "auto",
+        });
+      }
+    }, 100);
+  }
+}
+
+let scrollTimeout: ReturnType<typeof setTimeout>;
+
+function handleScroll() {
+  clearTimeout(scrollTimeout);
+  scrollTimeout = setTimeout(updateActiveSection, 50);
+}
+
 onMounted(() => {
   isClient.value = true;
 
@@ -255,7 +346,6 @@ onMounted(() => {
     showHint.value = false;
   }, 5000);
 
-  // Input detection for sticky hover fix
   let lastTouchTime = 0;
 
   document.body.addEventListener("touchstart", () => {
@@ -276,6 +366,10 @@ onMounted(() => {
     contentEl.addEventListener("touchstart", handleTouchStart, { passive: true });
     contentEl.addEventListener("touchend", handleTouchEnd, { passive: true });
   }
+
+  window.addEventListener("scroll", handleScroll, { passive: true });
+  handleInitialHash();
+  updateActiveSection();
 });
 
 onErrorCaptured((err) => {
@@ -285,76 +379,52 @@ onErrorCaptured((err) => {
 
 onUnmounted(() => {
   window.removeEventListener("keydown", handleKeydown);
+  window.removeEventListener("scroll", handleScroll);
   const contentEl = document.getElementById("content-wrapper");
   if (contentEl) {
     contentEl.removeEventListener("touchstart", handleTouchStart);
     contentEl.removeEventListener("touchend", handleTouchEnd);
   }
+  clearTimeout(scrollTimeout);
+  clearTimeout(scrollLockTimeout);
 });
+
+function getTitleForPath(path: string): string {
+  switch (path) {
+    case "/noughts-and-crosses":
+      return "Noughts and Crosses";
+    case "/checker":
+      return "Checker";
+    case "/ask":
+      return "Ask Me";
+    default:
+      const page = visiblePages.value.find(
+        (p: Page) => getSectionIdFromPage(p) === activeSection.value
+      );
+      return page ? page.title : "Elliot Dickerson";
+  }
+}
 
 watch(
   () => route.path,
-  (newPath, oldPath) => {
-    if (oldPath) {
-      const oldPageIndex = getPageIndex(oldPath.slice(1));
-      const newPageIndex = getPageIndex(newPath.slice(1));
-
-      transitionName.value =
-        newPageIndex > oldPageIndex ? "cards" : "cards-reverse";
-    }
-
-    let pageTitle;
-
-    switch (newPath) {
-      case "/noughts-and-crosses":
-        pageTitle = "Noughts and Crosses";
-        break;
-      case "/game":
-        pageTitle = "Catch the Button!";
-        break;
-      case "/checker":
-        pageTitle = "Checker";
-        break;
-      case "/ask":
-        pageTitle = "Ask Me";
-        break;
-      default: {
-        let routeName;
-        if (route.params.name) {
-          routeName = route.params.name;
-        } else if (newPath === "/") {
-          routeName = "home";
-        }
-
-        if (routeName) {
-          let currentPage;
-          if (routeName === "home") {
-            currentPage = pages.find((page) => page.link === "/");
-          } else {
-            currentPage = pages.find(
-              (page) => page.link.slice(1) === routeName,
-            );
-          }
-          pageTitle = currentPage ? currentPage.title : "404";
-        } else {
-          pageTitle = "404";
-        }
-        break;
-      }
-    }
-
+  (newPath) => {
+    const pageTitle = getTitleForPath(newPath);
     if (typeof document !== "undefined") {
       document.title = "Elliot > " + pageTitle;
     }
   },
   { immediate: true },
 );
+
+watch(activeSection, (newSection) => {
+  const pageTitle = getTitleForPath(route.path);
+  if (typeof document !== "undefined") {
+    document.title = "Elliot > " + pageTitle;
+  }
+}, { immediate: true });
 </script>
 
 <style>
-/* ============================================
-   Layout Structure
-   ============================================ */
 #content-wrapper {
   display: flex;
   flex-direction: column;
@@ -367,6 +437,8 @@ watch(
   backdrop-filter: blur(12px);
   background: rgba(5, 5, 16, 0.8);
   border-bottom: 1px solid rgba(0, 255, 204, 0.15);
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .header-nav {
@@ -467,6 +539,17 @@ watch(
     flex-direction: column;
     gap: 0.75rem;
     align-items: stretch;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 100px;
+}
+
+@media (max-width: 768px) {
+  html {
+    scroll-padding-top: 200px;
   }
 }
 </style>

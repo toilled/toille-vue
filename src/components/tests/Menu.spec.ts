@@ -1,17 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { ref } from "vue";
 import { mount } from "@vue/test-utils";
 import Menu from "../Menu.vue";
 import MenuItem from "../MenuItem.vue";
-import { createRouter, createWebHistory } from "vue-router";
-
-const routes = [
-  { path: "/", component: { template: "Home" } },
-  { path: "/about", component: { template: "About" } },
-];
-const router = createRouter({
-  history: createWebHistory(),
-  routes,
-});
 
 describe("Menu.vue", () => {
   beforeEach(() => {
@@ -46,6 +37,18 @@ describe("Menu.vue", () => {
     vi.unstubAllGlobals();
   });
 
+  function getGlobalMocks() {
+    const activeSection = ref("home");
+    const navigateToSection = (_id: string) => {};
+
+    return {
+      provide: {
+        activeSection,
+        navigateToSection,
+      },
+    };
+  }
+
   it("renders a list of menu items", () => {
     const pages = [
       { name: "Home", link: "/" },
@@ -53,9 +56,7 @@ describe("Menu.vue", () => {
     ];
     const wrapper = mount(Menu, {
       props: { pages, contentVisible: true },
-      global: {
-        plugins: [router],
-      },
+      global: getGlobalMocks(),
     });
     const menuItems = wrapper.findAllComponents(MenuItem);
     expect(menuItems.length).toBe(2);
@@ -69,9 +70,7 @@ describe("Menu.vue", () => {
   it("renders an empty list when no pages are provided", () => {
     const wrapper = mount(Menu, {
       props: { pages: [], contentVisible: true },
-      global: {
-        plugins: [router],
-      },
+      global: getGlobalMocks(),
     });
     const menuItems = wrapper.findAllComponents(MenuItem);
     expect(menuItems.length).toBe(0);
@@ -83,19 +82,13 @@ describe("Menu.vue", () => {
     ];
     const wrapper = mount(Menu, {
       props: { pages, contentVisible: true },
-      global: {
-        plugins: [router],
-      },
+      global: getGlobalMocks(),
     });
 
-    // Find the fly icon wrapper
     const iconWrappers = wrapper.findAll('.icon-wrapper');
-    // Assuming the second one is the plane icon based on my change
-    // Order: Explore, Fly, Sound
     expect(iconWrappers.length).toBeGreaterThanOrEqual(2);
     const flyIcon = iconWrappers[1];
 
-    // Check if it has the title "Fly Tour" to be sure
     expect(flyIcon.attributes('title')).toBe('Fly Tour');
 
     await flyIcon.trigger('click');

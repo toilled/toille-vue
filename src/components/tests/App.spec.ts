@@ -183,7 +183,16 @@ describe("App.vue", () => {
   });
 
   it("updates the document title on route change", async () => {
-    const router = createTestRouter();
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        { path: "/", component: { template: "Home" } },
+        { path: "/about", component: { template: "About" } },
+        { path: "/checker", component: { template: "Checker" } },
+        { path: "/ask", component: { template: "Ask" } },
+        { path: "/:pathMatch(.*)*", component: { template: "NotFound" } },
+      ],
+    });
     router.push("/");
     await router.isReady();
     wrapper = mount(App, {
@@ -198,12 +207,16 @@ describe("App.vue", () => {
     await flushPromises();
     expect(document.title).toBe("Elliot > Home");
 
+    await router.push("/checker");
+    await flushPromises();
+    expect(document.title).toBe("Elliot > Checker");
+
+    await router.push("/ask");
+    await flushPromises();
+    expect(document.title).toBe("Elliot > Ask Me");
+
     await router.push("/about");
     await flushPromises();
-    expect(document.title).toBe("Elliot > About Me");
-
-    await router.push("/non-existent-page");
-    await flushPromises();
-    expect(document.title).toBe("Elliot > 404");
+    expect(document.title).toBe("Elliot > Home");
   });
 });

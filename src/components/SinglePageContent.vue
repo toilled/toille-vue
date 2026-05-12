@@ -122,28 +122,28 @@ import SectionDivider from "./SectionDivider.vue";
 import { Page } from "../interfaces/Page";
 
 const backendSkills = [
-  { name: "Laravel", icon: "/laravel-icon.svg" },
-  { name: "MySQL", icon: "/mysql-icon.svg" },
-  { name: "PHP", icon: "🐘" },
-  { name: "Symfony", icon: "/symfony-icon.svg" },
-  { name: "Yii", icon: "/yii-icon.svg" },
+  { name: "Laravel", icon: "/laravel-icon.svg", link: "https://laravel.com/" },
+  { name: "MySQL", icon: "/mysql-icon.svg", link: "https://www.mysql.com/" },
+  { name: "PHP", icon: "🐘", link: "https://www.php.net/" },
+  { name: "Symfony", icon: "/symfony-icon.svg", link: "https://symfony.com/" },
+  { name: "Yii", icon: "/yii-icon.svg", link: "https://www.yiiframework.com/" },
 ];
 
 const frontendSkills = [
-  { name: "JavaScript", icon: "/javascript-icon.svg" },
-  { name: "React", icon: "⚛️" },
-  { name: "SolidJS", icon: "/solidjs-icon.svg" },
-  { name: "Three.js", icon: "/threejs-icon.svg" },
-  { name: "TypeScript", icon: "/typescript-icon.svg" },
-  { name: "Vue.js", icon: "/vuejs-icon.svg" },
+  { name: "JavaScript", icon: "/javascript-icon.svg", link: "https://developer.mozilla.org/en-US/docs/Web/JavaScript" },
+  { name: "React", icon: "⚛️", link: "https://react.dev/" },
+  { name: "SolidJS", icon: "/solidjs-icon.svg", link: "https://www.solidjs.com/" },
+  { name: "Three.js", icon: "/threejs-icon.svg", link: "https://threejs.org/" },
+  { name: "TypeScript", icon: "/typescript-icon.svg", link: "https://www.typescriptlang.org/" },
+  { name: "Vue.js", icon: "/vuejs-icon.svg", link: "https://vuejs.org/" },
 ];
 
 const toolsSkills = [
-  { name: "Cloudflare", icon: "/cloudflare-icon.svg" },
-  { name: "Docker", icon: "🐳" },
-  { name: "Git", icon: "/git-icon.svg" },
-  { name: "Linux", icon: "🐧" },
-  { name: "MQTT", icon: "/mqtt-icon.svg" },
+  { name: "Cloudflare", icon: "/cloudflare-icon.svg", link: "https://www.cloudflare.com/" },
+  { name: "Docker", icon: "🐳", link: "https://www.docker.com/" },
+  { name: "Git", icon: "/git-icon.svg", link: "https://git-scm.com/" },
+  { name: "Linux", icon: "🐧", link: "https://www.kernel.org/" },
+  { name: "MQTT", icon: "/mqtt-icon.svg", link: "https://mqtt.org/" },
 ];
 
 const showcaseProjects = [

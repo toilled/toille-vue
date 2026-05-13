@@ -2,11 +2,19 @@
   <div class="skill-card">
     <div v-if="category" class="skill-category">{{ category }}</div>
     <div class="skill-tags">
-      <span v-for="(skill, index) in skills" :key="index" class="skill-tag">
+      <component
+        :is="skill.link ? 'a' : 'span'"
+        v-for="(skill, index) in skills"
+        :key="index"
+        class="skill-tag"
+        :href="skill.link"
+        :target="skill.link ? '_blank' : undefined"
+        :rel="skill.link ? 'noopener noreferrer' : undefined"
+      >
         <img v-if="skill.icon && skill.icon.includes('/')" :src="skill.icon" alt="" class="skill-icon-img" />
         <span v-else-if="skill.icon" class="skill-icon">{{ skill.icon }}</span>
         <span class="skill-name">{{ skill.name }}</span>
-      </span>
+      </component>
     </div>
   </div>
 </template>
@@ -17,6 +25,7 @@ import { type PropType } from "vue";
 interface Skill {
   name: string;
   icon?: string;
+  link?: string;
 }
 
 defineProps<{
@@ -54,9 +63,15 @@ defineProps<{
   border-radius: 20px;
   font-size: 0.85rem;
   transition: all 0.3s ease;
+  text-decoration: none;
 }
 
-.can-hover .skill-tag:hover {
+a.skill-tag {
+  cursor: pointer;
+  color: inherit;
+}
+
+.can-hover a.skill-tag:hover {
   background: rgba(30, 50, 80, 0.7);
   border-color: rgba(0, 255, 204, 0.4);
   box-shadow: 0 0 10px rgba(0, 255, 204, 0.15);
@@ -74,6 +89,6 @@ defineProps<{
 }
 
 .skill-name {
-  color: var(--pico-color, #00ffcc);
+  color: #fff;
 }
 </style>

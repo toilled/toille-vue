@@ -68,6 +68,7 @@ defineProps<{
 
 a.skill-tag {
   cursor: pointer;
+  color: inherit;
 }
 
 .can-hover a.skill-tag:hover {

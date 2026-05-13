@@ -89,6 +89,6 @@ a.skill-tag {
 }
 
 .skill-name {
-  color: var(--pico-color, #00ffcc);
+  color: #fff;
 }
 </style>

@@ -18,7 +18,7 @@
       <div
         @click="$emit('explore')"
         class="icon-wrapper"
-        :class="{ disabled: !cityOn }"
+        :class="{ disabled: !cityOn || cityFallback }"
         title="Explore City"
       >
         <img src="/person-icon.svg" alt="Explore City" class="icon" />
@@ -26,7 +26,7 @@
       <div
         @click="$emit('fly')"
         class="icon-wrapper"
-        :class="{ disabled: !cityOn }"
+        :class="{ disabled: !cityOn || cityFallback }"
         title="Fly Tour"
       >
         <img src="/plane-icon.svg" alt="Fly Tour" class="icon" />
@@ -34,7 +34,7 @@
       <div
         @click="$emit('demo')"
         class="icon-wrapper"
-        :class="{ disabled: !cityOn }"
+        :class="{ disabled: !cityOn || cityFallback }"
         title="64k Demo"
       >
         <img src="/64k-icon.svg" alt="64k Demo" class="icon" />
@@ -146,6 +146,7 @@ import { cityBackground } from "../utils/CityBackgroundManager";
 defineProps<{
   pages: Page[];
   contentVisible: boolean;
+  cityFallback: boolean;
 }>();
 
 const emit = defineEmits<{

@@ -7,8 +7,8 @@
     "metaDescription": "Welcome to Elliot Dickerson's experimental Vue.js website featuring projects, games, and more.",
     "metaKeywords": "Vue.js, web development, software engineer, projects, games",
     "body": [
-      "Welcome to my experimental Vue.js playground! This site is where I test new ideas, experiment with features, and build small projects.",
-      "I recently joined RM as a Software Engineer and am excited to contribute to the team's success. This role provides a great platform for professional growth."
+      "Welcome to my personal portfolio and experimental sandbox. This platform serves as a space to explore emerging web technologies, prototype new features, and showcase technical projects.",
+      "Currently, I am a Software Engineer at RM, where I leverage my expertise to drive team success and deliver high-quality software solutions. I am passionate about continuous learning and professional development."
     ]
   },
   {
@@ -19,10 +19,10 @@
     "metaDescription": "Learn about Elliot Dickerson - BSc (Hons) graduate with 14 years of PHP and JavaScript development experience.",
     "metaKeywords": "software engineer, PHP, Laravel, Symfony, VueJS, React, experience",
     "body": [
-      "I'm a BSc (Hons) graduate who has been working with computers professionally for most of my career.",
-      "With 14 years of experience in software and web development, I've primarily focused on PHP while also working extensively with JavaScript. I'm proficient with version control systems like Git and have strong MySQL database management skills.",
-      "Throughout my career, I've gained experience with multiple frameworks and libraries, notably:<ul><li>Laravel and Symfony for PHP development</li><li>React, SolidJS and VueJS for building dynamic user interfaces</li></ul>",
-      "I am currently working at RM as a Software Engineer, where I'm excited to tackle new challenges and contribute to innovative projects."
+      "I hold a BSc (Hons) degree and possess a comprehensive background in professional software engineering, spanning the majority of my career.",
+      "With over a decade of dedicated experience in software and web development, I specialize in PHP and JavaScript ecosystems. My technical proficiency extends to robust database management with MySQL and utilizing Git for advanced version control.",
+      "Throughout my career, I have successfully delivered projects leveraging a diverse range of modern frameworks and libraries, including:<ul><li>Laravel and Symfony for backend PHP architecture</li><li>React, SolidJS, and VueJS for crafting scalable, dynamic user interfaces</li></ul>",
+      "Currently serving as a Software Engineer at RM, I am committed to tackling complex technical challenges and contributing to innovative, impactful projects."
     ]
   },
   {
@@ -33,9 +33,9 @@
     "metaDescription": "Discover Elliot's interests in coding, music, and creative projects including original guitar compositions.",
     "metaKeywords": "coding, music, guitar, YouTube, hobbies, creative projects",
     "body": [
-      "When I'm not coding professionally, I love working on personal coding projects. It's a great way to explore new technologies and experiment with innovative concepts.",
-      "Music is another big passion of mine. I play several instruments, with guitar being my main focus. I enjoy composing original music and have shared some pieces on my <a href=\"https://www.youtube.com/@toilled\" class=\"contrast\" target=\"_blank\" rel=\"noopener noreferrer\">YouTube channel</a>.",
-      "I'm also currently exploring new technologies like Three.js for 3D graphics and experimenting with creative web experiences. The cyberpunk city on this site is one such experiment!"
+      "Beyond my professional endeavors, I am deeply invested in personal development and technical exploration. I actively develop side projects to experiment with innovative concepts and stay at the forefront of emerging technologies.",
+      "Music is a significant creative outlet for me. I am a multi-instrumentalist with a primary focus on the guitar. I compose original pieces and regularly share my work on my <a href=\"https://www.youtube.com/@toilled\" class=\"contrast\" target=\"_blank\" rel=\"noopener noreferrer\">YouTube channel</a>.",
+      "Currently, I am expanding my technical repertoire by exploring Three.js for rendering complex 3D graphics and designing immersive web experiences. The interactive 3D environment featured on this site is a testament to these ongoing experiments."
     ]
   },
   {

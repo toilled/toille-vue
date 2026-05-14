@@ -203,17 +203,39 @@ const displayPages = computed(() => {
   display: block;
   width: 60%;
   max-width: 200px;
-  height: 2px;
-  margin: 1.75rem auto 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 0, 204, 0.5),
-    rgba(0, 255, 204, 0.5),
-    transparent
-  );
-  border-radius: 1px;
-  box-shadow: 0 0 8px rgba(255, 0, 204, 0.2), 0 0 8px rgba(0, 255, 204, 0.2);
+  height: 20px;
+  margin: 2rem auto 0;
+  background:
+    linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 0, 204, 0.3) 10%,
+      rgba(0, 255, 204, 0.9) 25%,
+      #ff00cc 35%,
+      rgba(0, 255, 204, 0.9) 45%,
+      rgba(255, 0, 204, 0.3) 60%,
+      transparent 70%
+    ) no-repeat,
+    linear-gradient(90deg,
+      transparent,
+      rgba(255, 0, 204, 0.12),
+      rgba(0, 255, 204, 0.12),
+      transparent
+    );
+  background-size: 25% 100%, 100% 100%;
+  background-position: -25% center, 0 center;
+  animation: signalSweep 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+
+  -webkit-mask-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 20'%3E%3Cpath d='M0,10 Q10,0 20,10 T40,10 T60,10 T80,10 T100,10 T120,10 T140,10 T160,10 T180,10 T200,10' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  -webkit-mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 20'%3E%3Cpath d='M0,10 Q10,0 20,10 T40,10 T60,10 T80,10 T100,10 T120,10 T140,10 T160,10 T180,10 T200,10' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+}
+
+@keyframes signalSweep {
+  0% { background-position: -25% center, 0 center; }
+  100% { background-position: 125% center, 0 center; }
 }
 
 .page-section:last-child::after {
@@ -360,7 +382,8 @@ const displayPages = computed(() => {
   }
 
   .page-section::after {
-    margin-top: 1.25rem;
+    margin-top: 1rem;
+    height: 14px;
     max-width: 140px;
   }
 

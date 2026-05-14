@@ -4,6 +4,9 @@
     <div class="feature-content">
       <h4 class="feature-title">{{ title }}</h4>
       <p class="feature-description">{{ description }}</p>
+      <div v-if="tags?.length" class="feature-tags">
+        <span v-for="tag in tags" :key="tag" class="feature-tag">{{ tag }}</span>
+      </div>
     </div>
     <div v-if="link" class="feature-arrow">→</div>
   </div>
@@ -19,6 +22,7 @@ const props = defineProps<{
   description: string;
   link?: string;
   isHash?: boolean;
+  tags?: string[];
 }>();
 
 const router = useRouter();
@@ -84,6 +88,22 @@ function handleClick() {
   font-size: 0.85rem;
   color: #8888aa;
   line-height: 1.4;
+}
+
+.feature-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.feature-tag {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 4px;
+  background: rgba(0, 255, 204, 0.1);
+  color: var(--pico-color, #00ffcc);
+  border: 1px solid rgba(0, 255, 204, 0.2);
 }
 
 .feature-arrow {

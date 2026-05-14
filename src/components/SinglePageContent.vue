@@ -26,25 +26,27 @@
 
         <SectionDivider v-if="getSectionId(page) === 'home'" icon="🛠️" />
         <template v-if="getSectionId(page) === 'home'">
-          <h4 class="sub-heading">Built With</h4>
-          <FeatureCard
-            icon="💚"
-            title="Vue.js"
-            description="Progressive JavaScript framework for building the UI"
-            link="https://vuejs.org"
-          />
-          <FeatureCard
-            icon="🎲"
-            title="Three.js"
-            description="3D library powering the interactive cyberpunk city"
-            link="https://threejs.org"
-          />
-          <FeatureCard
-            icon="📘"
-            title="TypeScript"
-            description="Type-safe JavaScript for scalable development"
-            link="https://www.typescriptlang.org"
-          />
+          <h4 class="sub-heading">What I Do</h4>
+          <div class="what-i-do-grid">
+            <div class="do-card">
+              <div class="do-card-accent fullstack"></div>
+              <div class="do-card-icon">🌐</div>
+              <h5 class="do-card-title">Full-Stack Development</h5>
+              <p class="do-card-desc">End-to-end web applications — from database architecture to polished frontends.</p>
+            </div>
+            <div class="do-card">
+              <div class="do-card-accent ux"></div>
+              <div class="do-card-icon">🎨</div>
+              <h5 class="do-card-title">Creative UI/UX</h5>
+              <p class="do-card-desc">Interfaces that are a joy to use — responsive, accessible, and thoughtfully designed.</p>
+            </div>
+            <div class="do-card">
+              <div class="do-card-accent interactive"></div>
+              <div class="do-card-icon">⚡</div>
+              <h5 class="do-card-title">Interactive 3D</h5>
+              <p class="do-card-desc">Immersive browser-based experiences powered by Three.js and WebGL.</p>
+            </div>
+          </div>
         </template>
 
         <SectionDivider v-if="getSectionId(page) === 'about'" icon="⚡" />
@@ -116,7 +118,6 @@ import { computed } from "vue";
 import pages from "../configs/pages.json";
 import Paragraph from "./Paragraph.vue";
 import SkillCard from "./SkillCard.vue";
-import FeatureCard from "./FeatureCard.vue";
 import ProjectGallery from "./ProjectGallery.vue";
 import SectionDivider from "./SectionDivider.vue";
 import { Page } from "../interfaces/Page";
@@ -269,6 +270,68 @@ const displayPages = computed(() => {
   margin: 1.5rem 0 1rem 0;
   font-size: 1.1rem;
   color: var(--pico-h2-color, #ff00cc);
+}
+
+.what-i-do-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.do-card {
+  position: relative;
+  padding: 1.25rem;
+  background: rgba(10, 10, 20, 0.5);
+  border: 1px solid rgba(0, 255, 204, 0.12);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.can-hover .do-card:hover {
+  background: rgba(15, 20, 40, 0.7);
+  border-color: rgba(0, 255, 204, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.do-card-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.do-card-accent.fullstack {
+  background: linear-gradient(90deg, #00ffcc, #00ccff);
+}
+
+.do-card-accent.ux {
+  background: linear-gradient(90deg, #ff00cc, #ff6600);
+}
+
+.do-card-accent.interactive {
+  background: linear-gradient(90deg, #cc00ff, #00ffcc);
+}
+
+.do-card-icon {
+  font-size: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.do-card-title {
+  margin: 0 0 0.4rem 0;
+  font-size: 0.95rem;
+  color: #fff;
+}
+
+.do-card-desc {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #8888aa;
+  line-height: 1.5;
 }
 
 .timeline {

@@ -55,7 +55,7 @@ describe("Menu.vue", () => {
       { name: "About", link: "/about" },
     ];
     const wrapper = mount(Menu, {
-      props: { pages, contentVisible: true },
+      props: { pages, contentVisible: true, cityFallback: false },
       global: getGlobalMocks(),
     });
     const menuItems = wrapper.findAllComponents(MenuItem);
@@ -69,7 +69,7 @@ describe("Menu.vue", () => {
 
   it("renders an empty list when no pages are provided", () => {
     const wrapper = mount(Menu, {
-      props: { pages: [], contentVisible: true },
+      props: { pages: [], contentVisible: true, cityFallback: false },
       global: getGlobalMocks(),
     });
     const menuItems = wrapper.findAllComponents(MenuItem);
@@ -81,7 +81,7 @@ describe("Menu.vue", () => {
       { name: "Home", link: "/" }
     ];
     const wrapper = mount(Menu, {
-      props: { pages, contentVisible: true },
+      props: { pages, contentVisible: true, cityFallback: false },
       global: getGlobalMocks(),
     });
 

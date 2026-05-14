@@ -113,6 +113,10 @@ import {
   EMISSIVE_LERP_FACTOR,
   SPARK_SPAWN_POSITIONS_OFF_Y,
   CHASE_ARROW_POSITION_Z,
+  FALLBACK_FPS_THRESHOLD,
+  FALLBACK_FPS_CONSECUTIVE_CHECKS,
+  FALLBACK_CHECK_INTERVAL_MS,
+  FALLBACK_MONITOR_DELAY_MS,
 } from "../game/constants/CyberpunkCity";
 import { KonamiManager } from "../game/KonamiManager";
 import { GangWarManager } from "../game/GangWarManager";
@@ -311,8 +315,12 @@ const lookControls = ref({
 
 const props = defineProps({});
 
-const emit = defineEmits(["game-start", "game-end"]);
+const emit = defineEmits(["game-start", "game-end", "fallback"]);
 const showSplash = ref(true);
+const isFallbackMode = ref(false);
+const frameTimestamps: number[] = [];
+let lowFpsCount = 0;
+let lastFpsCheckTime = 0;
 
 const currentLookAt = new Vector3(0, 0, 0);
 
@@ -637,6 +645,7 @@ watch(activeCar, (newCar, oldCar) => {
 });
 
 function startExplorationMode() {
+  if (isFallbackMode.value) return;
   isGameMode.value = true;
   isExplorationMode.value = true;
   emit("game-start");
@@ -644,6 +653,7 @@ function startExplorationMode() {
 }
 
 function startFlyingTour() {
+  if (isFallbackMode.value) return;
   isGameMode.value = true;
   isFlyingTour.value = true;
   emit("game-start");
@@ -651,6 +661,7 @@ function startFlyingTour() {
 }
 
 function startDemoMode() {
+  if (isFallbackMode.value) return;
   isGameMode.value = true;
   emit("game-start");
   gameModeManager.setMode(new DemoMode());
@@ -761,6 +772,79 @@ function onMouseMove(event: MouseEvent) {
   gameModeManager.onMouseMove(event);
 }
 
+function fallbackToStaticImage() {
+  if (isFallbackMode.value) return;
+  isFallbackMode.value = true;
+  emit("fallback");
+  isActive = false;
+
+  cancelAnimationFrame(animationId);
+
+  if (gameModeManager) {
+    gameModeManager.clearMode();
+  }
+
+  isGameMode.value = false;
+  isDrivingMode.value = false;
+  isExplorationMode.value = false;
+  isFlyingTour.value = false;
+  isCinematicMode.value = false;
+  isGameOver.value = false;
+
+  if (composer) {
+    composer.render();
+  } else {
+    renderer.render(scene, camera);
+  }
+
+  try {
+    const dataUrl = renderer.domElement.toDataURL("image/png");
+    if (canvasContainer.value) {
+      while (canvasContainer.value.firstChild) {
+        canvasContainer.value.removeChild(canvasContainer.value.firstChild);
+      }
+      const img = document.createElement("img");
+      img.src = dataUrl;
+      img.alt = "";
+      img.style.width = "100%";
+      img.style.height = "100%";
+      img.style.objectFit = "cover";
+      img.style.display = "block";
+      canvasContainer.value.appendChild(img);
+    }
+  } catch (_e) {
+    if (canvasContainer.value) {
+      while (canvasContainer.value.firstChild) {
+        canvasContainer.value.removeChild(canvasContainer.value.firstChild);
+      }
+      canvasContainer.value.style.background = "#050510";
+    }
+  }
+
+  renderer.dispose();
+  carAudio.stop();
+  cyberpunkAudio.removeListener(onAudioNote);
+
+  window.removeEventListener("resize", onResize);
+  window.removeEventListener("click", onClick);
+  window.removeEventListener("keydown", onKeyDown);
+  window.removeEventListener("keyup", onKeyUp);
+  window.removeEventListener("mousemove", onMouseMove);
+
+  if (konamiManager) {
+    konamiManager.dispose();
+  }
+  if (gangWarManager) {
+    gangWarManager.dispose();
+  }
+  if (multiplayerManager) {
+    multiplayerManager.dispose();
+  }
+  if (skyEffects && skyEffects.dispose) {
+    skyEffects.dispose();
+  }
+}
+
 function animate() {
   if (!isActive) return;
   animationId = requestAnimationFrame(animate);
@@ -769,6 +853,35 @@ function animate() {
   const time = now * 0.0005;
   const dt = (now - lastTime.value) / 1000;
   lastTime.value = now;
+
+  if (startTime.value > 0 && lastFpsCheckTime === 0 && now - startTime.value > FALLBACK_MONITOR_DELAY_MS) {
+    lastFpsCheckTime = now;
+  }
+
+  if (lastFpsCheckTime > 0) {
+    frameTimestamps.push(now);
+    if (frameTimestamps.length > 60) {
+      frameTimestamps.shift();
+    }
+
+    if (frameTimestamps.length >= 30 && now - lastFpsCheckTime >= FALLBACK_CHECK_INTERVAL_MS) {
+      const elapsed = frameTimestamps[frameTimestamps.length - 1] - frameTimestamps[0];
+      if (elapsed > 0) {
+        const fps = ((frameTimestamps.length - 1) / elapsed) * 1000;
+        lastFpsCheckTime = now;
+
+        if (fps < FALLBACK_FPS_THRESHOLD) {
+          lowFpsCount++;
+          if (lowFpsCount >= FALLBACK_FPS_CONSECUTIVE_CHECKS) {
+            fallbackToStaticImage();
+            return;
+          }
+        } else {
+          lowFpsCount = 0;
+        }
+      }
+    }
+  }
 
   konamiManager.update(dt);
   gangWarManager.update(dt);

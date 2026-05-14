@@ -13,6 +13,7 @@
         <Menu
           :pages="visiblePages"
           :content-visible="isContentVisible"
+          :city-fallback="cityFallback"
           @explore="startExploration"
           @fly="startFlyingTour"
           @demo="startDemoMode"
@@ -74,6 +75,7 @@
     ref="cyberpunkCityRef"
     @game-start="gameMode = true"
     @game-end="gameMode = false"
+    @fallback="cityFallback = true"
   />
 </template>
 
@@ -120,6 +122,7 @@ const showHint = ref(false);
 const route = useRoute();
 const router = useRouter();
 const gameMode = ref(false);
+const cityFallback = ref(false);
 const isContentVisible = ref(true);
 const isClient = ref(false);
 const showCity = computed(() => isClient.value && cityBackground.isEnabled.value);
@@ -422,6 +425,12 @@ watch(activeSection, (newSection) => {
     document.title = "Elliot > " + pageTitle;
   }
 }, { immediate: true });
+
+watch(showCity, (val) => {
+  if (val) {
+    cityFallback.value = false;
+  }
+});
 </script>
 
 <style>

@@ -194,6 +194,30 @@ const displayPages = computed(() => {
   scroll-margin-top: 100px;
   content-visibility: auto;
   contain-intrinsic-size: auto 500px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.page-section::after {
+  content: '';
+  display: block;
+  width: 60%;
+  max-width: 200px;
+  height: 2px;
+  margin: 1.75rem auto 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 0, 204, 0.5),
+    rgba(0, 255, 204, 0.5),
+    transparent
+  );
+  border-radius: 1px;
+  box-shadow: 0 0 8px rgba(255, 0, 204, 0.2), 0 0 8px rgba(0, 255, 204, 0.2);
+}
+
+.page-section:last-child::after {
+  display: none;
 }
 
 @media (max-width: 768px) {
@@ -333,6 +357,11 @@ const displayPages = computed(() => {
 @media (max-width: 600px) {
   .single-page-container {
     gap: 1rem;
+  }
+
+  .page-section::after {
+    margin-top: 1.25rem;
+    max-width: 140px;
   }
 
   .page-content-card {

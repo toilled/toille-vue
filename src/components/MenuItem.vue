@@ -43,34 +43,26 @@ function handleClick() {
 
 .menu-item a {
   display: block;
-  padding: 10px 20px;
+  padding: 8px 16px;
   text-decoration: none;
   color: inherit;
   border-radius: 8px;
   transition: all 0.3s ease;
   border: 1px solid transparent;
+  font-size: 0.9rem;
 }
 
 .can-hover .menu-item a:hover {
-  background: rgba(20, 30, 60, 0.6);
-  box-shadow: 0 0 15px rgba(100, 149, 237, 0.5),
-              0 0 5px rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-  border-color: rgba(100, 149, 237, 0.3);
-}
-
-.menu-item a:active {
-  background: rgba(40, 60, 100, 0.8);
-  box-shadow: 0 0 25px rgba(100, 149, 237, 0.8),
-              0 0 10px rgba(255, 255, 255, 0.5);
-  transform: translateY(1px) scale(0.98);
-  border-color: rgba(100, 149, 237, 0.8);
+  background: rgba(0, 255, 204, 0.06);
+  box-shadow: 0 0 12px rgba(0, 255, 204, 0.1);
+  transform: translateY(-1px);
+  border-color: rgba(0, 255, 204, 0.2);
 }
 
 .menu-item a.active {
-  background: rgba(30, 45, 80, 0.7);
-  box-shadow: 0 0 10px rgba(100, 149, 237, 0.4);
-  border-color: rgba(100, 149, 237, 0.5);
+  background: rgba(0, 255, 204, 0.08);
+  border-color: rgba(0, 255, 204, 0.25);
+  box-shadow: 0 0 8px rgba(0, 255, 204, 0.08);
 }
 
 @media (max-width: 600px) {

@@ -31,8 +31,8 @@ html {
   --pico-muted-border-color: #333355;
   --pico-border-color: #00ffcc;
 
-  --content-width: 50em;
-  --site-max-width: 72em;
+  --content-width: 52em;
+  --site-max-width: 76em;
 }
 
 body {
@@ -85,16 +85,16 @@ article {
   border: 1px solid rgba(0, 255, 204, 0.2);
   background-color: rgba(5, 5, 16, 0.85);
   backdrop-filter: blur(8px);
-  border-radius: 8px;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 12px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
   transform: translateZ(0);
   backface-visibility: hidden;
 }
 
 article:hover {
-  border-color: rgba(0, 255, 204, 0.4);
-  box-shadow: 0 0 20px rgba(0, 255, 204, 0.25),
-    inset 0 0 20px rgba(0, 255, 204, 0.08);
+  border-color: rgba(0, 255, 204, 0.35);
+  box-shadow: 0 0 24px rgba(0, 255, 204, 0.2),
+    inset 0 0 20px rgba(0, 255, 204, 0.06);
 }
 
 article > header {
@@ -123,15 +123,16 @@ h2 > a {
 section,
 .content-container {
   max-width: var(--content-width);
-  margin: 1rem auto;
+  margin: 1.5rem auto;
+  width: 100%;
 }
 
 section p,
 .content-container p,
 .text-paragraph {
-  line-height: 1.6;
+  line-height: 1.75;
   text-shadow: 0 0 2px rgba(0, 255, 204, 0.3);
-  margin-bottom: 1rem;
+  margin-bottom: 1.125rem;
   overflow-wrap: break-word;
   word-wrap: break-word;
 }
@@ -281,7 +282,7 @@ a:hover {
   }
 
   article {
-    border-radius: 6px;
+    border-radius: 8px;
   }
 
   article > header h2 {

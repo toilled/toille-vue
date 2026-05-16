@@ -546,8 +546,10 @@ watch(showCity, (val) => {
   }
   .header-nav {
     flex-direction: column;
-    gap: 0.75rem;
-    align-items: stretch;
+    gap: 0.5rem;
+    align-items: center;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
   }
 }
 

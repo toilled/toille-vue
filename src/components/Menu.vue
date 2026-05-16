@@ -197,8 +197,7 @@ const toggleCityBackground = () => {
   gap: 0.5rem;
   margin-left: auto;
   padding-left: 0.75rem;
-  border-left: 1px solid var(--pico-border-color, #00ffcc);
-  opacity: 0.8;
+  border-left: 1px solid rgba(0, 255, 204, 0.25);
 }
 
 .tools-toggle {
@@ -206,10 +205,10 @@ const toggleCityBackground = () => {
   align-items: center;
   justify-content: center;
   background: none;
-  border: 1px solid var(--pico-border-color, #00ffcc);
-  border-radius: 4px;
+  border: 1px solid rgba(0, 255, 204, 0.3);
+  border-radius: 6px;
   cursor: pointer;
-  padding: 0.25rem;
+  padding: 0.3rem;
   margin-left: auto;
   color: #00ffcc;
   transition: all 0.2s ease;
@@ -217,13 +216,14 @@ const toggleCityBackground = () => {
 
 .can-hover .tools-toggle:hover {
   background: rgba(0, 255, 204, 0.1);
-  box-shadow: 0 0 8px rgba(0, 255, 204, 0.3);
+  border-color: rgba(0, 255, 204, 0.5);
+  box-shadow: 0 0 12px rgba(0, 255, 204, 0.2);
 }
 
 .toggle-icon {
   width: 20px;
   height: 20px;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .tools-toggle.expanded .toggle-icon {
@@ -236,13 +236,18 @@ const toggleCityBackground = () => {
   align-items: center;
   justify-content: center;
   padding: 0.3rem;
-  border-radius: 4px;
+  border-radius: 6px;
   transition: all 0.2s ease;
+  position: relative;
 }
 
 .can-hover .icon-wrapper:hover {
   background: rgba(0, 255, 204, 0.1);
-  box-shadow: 0 0 8px rgba(0, 255, 204, 0.3);
+  box-shadow: 0 0 12px rgba(0, 255, 204, 0.2), inset 0 0 8px rgba(0, 255, 204, 0.05);
+}
+
+.icon-wrapper:active {
+  transform: scale(0.92);
 }
 
 .icon-wrapper.disabled {
@@ -282,18 +287,29 @@ const toggleCityBackground = () => {
     flex-shrink: 0;
   }
   .nav-tools {
-    display: none;
+    display: flex;
     width: 100%;
     flex-wrap: wrap;
     justify-content: center;
     margin-left: 0;
-    padding: 0.4rem 0 0;
+    padding: 0;
     border-left: none;
-    border-top: 1px solid rgba(0, 255, 204, 0.15);
+    border-top: none;
     gap: 0.2rem;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                opacity 0.25s ease,
+                padding 0.3s ease;
+    pointer-events: none;
   }
   .nav-tools.show {
-    display: flex;
+    max-height: 60px;
+    opacity: 1;
+    padding: 0.5rem 0 0.25rem;
+    border-top: 1px solid rgba(0, 255, 204, 0.15);
+    pointer-events: auto;
   }
   .icon-wrapper {
     padding: 0.25rem;

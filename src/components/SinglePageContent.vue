@@ -254,11 +254,15 @@ const displayPages = computed(() => {
 }
 
 .page-content-card > header {
+  display: flex;
+  align-items: center;
   padding-bottom: 1rem;
   margin-bottom: 1.5rem;
 }
 
 .page-icon {
+  display: inline-block;
+  vertical-align: middle;
   margin-right: 0.5rem;
 }
 

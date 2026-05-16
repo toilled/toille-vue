@@ -443,11 +443,22 @@ watch(showCity, (val) => {
   position: sticky;
   top: 0;
   z-index: 50;
-  backdrop-filter: blur(12px);
-  background: rgba(5, 5, 16, 0.8);
-  border-bottom: 1px solid rgba(0, 255, 204, 0.15);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  background: rgba(5, 5, 16, 0.75);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
   transform: translateZ(0);
   will-change: transform;
+}
+
+.app-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 204, 0.4), rgba(255, 0, 204, 0.4), transparent);
 }
 
 .header-nav {

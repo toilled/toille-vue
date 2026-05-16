@@ -4,8 +4,10 @@
       :href="'#' + sectionId"
       @click.prevent="handleClick"
       :class="{ active: isActive }"
-      >{{ page.name }}</a
     >
+      <span v-if="page.icon" class="nav-icon">{{ page.icon }}</span>
+      <span class="nav-label">{{ page.name }}</span>
+    </a>
   </li>
 </template>
 
@@ -42,19 +44,36 @@ function handleClick() {
 }
 
 .menu-item a {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   padding: 8px 16px;
   text-decoration: none;
   color: inherit;
   border-radius: 8px;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   border: 1px solid transparent;
   font-size: 0.9rem;
+  position: relative;
+}
+
+.menu-item a::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: #00ffcc;
+  border-radius: 1px;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateX(-50%);
+  box-shadow: 0 0 8px #00ffcc, 0 0 16px rgba(0, 255, 204, 0.4);
 }
 
 .can-hover .menu-item a:hover {
-  background: rgba(0, 255, 204, 0.06);
-  box-shadow: 0 0 12px rgba(0, 255, 204, 0.1);
+  background: rgba(0, 255, 204, 0.08);
+  box-shadow: 0 0 16px rgba(0, 255, 204, 0.12), inset 0 0 12px rgba(0, 255, 204, 0.03);
   transform: translateY(-1px);
   border-color: rgba(0, 255, 204, 0.2);
 }
@@ -63,15 +82,32 @@ function handleClick() {
   background: rgba(0, 255, 204, 0.08);
   border-color: rgba(0, 255, 204, 0.25);
   box-shadow: 0 0 8px rgba(0, 255, 204, 0.08);
+  color: #ffffff;
+  text-shadow: 0 0 8px rgba(0, 255, 204, 0.5);
+}
+
+.menu-item a.active::after {
+  width: 60%;
+}
+
+.nav-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.nav-label {
+  letter-spacing: 0.02em;
 }
 
 @media (max-width: 600px) {
   .menu-item {
     margin: 5px 0;
   }
-
   .menu-item a {
-    padding: 8px 15px;
+    padding: 8px 12px;
+  }
+  .nav-icon {
+    font-size: 0.9rem;
   }
 }
 </style>

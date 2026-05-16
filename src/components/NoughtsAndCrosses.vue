@@ -1,6 +1,6 @@
 <template>
   <div class="container" role="main" aria-label="Noughts and Crosses Game">
-    <h1>Noughts and Crosses</h1>
+    <h2>Noughts and Crosses</h2>
     <div class="instructions" v-if="!winner">
       <p>You are <strong>X</strong>. Click a cell to start playing!</p>
     </div>

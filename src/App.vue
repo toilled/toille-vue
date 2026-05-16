@@ -22,7 +22,7 @@
       </nav>
     </header>
 
-    <main class="app-main">
+    <main id="main-content" tabindex="-1" class="app-main">
       <div class="container">
         <Transition name="cyberpunk-glitch">
           <div
@@ -562,6 +562,10 @@ watch(showCity, (val) => {
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
   }
+}
+
+#main-content:focus {
+  outline: none;
 }
 
 html {

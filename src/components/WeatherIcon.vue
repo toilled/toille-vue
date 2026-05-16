@@ -75,7 +75,7 @@
       <div v-if="showModal" class="weather-modal-overlay" @click.self="showModal = false">
         <article class="weather-modal">
           <header class="modal-header">
-            <h3>Weather Forecast</h3>
+            <h2>Weather Forecast</h2>
             <button class="close-btn" @click="showModal = false" aria-label="Close">&times;</button>
           </header>
           <div class="chart-container">

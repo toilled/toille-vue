@@ -26,24 +26,24 @@
 
         <SectionDivider v-if="getSectionId(page) === 'home'" icon="🛠️" />
         <template v-if="getSectionId(page) === 'home'">
-          <h4 class="sub-heading">What I Do</h4>
+          <h3 class="sub-heading">What I Do</h3>
           <div class="what-i-do-grid">
             <div class="do-card">
               <div class="do-card-accent fullstack"></div>
               <div class="do-card-icon">🌐</div>
-              <h5 class="do-card-title">Full-Stack Development</h5>
+              <h4 class="do-card-title">Full-Stack Development</h4>
               <p class="do-card-desc">End-to-end web applications — from database architecture to polished frontends.</p>
             </div>
             <div class="do-card">
               <div class="do-card-accent ux"></div>
               <div class="do-card-icon">🎨</div>
-              <h5 class="do-card-title">Creative UI/UX</h5>
+              <h4 class="do-card-title">Creative UI/UX</h4>
               <p class="do-card-desc">Interfaces that are a joy to use — responsive, accessible, and thoughtfully designed.</p>
             </div>
             <div class="do-card">
               <div class="do-card-accent interactive"></div>
               <div class="do-card-icon">⚡</div>
-              <h5 class="do-card-title">Interactive 3D</h5>
+              <h4 class="do-card-title">Interactive 3D</h4>
               <p class="do-card-desc">Immersive browser-based experiences powered by Three.js and WebGL.</p>
             </div>
           </div>
@@ -51,7 +51,7 @@
 
         <SectionDivider v-if="getSectionId(page) === 'about'" icon="⚡" />
         <template v-if="getSectionId(page) === 'about'">
-          <h4 class="sub-heading">Technical Skills</h4>
+          <h3 class="sub-heading">Technical Skills</h3>
           <SkillCard
             :skills="backendSkills"
             category="Backend Development"
@@ -68,15 +68,15 @@
 
         <SectionDivider v-if="getSectionId(page) === 'interests'" icon="✨" />
         <template v-if="getSectionId(page) === 'interests'">
-          <h4 class="sub-heading">Featured Projects</h4>
+          <h3 class="sub-heading">Featured Projects</h3>
           <ProjectGallery :projects="showcaseProjects" />
 
           <SectionDivider icon="🎵" />
-          <h4 class="sub-heading">Music & Creative</h4>
+          <h3 class="sub-heading">Music & Creative</h3>
           <div class="music-card">
             <div class="music-icon">🎸</div>
             <div class="music-content">
-              <h5>Guitar Compositions</h5>
+              <h4>Guitar Compositions</h4>
               <p>Original music shared on my YouTube channel</p>
               <a
                 href="https://www.youtube.com/@toilled"

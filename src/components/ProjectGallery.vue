@@ -51,9 +51,9 @@ function handleClick(project: Project) {
 <style scoped>
 .project-gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1rem;
-  margin: 1rem 0;
+  margin: 1.25rem 0;
 }
 
 .project-card {
@@ -61,14 +61,14 @@ function handleClick(project: Project) {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 1.25rem 1rem;
+  padding: 1.5rem 1.25rem;
   background: rgba(10, 10, 20, 0.5);
-  border: 1px solid rgba(0, 255, 204, 0.15);
-  border-radius: 12px;
+  border: 1px solid rgba(0, 255, 204, 0.12);
+  border-radius: 14px;
   cursor: default;
   position: relative;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.35s ease;
 }
 
 .project-card[link] {
@@ -77,9 +77,9 @@ function handleClick(project: Project) {
 
 .can-hover .project-card[link]:hover {
   background: rgba(15, 20, 35, 0.8);
-  border-color: rgba(255, 0, 204, 0.4);
-  box-shadow: 0 0 20px rgba(255, 0, 204, 0.1);
-  transform: translateY(-5px);
+  border-color: rgba(255, 0, 204, 0.3);
+  box-shadow: 0 0 24px rgba(255, 0, 204, 0.12);
+  transform: translateY(-4px);
 }
 
 .project-card::before {
@@ -90,40 +90,44 @@ function handleClick(project: Project) {
   right: 0;
   height: 3px;
   background: linear-gradient(90deg, #00ffcc, #ff00cc);
-  transform: scaleX(0);
-  transition: transform 0.3s ease;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  border-radius: 14px 14px 0 0;
 }
 
 .can-hover .project-card[link]:hover::before {
-  transform: scaleX(1);
+  opacity: 1;
 }
 
 .project-icon {
   font-size: 2.5rem;
   margin-bottom: 0.75rem;
+  display: block;
 }
 
 .project-title {
   margin: 0 0 0.5rem 0;
-  font-size: 1.05rem;
+  font-size: 1rem;
   color: var(--pico-h2-color, #ff00cc);
+  letter-spacing: 0.01em;
 }
 
 .project-description {
   margin: 0 0 0.75rem 0;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   color: #8888aa;
-  line-height: 1.5;
+  line-height: 1.55;
+  flex: 1;
 }
 
 .project-tag {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 1px;
   padding: 0.25rem 0.75rem;
-  background: rgba(0, 255, 204, 0.1);
-  border: 1px solid rgba(0, 255, 204, 0.2);
-  border-radius: 12px;
+  background: rgba(0, 255, 204, 0.08);
+  border: 1px solid rgba(0, 255, 204, 0.15);
+  border-radius: 100px;
   color: var(--pico-color, #00ffcc);
 }
 
@@ -134,7 +138,7 @@ function handleClick(project: Project) {
   }
 
   .project-card {
-    padding: 1rem;
+    padding: 1.25rem 1rem;
   }
 }
 </style>

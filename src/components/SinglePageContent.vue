@@ -202,41 +202,16 @@ const displayPages = computed(() => {
 .page-section::after {
   content: '';
   display: block;
-  width: 60%;
-  max-width: 200px;
-  height: 20px;
-  margin: 2rem auto 0;
-  background:
-    linear-gradient(90deg,
-      transparent 0%,
-      rgba(255, 0, 204, 0.3) 10%,
-      rgba(0, 255, 204, 0.9) 25%,
-      #ff00cc 35%,
-      rgba(0, 255, 204, 0.9) 45%,
-      rgba(255, 0, 204, 0.3) 60%,
-      transparent 70%
-    ) no-repeat,
-    linear-gradient(90deg,
-      transparent,
-      rgba(255, 0, 204, 0.12),
-      rgba(0, 255, 204, 0.12),
-      transparent
-    );
-  background-size: 25% 100%, 100% 100%;
-  background-position: -25% center, 0 center;
-  animation: signalSweep 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-
-  -webkit-mask-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 20'%3E%3Cpath d='M0,10 Q10,0 20,10 T40,10 T60,10 T80,10 T100,10 T120,10 T140,10 T160,10 T180,10 T200,10' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  -webkit-mask-size: 100% 100%;
-  -webkit-mask-repeat: no-repeat;
-  mask-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 20'%3E%3Cpath d='M0,10 Q10,0 20,10 T40,10 T60,10 T80,10 T100,10 T120,10 T140,10 T160,10 T180,10 T200,10' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  mask-size: 100% 100%;
-  mask-repeat: no-repeat;
-}
-
-@keyframes signalSweep {
-  0% { background-position: -25% center, 0 center; }
-  100% { background-position: 125% center, 0 center; }
+  width: 40%;
+  max-width: 140px;
+  height: 1px;
+  margin: 2.5rem auto 0;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(0, 255, 204, 0.4),
+    rgba(255, 0, 204, 0.3),
+    transparent
+  );
 }
 
 .page-section:last-child::after {
@@ -250,7 +225,7 @@ const displayPages = computed(() => {
 }
 
 .page-content-card {
-  padding: 1.5rem 2rem;
+  padding: 2rem 2.5rem;
 }
 
 .page-content-card > header {
@@ -271,33 +246,34 @@ const displayPages = computed(() => {
 }
 
 .sub-heading {
-  margin: 1.5rem 0 1rem 0;
+  margin: 1.75rem 0 1rem 0;
   font-size: 1.1rem;
   color: var(--pico-h2-color, #ff00cc);
+  letter-spacing: 0.02em;
 }
 
 .what-i-do-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 0.75rem;
-  margin: 1rem 0;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0;
 }
 
 .do-card {
   position: relative;
-  padding: 1.25rem;
+  padding: 1.5rem 1.25rem;
   background: rgba(10, 10, 20, 0.5);
   border: 1px solid rgba(0, 255, 204, 0.12);
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.35s ease;
 }
 
 .can-hover .do-card:hover {
   background: rgba(15, 20, 40, 0.7);
   border-color: rgba(0, 255, 204, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 .do-card-accent {
@@ -306,6 +282,7 @@ const displayPages = computed(() => {
   left: 0;
   right: 0;
   height: 3px;
+  border-radius: 12px 12px 0 0;
 }
 
 .do-card-accent.fullstack {
@@ -321,21 +298,23 @@ const displayPages = computed(() => {
 }
 
 .do-card-icon {
-  font-size: 1.75rem;
-  margin-bottom: 0.5rem;
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+  display: block;
 }
 
 .do-card-title {
-  margin: 0 0 0.4rem 0;
-  font-size: 0.95rem;
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
   color: #fff;
+  letter-spacing: 0.01em;
 }
 
 .do-card-desc {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   color: #8888aa;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 .timeline {
@@ -386,20 +365,29 @@ const displayPages = computed(() => {
 .music-card {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem 1.25rem;
-  background: linear-gradient(135deg, rgba(255, 0, 204, 0.1), rgba(0, 255, 204, 0.1));
-  border: 1px solid rgba(255, 0, 204, 0.3);
-  border-radius: 12px;
-  margin: 1rem 0;
+  gap: 1.25rem;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, rgba(255, 0, 204, 0.08), rgba(0, 255, 204, 0.08));
+  border: 1px solid rgba(255, 0, 204, 0.2);
+  border-radius: 14px;
+  margin: 1.25rem 0;
+  transition: all 0.3s ease;
+}
+
+.can-hover .music-card:hover {
+  background: linear-gradient(135deg, rgba(255, 0, 204, 0.12), rgba(0, 255, 204, 0.12));
+  border-color: rgba(255, 0, 204, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .music-icon {
-  font-size: 3rem;
+  font-size: 2.5rem;
+  flex-shrink: 0;
 }
 
 .music-content h5 {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.4rem 0;
   font-size: 1rem;
   color: #fff;
 }
@@ -413,13 +401,16 @@ const displayPages = computed(() => {
 .music-link {
   font-size: 0.85rem;
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .interest-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 0.75rem;
-  margin: 1rem 0;
+  margin: 1.25rem 0;
 }
 
 .interest-item {
@@ -428,15 +419,16 @@ const displayPages = computed(() => {
   gap: 0.5rem;
   padding: 0.75rem 1rem;
   background: rgba(10, 10, 20, 0.5);
-  border: 1px solid rgba(0, 255, 204, 0.15);
-  border-radius: 8px;
+  border: 1px solid rgba(0, 255, 204, 0.12);
+  border-radius: 10px;
   font-size: 0.85rem;
   transition: all 0.3s ease;
 }
 
 .can-hover .interest-item:hover {
   background: rgba(20, 30, 60, 0.6);
-  border-color: rgba(0, 255, 204, 0.3);
+  border-color: rgba(0, 255, 204, 0.25);
+  transform: translateY(-1px);
 }
 
 .interest-icon {
@@ -449,13 +441,13 @@ const displayPages = computed(() => {
   }
 
   .page-section::after {
-    margin-top: 1rem;
-    height: 14px;
-    max-width: 140px;
+    margin-top: 1.5rem;
+    width: 30%;
+    max-width: 100px;
   }
 
   .page-content-card {
-    padding: 1rem 1.25rem;
+    padding: 1.25rem 1.25rem;
   }
 
   .page-body {
@@ -469,6 +461,11 @@ const displayPages = computed(() => {
 
   .interest-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .what-i-do-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
   }
 }
 </style>

@@ -260,23 +260,26 @@ const toggleCityBackground = () => {
 @media (max-width: 768px) {
   .nav-wrapper {
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.4rem;
     justify-content: center;
+    width: 100%;
   }
   .nav-links {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     flex-wrap: nowrap;
-    justify-content: flex-start;
+    justify-content: center;
     flex: 1;
-    gap: 0.15rem;
+    gap: 0.1rem;
+    padding-bottom: 2px;
   }
   .nav-links::-webkit-scrollbar {
     display: none;
   }
   .tools-toggle {
     display: flex;
+    flex-shrink: 0;
   }
   .nav-tools {
     display: none;
@@ -284,15 +287,16 @@ const toggleCityBackground = () => {
     flex-wrap: wrap;
     justify-content: center;
     margin-left: 0;
-    padding-left: 0;
+    padding: 0.4rem 0 0;
     border-left: none;
-    gap: 0.25rem;
+    border-top: 1px solid rgba(0, 255, 204, 0.15);
+    gap: 0.2rem;
   }
   .nav-tools.show {
     display: flex;
   }
   .icon-wrapper {
-    padding: 0.2rem;
+    padding: 0.25rem;
   }
   .icon {
     width: 20px;
@@ -302,11 +306,10 @@ const toggleCityBackground = () => {
 
 @media (max-width: 400px) {
   .nav-links {
-    flex-wrap: nowrap;
-    gap: 0.1rem;
+    gap: 0.05rem;
   }
   .nav-tools {
-    gap: 0.15rem;
+    gap: 0.1rem;
   }
   .icon {
     width: 18px;

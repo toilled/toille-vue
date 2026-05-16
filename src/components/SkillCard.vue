@@ -40,11 +40,12 @@ defineProps<{
 }
 
 .skill-category {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: #8888aa;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 0.5rem;
+  letter-spacing: 1.2px;
+  margin-bottom: 0.6rem;
+  opacity: 0.8;
 }
 
 .skill-tags {
@@ -57,13 +58,14 @@ defineProps<{
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.4rem 0.8rem;
-  background: rgba(20, 30, 60, 0.5);
-  border: 1px solid rgba(0, 255, 204, 0.2);
-  border-radius: 20px;
-  font-size: 0.85rem;
+  padding: 0.4rem 0.85rem;
+  background: rgba(15, 25, 50, 0.5);
+  border: 1px solid rgba(0, 255, 204, 0.15);
+  border-radius: 100px;
+  font-size: 0.82rem;
   transition: all 0.3s ease;
   text-decoration: none;
+  backdrop-filter: blur(4px);
 }
 
 a.skill-tag {
@@ -72,23 +74,23 @@ a.skill-tag {
 }
 
 .can-hover a.skill-tag:hover {
-  background: rgba(30, 50, 80, 0.7);
-  border-color: rgba(0, 255, 204, 0.4);
-  box-shadow: 0 0 10px rgba(0, 255, 204, 0.15);
-  transform: translateY(-1px);
+  background: rgba(25, 45, 80, 0.7);
+  border-color: rgba(0, 255, 204, 0.35);
+  box-shadow: 0 0 12px rgba(0, 255, 204, 0.15);
+  transform: translateY(-2px);
 }
 
 .skill-icon {
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
 .skill-icon-img {
-  width: 1rem;
-  height: 1rem;
+  width: 0.95rem;
+  height: 0.95rem;
   display: block;
 }
 
 .skill-name {
-  color: #fff;
+  color: #e0e0f0;
 }
 </style>

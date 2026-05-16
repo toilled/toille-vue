@@ -22,12 +22,14 @@ defineProps<{
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  margin: 2rem 0;
+  gap: 0.75rem;
+  margin: 1.75rem 0;
+  opacity: 0.6;
 }
 
 .divider-line {
   flex: 1;
+  max-width: 120px;
   height: 1px;
   background: linear-gradient(
     90deg,
@@ -38,18 +40,18 @@ defineProps<{
 }
 
 .divider-icon {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   opacity: 0.7;
 }
 
 .divider-dots {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .dot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: rgba(0, 255, 204, 0.4);
 }
@@ -60,8 +62,8 @@ defineProps<{
 
 @media (max-width: 600px) {
   .section-divider {
-    margin: 1.5rem 0;
-    gap: 0.75rem;
+    margin: 1.25rem 0;
+    gap: 0.5rem;
   }
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <main id="main-content">
+  <div>
     <section>
       <article class="marginless page-content-card">
         <header>
@@ -45,7 +45,7 @@
         </div>
       </article>
     </section>
-  </main>
+  </div>
 </template>
 
 <script setup lang="ts">

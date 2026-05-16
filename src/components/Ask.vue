@@ -1,5 +1,5 @@
 <template>
-  <main class="container" role="main" aria-label="Ask Me Chat" id="main-content">
+  <div class="container" role="main" aria-label="Ask Me Chat">
     <article>
       <header>
         <h2>Ask Me</h2>
@@ -39,7 +39,7 @@
         </form>
       </footer>
     </article>
-  </main>
+  </div>
 </template>
 
 <script setup lang="ts">

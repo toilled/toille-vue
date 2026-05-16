@@ -20,6 +20,7 @@ export default defineConfig({
   },
   build: {
     target: "esnext",
+    sourcemap: true,
     minify: "terser",
     terserOptions: {
       compress: {

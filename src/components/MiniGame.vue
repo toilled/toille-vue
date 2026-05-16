@@ -1,6 +1,6 @@
 <template>
   <div class="container" role="main" aria-label="Catch the Button Game">
-    <h1>Catch the Button!</h1>
+    <h2>Catch the Button!</h2>
     <div class="instructions">
       <p>Click the button or press <kbd>Spacebar</kbd> as many times as you can. Reach <strong>{{ WIN_SCORE }}</strong> points to win!</p>
     </div>

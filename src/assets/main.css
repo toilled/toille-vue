@@ -194,7 +194,7 @@ a:hover {
 }
 
 .skip-link:focus-visible {
-  top: 0;
+  transform: translateY(0);
 }
 
 @media (prefers-reduced-motion: reduce) {

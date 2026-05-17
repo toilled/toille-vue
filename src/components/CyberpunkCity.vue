@@ -776,20 +776,10 @@ function fallbackToStaticImage() {
   if (isFallbackMode.value) return;
   isFallbackMode.value = true;
   emit("fallback");
+  exitGameMode();
   isActive = false;
 
   cancelAnimationFrame(animationId);
-
-  if (gameModeManager) {
-    gameModeManager.clearMode();
-  }
-
-  isGameMode.value = false;
-  isDrivingMode.value = false;
-  isExplorationMode.value = false;
-  isFlyingTour.value = false;
-  isCinematicMode.value = false;
-  isGameOver.value = false;
 
   if (composer) {
     composer.render();

@@ -3,12 +3,15 @@ import { vi } from "vitest";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 // @ts-expect-error: Mocking complex overload structure
-HTMLCanvasElement.prototype.getContext = vi.fn((contextId: string) => {
-  if (contextId === "2d") {
+HTMLCanvasElement.prototype.getContext = vi.fn((contextId: string, options?: any) => {
+  if (contextId === "2d" || contextId === "webgl" || contextId === "webgl2" || contextId === "experimental-webgl") {
     return {
       fillRect: vi.fn(),
       clearRect: vi.fn(),
-      getImageData: vi.fn(() => ({ data: new Uint8ClampedArray(4) })),
+      getImageData: vi.fn((x: number, y: number, w: number, h: number) => {
+          const length = (w || 1024) * (h || 1024) * 4;
+          return { data: new Uint8ClampedArray(length) };
+      }),
       putImageData: vi.fn(),
       createImageData: vi.fn(() => []),
       setTransform: vi.fn(),

@@ -4,47 +4,115 @@ import { ROAD_WIDTH, CELL_SIZE } from "../game/config";
 // Reusable Texture for Windows
 export function createWindowTexture() {
   const canvas = document.createElement("canvas");
-  canvas.width = 64;
-  canvas.height = 128;
+  canvas.width = 256;
+  canvas.height = 512;
   const ctx = canvas.getContext("2d");
   if (ctx) {
-    ctx.fillStyle = "#050505"; // Slightly lighter black
-    ctx.fillRect(0, 0, 64, 128);
+    ctx.fillStyle = "#111111"; // Dark frame color
+    ctx.fillRect(0, 0, 256, 512);
 
-    const w = 4;
-    const h = 6;
-    const gapX = 4;
-    const gapY = 6;
+    const cols = 8;
+    const rows = 16;
+    const paddingX = 4;
+    const paddingY = 8;
+    const w = (256 / cols) - paddingX;
+    const h = (512 / rows) - paddingY;
 
-    for (let y = 4; y < 128; y += h + gapY) {
-      for (let x = 4; x < 64; x += w + gapX) {
-        if (Math.random() > 0.4) {
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const x = c * (w + paddingX) + paddingX / 2;
+        const y = r * (h + paddingY) + paddingY / 2;
+
+        // 40% chance of being lit
+        if (Math.random() > 0.6) {
           const rand = Math.random();
-          if (rand > 0.95)
-            ctx.fillStyle = "#ffffff"; // Bright White
-          else if (rand > 0.8)
-            ctx.fillStyle = "#ffaa00"; // Warm Orange
-          else if (rand > 0.5)
-            ctx.fillStyle = "#00ccff"; // Cyan
+          if (rand > 0.9) ctx.fillStyle = "#ffffff"; // Bright White
+          else if (rand > 0.7) ctx.fillStyle = "#ffaa00"; // Warm Orange
+          else if (rand > 0.4) ctx.fillStyle = "#00ffcc"; // Cyan
           else ctx.fillStyle = "#ff00cc"; // Magenta
 
-          ctx.globalAlpha = 0.6 + Math.random() * 0.4;
+          ctx.globalAlpha = 0.7 + Math.random() * 0.3;
           ctx.fillRect(x, y, w, h);
           ctx.globalAlpha = 1.0;
+        } else {
+            ctx.fillStyle = "#050505"; // Unlit glass
+            ctx.fillRect(x, y, w, h);
         }
       }
-    }
-
-    // Add some "dark" buildings or sections
-    if (Math.random() > 0.8) {
-      ctx.fillStyle = "rgba(0,0,0,0.8)";
-      ctx.fillRect(0, 0, 64, 128);
     }
   }
   const texture = new CanvasTexture(canvas);
   texture.wrapS = RepeatWrapping;
   texture.wrapT = RepeatWrapping;
   texture.magFilter = NearestFilter;
+  texture.anisotropy = 16;
+  return texture;
+}
+
+export function createGroundNormalMap() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1024;
+  canvas.height = 1024;
+  const ctx = canvas.getContext("2d");
+  if (ctx) {
+    // Base flat normal is (128, 128, 255)
+    ctx.fillStyle = "rgb(128, 128, 255)";
+    ctx.fillRect(0, 0, 1024, 1024);
+
+    if (!ctx.getImageData) {
+      return new CanvasTexture(canvas);
+    }
+    // Generate noise for asphalt bumps
+    const imgData = ctx.getImageData(0, 0, 1024, 1024);
+    const data = imgData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+      // Random bump value between -32 and +32
+      const noiseX = (Math.random() - 0.5) * 64;
+      const noiseY = (Math.random() - 0.5) * 64;
+
+      // Modify R and G channels, keep B at 255
+      data[i] = Math.max(0, Math.min(255, 128 + noiseX));     // R (X vector)
+      data[i+1] = Math.max(0, Math.min(255, 128 + noiseY));   // G (Y vector)
+      // data[i+2] = 255; // B (Z vector) already set by fillRect
+    }
+    ctx.putImageData(imgData, 0, 0);
+  }
+
+  const texture = new CanvasTexture(canvas);
+  texture.wrapS = RepeatWrapping;
+  texture.wrapT = RepeatWrapping;
+  return texture;
+}
+
+export function createWindowRoughnessMap() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 256;
+  canvas.height = 512;
+  const ctx = canvas.getContext("2d");
+  if (ctx) {
+    ctx.fillStyle = "#ffffff"; // White = rough (frames)
+    ctx.fillRect(0, 0, 256, 512);
+
+    const cols = 8;
+    const rows = 16;
+    const paddingX = 4;
+    const paddingY = 8;
+    const w = (256 / cols) - paddingX;
+    const h = (512 / rows) - paddingY;
+
+    ctx.fillStyle = "#222222"; // Dark = smooth (glass)
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const x = c * (w + paddingX) + paddingX / 2;
+        const y = r * (h + paddingY) + paddingY / 2;
+        ctx.fillRect(x, y, w, h);
+      }
+    }
+  }
+  const texture = new CanvasTexture(canvas);
+  texture.wrapS = RepeatWrapping;
+  texture.wrapT = RepeatWrapping;
   return texture;
 }
 
@@ -71,7 +139,7 @@ export function createGroundTexture() {
     ctx.fillRect(1024 - halfRoad, 0, halfRoad, 1024);
 
     // Dashed Center Lines
-    ctx.strokeStyle = "#444444";
+    ctx.strokeStyle = "#444444"; // Not lit
     ctx.lineWidth = 4;
     ctx.setLineDash([20, 20]);
 
@@ -166,6 +234,7 @@ export function createBillboardTextures() {
       ctx.strokeRect(4, 4, 120, 56);
 
       // "Text" / Content
+      ctx.globalAlpha = 1.0;
       ctx.fillStyle = color;
       ctx.shadowColor = color;
       ctx.shadowBlur = 15;

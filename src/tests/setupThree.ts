@@ -52,6 +52,11 @@ vi.mock("three", async () => {
       toneMapping = 0;
       toneMappingExposure = 1;
       setSize = vi.fn();
+    getSize = vi.fn().mockImplementation((target: any) => {
+      target.width = 1024;
+      target.height = 768;
+      return target;
+    });
       setPixelRatio = vi.fn();
       getPixelRatio = vi.fn(() => 1);
       render = vi.fn();

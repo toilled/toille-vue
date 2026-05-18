@@ -80,6 +80,11 @@ vi.mock("three", () => {
     })),
     WebGLRenderer: vi.fn(() => ({
       setSize: vi.fn(),
+      getSize: vi.fn().mockImplementation((target: any) => {
+        target.width = 1024;
+        target.height = 768;
+        return target;
+      }),
       render: vi.fn(),
       domElement: document.createElement("canvas"),
       setPixelRatio: vi.fn(),

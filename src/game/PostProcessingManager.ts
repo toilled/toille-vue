@@ -6,15 +6,16 @@ import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass';
 
 export function setupPostProcessing(scene: Scene, camera: PerspectiveCamera, renderer: WebGLRenderer): EffectComposer {
     const renderScene = new RenderPass(scene, camera);
+    const size = renderer.getSize(new Vector2());
 
-    const bloomPass = new UnrealBloomPass(new Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+    const bloomPass = new UnrealBloomPass(size, 1.5, 0.4, 0.85);
     bloomPass.threshold = 0.5;
     bloomPass.strength = 1.0;
     bloomPass.radius = 0.8;
 
     const outputPass = new OutputPass();
 
-    const renderTarget = new WebGLRenderTarget(window.innerWidth, window.innerHeight, {
+    const renderTarget = new WebGLRenderTarget(size.width, size.height, {
         samples: 4
     });
 

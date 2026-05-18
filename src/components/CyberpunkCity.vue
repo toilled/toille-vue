@@ -137,6 +137,7 @@ let renderer: WebGLRenderer;
 let composer: EffectComposer;
 let animationId: number;
 let isActive = false;
+let lastWidth = typeof window !== "undefined" ? window.innerWidth : 0;
 
 let occupiedGrids = new Map<
   string,
@@ -486,6 +487,9 @@ onMounted(() => {
 
   updateIsMobile();
 
+  const width = canvasContainer.value.clientWidth || window.innerWidth;
+  const height = canvasContainer.value.clientHeight || window.innerHeight;
+
   // Scene setup
   scene = new Scene();
   // scene.background handled by SkyEffects sky dome
@@ -493,7 +497,7 @@ onMounted(() => {
   // Camera setup
   camera = new PerspectiveCamera(
     CAMERA_FOV,
-    window.innerWidth / window.innerHeight,
+    width / height,
     CAMERA_NEAR,
     CAMERA_FAR,
   );
@@ -502,7 +506,7 @@ onMounted(() => {
 
   // Renderer setup
   renderer = new WebGLRenderer({ antialias: false, alpha: false });
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(width, height);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = PCFSoftShadowMap;
@@ -694,11 +698,25 @@ function exitGameMode() {
 
 function onResize() {
   if (!renderer || !camera) return;
-  camera.aspect = window.innerWidth / window.innerHeight;
+
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+
+  // On mobile, ignore vertical resizes caused by address bar appearing/disappearing
+  if (isMobile.value && width === lastWidth) {
+    return;
+  }
+
+  lastWidth = width;
+
+  const containerWidth = canvasContainer.value?.clientWidth || width;
+  const containerHeight = canvasContainer.value?.clientHeight || height;
+
+  camera.aspect = containerWidth / containerHeight;
   camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(containerWidth, containerHeight);
   if (composer) {
-    composer.setSize(window.innerWidth, window.innerHeight);
+    composer.setSize(containerWidth, containerHeight);
   }
   updateIsMobile();
 }
@@ -1125,7 +1143,8 @@ onBeforeUnmount(() => {
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 100vh;
+  height: 100lvh;
   z-index: -1;
   transform: translateZ(0);
   backface-visibility: hidden;

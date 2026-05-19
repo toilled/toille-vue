@@ -22,7 +22,7 @@ import {
   GRID_SIZE,
   START_OFFSET,
 } from "./config";
-import { createGroundTexture } from "../utils/TextureGenerator";
+import { createGroundTexture, createGroundNormalMap } from "../utils/TextureGenerator";
 import { getHeight } from "../utils/HeightMap";
 import { CityMaterials } from "./CityMaterials";
 
@@ -91,6 +91,7 @@ export class CityBuilder {
 
   private createGround() {
     const groundTexture = createGroundTexture();
+    const groundNormalMap = createGroundNormalMap();
     const planeGeometry = new PlaneGeometry(
       CITY_SIZE * 2,
       CITY_SIZE * 2,
@@ -110,16 +111,19 @@ export class CityBuilder {
 
     const repeatCount = (CITY_SIZE * 2) / CELL_SIZE;
     groundTexture.repeat.set(repeatCount, repeatCount);
+    groundNormalMap.repeat.set(repeatCount, repeatCount);
 
     const planeMaterial = new MeshStandardMaterial({
       color: 0xffffff,
       map: groundTexture,
+      normalMap: groundNormalMap,
       roughness: 0.4,
       metalness: 0.3,
     });
 
     const offset = -CITY_SIZE / CELL_SIZE;
     groundTexture.offset.set(offset, offset);
+    groundNormalMap.offset.set(offset, offset);
     const plane = new Mesh(planeGeometry, planeMaterial);
     plane.rotation.x = -Math.PI / 2;
     plane.position.y = -0.5;

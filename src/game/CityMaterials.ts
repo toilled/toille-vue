@@ -12,10 +12,12 @@ import {
 import {
   createBillboardTextures,
   createWindowTexture,
+  createWindowRoughnessMap,
 } from "../utils/TextureGenerator";
 
 export class CityMaterials {
   public windowTexture: CanvasTexture;
+  public windowRoughnessMap: CanvasTexture;
   public billboardTextures: CanvasTexture[];
   public buildingMaterial: MeshStandardMaterial;
   public audioMaterials: { [key: string]: MeshStandardMaterial } = {};
@@ -36,6 +38,7 @@ export class CityMaterials {
 
   constructor() {
     this.windowTexture = createWindowTexture();
+    this.windowRoughnessMap = createWindowRoughnessMap();
     this.billboardTextures = createBillboardTextures();
 
     this.boxGeo = new BoxGeometry(1, 1, 1);
@@ -47,9 +50,10 @@ export class CityMaterials {
       color: 0x222222,
       map: this.windowTexture,
       emissiveMap: this.windowTexture,
-      emissive: 0xffffff,
-      emissiveIntensity: 0.2,
-      roughness: 0.2,
+      roughnessMap: this.windowRoughnessMap,
+      emissive: 0xffffff, // Needs to be full white to let texture colors through
+      emissiveIntensity: 0.8, // Reduced intensity
+      roughness: 0.5, // Base roughness, modulated by map
       metalness: 0.8,
     });
 

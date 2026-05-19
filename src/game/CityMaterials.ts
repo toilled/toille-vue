@@ -52,7 +52,7 @@ export class CityMaterials {
       emissiveMap: this.windowTexture,
       roughnessMap: this.windowRoughnessMap,
       emissive: 0xffffff, // Needs to be full white to let texture colors through
-      emissiveIntensity: 1.0,
+      emissiveIntensity: 0.8, // Reduced intensity
       roughness: 0.5, // Base roughness, modulated by map
       metalness: 0.8,
     });

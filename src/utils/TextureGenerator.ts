@@ -4,27 +4,27 @@ import { ROAD_WIDTH, CELL_SIZE } from "../game/config";
 // Reusable Texture for Windows
 export function createWindowTexture() {
   const canvas = document.createElement("canvas");
-  canvas.width = 256;
-  canvas.height = 512;
+  canvas.width = 1024;
+  canvas.height = 1024;
   const ctx = canvas.getContext("2d");
   if (ctx) {
     ctx.fillStyle = "#111111"; // Dark frame color
-    ctx.fillRect(0, 0, 256, 512);
+    ctx.fillRect(0, 0, 1024, 1024);
 
-    const cols = 8;
-    const rows = 16;
-    const paddingX = 4;
-    const paddingY = 8;
-    const w = (256 / cols) - paddingX;
-    const h = (512 / rows) - paddingY;
+    const cols = 16;
+    const rows = 64;
+    const paddingX = 8;
+    const paddingY = 4;
+    const w = (1024 / cols) - paddingX;
+    const h = (1024 / rows) - paddingY;
 
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         const x = c * (w + paddingX) + paddingX / 2;
         const y = r * (h + paddingY) + paddingY / 2;
 
-        // 40% chance of being lit
-        if (Math.random() > 0.6) {
+        // 5% chance of being lit
+        if (Math.random() > 0.95) {
           const rand = Math.random();
           if (rand > 0.9) ctx.fillStyle = "#ffffff"; // Bright White
           else if (rand > 0.7) ctx.fillStyle = "#ffaa00"; // Warm Orange
@@ -87,19 +87,19 @@ export function createGroundNormalMap() {
 
 export function createWindowRoughnessMap() {
   const canvas = document.createElement("canvas");
-  canvas.width = 256;
-  canvas.height = 512;
+  canvas.width = 1024;
+  canvas.height = 1024;
   const ctx = canvas.getContext("2d");
   if (ctx) {
     ctx.fillStyle = "#ffffff"; // White = rough (frames)
-    ctx.fillRect(0, 0, 256, 512);
+    ctx.fillRect(0, 0, 1024, 1024);
 
-    const cols = 8;
-    const rows = 16;
-    const paddingX = 4;
-    const paddingY = 8;
-    const w = (256 / cols) - paddingX;
-    const h = (512 / rows) - paddingY;
+    const cols = 16;
+    const rows = 64;
+    const paddingX = 8;
+    const paddingY = 4;
+    const w = (1024 / cols) - paddingX;
+    const h = (1024 / rows) - paddingY;
 
     ctx.fillStyle = "#222222"; // Dark = smooth (glass)
     for (let r = 0; r < rows; r++) {

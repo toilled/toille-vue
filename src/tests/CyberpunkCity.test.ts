@@ -448,6 +448,7 @@ describe("CyberpunkCity.vue", () => {
   });
 
   it("initializes spark positions off-screen", () => {
+    vi.useFakeTimers();
     wrapper = mount(CyberpunkCity);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -474,5 +475,6 @@ describe("CyberpunkCity.vue", () => {
     }
 
     expect(sparksCallFound).toBe(true);
+    vi.useRealTimers();
   });
 });

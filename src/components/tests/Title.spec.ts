@@ -1,8 +1,16 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mount } from "@vue/test-utils";
 import Title from "../Title.vue";
 
 describe("Title.vue", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("renders the title and subtitle", () => {
     const wrapper = mount(Title, {
       props: {

@@ -30,7 +30,6 @@
       isGameMode ||
       isDrivingMode ||
       isExplorationMode ||
-      isFlyingTour ||
       isCinematicMode
     "
     id="return-button"
@@ -165,7 +164,6 @@ const props = defineProps({
   isDrivingMode: Boolean,
   isGameMode: Boolean,
   isExplorationMode: Boolean,
-  isFlyingTour: Boolean,
   isCinematicMode: Boolean,
   isGameOver: Boolean,
   isMobile: Boolean,

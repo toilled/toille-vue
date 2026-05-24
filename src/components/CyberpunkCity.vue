@@ -9,7 +9,6 @@
     :isDrivingMode="isDrivingMode"
     :isGameMode="isGameMode"
     :isExplorationMode="isExplorationMode"
-    :isFlyingTour="isFlyingTour"
     :isCinematicMode="isCinematicMode"
     :isGameOver="isGameOver"
     :isMobile="isMobile"
@@ -67,7 +66,6 @@ import { GameModeManager } from "../game/GameModeManager";
 import { setupPostProcessing } from "../game/PostProcessingManager";
 import { DrivingMode } from "../game/modes/DrivingMode";
 import { ExplorationMode } from "../game/modes/ExplorationMode";
-import { FlyingTourMode } from "../game/modes/FlyingTourMode";
 import { DemoMode } from "../game/modes/DemoMode";
 import { GameContext } from "../game/types";
 import { carAudio } from "../game/audio/CarAudio";
@@ -151,7 +149,6 @@ const drivingScore = ref(0);
 const isGameMode = ref(false);
 const isDrivingMode = ref(false);
 const isExplorationMode = ref(false);
-const isFlyingTour = ref(false);
 const isCinematicMode = ref(false);
 const cinematicTarget = new Vector3();
 const activeCar = ref<Group | null>(null);
@@ -656,14 +653,6 @@ function startExplorationMode() {
   gameModeManager.setMode(new ExplorationMode());
 }
 
-function startFlyingTour() {
-  if (isFallbackMode.value) return;
-  isGameMode.value = true;
-  isFlyingTour.value = true;
-  emit("game-start");
-  gameModeManager.setMode(new FlyingTourMode());
-}
-
 function startDemoMode() {
   if (isFallbackMode.value) return;
   isGameMode.value = true;
@@ -671,7 +660,7 @@ function startDemoMode() {
   gameModeManager.setMode(new DemoMode());
 }
 
-defineExpose({ startExplorationMode, startFlyingTour, startDemoMode });
+defineExpose({ startExplorationMode, startDemoMode });
 
 function exitGameMode() {
   gameModeManager.clearMode();
@@ -682,10 +671,6 @@ function exitGameMode() {
 
   if (isExplorationMode.value) {
     isExplorationMode.value = false;
-  }
-
-  if (isFlyingTour.value) {
-    isFlyingTour.value = false;
   }
 
   isCinematicMode.value = false;

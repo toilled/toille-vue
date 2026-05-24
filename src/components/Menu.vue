@@ -24,14 +24,6 @@
         <img src="/person-icon.svg" alt="Explore City" class="icon" />
       </div>
       <div
-        @click="$emit('fly')"
-        class="icon-wrapper"
-        :class="{ disabled: !cityOn || cityFallback }"
-        title="Fly Tour"
-      >
-        <img src="/plane-icon.svg" alt="Fly Tour" class="icon" />
-      </div>
-      <div
         @click="$emit('demo')"
         class="icon-wrapper"
         :class="{ disabled: !cityOn || cityFallback }"
@@ -151,7 +143,6 @@ defineProps<{
 
 const emit = defineEmits<{
   (e: "explore"): void;
-  (e: "fly"): void;
   (e: "toggle-content"): void;
   (e: "demo"): void;
 }>();

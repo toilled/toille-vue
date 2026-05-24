@@ -4,7 +4,6 @@ import { createHead } from "@vueuse/head";
 import App from "./App.vue";
 import SinglePageContent from "./components/SinglePageContent.vue";
 
-import "./assets/pico.min.css";
 import "./assets/main.css";
 
 const routes = [

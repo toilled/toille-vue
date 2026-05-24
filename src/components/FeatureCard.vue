@@ -80,7 +80,7 @@ function handleClick() {
 .feature-title {
   margin: 0 0 0.25rem 0;
   font-size: 1rem;
-  color: var(--pico-h2-color, #ff00cc);
+  color: #ff00cc;
 }
 
 .feature-description {
@@ -102,13 +102,13 @@ function handleClick() {
   padding: 0.15rem 0.55rem;
   border-radius: 4px;
   background: rgba(0, 255, 204, 0.1);
-  color: var(--pico-color, #00ffcc);
+  color: #00ffcc;
   border: 1px solid rgba(0, 255, 204, 0.2);
 }
 
 .feature-arrow {
   font-size: 1.25rem;
-  color: var(--pico-color, #00ffcc);
+  color: #00ffcc;
   opacity: 0.6;
   transition: transform 0.3s ease, opacity 0.3s ease;
 }

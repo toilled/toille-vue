@@ -248,7 +248,7 @@ const displayPages = computed(() => {
 .sub-heading {
   margin: 1.75rem 0 1rem 0;
   font-size: 1.1rem;
-  color: var(--pico-h2-color, #ff00cc);
+  color: #ff00cc;
   letter-spacing: 0.02em;
 }
 
@@ -340,7 +340,7 @@ const displayPages = computed(() => {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--pico-color, #00ffcc);
+  background: #00ffcc;
   box-shadow: 0 0 8px rgba(0, 255, 204, 0.5);
 }
 
@@ -353,7 +353,7 @@ const displayPages = computed(() => {
 .timeline-company {
   margin: 0 0 0.25rem 0;
   font-size: 0.85rem;
-  color: var(--pico-color, #00ffcc);
+  color: #00ffcc;
 }
 
 .timeline-period {

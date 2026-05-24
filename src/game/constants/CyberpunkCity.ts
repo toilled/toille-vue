@@ -6,7 +6,6 @@ export const SPARK_COUNT = 2000;
 export const SPARK_BURST_SIZE = 30;
 export const SPARK_GRAVITY = 0.1;
 export const SPARK_LIFETIME_DECAY = 0.02;
-export const SPARK_MAX_LIFETIME = 1.0;
 export const SPARK_OFF_SCREEN_Y = -99999;
 export const SPARK_MIN_VELOCITY = 2;
 export const SPARK_RANDOM_VELOCITY = 5;
@@ -29,7 +28,6 @@ export const INTRO_DURATION_MS = 4000;
 export const INTRO_ORBIT_RADIUS = 200;
 export const INTRO_ORBIT_SPEED = 0.5;
 
-export const RAYCASTER_POINTS_THRESHOLD = 20;
 
 export const AUDIO_VOLUME = 0.1;
 export const AUDIO_DISTANCE_FACTOR = 50;
@@ -48,17 +46,9 @@ export const EMISSIVE_INTENSITY_BOOST_HIHAT = 1.0;
 export const EMISSIVE_INTENSITY_TARGET = 0.2;
 export const EMISSIVE_LERP_FACTOR = 0.1;
 
-export const SPARK_SPAWN_POSITIONS_OFF_X = 0;
 export const SPARK_SPAWN_POSITIONS_OFF_Y = -99999;
-export const SPARK_SPAWN_POSITIONS_OFF_Z = 0;
 
 export const CHASE_ARROW_POSITION_Z = 25;
-
-export const LEADERBOARD_LEADER_Y = 160;
-export const LEADERBOARD_ENTRY_SPACING = 60;
-export const LEADERBOARD_RANK_X = 40;
-export const LEADERBOARD_NAME_X = 110;
-export const LEADERBOARD_SCORE_X = 470;
 
 export const FALLBACK_FPS_THRESHOLD = 25;
 export const FALLBACK_FPS_CONSECUTIVE_CHECKS = 3;

@@ -154,7 +154,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, PropType } from "vue";
+import { watch, PropType } from "vue";
 import { Controls, LookControls } from "../game/types";
 import { ScoreEntry } from "../utils/ScoreService";
 import LeaderboardModal from "./LeaderboardModal.vue";

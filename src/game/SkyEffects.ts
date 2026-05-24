@@ -17,7 +17,7 @@ import {
 } from "three";
 import { createCloudTexture } from "../utils/TextureGenerator";
 
-export interface SkyEffectConfig {
+interface SkyEffectConfig {
   cloudCount: number;
   starCount: number;
   fogDensity: number;

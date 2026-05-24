@@ -2,6 +2,7 @@
    Design Tokens - Cyberpunk Professional
    ============================================ */
 html {
+  font-size: 100%;
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -10,33 +11,35 @@ html {
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;
 
-  --pico-font-family: "Courier New", Courier, monospace;
-  --pico-background-color: #050510;
-  --pico-color: #00ffcc;
-  --pico-h1-color: #ff00cc;
-  --pico-h2-color: #ff00cc;
-  --pico-h3-color: #ff00cc;
-  --pico-h4-color: #ff00cc;
-  --pico-h5-color: #ff00cc;
-  --pico-h6-color: #ff00cc;
-  --pico-primary: #ff00cc;
-  --pico-primary-background: #ff00cc;
-  --pico-primary-underline: #00ffcc;
-  --pico-primary-hover: #cc00aa;
-  --pico-primary-hover-background: #cc00aa;
-  --pico-primary-focus: rgba(255, 0, 204, 0.5);
-  --pico-card-background-color: rgba(10, 10, 20, 0.9);
-  --pico-card-sectioning-background-color: rgba(20, 20, 40, 0.9);
-  --pico-muted-color: #8888aa;
-  --pico-muted-border-color: #333355;
-  --pico-border-color: #00ffcc;
-
+  --font-family: "Courier New", Courier, monospace;
+  --background-color: #050510;
+  --text-color: #ffffff;
+  --heading-color: #ff00cc;
   --content-width: 52em;
   --site-max-width: 76em;
 }
 
+@media (min-width: 576px) {
+  html { font-size: 106.25%; }
+}
+@media (min-width: 768px) {
+  html { font-size: 112.5%; }
+}
+@media (min-width: 1024px) {
+  html { font-size: 118.75%; }
+}
+@media (min-width: 1280px) {
+  html { font-size: 125%; }
+}
+@media (min-width: 1536px) {
+  html { font-size: 131.25%; }
+}
+
 body {
-  background-color: transparent !important;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-family: var(--font-family);
+  margin: 0;
   overscroll-behavior-y: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -56,8 +59,29 @@ body {
 }
 
 /* ============================================
+   Grid
+   ============================================ */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: var(--spacing, 1rem);
+}
+
+/* ============================================
    Typography
    ============================================ */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--heading-color);
+  font-weight: 700;
+}
+
+h1 { font-size: 2rem; line-height: 1.125; }
+h2 { font-size: 1.75rem; line-height: 1.15; }
+h3 { font-size: 1.5rem; line-height: 1.175; }
+h4 { font-size: 1.25rem; line-height: 1.2; }
+h5 { font-size: 1.125rem; line-height: 1.225; }
+h6 { font-size: 1rem; line-height: 1.25; }
+
 .question {
   cursor: help;
 }
@@ -73,7 +97,123 @@ body {
 }
 
 .subtitle {
-  color: var(--pico-color, #00ffcc) !important;
+  color: var(--text-color) !important;
+}
+
+/* ============================================
+   Links
+   ============================================ */
+a {
+  color: var(--text-color);
+  text-shadow: 0 0 5px rgba(0, 255, 204, 0.5);
+  transition: all 0.3s ease;
+}
+
+a:hover {
+  color: #fff;
+  text-shadow: 0 0 10px #fff, 0 0 20px rgba(0, 255, 204, 0.5);
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
+button {
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  padding: 0.5rem 1.25rem;
+  border: 1px solid #00ffcc;
+  border-radius: 6px;
+  background: #ff00cc;
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background: #cc00aa;
+  box-shadow: 0 0 12px rgba(255, 0, 204, 0.3);
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button.outline {
+  background: transparent;
+  color: #ff00cc;
+  border-color: #ff00cc;
+}
+
+button.outline:hover {
+  background: rgba(255, 0, 204, 0.5);
+  color: #fff;
+}
+
+/* ============================================
+   Inputs
+   ============================================ */
+input[type="text"],
+input[type="search"],
+input[type="email"],
+input[type="url"],
+input[type="password"],
+input[type="number"],
+textarea,
+select {
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #00ffcc;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--text-color);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid #ff00cc;
+  outline-offset: 2px;
+}
+
+/* ============================================
+   Tables
+   ============================================ */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+table th,
+table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #333355;
+  text-align: left;
+}
+
+table th {
+  font-weight: bold;
+  color: var(--heading-color);
+}
+
+/* ============================================
+   kbd
+   ============================================ */
+kbd {
+  padding: 0.15rem 0.4rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid #333355;
+  border-radius: 3px;
+  font-size: 0.9em;
+  font-family: inherit;
 }
 
 /* ============================================
@@ -98,9 +238,15 @@ article:hover {
 }
 
 article > header {
-  border-bottom: 1px solid rgba(0, 255, 204, 0.1);
+  padding: 1rem;
   padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(0, 255, 204, 0.1);
   margin-bottom: 1.25rem;
+}
+
+article > p,
+article > footer {
+  padding: 1rem;
 }
 
 article > header h2 {
@@ -138,26 +284,12 @@ section p,
 }
 
 .text-paragraph {
-  margin-bottom: var(--pico-typography-spacing-vertical, 1rem);
+  margin-bottom: 1rem;
 }
 
 section p:last-child,
 .text-paragraph:last-child {
   margin-bottom: 0;
-}
-
-/* ============================================
-   Links & Buttons
-   ============================================ */
-a {
-  color: #00ffcc;
-  text-shadow: 0 0 5px rgba(0, 255, 204, 0.5);
-  transition: all 0.3s ease;
-}
-
-a:hover {
-  color: #fff;
-  text-shadow: 0 0 10px #fff, 0 0 20px rgba(0, 255, 204, 0.5);
 }
 
 /* ============================================

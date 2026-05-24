@@ -108,7 +108,7 @@ function handleClick(project: Project) {
 .project-title {
   margin: 0 0 0.5rem 0;
   font-size: 1rem;
-  color: var(--pico-h2-color, #ff00cc);
+  color: #ff00cc;
   letter-spacing: 0.01em;
 }
 
@@ -128,7 +128,7 @@ function handleClick(project: Project) {
   background: rgba(0, 255, 204, 0.08);
   border: 1px solid rgba(0, 255, 204, 0.15);
   border-radius: 100px;
-  color: var(--pico-color, #00ffcc);
+  color: #00ffcc;
 }
 
 @media (max-width: 600px) {

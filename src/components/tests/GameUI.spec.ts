@@ -35,7 +35,6 @@ describe("GameUI.vue", () => {
     isDrivingMode: false,
     isGameMode: false,
     isExplorationMode: false,
-    isFlyingTour: false,
     isCinematicMode: false,
     isGameOver: false,
     isMobile: false,

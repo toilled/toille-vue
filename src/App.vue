@@ -15,7 +15,6 @@
           :content-visible="isContentVisible"
           :city-fallback="cityFallback"
           @explore="startExploration"
-          @fly="startFlyingTour"
           @demo="startDemoMode"
           @toggle-content="toggleContent"
         />
@@ -183,12 +182,6 @@ const cyberpunkCityRef = ref<InstanceType<typeof import("./components/CyberpunkC
 function startExploration() {
   if (cyberpunkCityRef.value && cyberpunkCityRef.value.startExplorationMode) {
     cyberpunkCityRef.value.startExplorationMode();
-  }
-}
-
-function startFlyingTour() {
-  if (cyberpunkCityRef.value && cyberpunkCityRef.value.startFlyingTour) {
-    cyberpunkCityRef.value.startFlyingTour();
   }
 }
 

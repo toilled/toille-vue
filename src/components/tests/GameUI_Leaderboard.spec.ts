@@ -31,7 +31,6 @@ describe("GameUI.vue Leaderboard Modal", () => {
     isDrivingMode: false,
     isGameMode: false,
     isExplorationMode: false,
-    isFlyingTour: false,
     isCinematicMode: false,
     isGameOver: false,
     isMobile: false,

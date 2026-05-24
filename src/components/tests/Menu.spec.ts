@@ -75,23 +75,4 @@ describe("Menu.vue", () => {
     const menuItems = wrapper.findAllComponents(MenuItem);
     expect(menuItems.length).toBe(0);
   });
-
-  it("emits 'fly' event when plane icon is clicked", async () => {
-    const pages = [
-      { name: "Home", link: "/" }
-    ];
-    const wrapper = mount(Menu, {
-      props: { pages, contentVisible: true, cityFallback: false },
-      global: getGlobalMocks(),
-    });
-
-    const iconWrappers = wrapper.findAll('.icon-wrapper');
-    expect(iconWrappers.length).toBeGreaterThanOrEqual(2);
-    const flyIcon = iconWrappers[1];
-
-    expect(flyIcon.attributes('title')).toBe('Fly Tour');
-
-    await flyIcon.trigger('click');
-    expect(wrapper.emitted('fly')).toBeTruthy();
-  });
 });

@@ -331,8 +331,29 @@ function handleScroll() {
   scrollTimeout = setTimeout(updateActiveSection, 50);
 }
 
+function scrollToHash(hash: string) {
+  if (!hash) {
+    window.scrollTo({ top: 0, behavior: "auto" });
+    activeSection.value = "home";
+    lockScrollSpy(1200);
+    return;
+  }
+  const sectionId = hash.replace(/^#/, "");
+  const el = document.getElementById(sectionId);
+  if (el) {
+    const scrollOffset = getScrollOffset();
+    const elementPosition = el.getBoundingClientRect().top;
+    const offsetPosition = elementPosition + window.pageYOffset - scrollOffset;
+    window.scrollTo({ top: offsetPosition, behavior: "auto" });
+    activeSection.value = sectionId;
+    lockScrollSpy(1200);
+  }
+}
+
 onMounted(() => {
   isClient.value = true;
+
+  history.scrollRestoration = "manual";
 
   setTimeout(() => {
     showHint.value = true;
@@ -366,6 +387,11 @@ onMounted(() => {
   window.addEventListener("scroll", handleScroll, { passive: true });
   handleInitialHash();
   updateActiveSection();
+});
+
+watch(() => route.hash, (newHash) => {
+  if (route.path !== "/") return;
+  scrollToHash(newHash);
 });
 
 onErrorCaptured((err) => {

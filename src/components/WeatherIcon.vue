@@ -193,7 +193,11 @@ const fetchWeather = async () => {
 
 const processHourlyData = (hourly: any) => {
   const now = new Date();
-  const currentHourStr = now.toISOString().slice(0, 13); // Match YYYY-MM-DDTHH format
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  const h = String(now.getHours()).padStart(2, '0');
+  const currentHourStr = `${y}-${m}-${d}T${h}`;
 
   // Open Meteo returns time in ISO format (e.g., 2023-10-27T10:00)
   // Find index of current hour or next hour

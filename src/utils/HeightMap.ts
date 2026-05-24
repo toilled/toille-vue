@@ -1,4 +1,4 @@
-export class HeightMap {
+class HeightMap {
   private static instance: HeightMap;
   private p: number[] = [];
 

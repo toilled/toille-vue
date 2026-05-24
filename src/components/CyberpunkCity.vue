@@ -41,7 +41,6 @@ import {
   BufferAttribute,
   BufferGeometry,
   CanvasTexture,
-  Color,
   PerspectiveCamera,
   Points,
   PointsMaterial,
@@ -70,7 +69,7 @@ import { DemoMode } from "../game/modes/DemoMode";
 import { GameContext } from "../game/types";
 import { carAudio } from "../game/audio/CarAudio";
 import { cyberpunkAudio } from "../utils/CyberpunkAudio";
-import { BOUNDS, CELL_SIZE, START_OFFSET, GRID_SIZE } from "../game/config";
+import { CELL_SIZE, START_OFFSET, GRID_SIZE } from "../game/config";
 import {
   LEADERBOARD_CANVAS_SIZE,
   MOBILE_BREAKPOINT,

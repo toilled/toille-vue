@@ -188,11 +188,11 @@ const displayPages = computed(() => {
 .single-page-container {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 2.5rem;
 }
 
 .page-section {
-  scroll-margin-top: 100px;
+  scroll-margin-top: 80px;
   content-visibility: auto;
   contain-intrinsic-size: auto 500px;
   margin: 0 auto;
@@ -202,8 +202,8 @@ const displayPages = computed(() => {
 .page-section::after {
   content: '';
   display: block;
-  width: 40%;
-  max-width: 140px;
+  width: 30%;
+  max-width: 120px;
   height: 1px;
   margin: 2.5rem auto 0;
   background: linear-gradient(90deg,
@@ -220,12 +220,12 @@ const displayPages = computed(() => {
 
 @media (max-width: 768px) {
   .page-section {
-    scroll-margin-top: 200px;
+    scroll-margin-top: 180px;
   }
 }
 
 .page-content-card {
-  padding: 2rem 2.5rem;
+  padding: 2.5rem 3rem;
 }
 
 .page-content-card > header {
@@ -264,7 +264,7 @@ const displayPages = computed(() => {
   padding: 1.5rem 1.25rem;
   background: rgba(10, 10, 20, 0.5);
   border: 1px solid rgba(0, 255, 204, 0.12);
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
   transition: all 0.35s ease;
 }
@@ -282,7 +282,7 @@ const displayPages = computed(() => {
   left: 0;
   right: 0;
   height: 3px;
-  border-radius: 12px 12px 0 0;
+  border-radius: 14px 14px 0 0;
 }
 
 .do-card-accent.fullstack {
@@ -313,7 +313,7 @@ const displayPages = computed(() => {
 .do-card-desc {
   margin: 0;
   font-size: 0.82rem;
-  color: #8888aa;
+  color: #9999bb;
   line-height: 1.55;
 }
 
@@ -359,7 +359,7 @@ const displayPages = computed(() => {
 .timeline-period {
   margin: 0;
   font-size: 0.75rem;
-  color: #8888aa;
+  color: #9999bb;
 }
 
 .music-card {
@@ -395,7 +395,7 @@ const displayPages = computed(() => {
 .music-content p {
   margin: 0 0 0.75rem 0;
   font-size: 0.85rem;
-  color: #8888aa;
+  color: #9999bb;
 }
 
 .music-link {
@@ -447,7 +447,7 @@ const displayPages = computed(() => {
   }
 
   .page-content-card {
-    padding: 1.25rem 1.25rem;
+    padding: 1.25rem;
   }
 
   .page-body {

@@ -464,7 +464,7 @@ watch(showCity, (val) => {
   z-index: 50;
   backdrop-filter: blur(16px) saturate(1.2);
   -webkit-backdrop-filter: blur(16px) saturate(1.2);
-  background: rgba(5, 5, 16, 0.75);
+  background: rgba(5, 5, 16, 0.85);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
   transform: translateZ(0);
   will-change: transform;
@@ -485,12 +485,13 @@ watch(showCity, (val) => {
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
+  padding-top: 0.85rem;
+  padding-bottom: 0.85rem;
 }
 
 .app-main {
   padding: 2rem 0;
+  min-height: 60vh;
 }
 
 .app-footer {
@@ -589,12 +590,12 @@ watch(showCity, (val) => {
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 100px;
+  scroll-padding-top: 80px;
 }
 
 @media (max-width: 768px) {
   html {
-    scroll-padding-top: 200px;
+    scroll-padding-top: 180px;
   }
 }
 </style>

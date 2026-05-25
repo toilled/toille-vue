@@ -49,8 +49,8 @@ function handleClick() {
   gap: 1rem;
   padding: 1rem 1.25rem;
   background: rgba(10, 10, 20, 0.6);
-  border: 1px solid rgba(0, 255, 204, 0.15);
-  border-radius: 8px;
+  border: 1px solid rgba(0, 255, 204, 0.12);
+  border-radius: 10px;
   margin: 0.75rem 0;
   cursor: default;
   transition: all 0.3s ease;
@@ -63,8 +63,8 @@ function handleClick() {
 .can-hover .feature-card[link]:hover {
   background: rgba(15, 20, 35, 0.8);
   border-color: rgba(0, 255, 204, 0.35);
-  box-shadow: 0 0 15px rgba(0, 255, 204, 0.1);
-  transform: translateX(5px);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
 }
 
 .feature-icon {
@@ -86,7 +86,7 @@ function handleClick() {
 .feature-description {
   margin: 0;
   font-size: 0.85rem;
-  color: #8888aa;
+  color: #9999bb;
   line-height: 1.4;
 }
 

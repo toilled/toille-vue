@@ -115,7 +115,7 @@ function handleClick(project: Project) {
 .project-description {
   margin: 0 0 0.75rem 0;
   font-size: 0.82rem;
-  color: #8888aa;
+  color: #9999bb;
   line-height: 1.55;
   flex: 1;
 }

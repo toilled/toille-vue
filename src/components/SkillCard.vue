@@ -40,7 +40,7 @@ defineProps<{
 
 .skill-category {
   font-size: 0.8rem;
-  color: #8888aa;
+  color: #9999bb;
   text-transform: uppercase;
   letter-spacing: 1.2px;
   margin-bottom: 0.6rem;

@@ -13,9 +13,7 @@
     "db:init": "wrangler d1 execute toille-vue-db --local --file=./schema.sql",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "vitest",
-    "test:e2e": "LD_LIBRARY_PATH=/home/toille/.local/lib playwright test",
-    "test:e2e:ui": "LD_LIBRARY_PATH=/home/toille/.local/lib playwright test --ui"
+    "test": "vitest"
   },
   "license": "MIT",
   "devDependencies": {

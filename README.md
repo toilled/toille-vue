@@ -35,43 +35,4 @@ This is a simple Vue.js web application built with Vite and TypeScript. It serve
 *   **`npm run dev`**: Starts the development server.
 *   **`npm run build`**: Builds the application for production.
 *   **`npm run serve`**: Serves the production build locally.
-*   **`npm run test`**: Runs the unit tests (Vitest).
-*   **`npm run test:e2e`**: Runs end-to-end and visual regression tests (Playwright).
-*   **`npm run test:e2e:ui`**: Runs Playwright tests with the interactive UI mode.
-
-## Testing
-
-### Unit Tests
-
-Unit tests use [Vitest](https://vitest.dev/) with `@vue/test-utils` and `jsdom`. They live alongside the source code in `src/**/tests/`.
-
-```bash
-npm test
-```
-
-### E2E & Visual Regression Tests
-
-End-to-end tests use [Playwright](https://playwright.dev/) and are located in `e2e/`. They also serve as **visual regression tests** — full-page screenshots are captured and compared against committed baselines to catch unintended UI changes.
-
-**First-time setup:**
-1. Install the Chromium browser binary:
-   ```bash
-   npx playwright install chromium
-   ```
-2. Ensure system dependencies are available (`libnspr4`, `libnss3`, `libasound2`). On Ubuntu/Debian:
-   ```bash
-   sudo apt-get install -y libnspr4 libnss3 libasound2t64
-   ```
-   If `sudo` is unavailable, the libraries can be extracted manually (see the `LD_LIBRARY_PATH` setup in `package.json`).
-
-**Running:**
-```bash
-npm run test:e2e
-```
-
-**Updating snapshots** (run when UI changes are intentional):
-```bash
-npm run test:e2e -- --update-snapshots
-```
-
-Snapshot baselines are stored in `e2e/app.spec.ts-snapshots/` and should be committed to git.
+*   **`npm run test`**: Runs the unit tests.

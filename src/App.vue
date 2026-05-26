@@ -130,13 +130,6 @@ let scrollSpyLocked = false;
 let scrollLockTimeout: ReturnType<typeof setTimeout>;
 const headerRef = ref<HTMLElement | null>(null);
 
-function getHeaderHeight(): number {
-  if (!headerRef.value) {
-    return 160;
-  }
-  return headerRef.value.offsetHeight + 8;
-}
-
 function getScrollOffset(): number {
   if (!headerRef.value) {
     return 160 + 16;
@@ -271,11 +264,9 @@ function updateActiveSection() {
   const sectionIds = visiblePages.value.map(getSectionIdFromPage);
   if (sectionIds.length === 0) return;
 
-  const activeLine = getScrollOffset();
+  const headerBottom = getScrollOffset();
   let currentActive = sectionIds[0];
-  let lastCrossedIndex = 0;
-  let closestIndex = 0;
-  let closestDistance = Infinity;
+  let maxVisibleHeight = 0;
 
   for (let i = 0; i < sectionIds.length; i++) {
     const id = sectionIds[i];
@@ -283,22 +274,14 @@ function updateActiveSection() {
     if (!el) continue;
 
     const rect = el.getBoundingClientRect();
+    const visibleTop = Math.max(rect.top, headerBottom);
+    const visibleBottom = Math.min(rect.bottom, window.innerHeight);
+    const visibleHeight = Math.max(0, visibleBottom - visibleTop);
 
-    const distance = Math.abs(rect.top - activeLine);
-    if (distance < closestDistance) {
-      closestDistance = distance;
-      closestIndex = i;
+    if (visibleHeight > maxVisibleHeight) {
+      maxVisibleHeight = visibleHeight;
+      currentActive = sectionIds[i];
     }
-
-    if (rect.top <= activeLine + 8) {
-      lastCrossedIndex = i;
-    }
-  }
-
-  if (closestDistance <= 20) {
-    currentActive = sectionIds[closestIndex];
-  } else {
-    currentActive = sectionIds[lastCrossedIndex];
   }
 
   if (currentActive !== activeSection.value) {

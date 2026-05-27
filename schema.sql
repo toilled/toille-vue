@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS scores (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, 
+    name TEXT, 
+    score INTEGER, 
+    date TEXT
+);

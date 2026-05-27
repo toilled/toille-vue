@@ -1,0 +1,1203 @@
+<template>
+  <div id="cyberpunk-city-wrapper">
+    <div ref="canvasContainer" id="cyberpunk-city"></div>
+    <Transition name="glitch-fade">
+      <SplashScreen v-if="showSplash" />
+    </Transition>
+  </div>
+  <GameUI
+    :isDrivingMode="isDrivingMode"
+    :isGameMode="isGameMode"
+    :isExplorationMode="isExplorationMode"
+    :isCinematicMode="isCinematicMode"
+    :isGameOver="isGameOver"
+    :isMobile="isMobile"
+    :drivingScore="drivingScore"
+    :timeLeft="timeLeft"
+    :distToTarget="distToTarget"
+    :controls="controls"
+    :lookControls="lookControls"
+    :leaderboard="leaderboard"
+    :showLeaderboard="showLeaderboard"
+    @exit-game-mode="exitGameMode"
+    @update-leaderboard="updateLeaderboard"
+    @close-leaderboard="showLeaderboard = false"
+  />
+</template>
+
+<script setup lang="ts">
+import {
+  onMounted,
+  onBeforeUnmount,
+  ref,
+  watch,
+  defineAsyncComponent,
+} from "vue";
+import { useRoute } from "vue-router";
+import SplashScreen from "./SplashScreen.vue";
+import { ScoreService, type ScoreEntry } from "../utils/ScoreService";
+import {
+  AdditiveBlending,
+  BufferAttribute,
+  BufferGeometry,
+  CanvasTexture,
+  PerspectiveCamera,
+  Points,
+  PointsMaterial,
+  Raycaster,
+  Scene,
+  Vector2,
+  Vector3,
+  WebGLRenderer,
+  CylinderGeometry,
+  MeshBasicMaterial,
+  Mesh,
+  DoubleSide,
+  Group,
+  ConeGeometry,
+  Object3D,
+  MathUtils,
+  PCFSoftShadowMap,
+  ACESFilmicToneMapping,
+} from "three";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
+import { GameModeManager } from "../game/GameModeManager";
+import { setupPostProcessing } from "../game/PostProcessingManager";
+import { DrivingMode } from "../game/modes/DrivingMode";
+import { ExplorationMode } from "../game/modes/ExplorationMode";
+import { DemoMode } from "../game/modes/DemoMode";
+import { GameContext } from "../game/types";
+import { carAudio } from "../game/audio/CarAudio";
+import { cyberpunkAudio } from "../utils/CyberpunkAudio";
+import { CELL_SIZE, START_OFFSET, GRID_SIZE } from "../game/config";
+import {
+  LEADERBOARD_CANVAS_SIZE,
+  MOBILE_BREAKPOINT,
+  SPARK_COUNT,
+  SPARK_BURST_SIZE,
+  SPARK_GRAVITY,
+  SPARK_LIFETIME_DECAY,
+  SPARK_OFF_SCREEN_Y,
+  SPARK_MIN_VELOCITY,
+  SPARK_RANDOM_VELOCITY,
+  CAR_COUNT,
+  CAMERA_FOV,
+  CAMERA_FAR,
+  CAMERA_NEAR,
+  CAMERA_START_Y,
+  CAMERA_TARGET_Y_DESKTOP,
+  CAMERA_CINEMATIC_Y,
+  CAMERA_LERP_FACTOR,
+  CAMERA_LOOK_AT_LERP,
+  ORBIT_RADIUS_DESKTOP,
+  ORBIT_SPEED,
+  INTRO_DURATION_MS,
+  INTRO_ORBIT_RADIUS,
+  INTRO_ORBIT_SPEED,
+  AUDIO_VOLUME,
+  AUDIO_DISTANCE_FACTOR,
+  AUDIO_OSCILLATOR_FREQ_START,
+  AUDIO_OSCILLATOR_FREQ_END,
+  AUDIO_SWEEP_DURATION,
+  CHECKPOINT_RADIUS,
+  CHECKPOINT_HEIGHT,
+  CHECKPOINT_SEGMENTS,
+  CHECKPOINT_CORE_RADIUS,
+  CHECKPOINT_CORE_SEGMENTS,
+  EMISSIVE_INTENSITY_BOOST_BASS,
+  EMISSIVE_INTENSITY_BOOST_HIHAT,
+  EMISSIVE_INTENSITY_TARGET,
+  EMISSIVE_LERP_FACTOR,
+  SPARK_SPAWN_POSITIONS_OFF_Y,
+  CHASE_ARROW_POSITION_Z,
+  FALLBACK_FPS_THRESHOLD,
+  FALLBACK_FPS_CONSECUTIVE_CHECKS,
+  FALLBACK_CHECK_INTERVAL_MS,
+  FALLBACK_MONITOR_DELAY_MS,
+} from "../game/constants/CyberpunkCity";
+import { KonamiManager } from "../game/KonamiManager";
+import { GangWarManager } from "../game/GangWarManager";
+import { CityBuilder } from "../game/CityBuilder";
+import { TrafficSystem } from "../game/TrafficSystem";
+import { SkyEffects } from "../game/SkyEffects";
+import { getHeight } from "../utils/HeightMap";
+import { audioManager } from "../utils/AudioManager";
+import { MultiplayerManager } from "../game/MultiplayerManager";
+
+const GameUI = defineAsyncComponent(() => import("./GameUI.vue"));
+
+const canvasContainer = ref<HTMLDivElement | null>(null);
+
+let scene: Scene;
+let camera: PerspectiveCamera;
+let renderer: WebGLRenderer;
+let composer: EffectComposer;
+let animationId: number;
+let isActive = false;
+let lastWidth = typeof window !== "undefined" ? window.innerWidth : 0;
+
+let occupiedGrids = new Map<
+  string,
+  { halfW: number; halfD: number; isRound?: boolean }
+>();
+let cars: Group[] = [];
+let leaderboardMeshes: Mesh[] = [];
+
+const score = ref(0);
+const drivingScore = ref(0);
+const isGameMode = ref(false);
+const isDrivingMode = ref(false);
+const isExplorationMode = ref(false);
+const isCinematicMode = ref(false);
+const cinematicTarget = new Vector3();
+const activeCar = ref<Group | null>(null);
+let checkpointMesh: Mesh;
+let navArrow: Group;
+let chaseArrow: Group;
+const timeLeft = ref(0);
+const isGameOver = ref(false);
+const lastTime = ref(0);
+const startTime = ref(0);
+const distToTarget = ref(0);
+let gameModeManager: GameModeManager;
+let konamiManager: KonamiManager;
+let gangWarManager: GangWarManager;
+let trafficSystem: TrafficSystem;
+let cityBuilder: CityBuilder;
+let multiplayerManager: MultiplayerManager;
+let skyEffects: SkyEffects;
+
+const leaderboard = ref<ScoreEntry[]>([]);
+const showLeaderboard = ref(false);
+
+let leaderboardCanvas: HTMLCanvasElement;
+let leaderboardTexture: CanvasTexture;
+
+function updateLeaderboard(newScores: ScoreEntry[]) {
+  leaderboard.value = newScores;
+  // Texture update is handled by watch(leaderboard)
+}
+
+function updateLeaderboardTexture() {
+  if (!leaderboardCanvas) return;
+  const ctx = leaderboardCanvas.getContext("2d");
+  if (!ctx) return;
+
+  // Reset transform to identity
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+  // Background
+  ctx.fillStyle = "#100010";
+  ctx.fillRect(0, 0, LEADERBOARD_CANVAS_SIZE, LEADERBOARD_CANVAS_SIZE);
+
+  // Scale everything by 2
+  ctx.scale(2, 2);
+
+  // Border
+  ctx.strokeStyle = "#00ffcc";
+  ctx.lineWidth = 8;
+  ctx.strokeRect(4, 4, 504, 504);
+
+  // Title
+  ctx.fillStyle = "#00ffcc";
+  ctx.font = "bold 60px Arial";
+  ctx.textAlign = "center";
+  ctx.shadowColor = "#00ffcc";
+  ctx.shadowBlur = 10;
+  ctx.fillText("LEADERBOARD", 256, 80);
+  ctx.shadowBlur = 0;
+
+  // Header Line
+  ctx.beginPath();
+  ctx.moveTo(20, 100);
+  ctx.lineTo(492, 100);
+  ctx.stroke();
+
+  // Scores
+  ctx.font = "bold 40px Courier New";
+  ctx.textAlign = "left";
+  let y = 160;
+
+  if (leaderboard.value.length === 0) {
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#aaaaaa";
+    ctx.fillText("Loading...", 256, 250);
+  } else {
+    leaderboard.value.forEach((entry, idx) => {
+      switch (idx) {
+        case 0:
+          ctx.fillStyle = "#ffff00"; // Gold
+          break;
+        case 1:
+          ctx.fillStyle = "#cccccc"; // Silver
+          break;
+        case 2:
+          ctx.fillStyle = "#cd7f32"; // Bronze
+          break;
+        default:
+          ctx.fillStyle = "#ffffff";
+          break;
+      }
+
+      // Format: 1. NAME   1000
+      const rank = `${idx + 1}.`;
+      const name = entry.name.substring(0, 8).toUpperCase();
+      const scoreStr = entry.score.toString();
+
+      ctx.fillText(rank, 40, y);
+      ctx.fillText(name, 110, y);
+
+      // Right align score
+      ctx.textAlign = "right";
+      ctx.fillText(scoreStr, 470, y);
+      ctx.textAlign = "left";
+
+      y += 60;
+    });
+  }
+
+  // Footer / Instructions
+  ctx.fillStyle = "#00ffcc";
+  ctx.font = "20px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText("CRASH TO SUBMIT SCORE", 256, 480);
+
+  if (leaderboardTexture) {
+    leaderboardTexture.needsUpdate = true;
+  }
+}
+
+watch(
+  leaderboard,
+  () => {
+    updateLeaderboardTexture();
+  },
+  { deep: true },
+);
+
+function createLeaderboardTexture() {
+  leaderboardCanvas = document.createElement("canvas");
+  leaderboardCanvas.width = LEADERBOARD_CANVAS_SIZE;
+  leaderboardCanvas.height = LEADERBOARD_CANVAS_SIZE;
+  leaderboardTexture = new CanvasTexture(leaderboardCanvas);
+  leaderboardTexture.anisotropy = 16;
+
+  updateLeaderboardTexture();
+
+  return leaderboardTexture;
+}
+
+const isMobile = ref(false);
+
+const updateIsMobile = () => {
+  if (typeof window !== "undefined") {
+    isMobile.value = window.innerWidth <= MOBILE_BREAKPOINT;
+  }
+};
+
+// Controls State
+const controls = ref({
+  left: false,
+  right: false,
+  forward: false,
+  backward: false,
+});
+
+const lookControls = ref({
+  left: false,
+  right: false,
+  up: false,
+  down: false,
+});
+
+const props = defineProps({});
+
+const emit = defineEmits(["game-start", "game-end", "fallback"]);
+const showSplash = ref(true);
+const isFallbackMode = ref(false);
+const frameTimestamps: number[] = [];
+let lowFpsCount = 0;
+let lastFpsCheckTime = 0;
+
+const currentLookAt = new Vector3(0, 0, 0);
+
+const raycaster = new Raycaster();
+const pointer = new Vector2();
+
+// Sparks system
+let sparks: Points;
+const sparkPositions = new Float32Array(SPARK_COUNT * 3);
+// Initialize sparks off-screen
+for (let i = 0; i < SPARK_COUNT; i++) {
+  sparkPositions[i * 3 + 1] = SPARK_SPAWN_POSITIONS_OFF_Y;
+}
+const sparkVelocities = new Float32Array(SPARK_COUNT * 3);
+const sparkLifetimes = new Float32Array(SPARK_COUNT);
+
+const route = useRoute();
+
+function createCheckpoint() {
+  const geo = new CylinderGeometry(
+    CHECKPOINT_RADIUS,
+    CHECKPOINT_RADIUS,
+    CHECKPOINT_HEIGHT,
+    CHECKPOINT_SEGMENTS,
+    1,
+    true,
+  );
+  const mat = new MeshBasicMaterial({
+    color: 0x00ff00,
+    transparent: true,
+    opacity: 0.6,
+    side: DoubleSide,
+    depthWrite: false,
+    blending: AdditiveBlending,
+  });
+  checkpointMesh = new Mesh(geo, mat);
+  checkpointMesh.visible = false;
+  scene.add(checkpointMesh);
+
+  const coreGeo = new CylinderGeometry(
+    CHECKPOINT_CORE_RADIUS,
+    CHECKPOINT_CORE_RADIUS,
+    CHECKPOINT_HEIGHT,
+    CHECKPOINT_CORE_SEGMENTS,
+  );
+  const coreMat = new MeshBasicMaterial({ color: 0xffffff });
+  const core = new Mesh(coreGeo, coreMat);
+  checkpointMesh.add(core);
+}
+
+function createNavArrow() {
+  navArrow = new Group();
+
+  const cone = new Mesh(
+    new ConeGeometry(2, 7.5, 16),
+    new MeshBasicMaterial({
+      color: 0x888800, // Reduced brightness to avoid bloom
+      depthTest: false,
+      depthWrite: false,
+      transparent: true,
+      opacity: 0.9,
+    }),
+  );
+  cone.rotation.x = Math.PI / 2;
+
+  navArrow.add(cone);
+  cone.renderOrder = 999;
+
+  navArrow.visible = false;
+  scene.add(navArrow);
+}
+
+function createChaseArrow() {
+  chaseArrow = new Group();
+
+  const cone = new Mesh(
+    new ConeGeometry(2, 7.5, 16),
+    new MeshBasicMaterial({
+      color: 0xff0000,
+      depthTest: false,
+      depthWrite: false,
+      transparent: true,
+      opacity: 0.0,
+    }),
+  );
+  cone.rotation.x = Math.PI / 2;
+  cone.position.z = CHASE_ARROW_POSITION_Z;
+
+  chaseArrow.add(cone);
+  cone.renderOrder = 999;
+
+  chaseArrow.visible = false;
+  scene.add(chaseArrow);
+}
+
+function spawnCheckpoint() {
+  const roadIndexX = Math.floor(Math.random() * (GRID_SIZE + 1));
+  const roadIndexZ = Math.floor(Math.random() * (GRID_SIZE + 1));
+
+  const axis = Math.random() > 0.5 ? "x" : "z";
+  const roadCoordinate =
+    START_OFFSET +
+    (axis === "x" ? roadIndexX : roadIndexZ) * CELL_SIZE -
+    CELL_SIZE / 2;
+
+  const limit = (GRID_SIZE * CELL_SIZE) / 2;
+  const otherCoord = (Math.random() - 0.5) * 2 * limit * 0.9;
+
+  let x = 0,
+    z = 0;
+  if (axis === "x") {
+    z = roadCoordinate;
+    x = otherCoord;
+  } else {
+    x = roadCoordinate;
+    z = otherCoord;
+  }
+
+  const h = getHeight(x, z);
+  checkpointMesh.position.set(x, h, z);
+  checkpointMesh.visible = true;
+}
+
+function spawnSparks(position: Vector3) {
+  if (!sparks) return;
+  const posAttribute = sparks.geometry.attributes.position;
+
+  let spawned = 0;
+
+  for (let i = 0; i < SPARK_COUNT; i++) {
+    if (sparkLifetimes[i] <= 0) {
+      activateSpark(i, position, posAttribute);
+      spawned++;
+      if (spawned >= SPARK_BURST_SIZE) break;
+    }
+  }
+
+  if (spawned < SPARK_BURST_SIZE) {
+    for (let i = 0; i < SPARK_BURST_SIZE - spawned; i++) {
+      const randIndex = Math.floor(Math.random() * SPARK_COUNT);
+      activateSpark(randIndex, position, posAttribute);
+    }
+  }
+
+  posAttribute.needsUpdate = true;
+}
+
+function activateSpark(
+  i: number,
+  position: Vector3,
+  posAttribute: BufferAttribute,
+) {
+  sparkLifetimes[i] = 1.0;
+  posAttribute.setXYZ(i, position.x, position.y, position.z);
+  sparkVelocities[i * 3] = (Math.random() - 0.5) * SPARK_RANDOM_VELOCITY;
+  sparkVelocities[i * 3 + 1] =
+    Math.random() * SPARK_RANDOM_VELOCITY + SPARK_MIN_VELOCITY;
+  sparkVelocities[i * 3 + 2] = (Math.random() - 0.5) * SPARK_RANDOM_VELOCITY;
+}
+
+onMounted(() => {
+  if (!canvasContainer.value) return;
+
+  updateIsMobile();
+
+  const width = canvasContainer.value.clientWidth || window.innerWidth;
+  const height = canvasContainer.value.clientHeight || window.innerHeight;
+
+  // Scene setup
+  scene = new Scene();
+  // scene.background handled by SkyEffects sky dome
+
+  // Camera setup
+  camera = new PerspectiveCamera(
+    CAMERA_FOV,
+    width / height,
+    CAMERA_NEAR,
+    CAMERA_FAR,
+  );
+  camera.position.set(0, 250, 600);
+  camera.lookAt(0, 0, 0);
+
+  // Renderer setup
+  renderer = new WebGLRenderer({ antialias: false, alpha: false });
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = PCFSoftShadowMap;
+  renderer.toneMapping = ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.2;
+  canvasContainer.value.appendChild(renderer.domElement);
+
+  // Post Processing
+  composer = setupPostProcessing(scene, camera, renderer);
+
+  // Sky Effects
+  skyEffects = new SkyEffects(scene);
+  skyEffects.addClouds();
+
+  // City Builder
+  const lbTexture = createLeaderboardTexture();
+  cityBuilder = new CityBuilder(scene);
+  cityBuilder.buildCity(isMobile.value, lbTexture);
+  const buildings = cityBuilder.getBuildings();
+  occupiedGrids = cityBuilder.getOccupiedGrids();
+
+  // Extract leaderboard meshes for raycasting
+  buildings.forEach((b) => {
+    b.traverse((c) => {
+      if (c instanceof Mesh && c.userData.isLeaderboard) {
+        leaderboardMeshes.push(c);
+      }
+    });
+  });
+
+  // Traffic System
+  trafficSystem = new TrafficSystem(scene, CAR_COUNT, spawnSparks);
+  cars = trafficSystem.getCars();
+
+  // Initialize Sparks
+  const sparkGeo = new BufferGeometry();
+  sparkGeo.setAttribute("position", new BufferAttribute(sparkPositions, 3));
+
+  const sparkMat = new PointsMaterial({
+    color: 0xffaa00,
+    size: 3,
+    transparent: true,
+    opacity: 1,
+    blending: AdditiveBlending,
+    sizeAttenuation: true,
+    depthWrite: false,
+  });
+
+  sparks = new Points(sparkGeo, sparkMat);
+  sparks.frustumCulled = false;
+  scene.add(sparks);
+
+  // Initialize Fireworks via Manager
+  konamiManager = new KonamiManager(scene);
+
+  // Initialize Gang Wars
+  gangWarManager = new GangWarManager(
+    scene,
+    occupiedGrids,
+    spawnSparks,
+    playPewSound,
+  );
+
+  // Initialize Multiplayer
+  multiplayerManager = new MultiplayerManager(scene);
+  multiplayerManager.connect();
+
+  createCheckpoint();
+  createNavArrow();
+  createChaseArrow();
+
+  window.addEventListener("resize", onResize);
+  window.addEventListener("click", onClick);
+  window.addEventListener("keydown", onKeyDown);
+  window.addEventListener("keyup", onKeyUp);
+  window.addEventListener("mousemove", onMouseMove);
+
+  // Initialize Game Context and Manager
+  const context: GameContext = {
+    scene,
+    camera,
+    renderer,
+    composer,
+    cars,
+    occupiedGrids,
+    buildings,
+    score,
+    drivingScore,
+    timeLeft,
+    activeCar,
+    isMobile,
+    isGameOver,
+    distToTarget,
+    controls,
+    lookControls,
+    spawnSparks,
+    playPewSound,
+    spawnCheckpoint,
+    checkpointMesh,
+    navArrow,
+    chaseArrow,
+  };
+  gameModeManager = new GameModeManager(context);
+
+  isActive = true;
+  animate();
+
+  ScoreService.getTopScores().then((scores) => {
+    leaderboard.value = scores;
+    updateLeaderboardTexture();
+  });
+
+  cyberpunkAudio.addListener(onAudioNote);
+
+  showSplash.value = false;
+});
+
+function onKeyDown(event: KeyboardEvent) {
+  if (event.key === "Escape") {
+    exitGameMode();
+    return;
+  }
+  konamiManager.onKeyDown(event);
+  gameModeManager.onKeyDown(event);
+}
+
+function onKeyUp(event: KeyboardEvent) {
+  gameModeManager.onKeyUp(event);
+}
+
+watch(showSplash, (newVal, oldVal) => {
+  if (oldVal === true && newVal === false) {
+    startTime.value = Date.now();
+  }
+});
+
+watch(activeCar, (newCar, oldCar) => {
+  if (oldCar) trafficSystem.removeLightsFromCar(oldCar);
+  if (newCar) trafficSystem.addLightsToCar(newCar);
+});
+
+function startExplorationMode() {
+  if (isFallbackMode.value) return;
+  isGameMode.value = true;
+  isExplorationMode.value = true;
+  emit("game-start");
+  gameModeManager.setMode(new ExplorationMode());
+}
+
+function startDemoMode() {
+  if (isFallbackMode.value) return;
+  isGameMode.value = true;
+  emit("game-start");
+  gameModeManager.setMode(new DemoMode());
+}
+
+defineExpose({ startExplorationMode, startDemoMode });
+
+function exitGameMode() {
+  gameModeManager.clearMode();
+
+  if (isDrivingMode.value) {
+    isDrivingMode.value = false;
+  }
+
+  if (isExplorationMode.value) {
+    isExplorationMode.value = false;
+  }
+
+  isCinematicMode.value = false;
+  isGameMode.value = false;
+  isGameOver.value = false;
+  score.value = 0;
+  drivingScore.value = 0;
+  emit("game-end");
+}
+
+function onResize() {
+  if (!renderer || !camera) return;
+
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+
+  // On mobile, ignore vertical resizes caused by address bar appearing/disappearing
+  if (isMobile.value && width === lastWidth) {
+    return;
+  }
+
+  lastWidth = width;
+
+  const containerWidth = canvasContainer.value?.clientWidth || width;
+  const containerHeight = canvasContainer.value?.clientHeight || height;
+
+  camera.aspect = containerWidth / containerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(containerWidth, containerHeight);
+  if (composer) {
+    composer.setSize(containerWidth, containerHeight);
+  }
+  updateIsMobile();
+}
+
+function onClick(event: MouseEvent) {
+  if (!camera) return;
+
+  gameModeManager.onClick(event);
+
+  if (isGameMode.value || isDrivingMode.value) return;
+
+  pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+  pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(pointer, camera);
+
+  if (gangWarManager && gangWarManager.fightMarkers.length > 0) {
+    const markerIntersects = raycaster.intersectObjects(
+      gangWarManager.fightMarkers,
+    );
+    if (markerIntersects.length > 0) {
+      const hit = markerIntersects[0].object;
+      if (hit.userData.isFightMarker && hit.userData.target) {
+        isGameMode.value = true;
+        isCinematicMode.value = true;
+        cinematicTarget.copy(hit.userData.target);
+        emit("game-start");
+        return;
+      }
+    }
+  }
+
+  const carMeshes: Object3D[] = [];
+  cars.forEach((c) =>
+    c.traverse((child) => {
+      if (child instanceof Mesh) carMeshes.push(child);
+    }),
+  );
+
+  const carIntersects = raycaster.intersectObjects(carMeshes);
+  if (carIntersects.length > 0) {
+    const hit = carIntersects[0].object;
+    let target = hit;
+    while (target.parent && target.parent.type !== "Scene") {
+      target = target.parent;
+    }
+
+    if (target instanceof Group && target.userData.speed !== undefined) {
+      isDrivingMode.value = true;
+      emit("game-start");
+
+      activeCar.value = target;
+      target.userData.isPlayerControlled = true;
+      target.userData.currentSpeed = target.userData.speed;
+
+      gameModeManager.setMode(new DrivingMode());
+      return;
+    }
+  }
+
+  if (leaderboardMeshes.length > 0) {
+    const lbIntersects = raycaster.intersectObjects(leaderboardMeshes);
+    if (lbIntersects.length > 0) {
+      showLeaderboard.value = true;
+      return;
+    }
+  }
+}
+
+function onMouseMove(event: MouseEvent) {
+  gameModeManager.onMouseMove(event);
+}
+
+function fallbackToStaticImage() {
+  if (isFallbackMode.value) return;
+  isFallbackMode.value = true;
+  emit("fallback");
+  exitGameMode();
+  isActive = false;
+
+  cancelAnimationFrame(animationId);
+
+  if (composer) {
+    composer.render();
+  } else {
+    renderer.render(scene, camera);
+  }
+
+  try {
+    const dataUrl = renderer.domElement.toDataURL("image/png");
+    if (canvasContainer.value) {
+      while (canvasContainer.value.firstChild) {
+        canvasContainer.value.removeChild(canvasContainer.value.firstChild);
+      }
+      const img = document.createElement("img");
+      img.src = dataUrl;
+      img.alt = "";
+      img.style.width = "100%";
+      img.style.height = "100%";
+      img.style.objectFit = "cover";
+      img.style.display = "block";
+      canvasContainer.value.appendChild(img);
+    }
+  } catch (_e) {
+    if (canvasContainer.value) {
+      while (canvasContainer.value.firstChild) {
+        canvasContainer.value.removeChild(canvasContainer.value.firstChild);
+      }
+      canvasContainer.value.style.background = "#050510";
+    }
+  }
+
+  renderer.dispose();
+  carAudio.stop();
+  cyberpunkAudio.removeListener(onAudioNote);
+
+  window.removeEventListener("resize", onResize);
+  window.removeEventListener("click", onClick);
+  window.removeEventListener("keydown", onKeyDown);
+  window.removeEventListener("keyup", onKeyUp);
+  window.removeEventListener("mousemove", onMouseMove);
+
+  if (konamiManager) {
+    konamiManager.dispose();
+  }
+  if (gangWarManager) {
+    gangWarManager.dispose();
+  }
+  if (multiplayerManager) {
+    multiplayerManager.dispose();
+  }
+  if (skyEffects && skyEffects.dispose) {
+    skyEffects.dispose();
+  }
+}
+
+function animate() {
+  if (!isActive) return;
+  animationId = requestAnimationFrame(animate);
+
+  const now = Date.now();
+  const time = now * 0.0005;
+  const dt = (now - lastTime.value) / 1000;
+  lastTime.value = now;
+
+  if (startTime.value > 0 && lastFpsCheckTime === 0 && now - startTime.value > FALLBACK_MONITOR_DELAY_MS) {
+    lastFpsCheckTime = now;
+  }
+
+  if (lastFpsCheckTime > 0) {
+    frameTimestamps.push(now);
+    if (frameTimestamps.length > 60) {
+      frameTimestamps.shift();
+    }
+
+    if (frameTimestamps.length >= 30 && now - lastFpsCheckTime >= FALLBACK_CHECK_INTERVAL_MS) {
+      const elapsed = frameTimestamps[frameTimestamps.length - 1] - frameTimestamps[0];
+      if (elapsed > 0) {
+        const fps = ((frameTimestamps.length - 1) / elapsed) * 1000;
+        lastFpsCheckTime = now;
+
+        if (fps < FALLBACK_FPS_THRESHOLD) {
+          lowFpsCount++;
+          if (lowFpsCount >= FALLBACK_FPS_CONSECUTIVE_CHECKS) {
+            fallbackToStaticImage();
+            return;
+          }
+        } else {
+          lowFpsCount = 0;
+        }
+      }
+    }
+  }
+
+  konamiManager.update(dt);
+  gangWarManager.update(dt);
+  skyEffects.update(dt);
+  gameModeManager.update(dt, time);
+  trafficSystem.update();
+  if (multiplayerManager) {
+    multiplayerManager.update(dt);
+    if (isExplorationMode.value) {
+      multiplayerManager.broadcast(
+        camera.position.x,
+        camera.position.y,
+        camera.position.z,
+        camera.rotation.y,
+        "walking",
+      );
+    } else if (isDrivingMode.value && activeCar.value) {
+      const heading =
+        activeCar.value.userData.heading ?? activeCar.value.rotation.y;
+      multiplayerManager.broadcast(
+        activeCar.value.position.x,
+        activeCar.value.position.y,
+        activeCar.value.position.z,
+        heading,
+        "driving",
+      );
+    }
+  }
+
+  if (cityBuilder) {
+    const materials = cityBuilder.getAudioMaterials();
+    for (const key in materials) {
+      const mat = materials[key];
+      if (mat.emissiveIntensity > EMISSIVE_INTENSITY_TARGET) {
+        mat.emissiveIntensity = MathUtils.lerp(
+          mat.emissiveIntensity,
+          EMISSIVE_INTENSITY_TARGET,
+          EMISSIVE_LERP_FACTOR,
+        );
+      }
+    }
+  }
+
+  if (sparks) {
+    const positions = sparks.geometry.attributes.position.array;
+    let needsUpdate = false;
+
+    for (let i = 0; i < SPARK_COUNT; i++) {
+      if (sparkLifetimes[i] > 0) {
+        sparkVelocities[i * 3 + 1] -= SPARK_GRAVITY;
+        positions[i * 3] += sparkVelocities[i * 3];
+        positions[i * 3 + 1] += sparkVelocities[i * 3 + 1];
+        positions[i * 3 + 2] += sparkVelocities[i * 3 + 2];
+
+        const h = getHeight(positions[i * 3], positions[i * 3 + 2]);
+
+        if (positions[i * 3 + 1] < h) {
+          positions[i * 3 + 1] = h;
+          sparkVelocities[i * 3 + 1] *= -0.5;
+        }
+
+        const ix = Math.round((positions[i * 3] - START_OFFSET) / CELL_SIZE);
+        const iz = Math.round(
+          (positions[i * 3 + 2] - START_OFFSET) / CELL_SIZE,
+        );
+
+        if (occupiedGrids.has(`${ix},${iz}`)) {
+          const cX = START_OFFSET + ix * CELL_SIZE;
+          const cZ = START_OFFSET + iz * CELL_SIZE;
+          const dims = occupiedGrids.get(`${ix},${iz}`);
+
+          if (
+            dims &&
+            Math.abs(positions[i * 3] - cX) < dims.halfW &&
+            Math.abs(positions[i * 3 + 2] - cZ) < dims.halfD
+          ) {
+            sparkLifetimes[i] = 0;
+          }
+        }
+
+        sparkLifetimes[i] -= SPARK_LIFETIME_DECAY;
+        if (sparkLifetimes[i] < 0) {
+          sparkLifetimes[i] = 0;
+          positions[i * 3 + 1] = SPARK_OFF_SCREEN_Y;
+        }
+        needsUpdate = true;
+      }
+    }
+    if (needsUpdate) {
+      sparks.geometry.attributes.position.needsUpdate = true;
+    }
+  }
+
+  if (!gameModeManager.getMode()) {
+    if (isCinematicMode.value) {
+      const angle = time * INTRO_ORBIT_SPEED;
+
+      const tx = cinematicTarget.x + Math.sin(angle) * INTRO_ORBIT_RADIUS;
+      const tz = cinematicTarget.z + Math.cos(angle) * INTRO_ORBIT_RADIUS;
+
+      camera.position.x += (tx - camera.position.x) * CAMERA_LERP_FACTOR;
+      camera.position.z += (tz - camera.position.z) * CAMERA_LERP_FACTOR;
+      camera.position.y +=
+        (CAMERA_CINEMATIC_Y - camera.position.y) * CAMERA_LERP_FACTOR;
+
+      currentLookAt.lerp(cinematicTarget, CAMERA_LERP_FACTOR);
+      camera.lookAt(currentLookAt);
+    } else {
+      const orbitRadius = ORBIT_RADIUS_DESKTOP;
+      camera.position.x = Math.sin(time * ORBIT_SPEED) * orbitRadius;
+      camera.position.z = Math.cos(time * ORBIT_SPEED) * orbitRadius;
+
+      const targetY = CAMERA_TARGET_Y_DESKTOP;
+
+      const introProgress =
+        startTime.value === 0
+          ? 0
+          : Math.min(1, (now - startTime.value) / INTRO_DURATION_MS);
+
+      if (startTime.value === 0) {
+        camera.position.y = CAMERA_START_Y;
+        camera.position.x =
+          Math.sin(time * ORBIT_SPEED + Math.PI * 2) * orbitRadius;
+        camera.position.z =
+          Math.cos(time * ORBIT_SPEED + Math.PI * 2) * orbitRadius;
+      } else if (introProgress < 1) {
+        const ease = 1 - Math.pow(1 - introProgress, 3);
+        const startY = CAMERA_START_Y;
+        const currentY = startY + (targetY - startY) * ease;
+        camera.position.y = currentY;
+
+        const spiralAngle = (1 - ease) * Math.PI * 2;
+        camera.position.x =
+          Math.sin(time * ORBIT_SPEED + spiralAngle) * orbitRadius;
+        camera.position.z =
+          Math.cos(time * ORBIT_SPEED + spiralAngle) * orbitRadius;
+      } else {
+        if (Math.abs(camera.position.y - targetY) > 1) {
+          camera.position.y +=
+            (targetY - camera.position.y) * CAMERA_LERP_FACTOR;
+        }
+      }
+
+      const targetLookAt = new Vector3(0, 0, 0);
+      currentLookAt.lerp(targetLookAt, CAMERA_LOOK_AT_LERP);
+      camera.lookAt(currentLookAt);
+    }
+  }
+
+  if (composer) {
+    composer.render();
+  } else {
+    renderer.render(scene, camera);
+  }
+}
+
+function playPewSound(pos?: Vector3) {
+  audioManager.init();
+  const audioCtx = audioManager.ctx;
+  const dest = audioManager.masterGain || audioManager.ctx?.destination;
+
+  if (!audioCtx || !dest) return;
+
+  if (audioCtx.state === "suspended") {
+    audioCtx.resume();
+  }
+
+  const oscillator = audioCtx.createOscillator();
+  const gainNode = audioCtx.createGain();
+
+  oscillator.type = "sawtooth";
+  oscillator.frequency.setValueAtTime(
+    AUDIO_OSCILLATOR_FREQ_START,
+    audioCtx.currentTime,
+  );
+  oscillator.frequency.exponentialRampToValueAtTime(
+    AUDIO_OSCILLATOR_FREQ_END,
+    audioCtx.currentTime + AUDIO_SWEEP_DURATION,
+  );
+
+  let volume = AUDIO_VOLUME;
+
+  if (pos && camera) {
+    const dist = pos.distanceTo(camera.position);
+    volume = AUDIO_VOLUME / (1 + dist / AUDIO_DISTANCE_FACTOR);
+
+    if (volume < 0.001) volume = 0;
+  }
+
+  gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(
+    0.001,
+    audioCtx.currentTime + AUDIO_SWEEP_DURATION,
+  );
+
+  oscillator.connect(gainNode);
+  gainNode.connect(dest);
+
+  oscillator.start();
+  oscillator.stop(audioCtx.currentTime + AUDIO_SWEEP_DURATION);
+}
+
+function onAudioNote(type: string, data?: any) {
+  if (!cityBuilder) return;
+  const materials = cityBuilder.getAudioMaterials();
+  let key = "";
+  if (type === "bass") {
+    key = `bass${data}`;
+  } else {
+    key = type;
+  }
+  if (materials[key]) {
+    let boost = EMISSIVE_INTENSITY_BOOST_BASS;
+    if (type === "hihat") boost = EMISSIVE_INTENSITY_BOOST_HIHAT;
+    materials[key].emissiveIntensity = boost;
+  }
+}
+
+onBeforeUnmount(() => {
+  cyberpunkAudio.removeListener(onAudioNote);
+  isActive = false;
+  window.removeEventListener("resize", onResize);
+  window.removeEventListener("click", onClick);
+  window.removeEventListener("keydown", onKeyDown);
+  window.removeEventListener("keyup", onKeyUp);
+  window.removeEventListener("mousemove", onMouseMove);
+
+  cancelAnimationFrame(animationId);
+  if (renderer) {
+    renderer.dispose();
+  }
+  carAudio.stop();
+  if (konamiManager) {
+    konamiManager.dispose();
+  }
+  if (gangWarManager) {
+    gangWarManager.dispose();
+  }
+  if (multiplayerManager) {
+    multiplayerManager.dispose();
+  }
+  if (skyEffects && skyEffects.dispose) {
+    skyEffects.dispose();
+  }
+});
+</script>
+
+<style scoped>
+#cyberpunk-city-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100lvh;
+  z-index: -1;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+#cyberpunk-city {
+  width: 100%;
+  height: 100%;
+}
+
+.glitch-fade-leave-active {
+  animation: glitch-fade-out 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+@keyframes glitch-fade-out {
+  0% {
+    opacity: 1;
+    transform: translate(0);
+    clip-path: inset(0 0 0 0);
+  }
+  10% {
+    opacity: 1;
+    transform: translate(-2px, 2px);
+    clip-path: inset(10% 0 80% 0);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(2px, -2px);
+    clip-path: inset(80% 0 10% 0);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(-2px, 2px);
+    clip-path: inset(10% 0 80% 0);
+  }
+  40% {
+    opacity: 1;
+    transform: translate(2px, -2px);
+    clip-path: inset(80% 0 10% 0);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-2px, 2px);
+    clip-path: inset(10% 0 80% 0);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(2px, -2px);
+    clip-path: inset(80% 0 10% 0);
+  }
+  70% {
+    opacity: 1;
+    transform: translate(-2px, 2px);
+    clip-path: inset(10% 0 80% 0);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(2px, -2px);
+    clip-path: inset(80% 0 10% 0);
+  }
+  90% {
+    opacity: 1;
+    transform: translate(-2px, 2px);
+    clip-path: inset(10% 0 80% 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(0);
+    clip-path: inset(0 0 0 0);
+  }
+}
+</style>

@@ -1,0 +1,44 @@
+/// <reference types="vitest" />
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import viteCompression from "vite-plugin-compression";
+
+export default defineConfig({
+  plugins: [
+    vue(),
+    viteCompression(),
+    viteCompression({ algorithm: "brotliCompress", ext: ".br" }),
+  ],
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: ["./src/tests/setupThree.ts", "./src/tests/setupHead.ts"],
+    exclude: ["e2e/**", "node_modules/**", "dist/**"],
+  },
+  server: {
+    port: 3000,
+  },
+  build: {
+    target: "esnext",
+    sourcemap: true,
+    minify: "terser",
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
+    rollupOptions: {
+      output: {
+        manualChunks(id: string): string | undefined {
+          if (id.includes("node_modules")) {
+            if (id.includes("three")) {
+              return "three-vendor";
+            }
+          }
+          return undefined;
+        },
+      },
+    },
+  },
+});

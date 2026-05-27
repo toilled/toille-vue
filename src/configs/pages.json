@@ -1,0 +1,56 @@
+[
+  {
+    "name": "Home",
+    "link": "/",
+    "title": "Home",
+    "icon": "🏠",
+    "metaDescription": "Welcome to Elliot Dickerson's experimental Vue.js website featuring projects, games, and more.",
+    "metaKeywords": "Vue.js, web development, software engineer, projects, games",
+    "body": [
+      "Welcome to my personal portfolio and experimental sandbox. This platform serves as a space to explore emerging web technologies, prototype new features, and showcase technical projects.",
+      "Currently, I am a Software Engineer at RM, where I leverage my expertise to drive team success and deliver high-quality software solutions. I am passionate about continuous learning and professional development."
+    ]
+  },
+  {
+    "name": "About",
+    "link": "/about",
+    "title": "About Me",
+    "icon": "👤",
+    "metaDescription": "Learn about Elliot Dickerson - BSc (Hons) graduate with 14 years of PHP and JavaScript development experience.",
+    "metaKeywords": "software engineer, PHP, Laravel, Symfony, VueJS, React, experience",
+    "body": [
+      "I hold a BSc (Hons) degree and possess a comprehensive background in professional software engineering, spanning the majority of my career.",
+      "With over a decade of dedicated experience in software and web development, I specialize in PHP and JavaScript ecosystems. My technical proficiency extends to robust database management with MySQL and utilizing Git for advanced version control.",
+      "Throughout my career, I have successfully delivered projects leveraging a diverse range of modern frameworks and libraries, including:<ul><li>Laravel and Symfony for backend PHP architecture</li><li>React, SolidJS, and VueJS for crafting scalable, dynamic user interfaces</li></ul>",
+      "Currently serving as a Software Engineer at RM, I am committed to tackling complex technical challenges and contributing to innovative, impactful projects."
+    ]
+  },
+  {
+    "name": "Interests",
+    "link": "/interests",
+    "title": "My Interests",
+    "icon": "🎸",
+    "metaDescription": "Discover Elliot's interests in coding, music, and creative projects including original guitar compositions.",
+    "metaKeywords": "coding, music, guitar, YouTube, hobbies, creative projects",
+    "body": [
+      "Beyond my professional endeavors, I am deeply invested in personal development and technical exploration. I actively develop side projects to experiment with innovative concepts and stay at the forefront of emerging technologies.",
+      "Music is a significant creative outlet for me. I am a multi-instrumentalist with a primary focus on the guitar. I compose original pieces and regularly share my work on my <a href=\"https://www.youtube.com/@toilled\" class=\"contrast\" target=\"_blank\" rel=\"noopener noreferrer\">YouTube channel</a>.",
+      "Currently, I am expanding my technical repertoire by exploring Three.js for rendering complex 3D graphics and designing immersive web experiences. The interactive 3D environment featured on this site is a testament to these ongoing experiments."
+    ]
+  },
+  {
+    "name": "Hidden",
+    "link": "/hidden",
+    "title": "Hidden",
+    "icon": "🕵️‍♂️",
+    "hidden": true,
+    "metaDescription": "Secret page with links to fun projects and games built with Vue.js.",
+    "metaKeywords": "hidden, games, tools, projects, secret",
+    "body": [
+      "Welcome to the hidden page! This area isn't linked in the main navigation, but it's here for those curious enough to find it.",
+      "Here are some fun projects and games I've built:",
+      "<ul><li>Alcohol Checker - Calculate when you'll be sober enough to drive</li><li>Noughts and Crosses - Classic tic-tac-toe against a bot</li><li>Ask Me - Chat with an automated assistant about my background</li></ul>",
+      "Enjoy exploring these little experiments!"
+    ]
+  }
+]

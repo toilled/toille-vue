@@ -14,6 +14,7 @@ const routes = [
     component: () => import("./components/NoughtsAndCrosses.vue"),
   },
   { path: "/ask", component: () => import("./components/Ask.vue") },
+  { path: "/quiz", component: () => import("./components/Quiz.vue") },
   { path: "/:pathMatch(.*)*", component: SinglePageContent },
 ];
 

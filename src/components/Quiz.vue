@@ -1,42 +1,40 @@
 <template>
-  <div class="container" role="main" aria-label="Pub Quiz">
-    <article>
-      <header>
-        <h2>Pub Quiz</h2>
-      </header>
+  <article>
+    <header>
+      <h2>Pub Quiz</h2>
+    </header>
 
-      <div v-if="currentQuestion">
-        <p class="question">{{ currentQuestion.question }}</p>
+    <div v-if="currentQuestion">
+      <p class="question">{{ currentQuestion.question }}</p>
 
-        <div class="options">
-          <button
-            v-for="(option, index) in currentQuestion.options"
-            :key="index"
-            @click="selectAnswer(index)"
-            :class="getOptionClass(index)"
-            :disabled="hasAnswered"
-            class="outline"
-          >
-            {{ option }}
-          </button>
-        </div>
-
-        <div v-if="hasAnswered" class="result" :class="{ correct: isCorrect, wrong: !isCorrect }">
-          <p v-if="isCorrect">Correct! 🎉</p>
-          <p v-else>Wrong! The correct answer was: {{ currentQuestion.options[currentQuestion.correctIndex] }}</p>
-
-          <button @click="nextQuestion">Next Question</button>
-        </div>
+      <div class="options">
+        <button
+          v-for="(option, index) in currentQuestion.options"
+          :key="index"
+          @click.stop="selectAnswer(index)"
+          :class="getOptionClass(index)"
+          :disabled="hasAnswered"
+          class="outline answer-option"
+        >
+          {{ option }}
+        </button>
       </div>
-      <div v-else-if="isLoading">
-        <p>Loading question...</p>
+
+      <div v-if="hasAnswered" class="result" :class="{ correct: isCorrect, wrong: !isCorrect }">
+        <p v-if="isCorrect">Correct!</p>
+        <p v-else>Wrong! The correct answer was: {{ currentQuestion.options[currentQuestion.correctIndex] }}</p>
+
+        <button @click.stop="nextQuestion">Next Question</button>
       </div>
-      <div v-else-if="error">
-        <p class="error">{{ error }}</p>
-        <button @click="nextQuestion">Try Again</button>
-      </div>
-    </article>
-  </div>
+    </div>
+    <div v-else-if="isLoading">
+      <p>Loading question...</p>
+    </div>
+    <div v-else-if="error">
+      <p class="error">{{ error }}</p>
+      <button @click.stop="nextQuestion">Try Again</button>
+    </div>
+  </article>
 </template>
 
 <script setup lang="ts">
@@ -149,10 +147,21 @@ const nextQuestion = () => {
 </script>
 
 <style scoped>
+article {
+  padding: 2.5rem 3rem;
+}
+
+@media (max-width: 600px) {
+  article {
+    padding: 1.25rem;
+  }
+}
+
 .question {
   font-size: 1.25rem;
   font-weight: bold;
   margin-bottom: 1.5rem;
+  text-shadow: 0 0 5px rgba(0, 255, 204, 0.3);
 }
 
 .options {
@@ -162,38 +171,55 @@ const nextQuestion = () => {
   margin-bottom: 1.5rem;
 }
 
-.options button {
+.answer-option {
   text-align: left;
   margin-bottom: 0;
+  transition: all 0.3s ease;
 }
 
-.correct-option {
-  background-color: #28a745 !important;
-  border-color: #28a745 !important;
-  color: white !important;
+button.outline.answer-option.correct-option {
+  background: rgba(0, 255, 204, 0.15);
+  border-color: #00ffcc;
+  color: #00ffcc;
 }
 
-.wrong-option {
-  background-color: #dc3545 !important;
-  border-color: #dc3545 !important;
-  color: white !important;
+button.outline.answer-option.correct-option:disabled {
+  opacity: 1;
+  box-shadow: 0 0 12px rgba(0, 255, 204, 0.3);
+}
+
+button.outline.answer-option.wrong-option {
+  background: rgba(255, 0, 204, 0.15);
+  border-color: #ff00cc;
+  color: #ff00cc;
+}
+
+button.outline.answer-option.wrong-option:disabled {
+  opacity: 1;
+  box-shadow: 0 0 12px rgba(255, 0, 204, 0.3);
 }
 
 .result {
   margin-top: 1.5rem;
   padding: 1rem;
-  border-radius: var(--pico-border-radius);
+  border-radius: 12px;
   text-align: center;
+  border: 1px solid rgba(0, 255, 204, 0.2);
+  background: rgba(5, 5, 16, 0.85);
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
 }
 
 .result.correct {
-  background-color: rgba(40, 167, 69, 0.2);
-  border: 1px solid #28a745;
+  border-color: rgba(0, 255, 204, 0.4);
+  background: rgba(0, 255, 204, 0.08);
+  box-shadow: 0 0 15px rgba(0, 255, 204, 0.15);
 }
 
 .result.wrong {
-  background-color: rgba(220, 53, 69, 0.2);
-  border: 1px solid #dc3545;
+  border-color: rgba(255, 0, 204, 0.4);
+  background: rgba(255, 0, 204, 0.08);
+  box-shadow: 0 0 15px rgba(255, 0, 204, 0.15);
 }
 
 .result p {

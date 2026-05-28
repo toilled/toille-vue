@@ -28,8 +28,12 @@
           <button @click="nextQuestion">Next Question</button>
         </div>
       </div>
-      <div v-else>
-        <p>Loading questions...</p>
+      <div v-else-if="isLoading">
+        <p>Loading question...</p>
+      </div>
+      <div v-else-if="error">
+        <p class="error">{{ error }}</p>
+        <button @click="nextQuestion">Try Again</button>
       </div>
     </article>
   </div>
@@ -55,84 +59,68 @@ interface Question {
   correctIndex: number;
 }
 
-const questions: Question[] = [
-  {
-    question: "What is the capital of France?",
-    options: ["Berlin", "Madrid", "Paris", "Rome"],
-    correctIndex: 2
-  },
-  {
-    question: "Which planet is known as the Red Planet?",
-    options: ["Venus", "Mars", "Jupiter", "Saturn"],
-    correctIndex: 1
-  },
-  {
-    question: "Who wrote 'Romeo and Juliet'?",
-    options: ["Charles Dickens", "William Shakespeare", "Jane Austen", "Mark Twain"],
-    correctIndex: 1
-  },
-  {
-    question: "What is the largest ocean on Earth?",
-    options: ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean", "Pacific Ocean"],
-    correctIndex: 3
-  },
-  {
-    question: "In what year did the Titanic sink?",
-    options: ["1912", "1905", "1920", "1898"],
-    correctIndex: 0
-  },
-  {
-    question: "What is the chemical symbol for Gold?",
-    options: ["Ag", "Au", "Fe", "Cu"],
-    correctIndex: 1
-  },
-  {
-    question: "Which animal is the tallest in the world?",
-    options: ["Elephant", "Giraffe", "Ostrich", "Kangaroo"],
-    correctIndex: 1
-  },
-  {
-    question: "What is the main ingredient in guacamole?",
-    options: ["Tomato", "Onion", "Avocado", "Pepper"],
-    correctIndex: 2
-  },
-  {
-    question: "Who painted the Mona Lisa?",
-    options: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Michelangelo"],
-    correctIndex: 2
-  },
-  {
-    question: "What is the hardest natural substance on Earth?",
-    options: ["Gold", "Iron", "Diamond", "Platinum"],
-    correctIndex: 2
-  }
-];
-
 const currentQuestion = ref<Question | null>(null);
 const selectedOptionIndex = ref<number | null>(null);
 const hasAnswered = ref(false);
 const isCorrect = ref(false);
+const error = ref<string | null>(null);
+const isLoading = ref(true);
 
-const loadRandomQuestion = () => {
-  const randomIndex = Math.floor(Math.random() * questions.length);
-  // Avoid showing the same question twice in a row if possible
-  if (currentQuestion.value && questions.length > 1) {
-      let newIndex = randomIndex;
-      while (questions[newIndex].question === currentQuestion.value.question) {
-          newIndex = Math.floor(Math.random() * questions.length);
+const decodeHTML = (html: string) => {
+  const txt = document.createElement("textarea");
+  txt.innerHTML = html;
+  return txt.value;
+};
+
+const fetchQuestion = async () => {
+  isLoading.value = true;
+  error.value = null;
+  currentQuestion.value = null;
+
+  try {
+    const response = await fetch("https://opentdb.com/api.php?amount=1&type=multiple");
+    if (!response.ok) {
+      throw new Error(`Failed to fetch question: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    if (data.response_code === 0 && data.results && data.results.length > 0) {
+      const result = data.results[0];
+      const decodedQuestion = decodeHTML(result.question);
+      const correctAnswer = decodeHTML(result.correct_answer);
+      const incorrectAnswers = result.incorrect_answers.map((ans: string) => decodeHTML(ans));
+
+      const allOptions = [...incorrectAnswers, correctAnswer];
+      // Simple shuffle
+      for (let i = allOptions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allOptions[i], allOptions[j]] = [allOptions[j], allOptions[i]];
       }
-      currentQuestion.value = questions[newIndex];
-  } else {
-      currentQuestion.value = questions[randomIndex];
-  }
 
-  selectedOptionIndex.value = null;
-  hasAnswered.value = false;
-  isCorrect.value = false;
+      const correctIndex = allOptions.indexOf(correctAnswer);
+
+      currentQuestion.value = {
+        question: decodedQuestion,
+        options: allOptions,
+        correctIndex
+      };
+    } else if (data.response_code === 5) { // Rate limit usually
+      throw new Error("Rate limit exceeded. Please try again in a moment.");
+    } else {
+      throw new Error("Invalid response from API");
+    }
+  } catch (err: any) {
+    error.value = err.message || "An error occurred while fetching the question.";
+  } finally {
+    isLoading.value = false;
+    selectedOptionIndex.value = null;
+    hasAnswered.value = false;
+    isCorrect.value = false;
+  }
 };
 
 onMounted(() => {
-  loadRandomQuestion();
+  fetchQuestion();
 });
 
 const selectAnswer = (index: number) => {
@@ -156,7 +144,7 @@ const getOptionClass = (index: number) => {
 };
 
 const nextQuestion = () => {
-  loadRandomQuestion();
+  fetchQuestion();
 };
 </script>
 

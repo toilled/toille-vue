@@ -1,4 +1,9 @@
 import { createApp } from "./main";
+import { isFirefox } from "./utils/BrowserDetect";
+
+if (isFirefox()) {
+  document.documentElement.classList.add("fx");
+}
 
 const { app, router } = createApp();
 

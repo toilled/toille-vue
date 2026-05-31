@@ -58,6 +58,7 @@ import {
   Object3D,
   MathUtils,
   PCFSoftShadowMap,
+  PCFShadowMap,
   ACESFilmicToneMapping,
 } from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
@@ -123,6 +124,7 @@ import { SkyEffects } from "../game/SkyEffects";
 import { getHeight } from "../utils/HeightMap";
 import { audioManager } from "../utils/AudioManager";
 import { MultiplayerManager } from "../game/MultiplayerManager";
+import { getBrowserQuality } from "../utils/BrowserDetect";
 
 const GameUI = defineAsyncComponent(() => import("./GameUI.vue"));
 
@@ -501,17 +503,18 @@ onMounted(() => {
   camera.lookAt(0, 0, 0);
 
   // Renderer setup
-  renderer = new WebGLRenderer({ antialias: false, alpha: false });
+  const quality = getBrowserQuality();
+  renderer = new WebGLRenderer({ antialias: false, alpha: false, powerPreference: "high-performance" });
   renderer.setSize(width, height);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(quality.pixelRatioCap);
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = PCFSoftShadowMap;
+  renderer.shadowMap.type = quality.shadowMapType === 1 ? PCFShadowMap : PCFSoftShadowMap;
   renderer.toneMapping = ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.2;
   canvasContainer.value.appendChild(renderer.domElement);
 
   // Post Processing
-  composer = setupPostProcessing(scene, camera, renderer);
+  composer = setupPostProcessing(scene, camera, renderer, quality.msaaSamples);
 
   // Sky Effects
   skyEffects = new SkyEffects(scene);
@@ -1132,6 +1135,7 @@ onBeforeUnmount(() => {
   z-index: -1;
   transform: translateZ(0);
   backface-visibility: hidden;
+  contain: paint layout;
 }
 
 #cyberpunk-city {

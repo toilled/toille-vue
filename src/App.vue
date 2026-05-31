@@ -307,11 +307,15 @@ function handleInitialHash() {
   }
 }
 
-let scrollTimeout: ReturnType<typeof setTimeout>;
+let scrollRafId: number | null = null;
 
 function handleScroll() {
-  clearTimeout(scrollTimeout);
-  scrollTimeout = setTimeout(updateActiveSection, 50);
+  if (scrollRafId === null) {
+    scrollRafId = requestAnimationFrame(() => {
+      scrollRafId = null;
+      updateActiveSection();
+    });
+  }
 }
 
 function scrollToHash(hash: string) {
@@ -390,7 +394,9 @@ onUnmounted(() => {
     contentEl.removeEventListener("touchstart", handleTouchStart);
     contentEl.removeEventListener("touchend", handleTouchEnd);
   }
-  clearTimeout(scrollTimeout);
+  if (scrollRafId !== null) {
+    cancelAnimationFrame(scrollRafId);
+  }
   clearTimeout(scrollLockTimeout);
 });
 
@@ -450,7 +456,16 @@ watch(showCity, (val) => {
   background: rgba(5, 5, 16, 0.85);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
   transform: translateZ(0);
+  contain: paint layout;
+}
+
+html:not(.fx) .app-header {
   will-change: transform;
+}
+
+html.fx .app-header {
+  backdrop-filter: blur(4px) saturate(1.1);
+  -webkit-backdrop-filter: blur(4px) saturate(1.1);
 }
 
 .app-header::after {

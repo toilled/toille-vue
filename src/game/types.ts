@@ -5,6 +5,7 @@ import {
   Group,
   Vector3,
   Mesh,
+  Object3D,
 } from "three";
 import { Ref } from "vue";
 import type { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
@@ -30,7 +31,7 @@ export interface GameContext {
   composer: EffectComposer | null;
 
   cars: Group[];
-  buildings: Group[];
+  buildings: Object3D[];
   occupiedGrids: Map<
     string,
     { halfW: number; halfD: number; isRound?: boolean }

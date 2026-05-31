@@ -154,7 +154,7 @@
 </template>
 
 <script setup lang="ts">
-import { watch, PropType } from "vue";
+import { PropType } from "vue";
 import { Controls, LookControls } from "../game/types";
 import { ScoreEntry } from "../utils/ScoreService";
 import LeaderboardModal from "./LeaderboardModal.vue";
@@ -167,9 +167,9 @@ const props = defineProps({
   isCinematicMode: Boolean,
   isGameOver: Boolean,
   isMobile: Boolean,
-  drivingScore: Number,
-  timeLeft: Number,
-  distToTarget: Number,
+  drivingScore: { type: Number, default: 0 },
+  timeLeft: { type: Number, default: 0 },
+  distToTarget: { type: Number, default: 0 },
   controls: {
     type: Object as PropType<Controls>,
     required: true,

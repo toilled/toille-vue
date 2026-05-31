@@ -15,7 +15,7 @@
     <div class="game-area">
       <button
         @click="moveButton"
-        :style="buttonStyle"
+        :style="buttonStyle as any"
         aria-label="Catch me! Click to score a point"
         :disabled="gameWon"
       >
@@ -42,6 +42,7 @@ interface ButtonStyle {
   top: string;
   transform: string;
   transition: string;
+  [key: string]: string;
 }
 
 const score = ref(0);

@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { DemoMode } from "../../modes/DemoMode";
-import { Scene, PerspectiveCamera, WebGLRenderer, Vector3 } from "three";
+import { Scene, PerspectiveCamera, WebGLRenderer } from "three";
 import { ref } from "vue";
 import type { GameContext } from "../../types";
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 
 vi.mock("../../utils/CyberpunkAudio", () => ({
   cyberpunkAudio: {
@@ -46,7 +46,7 @@ describe("DemoMode", () => {
     composer = new EffectComposer(new WebGLRenderer());
     composer.passes = [
       { strength: 1.5, radius: 0.4, threshold: 0.85, render: vi.fn() },
-    ];
+    ] as any;
     context = {
       scene: new Scene(),
       camera: new PerspectiveCamera(),
@@ -99,7 +99,6 @@ describe("DemoMode", () => {
 
   it("cleanup removes audio listener and restores bloom", () => {
     mode.init(context);
-    const removeSpy = vi.spyOn(mode as unknown as { cleanup: () => void }, "cleanup");
     mode.cleanup();
     expect(() => mode.cleanup()).not.toThrow();
   });

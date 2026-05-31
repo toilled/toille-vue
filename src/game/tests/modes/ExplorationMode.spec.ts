@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { ExplorationMode } from "../../modes/ExplorationMode";
 import { Scene, PerspectiveCamera, WebGLRenderer } from "three";
 import { ref } from "vue";
-import type { GameContext } from "../types";
+import type { GameContext } from "../../types";
 
 vi.mock("../../utils/HeightMap", () => ({
   getHeight: vi.fn(() => 0),

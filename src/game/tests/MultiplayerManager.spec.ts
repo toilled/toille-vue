@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { Scene, Group, Vector3 } from "three";
+import { Scene, Group } from "three";
 import { MultiplayerManager } from "../MultiplayerManager";
 
 let mockMqttClient: {

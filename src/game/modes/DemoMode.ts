@@ -1,9 +1,9 @@
 import { GameMode, GameContext } from "../types";
-import { Vector3, MathUtils, Group, Mesh, Object3D } from "three";
+import { Vector3, MathUtils, Mesh, Object3D } from "three";
 import { cyberpunkAudio } from "../../utils/CyberpunkAudio";
 import { audioManager } from "../../utils/AudioManager";
-import { AfterimagePass } from "three/examples/jsm/postprocessing/AfterimagePass";
-import { GlitchPass } from "three/examples/jsm/postprocessing/GlitchPass";
+import { AfterimagePass } from "three/examples/jsm/postprocessing/AfterimagePass.js";
+import { GlitchPass } from "three/examples/jsm/postprocessing/GlitchPass.js";
 
 interface BloomPass {
   strength: number;
@@ -91,7 +91,7 @@ export class DemoMode implements GameMode {
     this.sparkTargets = [];
     if (!this.context.buildings) return;
 
-    this.context.buildings.forEach((buildingGroup: Group) => {
+    this.context.buildings.forEach((buildingGroup: Object3D) => {
       // Find the highest point in the building group
       const highestPoint = new Vector3();
       let maxY = -Infinity;

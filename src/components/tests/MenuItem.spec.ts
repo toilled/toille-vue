@@ -10,7 +10,7 @@ describe("MenuItem.vue", () => {
 
     const wrapper = mount(MenuItem, {
       props: {
-        page: { name: "Home", link: "/" },
+        page: { name: "Home", link: "/", title: "Home", body: [] },
       },
       global: {
         provide: {
@@ -30,7 +30,7 @@ describe("MenuItem.vue", () => {
 
     const wrapper = mount(MenuItem, {
       props: {
-        page: { name: "About", link: "/about" },
+        page: { name: "About", link: "/about", title: "About", body: [] },
       },
       global: {
         provide: {

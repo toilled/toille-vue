@@ -45,10 +45,22 @@ HTMLCanvasElement.prototype.getContext = vi.fn((contextId: string, options?: any
   return null;
 });
 
+class MockColor {
+  r = 0; g = 0; b = 0;
+  constructor(_color?: number | string) {}
+  setHex(_hex: number) { return this; }
+  setHSL() { return this; }
+  clone() { const c = new MockColor(); c.r = this.r; c.g = this.g; c.b = this.b; return c; }
+  copy(c: any) { if (c) { this.r = c.r; this.g = c.g; this.b = c.b; } return this; }
+  getHex() { return 0; }
+  toArray(arr: any[] = [], offset = 0) { arr[offset] = this.r; arr[offset + 1] = this.g; arr[offset + 2] = this.b; return arr; }
+}
+
 vi.mock("three", async () => {
   const actual = await vi.importActual("three");
   return {
     ...(actual as Record<string, unknown>),
+    Color: MockColor,
     WebGLRenderer: class {
       domElement = document.createElement("canvas");
       shadowMap = { enabled: false, type: 0 };
@@ -68,36 +80,72 @@ vi.mock("three", async () => {
       constructor(_parameters?: any) {}
     },
     CylinderGeometry: class {
+      groups: any[] = [];
+      morphAttributes: Record<string, any> = {};
+      attributes: any = { position: { count: 0, itemSize: 3, array: new Float32Array() } };
+      index: any = null;
       parameters: any;
       constructor() {}
       translate() {}
       rotateX = vi.fn();
       rotateZ = vi.fn();
+      getIndex() { return this.index; }
+      getAttribute(name: string) { return this.attributes[name]; }
+      setIndex() { return this; }
+      clone() { return new (this.constructor as any)(); }
+      applyMatrix4() { return this; }
+      computeVertexNormals() {}
       dispose() {}
     },
     SphereGeometry: class {
+      groups: any[] = [];
+      morphAttributes: Record<string, any> = {};
+      attributes: any = { position: { count: 0, itemSize: 3, array: new Float32Array() } };
+      index: any = null;
       parameters: any;
       constructor() {}
       translate() {}
+      getIndex() { return this.index; }
+      getAttribute(name: string) { return this.attributes[name]; }
+      setIndex() { return this; }
+      clone() { return new (this.constructor as any)(); }
+      applyMatrix4() { return this; }
+      computeVertexNormals() {}
       dispose() {}
     },
     ConeGeometry: class {
+      groups: any[] = [];
+      morphAttributes: Record<string, any> = {};
+      attributes: any = { position: { count: 0, itemSize: 3, array: new Float32Array() } };
+      index: any = null;
       parameters: any;
       constructor() {}
       translate() {}
+      getIndex() { return this.index; }
+      getAttribute(name: string) { return this.attributes[name]; }
+      setIndex() { return this; }
+      clone() { return new (this.constructor as any)(); }
+      applyMatrix4() { return this; }
+      computeVertexNormals() {}
       dispose() {}
     },
     BoxGeometry: class {
+      groups: any[] = [];
+      morphAttributes: Record<string, any> = {};
+      attributes: any = { position: { count: 24, itemSize: 3, array: new Float32Array(72) }, normal: { count: 24, itemSize: 3, array: new Float32Array(72) }, uv: { count: 24, itemSize: 2, array: new Float32Array(48) } };
+      index: any = { array: new Uint16Array(36) };
       translate() {}
-      getIndex() {
-        return null;
-      }
-      getAttribute() {
-        return { count: 0, itemSize: 3, array: [] };
-      }
+      getIndex() { return this.index; }
+      getAttribute(name: string) { return this.attributes[name]; }
+      setIndex(_arr: any) { return this; }
+      applyMatrix4(_m: any) { return this; }
       clone() {
-        return this;
+        const c = new (this.constructor as any)();
+        c.groups = this.groups.map((g: any) => ({ ...g }));
+        c.morphAttributes = this.morphAttributes;
+        return c;
       }
+      computeVertexNormals() {}
       dispose() {}
       parameters = {};
     },
@@ -120,9 +168,11 @@ vi.mock("three", async () => {
       dispose() {}
     },
     BufferGeometry: class {
-      attributes = {
+      groups: any[] = [];
+      morphAttributes: Record<string, any> = {};
+      attributes: Record<string, any> = {
         position: {
-          array: [],
+          array: new Float32Array(),
           needsUpdate: false,
           count: 0,
           itemSize: 3,
@@ -132,15 +182,24 @@ vi.mock("three", async () => {
           setXYZ: vi.fn(),
         },
       };
-      setAttribute() {}
+      index: any = null;
+      setIndex(arr: any) { this.index = arr; return this; }
+      setAttribute(name: string, attr: any) { this.attributes[name] = attr; return this; }
       setFromPoints() {}
-      getIndex() {
-        return null;
-      }
-      getAttribute() {
-        return this.attributes.position;
+      getIndex() { return this.index; }
+      getAttribute(name: string) { return this.attributes[name]; }
+      hasAttribute(name: string) { return name in this.attributes; }
+      applyMatrix4(_m: any) { return this; }
+      clone() {
+        const c = new (this.constructor as any)();
+        c.attributes = this.attributes;
+        c.index = this.index;
+        c.groups = this.groups.map((g: any) => ({ ...g }));
+        c.morphAttributes = this.morphAttributes;
+        return c;
       }
       computeBoundingSphere() {}
+      computeVertexNormals() {}
       dispose() {}
     },
     EdgesGeometry: class {
@@ -188,6 +247,8 @@ vi.mock("three", async () => {
       isObject3D = true;
       layers = { mask: 1, test: vi.fn(() => true) };
       raycast = vi.fn();
+      matrixWorld = { elements: [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1], copy: vi.fn(), clone: vi.fn(), multiply: vi.fn(), decompose: vi.fn(), compose: vi.fn(), identity: vi.fn(), invert: vi.fn() };
+      updateWorldMatrix = vi.fn();
 
       constructor(geometry?: any, material?: any) {
         this.geometry = geometry;
@@ -213,6 +274,7 @@ vi.mock("three", async () => {
       removeEventListener() {}
     },
     Group: class {
+      matrixWorld = { elements: [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1], copy: vi.fn(), clone: vi.fn(), multiply: vi.fn(), decompose: vi.fn(), compose: vi.fn(), identity: vi.fn(), invert: vi.fn() };
       position = {
         x: 0,
         y: 0,
@@ -250,18 +312,18 @@ vi.mock("three", async () => {
       raycast = vi.fn();
       add(obj: any) {
         this.children.push(obj);
-        // Add minimal lookAt support for children
         if (obj && !obj.lookAt) obj.lookAt = vi.fn();
       }
       remove(obj: any) {
         this.children = this.children.filter((c) => c !== obj);
       }
       removeFromParent() {}
+      updateWorldMatrix = vi.fn();
       traverse(cb: any) {
         cb(this);
         this.children.forEach((c) => c.traverse && c.traverse(cb));
       }
-      lookAt = vi.fn(); // Added lookAt to Group
+      lookAt = vi.fn();
       dispatchEvent() {}
       addEventListener() {}
       removeEventListener() {}
@@ -275,8 +337,22 @@ vi.mock("three", async () => {
       isObject3D = true;
     },
     MeshStandardMaterial: class {
+      color = new MockColor();
+      map = null;
+      emissiveMap = null;
+      roughnessMap = null;
+      emissive = new MockColor();
+      emissiveIntensity = 0.8;
+      roughness = 0.5;
+      metalness = 0.8;
+      transparent = false;
+      opacity = 1;
       clone() {
-        return this;
+        const c = new (this.constructor as any)();
+        c.color = this.color.clone();
+        c.opacity = this.opacity;
+        c.transparent = this.transparent;
+        return c;
       }
       dispose() {}
     },
@@ -287,13 +363,20 @@ vi.mock("three", async () => {
       dispose() {}
     },
     MeshBasicMaterial: class {
-      color = { getHex: vi.fn(() => 0xffffff) };
+      color = new MockColor();
+      map = null;
+      transparent = false;
+      opacity = 1;
       constructor(params?: any) {
         if (params?.color !== undefined)
-          this.color.getHex = vi.fn(() => params.color);
+          this.color = new MockColor();
       }
       clone() {
-        return this;
+        const c = new (this.constructor as any)();
+        c.color = this.color.clone();
+        c.opacity = this.opacity;
+        c.transparent = this.transparent;
+        return c;
       }
       dispose() {}
     },

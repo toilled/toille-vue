@@ -100,11 +100,15 @@ vi.mock("three", () => {
       samples: 0,
     })),
     Color: vi.fn(() => ({
+      r: 0, g: 0, b: 0,
       setHSL: vi.fn(function (this: { setHSL: () => void }) {
         return this;
       }),
       setHex: vi.fn(),
       getHex: vi.fn(() => 0),
+      copy: vi.fn(function (this: any, c: any) { if (c) { this.r = c.r; this.g = c.g; this.b = c.b; } return this; }),
+      clone: vi.fn(function (this: any) { return { ...this }; }),
+      toArray: vi.fn((arr: any[] = [], offset = 0) => { arr[offset] = 0; arr[offset + 1] = 0; arr[offset + 2] = 0; return arr; }),
     })),
     FogExp2: vi.fn(),
     BoxGeometry: vi.fn(() => ({
@@ -148,9 +152,15 @@ vi.mock("three", () => {
       },
     })),
     MeshBasicMaterial: vi.fn(() => ({
+      color: { clone: vi.fn(() => ({ setHex: vi.fn(), getHex: vi.fn(() => 0) })), setHex: vi.fn(), getHex: vi.fn(() => 0) },
+      map: null,
+      transparent: false,
+      opacity: 1,
       dispose: vi.fn(),
       clone: vi.fn(() => ({
+        color: { clone: vi.fn(() => ({ setHex: vi.fn(), getHex: vi.fn(() => 0) })), setHex: vi.fn(), getHex: vi.fn(() => 0) },
         clone: vi.fn(),
+        dispose: vi.fn(),
       })),
     })),
     MeshLambertMaterial: vi.fn(() => ({
@@ -159,9 +169,22 @@ vi.mock("three", () => {
       })),
     })),
     MeshStandardMaterial: vi.fn(() => ({
+      color: { clone: vi.fn(() => ({ setHex: vi.fn(), getHex: vi.fn(() => 0) })), setHex: vi.fn(), getHex: vi.fn(() => 0) },
+      map: null,
+      emissiveMap: null,
+      roughnessMap: null,
+      emissive: { clone: vi.fn(() => ({ setHex: vi.fn() })) },
+      emissiveIntensity: 0.8,
+      roughness: 0.5,
+      metalness: 0.8,
+      transparent: false,
+      opacity: 1,
       clone: vi.fn(() => ({
+        color: { clone: vi.fn(() => ({ setHex: vi.fn(), getHex: vi.fn(() => 0) })), setHex: vi.fn(), getHex: vi.fn(() => 0) },
         clone: vi.fn(),
+        dispose: vi.fn(),
       })),
+      dispose: vi.fn(),
     })),
     PointsMaterial: vi.fn(),
     LineBasicMaterial: vi.fn(),
@@ -179,8 +202,8 @@ vi.mock("three", () => {
         y: 0,
         z: 0,
         copy: vi.fn(),
-        distanceToSquared: vi.fn(() => 100), // Added
-        distanceTo: vi.fn(() => 10), // Added
+        distanceToSquared: vi.fn(() => 100),
+        distanceTo: vi.fn(() => 10),
         clone: vi.fn(() => ({
           add: vi.fn(function (this: { x: number; y: number; z: number }) {
             return this;
@@ -220,6 +243,8 @@ vi.mock("three", () => {
       traverse: vi.fn(),
       userData: {},
       lookAt: vi.fn(),
+      matrixWorld: { elements: [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1], copy: vi.fn(), clone: vi.fn(), multiply: vi.fn(), decompose: vi.fn(), compose: vi.fn(), identity: vi.fn(), invert: vi.fn() },
+      updateWorldMatrix: vi.fn(),
     })),
     DoubleSide: 2,
     BackSide: 1,
@@ -238,7 +263,7 @@ vi.mock("three", () => {
         y: 0,
         z: 0,
         distanceToSquared: vi.fn(),
-        copy: vi.fn(), // Added copy
+        copy: vi.fn(),
         clone: vi.fn(() => ({
           sub: vi.fn(),
           normalize: vi.fn(),
@@ -252,8 +277,32 @@ vi.mock("three", () => {
       userData: {},
       add: vi.fn(),
       lookAt: vi.fn(),
-      material: { color: { setHex: vi.fn() } }, // Added material.color
+      material: { color: { setHex: vi.fn() } },
       traverse: vi.fn(),
+      matrixWorld: { elements: [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1], copy: vi.fn(), clone: vi.fn(), multiply: vi.fn(), decompose: vi.fn(), compose: vi.fn(), identity: vi.fn(), invert: vi.fn() },
+      updateWorldMatrix: vi.fn(),
+    })),
+    InstancedMesh: vi.fn(() => ({
+      position: { set: vi.fn(), x: 0, y: 0, z: 0 },
+      rotation: { x: 0, y: 0, z: 0 },
+      up: { x: 0, y: 1, z: 0, set: vi.fn(), copy: vi.fn() },
+      scale: { set: vi.fn() },
+      userData: {},
+      add: vi.fn(),
+      lookAt: vi.fn(),
+      traverse: vi.fn(),
+      count: 0,
+      instanceMatrix: { needsUpdate: false },
+      instanceColor: null,
+      setMatrixAt: vi.fn(),
+      setColorAt: vi.fn(),
+      computeBoundingSphere: vi.fn(),
+      dispose: vi.fn(),
+      material: { color: { setHex: vi.fn() }, clone: vi.fn() },
+      geometry: { attributes: {} },
+      raycast: vi.fn(),
+      matrixWorld: { elements: [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1], copy: vi.fn(), clone: vi.fn(), multiply: vi.fn(), decompose: vi.fn(), compose: vi.fn(), identity: vi.fn(), invert: vi.fn() },
+      updateWorldMatrix: vi.fn(),
     })),
     Points: vi.fn(() => ({
       position: { set: vi.fn(), x: 0, y: 0, z: 0 },
@@ -346,6 +395,29 @@ vi.mock("three", () => {
     Quaternion: vi.fn(() => ({
       setFromEuler: vi.fn(),
       slerp: vi.fn(),
+    })),
+    Matrix4: vi.fn(() => ({
+      elements: [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+      copy: vi.fn(),
+      clone: vi.fn(),
+      multiply: vi.fn(),
+      decompose: vi.fn(),
+      compose: vi.fn(),
+      identity: vi.fn(),
+      invert: vi.fn(),
+      makeTranslation: vi.fn(),
+      makeRotationFromEuler: vi.fn(),
+      makeScale: vi.fn(),
+      multiplyMatrices: vi.fn(),
+      premultiply: vi.fn(),
+      setPosition: vi.fn(),
+      extractRotation: vi.fn(),
+      lookAt: vi.fn(),
+      scale: vi.fn(),
+      set: vi.fn(),
+      transpose: vi.fn(),
+      getInverse: vi.fn(),
+      applyToBufferAttribute: vi.fn(),
     })),
     Vector3: vi.fn(() => ({
       x: 0,

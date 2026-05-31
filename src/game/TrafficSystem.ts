@@ -1,10 +1,13 @@
 import {
+  Color,
   Group,
+  InstancedMesh,
+  Matrix4,
   Mesh,
   MeshBasicMaterial,
+  Object3D,
   PointLight,
   Scene,
-  Object3D,
   SpotLight,
 } from "three";
 import {
@@ -19,12 +22,22 @@ import { carAudio } from "./audio/CarAudio";
 import { getHeight, applyCarOrientation } from "../utils/HeightMap";
 import { CarFactory } from "./CarFactory";
 
+const _matrix = new Matrix4();
+const _color = new Color();
+
 export class TrafficSystem {
   private scene: Scene;
   private cars: Group[] = [];
   private carCount: number;
   private spawnSparks: (pos: { x: number; y: number; z: number }) => void;
   private carFactory: CarFactory;
+
+  private bodyMesh!: InstancedMesh;
+  private cabMesh!: InstancedMesh;
+  private trailerMesh!: InstancedMesh;
+  private wheelMesh!: InstancedMesh;
+  private tailLightMesh!: InstancedMesh;
+  private headLightMesh!: InstancedMesh;
 
   constructor(
     scene: Scene,
@@ -36,6 +49,7 @@ export class TrafficSystem {
     this.spawnSparks = spawnSparks;
     this.carFactory = new CarFactory();
     this.initCars();
+    this.createInstanceMeshes();
   }
 
   public getCars(): Group[] {
@@ -54,6 +68,117 @@ export class TrafficSystem {
       this.scene.add(carGroup);
       this.cars.push(carGroup);
     }
+  }
+
+  private createInstanceMeshes() {
+    const total = this.cars.length;
+    const f = this.carFactory;
+
+    this.bodyMesh = new InstancedMesh(f.carGeo, f.carBodyMat1, total);
+    this.bodyMesh.castShadow = true;
+    this.bodyMesh.count = 0;
+    this.scene.add(this.bodyMesh);
+
+    this.cabMesh = new InstancedMesh(f.truckCabGeo, f.carBodyMat1, total);
+    this.cabMesh.castShadow = true;
+    this.cabMesh.count = 0;
+    this.scene.add(this.cabMesh);
+
+    this.trailerMesh = new InstancedMesh(f.truckTrailerGeo, f.carBodyMat1, total);
+    this.trailerMesh.castShadow = true;
+    this.trailerMesh.count = 0;
+    this.scene.add(this.trailerMesh);
+
+    this.wheelMesh = new InstancedMesh(f.wheelGeo, f.wheelMat, total * 6);
+    this.wheelMesh.castShadow = true;
+    this.wheelMesh.count = 0;
+    this.scene.add(this.wheelMesh);
+
+    this.tailLightMesh = new InstancedMesh(f.tailLightGeo, f.tailLightMat, total * 2);
+    this.tailLightMesh.count = 0;
+    this.scene.add(this.tailLightMesh);
+
+    this.headLightMesh = new InstancedMesh(f.headLightGeo, f.headLightMat, total * 2);
+    this.headLightMesh.count = 0;
+    this.scene.add(this.headLightMesh);
+  }
+
+  private syncCarInstances(activeCar: Group | null) {
+    let bodyIdx = 0, cabIdx = 0, trailerIdx = 0;
+    let wheelIdx = 0, tlIdx = 0, hlIdx = 0;
+
+    for (const car of this.cars) {
+      const isActive = car === activeCar;
+      const isFading = car.userData.fading;
+      const isPlayerControlled = car.userData.isPlayerControlled;
+      const renderAsGroup = isActive || isFading || isPlayerControlled;
+
+      car.updateWorldMatrix(true, false);
+
+      car.traverse((child) => {
+        if (!(child instanceof Mesh)) return;
+        const partType = child.userData.partType as string | undefined;
+        if (!partType) return;
+
+        if (partType === "hitbox" || partType === "underglow" || partType === "lightbar" || partType === "flasher") {
+          return;
+        }
+
+        if (renderAsGroup) {
+          child.visible = true;
+        } else {
+          child.visible = false;
+
+          _matrix.copy(child.matrixWorld);
+
+          switch (partType) {
+            case "body":
+              this.bodyMesh.setMatrixAt(bodyIdx, _matrix);
+              _color.copy(car.userData.bodyColor || 0x222222);
+              this.bodyMesh.setColorAt(bodyIdx, _color);
+              bodyIdx++;
+              break;
+            case "cab":
+              this.cabMesh.setMatrixAt(cabIdx, _matrix);
+              _color.copy(car.userData.bodyColor || 0x222222);
+              this.cabMesh.setColorAt(cabIdx, _color);
+              cabIdx++;
+              break;
+            case "trailer":
+              this.trailerMesh.setMatrixAt(trailerIdx, _matrix);
+              _color.copy(car.userData.bodyColor || 0x222222);
+              this.trailerMesh.setColorAt(trailerIdx, _color);
+              trailerIdx++;
+              break;
+            case "wheel":
+              this.wheelMesh.setMatrixAt(wheelIdx, _matrix);
+              wheelIdx++;
+              break;
+            case "taillight":
+              this.tailLightMesh.setMatrixAt(tlIdx, _matrix);
+              tlIdx++;
+              break;
+            case "headlight":
+              this.headLightMesh.setMatrixAt(hlIdx, _matrix);
+              hlIdx++;
+              break;
+          }
+        }
+      });
+    }
+
+    const updateCount = (mesh: InstancedMesh, count: number) => {
+      mesh.count = count;
+      mesh.instanceMatrix.needsUpdate = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    };
+
+    updateCount(this.bodyMesh, bodyIdx);
+    updateCount(this.cabMesh, cabIdx);
+    updateCount(this.trailerMesh, trailerIdx);
+    updateCount(this.wheelMesh, wheelIdx);
+    updateCount(this.tailLightMesh, tlIdx);
+    updateCount(this.headLightMesh, hlIdx);
   }
 
   public addLightsToCar(car: Group) {
@@ -177,6 +302,22 @@ export class TrafficSystem {
     const wasActive = activeCar && carGroup.uuid === activeCar.uuid;
     const isPolice = !!carGroup.userData.isPolice;
 
+    // Clean up fading materials
+    if (carGroup.userData._fadeInitialized) {
+      carGroup.traverse((child) => {
+        if (child instanceof Mesh) {
+          const mat = child.material;
+          const orig = child.userData._originalMaterial as import("three").Material | undefined;
+          if (!Array.isArray(mat) && orig) {
+            mat.dispose();
+            child.material = orig;
+            delete child.userData._originalMaterial;
+          }
+        }
+      });
+      carGroup.userData._fadeInitialized = false;
+    }
+
     this.removeLightsFromCar(carGroup);
 
     const axis = Math.random() > 0.5 ? "x" : "z";
@@ -229,19 +370,17 @@ export class TrafficSystem {
     carGroup.traverse((child) => {
       if (child instanceof Mesh) {
         const mat = child.material;
-        if (
-          !Array.isArray(mat) &&
-          child.userData.originalOpacity !== undefined
-        ) {
+        if (!Array.isArray(mat) && child.userData.originalOpacity !== undefined) {
           mat.opacity = child.userData.originalOpacity;
         }
       }
     });
   }
 
-  public update() {
+  public update(activeCar?: Group | null) {
     this.updateCars();
     this.checkCollisions();
+    this.syncCarInstances(activeCar || null);
   }
 
   private updateCars() {
@@ -336,6 +475,22 @@ export class TrafficSystem {
   }
 
   private fadeCar(car: Group) {
+    // On first fade frame, clone shared materials for per-car opacity
+    if (!car.userData._fadeInitialized) {
+      car.traverse((child) => {
+        if (child instanceof Mesh) {
+          const mat = child.material;
+          if (!Array.isArray(mat) && child.userData.partType && child.userData.partType !== "hitbox") {
+            const clone = mat.clone();
+            clone.transparent = true;
+            child.userData._originalMaterial = mat;
+            child.material = clone;
+          }
+        }
+      });
+      car.userData._fadeInitialized = true;
+    }
+
     if (car.userData.axis === "x") {
       car.position.x += car.userData.speed * 0.5 * car.userData.dir;
     } else {
@@ -371,10 +526,9 @@ export class TrafficSystem {
   private checkCollisions() {
     const actualCollisionDist = 6;
     const distSqThreshold = actualCollisionDist * actualCollisionDist;
-    const gridSize = 20; // Size of grid cell for spatial partitioning
+    const gridSize = 20;
     const grid = new Map<string, Group[]>();
 
-    // Spatial partitioning to reduce collision checks
     for (const car of this.cars) {
       if (car.userData.fading) continue;
       const gridX = Math.floor(car.position.x / gridSize);
@@ -393,7 +547,6 @@ export class TrafficSystem {
       const gridX = Math.floor(carA.position.x / gridSize);
       const gridZ = Math.floor(carA.position.z / gridSize);
 
-      // Check current and adjacent grid cells
       for (let dx = -1; dx <= 1; dx++) {
         for (let dz = -1; dz <= 1; dz++) {
           const key = `${gridX + dx},${gridZ + dz}`;
@@ -401,7 +554,6 @@ export class TrafficSystem {
 
           if (neighbors) {
             for (const carB of neighbors) {
-              // Avoid duplicate checks and self-collision
               if (carA.uuid >= carB.uuid || carB.userData.fading) continue;
 
               const distSq = carA.position.distanceToSquared(carB.position);

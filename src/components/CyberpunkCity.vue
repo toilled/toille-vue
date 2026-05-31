@@ -879,7 +879,7 @@ function animate() {
   gangWarManager.update(dt);
   skyEffects.update(dt);
   gameModeManager.update(dt, time);
-  trafficSystem.update();
+  trafficSystem.update(activeCar.value);
   if (multiplayerManager) {
     multiplayerManager.update(dt);
     if (isExplorationMode.value) {

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CarAudio } from "../audio/CarAudio";
 
 describe("CarAudio", () => {
@@ -46,7 +46,6 @@ describe("CarAudio", () => {
   });
 
   it("playCrash creates crash sound", () => {
-    const oscStartSpy = vi.fn();
     carAudio.playCrash();
     expect(carAudio.ctx).not.toBeNull();
   });

@@ -16,9 +16,9 @@ describe("FeatureCard.vue", () => {
     vi.clearAllMocks();
   });
 
-  function mountWithProvide(props: Record<string, unknown> = {}) {
+  function mountWithProvide(props: Record<string, any> = {}) {
     return mount(FeatureCard, {
-      props,
+      props: props as any,
       global: { provide: defaultProvide },
     });
   }

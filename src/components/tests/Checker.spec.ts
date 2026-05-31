@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mount } from "@vue/test-utils";
 import Checker from "../Checker.vue";
 
@@ -20,7 +20,7 @@ describe("Checker.vue", () => {
 
   it("initializes count to 0", () => {
     const wrapper = mount(Checker);
-    expect(wrapper.vm.count).toBe(0);
+    expect((wrapper.vm as any).count).toBe(0);
   });
 
   it("increments count when add is clicked", async () => {
@@ -30,7 +30,7 @@ describe("Checker.vue", () => {
       .find((button) => button.text() === "Add");
     expect(addButton).toBeDefined();
     await addButton!.trigger("click");
-    expect(wrapper.vm.count).toBe(1);
+    expect((wrapper.vm as any).count).toBe(1);
   });
 
   it("decrements count when subtract is clicked", async () => {
@@ -46,7 +46,7 @@ describe("Checker.vue", () => {
     await addButton!.trigger("click");
     await addButton!.trigger("click");
     await subtractButton!.trigger("click");
-    expect(wrapper.vm.count).toBe(1);
+    expect((wrapper.vm as any).count).toBe(1);
   });
 
   it("does not decrement count below 0", async () => {
@@ -56,7 +56,7 @@ describe("Checker.vue", () => {
       .find((button) => button.text() === "Subtract");
     expect(subtractButton).toBeDefined();
     await subtractButton!.trigger("click");
-    expect(wrapper.vm.count).toBe(0);
+    expect((wrapper.vm as any).count).toBe(0);
   });
 
   it("updates times correctly when count changes", async () => {
@@ -70,10 +70,10 @@ describe("Checker.vue", () => {
     } as const;
 
     // Initial state
-    expect(wrapper.vm.limitTime).toBe(
+    expect((wrapper.vm as any).limitTime).toBe(
       new Date().toLocaleTimeString([], options),
     );
-    expect(wrapper.vm.soberTime).toBe(
+    expect((wrapper.vm as any).soberTime).toBe(
       new Date().toLocaleTimeString([], options),
     );
 
@@ -84,10 +84,10 @@ describe("Checker.vue", () => {
     expect(addButton).toBeDefined();
     await addButton!.trigger("click");
     const currentTime = new Date().getTime();
-    expect(wrapper.vm.limitTime).toBe(
+    expect((wrapper.vm as any).limitTime).toBe(
       new Date(currentTime + 60 * 60 * 1000).toLocaleTimeString([], options),
     );
-    expect(wrapper.vm.soberTime).toBe(
+    expect((wrapper.vm as any).soberTime).toBe(
       new Date(currentTime + 2 * 60 * 60 * 1000).toLocaleTimeString(
         [],
         options,

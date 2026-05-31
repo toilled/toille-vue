@@ -33,7 +33,6 @@ import {
   watch,
   defineAsyncComponent,
 } from "vue";
-import { useRoute } from "vue-router";
 import SplashScreen from "./SplashScreen.vue";
 import { ScoreService, type ScoreEntry } from "../utils/ScoreService";
 import {
@@ -61,7 +60,7 @@ import {
   PCFShadowMap,
   ACESFilmicToneMapping,
 } from "three";
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { GameModeManager } from "../game/GameModeManager";
 import { setupPostProcessing } from "../game/PostProcessingManager";
 import { DrivingMode } from "../game/modes/DrivingMode";
@@ -336,8 +335,6 @@ for (let i = 0; i < SPARK_COUNT; i++) {
 const sparkVelocities = new Float32Array(SPARK_COUNT * 3);
 const sparkLifetimes = new Float32Array(SPARK_COUNT);
 
-const route = useRoute();
-
 function createCheckpoint() {
   const geo = new CylinderGeometry(
     CHECKPOINT_RADIUS,
@@ -443,7 +440,7 @@ function spawnCheckpoint() {
   checkpointMesh.visible = true;
 }
 
-function spawnSparks(position: Vector3) {
+function spawnSparks(position: { x: number; y: number; z: number }) {
   if (!sparks) return;
   const posAttribute = sparks.geometry.attributes.position;
 
@@ -469,8 +466,8 @@ function spawnSparks(position: Vector3) {
 
 function activateSpark(
   i: number,
-  position: Vector3,
-  posAttribute: BufferAttribute,
+  position: { x: number; y: number; z: number },
+  posAttribute: BufferAttribute | import("three").InterleavedBufferAttribute,
 ) {
   sparkLifetimes[i] = 1.0;
   posAttribute.setXYZ(i, position.x, position.y, position.z);
@@ -537,7 +534,7 @@ onMounted(() => {
   });
 
   // Traffic System
-  trafficSystem = new TrafficSystem(scene, CAR_COUNT, spawnSparks);
+  trafficSystem = new TrafficSystem(scene, CAR_COUNT, (pos) => spawnSparks(pos));
   cars = trafficSystem.getCars();
 
   // Initialize Sparks
@@ -737,8 +734,8 @@ function onClick(event: MouseEvent) {
   }
 
   const carMeshes: Object3D[] = [];
-  cars.forEach((c) =>
-    c.traverse((child) => {
+  (cars as Group[]).forEach((c) =>
+    (c as Group).traverse((child) => {
       if (child instanceof Mesh) carMeshes.push(child);
     }),
   );

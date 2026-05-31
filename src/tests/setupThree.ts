@@ -8,7 +8,7 @@ HTMLCanvasElement.prototype.getContext = vi.fn((contextId: string, options?: any
     return {
       fillRect: vi.fn(),
       clearRect: vi.fn(),
-      getImageData: vi.fn((x: number, y: number, w: number, h: number) => {
+      getImageData: vi.fn((_x: number, _y: number, w: number, h: number) => {
           const length = (w || 1024) * (h || 1024) * 4;
           return { data: new Uint8ClampedArray(length) };
       }),

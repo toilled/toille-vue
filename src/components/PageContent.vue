@@ -124,11 +124,11 @@ useHead({
     }
     // Open Graph tags
     metaTags.push(
-      { property: "og:title", content: page.value?.title || "Elliot Dickerson" },
-      { property: "og:description", content: page.value?.metaDescription || "The experimental website of Elliot Dickerson made in Vue." },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: `https://toille.uk${route.path}` },
-      { property: "og:image", content: "https://toille.uk/og-image.png" },
+      { name: "og:title", content: page.value?.title || "Elliot Dickerson" } as any,
+      { name: "og:description", content: page.value?.metaDescription || "The experimental website of Elliot Dickerson made in Vue." } as any,
+      { name: "og:type", content: "website" } as any,
+      { name: "og:url", content: `https://toille.uk${route.path}` } as any,
+      { name: "og:image", content: "https://toille.uk/og-image.png" } as any,
     );
     // Twitter Card tags
     metaTags.push(

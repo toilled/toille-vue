@@ -26,7 +26,7 @@
         <Transition name="cyberpunk-glitch">
           <div
             class="router-view-container"
-            ref="containerRef"
+
             v-show="isContentVisible"
           >
             <router-view v-slot="{ Component, route }">
@@ -101,9 +101,9 @@ import pages from "./configs/pages.json";
 
 const CyberpunkCity = defineAsyncComponent(() => {
   if (import.meta.env.SSR) {
-    return Promise.resolve({ render: () => null });
+    return { render: () => null } as any;
   }
-  return import("./components/CyberpunkCity.vue");
+  return import("./components/CyberpunkCity.vue") as any;
 });
 import { cityBackground } from "./utils/CityBackgroundManager";
 import titles from "./configs/titles.json";
@@ -113,7 +113,7 @@ const visiblePages = computed(() => {
   return pages.filter((page: Page) => !page.hidden);
 });
 
-const containerRef = ref<HTMLElement | null>(null);
+
 const checker = ref(false);
 const activity = ref(false);
 const joke = ref(false);
@@ -427,7 +427,7 @@ watch(
   { immediate: true },
 );
 
-watch(activeSection, (newSection) => {
+watch(activeSection, () => {
   const pageTitle = getTitleForPath(route.path);
   if (typeof document !== "undefined") {
     document.title = "Elliot > " + pageTitle;

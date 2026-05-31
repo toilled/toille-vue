@@ -22,9 +22,9 @@ describe("ProjectGallery.vue", () => {
     { icon: "📱", title: "Mobile", description: "Mobile app", link: "#section", tag: "React" },
   ];
 
-  function mountWithProvide(props: Record<string, unknown> = {}) {
+  function mountWithProvide(props: Record<string, any> = {}) {
     return mount(ProjectGallery, {
-      props,
+      props: props as any,
       global: { provide: defaultProvide },
     });
   }

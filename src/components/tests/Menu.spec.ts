@@ -51,8 +51,8 @@ describe("Menu.vue", () => {
 
   it("renders a list of menu items", () => {
     const pages = [
-      { name: "Home", link: "/" },
-      { name: "About", link: "/about" },
+      { name: "Home", link: "/", title: "Home", body: [] },
+      { name: "About", link: "/about", title: "About", body: [] },
     ];
     const wrapper = mount(Menu, {
       props: { pages, contentVisible: true, cityFallback: false },
@@ -60,8 +60,8 @@ describe("Menu.vue", () => {
     });
     const menuItems = wrapper.findAllComponents(MenuItem);
     expect(menuItems.length).toBe(2);
-    expect(menuItems[0].props("page")).toEqual({ name: "Home", link: "/" });
-    expect(menuItems[1].props("page")).toEqual({
+    expect(menuItems[0].props("page")).toMatchObject({ name: "Home", link: "/" });
+    expect(menuItems[1].props("page")).toMatchObject({
       name: "About",
       link: "/about",
     });

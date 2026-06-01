@@ -25,7 +25,6 @@ function getStubs() {
   return {
     Paragraph: { template: "<div><slot /></div>" },
     SkillCard: { template: "<div class='skill-card-stub'><slot /></div>", props: ["skills", "category"] },
-    ProjectGallery: { template: "<div class='gallery-stub'><slot /></div>" },
     SectionDivider: { template: "<div class='divider-stub'><slot /></div>" },
   };
 }

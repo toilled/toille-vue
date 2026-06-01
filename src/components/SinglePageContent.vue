@@ -68,10 +68,6 @@
 
         <SectionDivider v-if="getSectionId(page) === 'interests'" icon="✨" />
         <template v-if="getSectionId(page) === 'interests'">
-          <h3 class="sub-heading">Featured Projects</h3>
-          <ProjectGallery :projects="showcaseProjects" />
-
-          <SectionDivider icon="🎵" />
           <h3 class="sub-heading">Music & Creative</h3>
           <div class="music-card">
             <div class="music-icon">🎸</div>
@@ -145,33 +141,6 @@ const toolsSkills = [
   { name: "Git", icon: "/git-icon.svg", link: "https://git-scm.com/" },
   { name: "Linux", icon: "🐧", link: "https://www.kernel.org/" },
   { name: "MQTT", icon: "/mqtt-icon.svg", link: "https://mqtt.org/" },
-];
-
-const showcaseProjects = [
-  {
-    icon: "🌆",
-    title: "Cyberpunk City",
-    description: "Interactive 3D city built with Three.js featuring driving, flying, and exploration modes",
-    tag: "Three.js",
-  },
-  {
-    icon: "🎮",
-    title: "Game Collection",
-    description: "Reflex games, tic-tac-toe with AI, and more interactive experiments",
-    tag: "Vue.js",
-  },
-  {
-    icon: "🤖",
-    title: "Chat Assistant",
-    description: "Keyword-based chatbot that answers questions about my background and skills",
-    tag: "Interactive",
-  },
-  {
-    icon: "📊",
-    title: "Weather Widget",
-    description: "Real-time weather data with SVG temperature charts from Open-Meteo API",
-    tag: "API",
-  },
 ];
 
 function getSectionId(page: Page): string {

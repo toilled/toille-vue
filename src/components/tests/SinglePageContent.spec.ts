@@ -68,11 +68,10 @@ describe("SinglePageContent.vue", () => {
     expect(wrapper.find("#about").exists()).toBe(true);
   });
 
-  it("renders interests section with music and projects", () => {
+  it("renders interests section with music", () => {
     const wrapper = mount(SinglePageContent, {
       global: { stubs: getStubs() },
     });
-    expect(wrapper.text()).toContain("Featured Projects");
     expect(wrapper.text()).toContain("Music & Creative");
   });
 });

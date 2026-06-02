@@ -9,11 +9,12 @@
     >
       <article class="marginless page-content-card">
         <header>
-          <h2 class="title">
-            <template v-if="page">
-              <span v-if="page.icon" class="page-icon">{{ page.icon }} </span>{{ page.title }}
-            </template>
-          </h2>
+          <AnimatedPageTitle
+            v-if="page"
+            :title="page.title"
+            :section-id="getSectionId(page)"
+            :page-icon="page.icon"
+          />
         </header>
         <div class="page-body">
           <Paragraph

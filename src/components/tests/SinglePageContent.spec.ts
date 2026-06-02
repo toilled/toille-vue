@@ -26,6 +26,7 @@ function getStubs() {
     Paragraph: { template: "<div><slot /></div>" },
     SkillCard: { template: "<div class='skill-card-stub'><slot /></div>", props: ["skills", "category"] },
     SectionDivider: { template: "<div class='divider-stub'><slot /></div>" },
+    AnimatedPageTitle: { template: "<span class='title-stub'>{{ title }}</span>", props: ["title"] },
   };
 }
 

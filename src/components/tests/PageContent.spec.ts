@@ -25,6 +25,7 @@ describe("PageContent.vue", () => {
     const wrapper = mount(PageContent, {
       global: {
         plugins: [router],
+        stubs: { AnimatedPageTitle: { template: "<span class='title-stub'>{{ title }}</span>", props: ["title"] } },
       },
     });
     await flushPromises();
@@ -42,6 +43,7 @@ describe("PageContent.vue", () => {
     const wrapper = mount(PageContent, {
       global: {
         plugins: [router],
+        stubs: { AnimatedPageTitle: { template: "<span class='title-stub'>{{ title }}</span>", props: ["title"] } },
       },
     });
     await flushPromises();
@@ -87,10 +89,11 @@ describe("PageContent.vue", () => {
     const wrapper = mount(PageContent, {
       global: {
         plugins: [router],
+        stubs: { AnimatedPageTitle: { template: "<span class='title-stub'>{{ title }}</span>", props: ["title"] } },
       },
     });
     await flushPromises();
-    const title = wrapper.find(".title");
+    const title = wrapper.find(".title-row");
     await title.trigger("mousedown");
     expect(wrapper.text()).toContain("Nothing here");
     vi.runAllTimers();

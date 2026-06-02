@@ -23,12 +23,34 @@
     @update-leaderboard="updateLeaderboard"
     @close-leaderboard="showLeaderboard = false"
   />
+  <MiniMap
+    :playerX="minimapData.playerX"
+    :playerZ="minimapData.playerZ"
+    :playerRotation="minimapData.playerRotation"
+    :objectives="minimapData.objectives"
+    :visible="isExplorationMode && storyState.active"
+    :currentMissionId="minimapData.currentMissionId"
+  />
+  <StoryDialog
+    :visible="storyState.active"
+    :showingBriefing="storyState.showingBriefing"
+    :showingDialogue="storyState.showingDialogue"
+    :missionComplete="storyState.missionComplete"
+    :dialogueIndex="storyState.currentDialogueIndex"
+    :currentMission="storyState.missions[storyState.currentMissionIndex] ?? null"
+    :hasNextMission="storyState.currentMissionIndex < storyState.missions.length - 1"
+    @dismiss="dismissStoryBriefing"
+    @advance="advanceStoryDialogue"
+  />
 </template>
 
 <script setup lang="ts">
 
 import SplashScreen from "./SplashScreen.vue";
+import MiniMap from "./MiniMap.vue";
+import StoryDialog from "./StoryDialog.vue";
 import { ScoreService, type ScoreEntry } from "../utils/ScoreService";
+import { StoryManager } from "../game/StoryManager";
 import {
   AdditiveBlending,
   BufferAttribute,
@@ -60,7 +82,7 @@ import { setupPostProcessing } from "../game/PostProcessingManager";
 import { DrivingMode } from "../game/modes/DrivingMode";
 import { ExplorationMode } from "../game/modes/ExplorationMode";
 import { DemoMode } from "../game/modes/DemoMode";
-import { GameContext } from "../game/types";
+import { GameContext, StoryState, MinimapData } from "../game/types";
 import { carAudio } from "../game/audio/CarAudio";
 import { cyberpunkAudio } from "../utils/CyberpunkAudio";
 import { CELL_SIZE, START_OFFSET, GRID_SIZE } from "../game/config";
@@ -280,6 +302,44 @@ function createLeaderboardTexture() {
   updateLeaderboardTexture();
 
   return leaderboardTexture;
+}
+
+let storyManager: StoryManager;
+
+const storyState = ref<StoryState>({
+  active: false,
+  currentMissionIndex: 0,
+  currentDialogueIndex: 0,
+  showingDialogue: false,
+  showingBriefing: false,
+  missionComplete: false,
+  missions: [],
+});
+
+const minimapData = ref<MinimapData>({
+  playerX: 0,
+  playerZ: 0,
+  playerRotation: 0,
+  objectives: [],
+  currentMissionId: "",
+});
+
+function updateStoryObjective(missionIdx: number, objIdx: number) {
+  if (storyManager) {
+    storyManager.completeObjective(missionIdx, objIdx);
+  }
+}
+
+function advanceStoryDialogue() {
+  if (storyManager) {
+    storyManager.advanceDialogue();
+  }
+}
+
+function dismissStoryBriefing() {
+  if (storyManager) {
+    storyManager.dismissBriefing();
+  }
 }
 
 const isMobile = ref(false);
@@ -574,6 +634,9 @@ onMounted(() => {
   window.addEventListener("keyup", onKeyUp);
   window.addEventListener("mousemove", onMouseMove);
 
+  // Story manager
+  storyManager = new StoryManager(storyState);
+
   // Initialize Game Context and Manager
   const context: GameContext = {
     scene,
@@ -598,6 +661,11 @@ onMounted(() => {
     checkpointMesh,
     navArrow,
     chaseArrow,
+    storyState,
+    minimapData,
+    updateObjective: updateStoryObjective,
+    advanceDialogue: advanceStoryDialogue,
+    dismissBriefing: dismissStoryBriefing,
   };
   gameModeManager = new GameModeManager(context);
 
@@ -652,6 +720,15 @@ function startExplorationMode() {
   gameModeManager.setMode(new ExplorationMode());
 }
 
+function startStoryMode() {
+  if (isFallbackMode.value) return;
+  isGameMode.value = true;
+  isExplorationMode.value = true;
+  emit("game-start");
+  storyManager.start();
+  gameModeManager.setMode(new ExplorationMode());
+}
+
 function startDemoMode() {
   if (isFallbackMode.value) return;
   isGameMode.value = true;
@@ -659,7 +736,7 @@ function startDemoMode() {
   gameModeManager.setMode(new DemoMode());
 }
 
-defineExpose({ startExplorationMode, startDemoMode });
+defineExpose({ startExplorationMode, startDemoMode, startStoryMode });
 
 function exitGameMode() {
   gameModeManager.clearMode();
@@ -670,6 +747,10 @@ function exitGameMode() {
 
   if (isExplorationMode.value) {
     isExplorationMode.value = false;
+  }
+
+  if (storyManager) {
+    storyManager.stop();
   }
 
   isCinematicMode.value = false;

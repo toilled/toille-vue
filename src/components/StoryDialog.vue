@@ -73,6 +73,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, onBeforeUnmount } from "vue";
 import { StoryMission } from "../game/types";
+import { speak, stopSpeech } from "../utils/SpeechSynthesizer";
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -99,6 +100,10 @@ function startTyping(text: string) {
   stopTyping();
   displayedText.value = "";
   isTyping.value = true;
+
+  const clean = text.replace(/[[\]]/g, "").replace(/["']/g, "");
+  speak(clean);
+
   let i = 0;
   typingTimer = setInterval(() => {
     if (i < text.length) {
@@ -120,17 +125,20 @@ function stopTyping() {
 }
 
 function dismiss() {
+  stopSpeech();
   emit("dismiss");
 }
 
 function advance() {
   if (isTyping.value) {
+    stopSpeech();
     if (currentDialogueLine.value) {
       stopTyping();
       displayedText.value = currentDialogueLine.value;
     }
     return;
   }
+  stopSpeech();
   emit("advance");
 }
 
@@ -155,6 +163,7 @@ watch(
 
 onBeforeUnmount(() => {
   stopTyping();
+  stopSpeech();
 });
 </script>
 

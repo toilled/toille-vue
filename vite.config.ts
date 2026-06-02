@@ -6,6 +6,9 @@ import AutoImport from "unplugin-auto-import/vite";
 import Components from "unplugin-vue-components/vite";
 
 export default defineConfig({
+  ssr: {
+    noExternal: ["@motion-canvas/core"],
+  },
   plugins: [
     vue(),
     AutoImport({

@@ -3,9 +3,14 @@
     <section>
       <article class="marginless page-content-card">
         <header>
-          <h2 class="title" @mousedown="handleMouseDown">
-            <template v-if="page">
-              <span v-if="page.icon" class="page-icon">{{ page.icon }} </span>{{ page.title }}
+          <template v-if="page">
+            <div class="title-row" @mousedown="handleMouseDown">
+              <AnimatedPageTitle
+                :title="page.title"
+                :section-id="route.path"
+                :page-icon="page.icon"
+                auto-animate
+              />
               <Transition name="fade">
                 <span
                   v-if="showHint"
@@ -14,9 +19,9 @@
                   - Nothing here
                 </span>
               </Transition>
-            </template>
-            <template v-else> 404 - Page not found </template>
-          </h2>
+            </div>
+          </template>
+          <h2 v-else class="title"> 404 - Page not found </h2>
         </header>
         <div class="page-body">
           <template v-if="page">
@@ -158,6 +163,10 @@ function handleMouseDown() {
 .page-content-card > header {
   padding-bottom: 1rem;
   margin-bottom: 1.5rem;
+}
+
+.title-row {
+  cursor: pointer;
 }
 
 .page-hint {

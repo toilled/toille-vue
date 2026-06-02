@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onErrorCaptured } from "vue";
+
 
 const hasError = ref(false);
 const errorMessage = ref("");

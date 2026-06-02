@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted } from "vue";
+
 import { useHead } from "@vueuse/head";
 
 const WIN_SCORE = 10;

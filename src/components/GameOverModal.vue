@@ -26,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, PropType, watch } from "vue";
+import { PropType } from "vue";
 import { ScoreService, type ScoreEntry } from "../utils/ScoreService";
 
 const props = defineProps({

@@ -1,5 +1,3 @@
-import { ref, computed } from "vue";
-
 export function useNoughtsAndCrosses() {
   const board = ref<string[]>(Array(9).fill(""));
   const currentPlayer = ref("X");

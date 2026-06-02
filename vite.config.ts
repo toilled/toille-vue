@@ -2,10 +2,22 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import viteCompression from "vite-plugin-compression";
+import AutoImport from "unplugin-auto-import/vite";
+import Components from "unplugin-vue-components/vite";
 
 export default defineConfig({
   plugins: [
     vue(),
+    AutoImport({
+      imports: ["vue", "vue-router"],
+      dts: true,
+    }),
+    Components({
+      dirs: ["src/components"],
+      extensions: ["vue"],
+      dts: true,
+      exclude: ["**/CyberpunkCity.vue"],
+    }),
     viteCompression(),
     viteCompression({ algorithm: "brotliCompress", ext: ".br" }),
   ],

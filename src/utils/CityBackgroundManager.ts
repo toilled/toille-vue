@@ -1,5 +1,3 @@
-import { ref, watch } from "vue";
-
 const STORAGE_KEY = "city-background-enabled";
 
 class CityBackgroundManager {

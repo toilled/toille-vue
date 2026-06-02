@@ -1,5 +1,3 @@
-import { ref, watch } from "vue";
-
 interface WindowWithAudioContext extends Window {
   webkitAudioContext?: typeof AudioContext;
 }

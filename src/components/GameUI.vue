@@ -157,8 +157,6 @@
 import { PropType } from "vue";
 import { Controls, LookControls } from "../game/types";
 import { ScoreEntry } from "../utils/ScoreService";
-import LeaderboardModal from "./LeaderboardModal.vue";
-import GameOverModal from "./GameOverModal.vue";
 
 const props = defineProps({
   isDrivingMode: Boolean,

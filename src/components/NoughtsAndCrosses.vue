@@ -37,7 +37,7 @@
 
 <script setup>
 import { useNoughtsAndCrosses } from '../composables/useNoughtsAndCrosses';
-import { ref, watch } from 'vue';
+
 import { useHead } from "@vueuse/head";
 
 const { board, winner, makeMove, resetGame, isPlayerTurn } = useNoughtsAndCrosses();

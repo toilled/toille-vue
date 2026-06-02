@@ -110,11 +110,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
 import pages from "../configs/pages.json";
-import Paragraph from "./Paragraph.vue";
-import SkillCard from "./SkillCard.vue";
-import SectionDivider from "./SectionDivider.vue";
 import { Page } from "../interfaces/Page";
 
 const backendSkills = [

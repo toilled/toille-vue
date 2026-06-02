@@ -49,11 +49,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import { useRoute } from "vue-router";
 import { useHead } from "@vueuse/head";
 import pages from "../configs/pages.json";
-import Paragraph from "./Paragraph.vue";
 import { Page } from "../interfaces/Page";
 
 /**

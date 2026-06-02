@@ -79,24 +79,6 @@
 </template>
 
 <script setup lang="ts">
-import {
-  ref,
-  onMounted,
-  onUnmounted,
-  computed,
-  watch,
-  defineAsyncComponent,
-  onErrorCaptured,
-  provide,
-} from "vue";
-import { useRoute, useRouter } from "vue-router";
-import Title from "./components/Title.vue";
-import Menu from "./components/Menu.vue";
-import Checker from "./components/Checker.vue";
-import Activity from "./components/Activity.vue";
-import Suggestion from "./components/Suggestion.vue";
-import TypingText from "./components/TypingText.vue";
-import ErrorBoundary from "./components/ErrorBoundary.vue";
 import pages from "./configs/pages.json";
 
 const CyberpunkCity = defineAsyncComponent(() => {

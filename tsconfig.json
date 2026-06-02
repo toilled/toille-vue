@@ -17,5 +17,5 @@
     "noImplicitReturns": true,
     "exactOptionalPropertyTypes": true
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "auto-imports.d.ts", "components.d.ts"]
 }

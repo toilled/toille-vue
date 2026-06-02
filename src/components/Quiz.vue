@@ -38,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+
 import { useHead } from "@vueuse/head";
 
 useHead({

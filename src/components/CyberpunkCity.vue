@@ -26,13 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  onMounted,
-  onBeforeUnmount,
-  ref,
-  watch,
-  defineAsyncComponent,
-} from "vue";
+
 import SplashScreen from "./SplashScreen.vue";
 import { ScoreService, type ScoreEntry } from "../utils/ScoreService";
 import {

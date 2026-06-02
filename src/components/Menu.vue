@@ -127,9 +127,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import MenuItem from "./MenuItem.vue";
-import WeatherIcon from "./WeatherIcon.vue";
+
 import { Page } from "../interfaces/Page";
 import { cyberpunkAudio } from "../utils/CyberpunkAudio";
 import { audioManager } from "../utils/AudioManager";

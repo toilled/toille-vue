@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onMounted, watch } from 'vue';
+
 import { useHead } from "@vueuse/head";
 
 useHead({

@@ -157,7 +157,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+
 
 const iconType = ref<string>('');
 const description = ref<string>('Loading weather...');

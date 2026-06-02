@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, type Ref } from "vue";
+import type { Ref } from "vue";
 import { Page } from "../interfaces/Page";
 
 const props = defineProps<{

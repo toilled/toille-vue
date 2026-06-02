@@ -5,6 +5,7 @@ import {
   Matrix4,
   Mesh,
   MeshBasicMaterial,
+  MeshStandardMaterial,
   Object3D,
   PointLight,
   Scene,
@@ -74,32 +75,38 @@ export class TrafficSystem {
     const total = this.cars.length;
     const f = this.carFactory;
 
-    this.bodyMesh = new InstancedMesh(f.carGeo, f.carBodyMat1, total);
+    const instanceBodyMat = new MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.3,
+      metalness: 0.7,
+    });
+
+    this.bodyMesh = new InstancedMesh(f.carGeo, instanceBodyMat, total);
     this.bodyMesh.castShadow = true;
-    this.bodyMesh.count = 0;
+    this.bodyMesh.frustumCulled = false;
     this.scene.add(this.bodyMesh);
 
-    this.cabMesh = new InstancedMesh(f.truckCabGeo, f.carBodyMat1, total);
+    this.cabMesh = new InstancedMesh(f.truckCabGeo, instanceBodyMat, total);
     this.cabMesh.castShadow = true;
-    this.cabMesh.count = 0;
+    this.cabMesh.frustumCulled = false;
     this.scene.add(this.cabMesh);
 
-    this.trailerMesh = new InstancedMesh(f.truckTrailerGeo, f.carBodyMat1, total);
+    this.trailerMesh = new InstancedMesh(f.truckTrailerGeo, instanceBodyMat, total);
     this.trailerMesh.castShadow = true;
-    this.trailerMesh.count = 0;
+    this.trailerMesh.frustumCulled = false;
     this.scene.add(this.trailerMesh);
 
     this.wheelMesh = new InstancedMesh(f.wheelGeo, f.wheelMat, total * 6);
     this.wheelMesh.castShadow = true;
-    this.wheelMesh.count = 0;
+    this.wheelMesh.frustumCulled = false;
     this.scene.add(this.wheelMesh);
 
     this.tailLightMesh = new InstancedMesh(f.tailLightGeo, f.tailLightMat, total * 2);
-    this.tailLightMesh.count = 0;
+    this.tailLightMesh.frustumCulled = false;
     this.scene.add(this.tailLightMesh);
 
     this.headLightMesh = new InstancedMesh(f.headLightGeo, f.headLightMat, total * 2);
-    this.headLightMesh.count = 0;
+    this.headLightMesh.frustumCulled = false;
     this.scene.add(this.headLightMesh);
   }
 
@@ -113,7 +120,7 @@ export class TrafficSystem {
       const isPlayerControlled = car.userData.isPlayerControlled;
       const renderAsGroup = isActive || isFading || isPlayerControlled;
 
-      car.updateWorldMatrix(true, false);
+      car.updateWorldMatrix(true, true);
 
       car.traverse((child) => {
         if (!(child instanceof Mesh)) return;
@@ -121,6 +128,7 @@ export class TrafficSystem {
         if (!partType) return;
 
         if (partType === "hitbox" || partType === "underglow" || partType === "lightbar" || partType === "flasher") {
+          child.visible = renderAsGroup;
           return;
         }
 
@@ -483,6 +491,7 @@ export class TrafficSystem {
           if (!Array.isArray(mat) && child.userData.partType && child.userData.partType !== "hitbox") {
             const clone = mat.clone();
             clone.transparent = true;
+            clone.depthWrite = false;
             child.userData._originalMaterial = mat;
             child.material = clone;
           }

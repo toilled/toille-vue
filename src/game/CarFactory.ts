@@ -58,8 +58,8 @@ export class CarFactory {
     this.policeBodyMat = new MeshStandardMaterial({ color: 0xeeeeee, roughness: 0.2, metalness: 0.5 });
     this.wheelMat = new MeshStandardMaterial({ color: 0x111111, roughness: 0.9, metalness: 0.1 });
     this.lightBarMat = new MeshBasicMaterial({ color: 0x000000 });
-    this.tailLightMat = new MeshBasicMaterial({ color: 0xff0000 });
-    this.headLightMat = new MeshBasicMaterial({ color: 0xffffaa });
+    this.tailLightMat = new MeshBasicMaterial({ color: 0xff0000, transparent: true });
+    this.headLightMat = new MeshBasicMaterial({ color: 0xffffaa, transparent: true });
     this.hitboxMat = new MeshBasicMaterial({
       color: 0xff0000,
       transparent: true,
@@ -71,12 +71,14 @@ export class CarFactory {
       color: 0xff00cc,
       opacity: 0.5,
       transparent: true,
+      depthWrite: false,
       side: DoubleSide,
     });
     this.underglowMat2 = new MeshBasicMaterial({
       color: 0x00ccff,
       opacity: 0.5,
       transparent: true,
+      depthWrite: false,
       side: DoubleSide,
     });
   }
@@ -220,6 +222,7 @@ export class CarFactory {
   private addLights(carGroup: Group) {
       const tlMat = this.tailLightMat.clone();
       tlMat.transparent = true;
+      tlMat.depthWrite = false;
       const tl1 = new Mesh(this.tailLightGeo, tlMat);
       tl1.userData = { ...tl1.userData, originalOpacity: 1.0, partType: "taillight" };
       tl1.position.set(1.5, 0, -4);
@@ -232,6 +235,7 @@ export class CarFactory {
 
       const hlMat = this.headLightMat.clone();
       hlMat.transparent = true;
+      hlMat.depthWrite = false;
       const hl1 = new Mesh(this.headLightGeo, hlMat);
       hl1.userData = { ...hl1.userData, originalOpacity: 1.0, partType: "headlight" };
       hl1.position.set(1.5, 0, 4);

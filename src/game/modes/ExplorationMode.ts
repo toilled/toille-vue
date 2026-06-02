@@ -13,6 +13,9 @@ export class ExplorationMode implements GameMode {
   velocityY = 0;
   playerRotation = new Euler(0, 0, 0, "YXZ");
 
+  // Story proximity cooldown
+  private lastObjectiveProximityCheck = 0;
+
   // Constants
   gravity = 0.015;
   jumpStrength = 0.4;
@@ -26,9 +29,6 @@ export class ExplorationMode implements GameMode {
     this.isJumping = false;
 
     if (!context.isMobile.value && context.renderer) {
-      // We can't easily access document here unless we use global
-      // Ideally we should pass domElement or handle this in component
-      // But for now global document is fine for browser env
       document.body.requestPointerLock();
     }
   }
@@ -162,6 +162,56 @@ export class ExplorationMode implements GameMode {
         }
       }
     }
+
+    // Story objective proximity detection
+    this.updateStoryObjectives(camera.position.x, camera.position.z);
+
+    // Update minimap data
+    this.updateMinimap(camera.position.x, camera.position.z);
+  }
+
+  private updateStoryObjectives(px: number, pz: number) {
+    const ctx = this.context;
+    if (!ctx || !ctx.updateObjective || !ctx.storyState) return;
+    const ss = ctx.storyState.value;
+    if (!ss.active || ss.showingBriefing || ss.showingDialogue || ss.missionComplete) return;
+    const mission = ss.missions[ss.currentMissionIndex];
+    if (!mission) return;
+    const now = Date.now();
+    if (now - this.lastObjectiveProximityCheck < 500) return;
+    this.lastObjectiveProximityCheck = now;
+    for (let i = 0; i < mission.objectives.length; i++) {
+      const obj = mission.objectives[i];
+      if (obj.completed) continue;
+      const dx = px - obj.x;
+      const dz = pz - obj.z;
+      const dist = Math.sqrt(dx * dx + dz * dz);
+      if (dist < 50) {
+        ctx.updateObjective(ss.currentMissionIndex, i);
+        break;
+      }
+    }
+  }
+
+  private updateMinimap(px: number, pz: number) {
+    const ctx = this.context;
+    if (!ctx || !ctx.minimapData || !ctx.storyState) return;
+    const ss = ctx.storyState.value;
+    const mdata = ctx.minimapData.value;
+    mdata.playerX = px;
+    mdata.playerZ = pz;
+    mdata.playerRotation = ctx.camera.rotation.y;
+    mdata.currentMissionId = ss.active && !ss.missionComplete
+      ? ss.missions[ss.currentMissionIndex]?.id ?? ""
+      : "";
+    const objs: { x: number; z: number; completed: boolean; label: string; type: string }[] = [];
+    if (ss.active && ss.missions[ss.currentMissionIndex]) {
+      for (const o of ss.missions[ss.currentMissionIndex].objectives) {
+        objs.push({ x: o.x, z: o.z, completed: o.completed, label: o.label, type: o.type });
+      }
+    }
+    mdata.objectives = objs;
+    ctx.minimapData.value = { ...mdata };
   }
 
   cleanup() {
@@ -177,6 +227,15 @@ export class ExplorationMode implements GameMode {
     if (event.code === "Space" && !this.isJumping) {
       this.isJumping = true;
       this.velocityY = this.jumpStrength;
+    }
+
+    if (event.key === "e" || event.key === "E") {
+      const ss = this.context.storyState?.value;
+      if (ss?.showingBriefing && this.context.dismissBriefing) {
+        this.context.dismissBriefing();
+      } else if (ss?.showingDialogue && this.context.advanceDialogue) {
+        this.context.advanceDialogue();
+      }
     }
 
     switch (event.key.toLowerCase()) {
@@ -224,6 +283,18 @@ export class ExplorationMode implements GameMode {
 
   onClick(_event: MouseEvent) {
     if (!this.context) return;
+    if (this.context.storyState?.value.showingDialogue) {
+      if (this.context.advanceDialogue) {
+        this.context.advanceDialogue();
+        return;
+      }
+    }
+    if (this.context.storyState?.value.showingBriefing) {
+      if (this.context.dismissBriefing) {
+        this.context.dismissBriefing();
+        return;
+      }
+    }
     if (!this.context.isMobile.value) {
       if (document.pointerLockElement !== document.body) {
         document.body.requestPointerLock();
@@ -233,7 +304,7 @@ export class ExplorationMode implements GameMode {
 
   onMouseMove(event: MouseEvent) {
     if (!this.context) return;
-    if (this.context.isMobile.value) return; // Touch controls handle rotation in update
+    if (this.context.isMobile.value) return;
     if (document.pointerLockElement !== document.body) return;
 
     const sensitivity = 0.002;

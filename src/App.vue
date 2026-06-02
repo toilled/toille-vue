@@ -15,6 +15,7 @@
           :content-visible="isContentVisible"
           :city-fallback="cityFallback"
           @explore="startExploration"
+          @story="startStoryMode"
           @demo="startDemoMode"
           @toggle-content="toggleContent"
         />
@@ -163,6 +164,12 @@ function startExploration() {
 function startDemoMode() {
   if (cyberpunkCityRef.value && cyberpunkCityRef.value.startDemoMode) {
     cyberpunkCityRef.value.startDemoMode();
+  }
+}
+
+function startStoryMode() {
+  if (cyberpunkCityRef.value && cyberpunkCityRef.value.startStoryMode) {
+    cyberpunkCityRef.value.startStoryMode();
   }
 }
 

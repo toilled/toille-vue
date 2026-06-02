@@ -55,6 +55,49 @@ export interface GameContext {
   checkpointMesh: Mesh | undefined;
   navArrow: Group;
   chaseArrow: Group;
+
+  storyState?: Ref<StoryState>;
+  minimapData?: Ref<MinimapData>;
+  updateObjective?: (missionIdx: number, objIdx: number) => void;
+  advanceDialogue?: () => void;
+  dismissBriefing?: () => void;
+}
+
+export interface StoryObjective {
+  id: string;
+  type: "goto" | "collect" | "interact";
+  label: string;
+  x: number;
+  z: number;
+  completed: boolean;
+  description: string;
+}
+
+export interface StoryMission {
+  id: string;
+  title: string;
+  brief: string;
+  dialogue: string[];
+  objectives: StoryObjective[];
+  completeMessage?: string;
+}
+
+export interface StoryState {
+  active: boolean;
+  currentMissionIndex: number;
+  currentDialogueIndex: number;
+  showingDialogue: boolean;
+  showingBriefing: boolean;
+  missionComplete: boolean;
+  missions: StoryMission[];
+}
+
+export interface MinimapData {
+  playerX: number;
+  playerZ: number;
+  playerRotation: number;
+  objectives: { x: number; z: number; completed: boolean; label: string; type: string }[];
+  currentMissionId: string;
 }
 
 export interface GameMode {

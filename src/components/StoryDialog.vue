@@ -36,6 +36,7 @@
             <span v-for="(char, i) in displayedText" :key="i" :class="{ glitch: char === '[' || char === ']' }">{{ char }}</span>
             <span v-if="isTyping" class="cursor-blink">▌</span>
           </div>
+          <div id="dialogue-ai-notice">[ STORY CONTENT AI-GENERATED ]</div>
           <div id="dialogue-hint" v-if="!isTyping">
             [ CLICK or press E to continue ]
           </div>
@@ -245,6 +246,7 @@ onBeforeUnmount(() => {
   margin-bottom: 20px;
 }
 
+
 #briefing-objectives {
   margin-bottom: 16px;
 }
@@ -344,6 +346,16 @@ onBeforeUnmount(() => {
 .cursor-blink {
   color: #00ffcc;
   animation: blink 0.6s step-end infinite;
+}
+
+#dialogue-ai-notice {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 10px;
+  color: rgba(255, 0, 204, 0.7);
+  letter-spacing: 2px;
+  text-align: center;
+  margin-top: 8px;
+  text-shadow: 0 0 4px rgba(255, 0, 204, 0.3);
 }
 
 #dialogue-hint {

@@ -1,0 +1,35 @@
+name: fallow
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  fallow:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [22.x]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: npm ci
+      - uses: fallow-rs/fallow@v2
+        with:
+          command: dead-code
+          auto-changed-since: false
+      - uses: fallow-rs/fallow@v2
+        with:
+          command: dupes
+          auto-changed-since: false
+      - uses: fallow-rs/fallow@v2
+        with:
+          command: health
+          auto-changed-since: false
+          fail-on-issues: false

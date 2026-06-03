@@ -10,3 +10,4 @@ dev.log
 functions/ssr-app.js
 auto-imports.d.ts
 components.d.ts
+.fallow/

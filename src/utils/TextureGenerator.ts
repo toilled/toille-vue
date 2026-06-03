@@ -1,6 +1,22 @@
 import { CanvasTexture, NearestFilter, RepeatWrapping } from "three";
 import { ROAD_WIDTH, CELL_SIZE } from "../game/config";
 
+function drawWindow(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
+  if (Math.random() > 0.95) {
+    const rand = Math.random();
+    if (rand > 0.9) ctx.fillStyle = "#ffffff";
+    else if (rand > 0.7) ctx.fillStyle = "#ffaa00";
+    else if (rand > 0.4) ctx.fillStyle = "#00ffcc";
+    else ctx.fillStyle = "#ff00cc";
+    ctx.globalAlpha = 0.7 + Math.random() * 0.3;
+    ctx.fillRect(x, y, w, h);
+    ctx.globalAlpha = 1.0;
+  } else {
+    ctx.fillStyle = "#050505";
+    ctx.fillRect(x, y, w, h);
+  }
+}
+
 // Reusable Texture for Windows
 export function createWindowTexture() {
   const canvas = document.createElement("canvas");
@@ -8,7 +24,7 @@ export function createWindowTexture() {
   canvas.height = 1024;
   const ctx = canvas.getContext("2d");
   if (ctx) {
-    ctx.fillStyle = "#111111"; // Dark frame color
+    ctx.fillStyle = "#111111";
     ctx.fillRect(0, 0, 1024, 1024);
 
     const cols = 16;
@@ -22,22 +38,7 @@ export function createWindowTexture() {
       for (let c = 0; c < cols; c++) {
         const x = c * (w + paddingX) + paddingX / 2;
         const y = r * (h + paddingY) + paddingY / 2;
-
-        // 5% chance of being lit
-        if (Math.random() > 0.95) {
-          const rand = Math.random();
-          if (rand > 0.9) ctx.fillStyle = "#ffffff"; // Bright White
-          else if (rand > 0.7) ctx.fillStyle = "#ffaa00"; // Warm Orange
-          else if (rand > 0.4) ctx.fillStyle = "#00ffcc"; // Cyan
-          else ctx.fillStyle = "#ff00cc"; // Magenta
-
-          ctx.globalAlpha = 0.7 + Math.random() * 0.3;
-          ctx.fillRect(x, y, w, h);
-          ctx.globalAlpha = 1.0;
-        } else {
-            ctx.fillStyle = "#050505"; // Unlit glass
-            ctx.fillRect(x, y, w, h);
-        }
+        drawWindow(ctx, x, y, w, h);
       }
     }
   }
@@ -202,91 +203,82 @@ export function createGroundTexture() {
   return texture;
 }
 
+function drawBillboardContent(ctx: CanvasRenderingContext2D, i: number, color: string) {
+  ctx.globalAlpha = 1.0;
+  ctx.fillStyle = color;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 15;
+
+  switch (i) {
+    case 0:
+      ctx.fillRect(15, 15, 80, 5);
+      ctx.fillRect(15, 30, 60, 5);
+      ctx.fillRect(15, 45, 90, 5);
+      break;
+    case 1:
+      ctx.beginPath();
+      ctx.arc(32, 32, 20, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#000";
+      ctx.beginPath();
+      ctx.arc(32, 32, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = color;
+      ctx.fillRect(64, 20, 40, 24);
+      break;
+    case 2:
+      ctx.beginPath();
+      ctx.moveTo(64, 10);
+      ctx.lineTo(20, 54);
+      ctx.lineTo(108, 54);
+      ctx.fill();
+      break;
+    case 3:
+      for (let gx = 10; gx < 118; gx += 20) {
+        for (let gy = 10; gy < 54; gy += 10) {
+          ctx.fillRect(gx, gy, 15, 5);
+        }
+      }
+      break;
+    case 4:
+      ctx.font = "40px serif";
+      ctx.fillText("CYBER", 10, 45);
+      break;
+    default:
+      for (let k = 0; k < 6; k++) {
+        ctx.fillStyle = k % 2 === 0 ? color : "#ffffff";
+        ctx.fillRect(
+          10 + Math.random() * 100,
+          10 + Math.random() * 40,
+          10 + Math.random() * 20,
+          5 + Math.random() * 10,
+        );
+      }
+      break;
+  }
+}
+
 // Generate Billboard Textures
 export function createBillboardTextures() {
   const textures: CanvasTexture[] = [];
+  const colors = [
+    "#ff00cc", "#00ffcc", "#ffff00", "#ff0000",
+    "#00ff00", "#aa00ff", "#0000ff", "#ff8800",
+  ];
+
   for (let i = 0; i < 8; i++) {
-    // Increased count
     const canvas = document.createElement("canvas");
     canvas.width = 128;
     canvas.height = 64;
     const ctx = canvas.getContext("2d");
     if (ctx) {
-      // Dark background
       ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, 128, 64);
-
-      // Neon border
-      const colors = [
-        "#ff00cc",
-        "#00ffcc",
-        "#ffff00",
-        "#ff0000",
-        "#00ff00",
-        "#aa00ff",
-        "#0000ff",
-        "#ff8800",
-      ];
       const color = colors[i % colors.length];
-
       ctx.strokeStyle = color;
       ctx.lineWidth = 4;
       ctx.strokeRect(4, 4, 120, 56);
-
-      // "Text" / Content
-      ctx.globalAlpha = 1.0;
-      ctx.fillStyle = color;
-      ctx.shadowColor = color;
-      ctx.shadowBlur = 15;
-
-      switch (i) {
-        case 0: // Lines
-          ctx.fillRect(15, 15, 80, 5);
-          ctx.fillRect(15, 30, 60, 5);
-          ctx.fillRect(15, 45, 90, 5);
-          break;
-        case 1: // Circles
-          ctx.beginPath();
-          ctx.arc(32, 32, 20, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = "#000";
-          ctx.beginPath();
-          ctx.arc(32, 32, 10, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = color;
-          ctx.fillRect(64, 20, 40, 24);
-          break;
-        case 2: // Triangle
-          ctx.beginPath();
-          ctx.moveTo(64, 10);
-          ctx.lineTo(20, 54);
-          ctx.lineTo(108, 54);
-          ctx.fill();
-          break;
-        case 3: // Grid
-          for (let gx = 10; gx < 118; gx += 20) {
-            for (let gy = 10; gy < 54; gy += 10) {
-              ctx.fillRect(gx, gy, 15, 5);
-            }
-          }
-          break;
-        case 4: // Japanese-like chars (fake)
-          ctx.font = "40px serif";
-          ctx.fillText("CYBER", 10, 45);
-          break;
-        default:
-          // Random blocks
-          for (let k = 0; k < 6; k++) {
-            ctx.fillStyle = k % 2 === 0 ? color : "#ffffff";
-            ctx.fillRect(
-              10 + Math.random() * 100,
-              10 + Math.random() * 40,
-              10 + Math.random() * 20,
-              5 + Math.random() * 10,
-            );
-          }
-          break;
-      }
+      drawBillboardContent(ctx, i, color);
     }
     const texture = new CanvasTexture(canvas);
     textures.push(texture);

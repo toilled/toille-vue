@@ -127,6 +127,7 @@ export class StoryManager {
     this.state.value.active = false;
   }
 
+  // fallow-ignore-next-line unused-class-member
   getState(): StoryState {
     return this.state.value;
   }
@@ -188,6 +189,7 @@ export class StoryManager {
     this.state.value = { ...s };
   }
 
+  // fallow-ignore-next-line unused-class-member
   getPlayerObjective(playerX: number, playerZ: number, proximity = 45): { missionIdx: number; objIdx: number } | null {
     const s = this.state.value;
     if (!s.active || s.showingBriefing || s.showingDialogue || s.missionComplete) return null;
@@ -206,6 +208,7 @@ export class StoryManager {
     return null;
   }
 
+  // fallow-ignore-next-line unused-class-member
   getCurrentObjectivePosition(): { x: number; z: number } | null {
     const s = this.state.value;
     if (!s.active || s.showingBriefing || s.showingDialogue || s.missionComplete) return null;

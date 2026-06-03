@@ -95,47 +95,38 @@ const availablePages = computed(() => {
 /**
  * @description Sets dynamic head meta tags based on the current page.
  */
+const pageTitle = computed(() => {
+  const t = page.value?.title || "404";
+  return `Elliot > ${t}`;
+});
+
+const description = computed(() => page.value?.metaDescription || "The experimental website of Elliot Dickerson made in Vue.");
+
+const pageMeta = computed(() => {
+  const tags: Record<string, string>[] = [
+    { name: "description", content: description.value },
+    { name: "og:title", content: page.value?.title || "Elliot Dickerson" },
+    { name: "og:description", content: description.value },
+    { name: "og:type", content: "website" },
+    { name: "og:url", content: `https://toille.uk${route.path}` },
+    { name: "og:image", content: "https://toille.uk/og-image.png" },
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:title", content: page.value?.title || "Elliot Dickerson" },
+    { name: "twitter:description", content: description.value },
+    { name: "twitter:image", content: "https://toille.uk/og-image.png" },
+  ];
+  if (page.value?.metaKeywords) {
+    tags.push({ name: "keywords", content: page.value.metaKeywords });
+  }
+  if (page.value?.hidden) {
+    tags.push({ name: "robots", content: "noindex" });
+  }
+  return tags;
+});
+
 useHead({
-  title: computed(() => {
-    const pageTitle = page.value?.title || "404";
-    return `Elliot > ${pageTitle}`;
-  }),
-  meta: computed(() => {
-    const metaTags = [
-      {
-        name: "description",
-        content: page.value?.metaDescription || "The experimental website of Elliot Dickerson made in Vue.",
-      },
-    ];
-    if (page.value?.metaKeywords) {
-      metaTags.push({
-        name: "keywords",
-        content: page.value.metaKeywords,
-      });
-    }
-    if (page.value?.hidden) {
-      metaTags.push({
-        name: "robots",
-        content: "noindex",
-      });
-    }
-    // Open Graph tags
-    metaTags.push(
-      { name: "og:title", content: page.value?.title || "Elliot Dickerson" } as any,
-      { name: "og:description", content: page.value?.metaDescription || "The experimental website of Elliot Dickerson made in Vue." } as any,
-      { name: "og:type", content: "website" } as any,
-      { name: "og:url", content: `https://toille.uk${route.path}` } as any,
-      { name: "og:image", content: "https://toille.uk/og-image.png" } as any,
-    );
-    // Twitter Card tags
-    metaTags.push(
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: page.value?.title || "Elliot Dickerson" },
-      { name: "twitter:description", content: page.value?.metaDescription || "The experimental website of Elliot Dickerson made in Vue." },
-      { name: "twitter:image", content: "https://toille.uk/og-image.png" },
-    );
-    return metaTags;
-  }),
+  title: pageTitle,
+  meta: pageMeta,
 });
 
 /**

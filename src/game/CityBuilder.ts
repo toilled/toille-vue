@@ -433,109 +433,51 @@ export class CityBuilder {
     }
   }
 
-  private addDecorations(
-    buildingGroup: Group,
-    style: string,
-    isLeaderboard: boolean,
-    h: number,
-    w: number,
-    d: number,
-  ) {
-    // Neon Strips
-    if (!isLeaderboard && h > 50 && Math.random() > 0.6) {
-      const color = new Color().setHSL(Math.random(), 1.0, 0.5);
-      const stripMat = new MeshBasicMaterial({ color: color });
-      const strip = new Mesh(this.materials.neonStripGeo, stripMat);
-      strip.scale.set(1, h * 0.8, 1);
-
-      const face = Math.floor(Math.random() * 4);
-      const offset = 0.6;
-      switch (face) {
-        case 0:
-          strip.position.set(0, h / 2, d / 2 + offset);
-          break;
-        case 1:
-          strip.position.set(0, h / 2, -d / 2 - offset);
-          break;
-        case 2:
-          strip.position.set(w / 2 + offset, h / 2, 0);
-          break;
-        case 3:
-          strip.position.set(-w / 2 - offset, h / 2, 0);
-          break;
-      }
-      buildingGroup.add(strip);
+  private addNeonStrip(buildingGroup: Group, isLeaderboard: boolean, h: number, w: number, d: number) {
+    if (isLeaderboard || h <= 50 || Math.random() <= 0.6) return;
+    const color = new Color().setHSL(Math.random(), 1.0, 0.5);
+    const strip = new Mesh(this.materials.neonStripGeo, new MeshBasicMaterial({ color }));
+    strip.scale.set(1, h * 0.8, 1);
+    const face = Math.floor(Math.random() * 4);
+    const offset = 0.6;
+    switch (face) {
+      case 0: strip.position.set(0, h / 2, d / 2 + offset); break;
+      case 1: strip.position.set(0, h / 2, -d / 2 - offset); break;
+      case 2: strip.position.set(w / 2 + offset, h / 2, 0); break;
+      case 3: strip.position.set(-w / 2 - offset, h / 2, 0); break;
     }
+    buildingGroup.add(strip);
+  }
 
-    // Antenna
-    if (
-      style !== "SPIRE" &&
-      style !== "CYLINDRICAL" &&
-      style !== "TWISTED" &&
-      Math.random() > 0.7
-    ) {
-      const antennaH = 20 + Math.random() * 50;
-      const antenna = new Mesh(
-        this.materials.boxGeo,
-        this.materials.antennaMat,
-      );
-      antenna.scale.set(2, antennaH, 2);
-      antenna.position.y = h;
-      buildingGroup.add(antenna);
+  private addAntenna(buildingGroup: Group, style: string, h: number) {
+    if (style === "SPIRE" || style === "CYLINDRICAL" || style === "TWISTED" || Math.random() <= 0.7) return;
+    const antenna = new Mesh(this.materials.boxGeo, this.materials.antennaMat);
+    antenna.scale.set(2, 20 + Math.random() * 50, 2);
+    antenna.position.y = h;
+    buildingGroup.add(antenna);
+  }
+
+  private addBillboard(buildingGroup: Group, isLeaderboard: boolean, h: number, w: number, d: number) {
+    if (isLeaderboard || h <= 60 || Math.random() <= 0.7) return;
+    const texIndex = Math.floor(Math.random() * this.materials.billboardMaterials.length);
+    const bbGeo = new PlaneGeometry(20 + Math.random() * 15, 10 + Math.random() * 10);
+    const billboard = new Mesh(bbGeo, this.materials.billboardMaterials[texIndex]);
+    const face = Math.floor(Math.random() * 4);
+    const offset = 1;
+    const yPos = h * (0.5 + Math.random() * 0.3);
+    switch (face) {
+      case 0: billboard.position.set(0, yPos, d / 2 + offset); break;
+      case 1: billboard.position.set(0, yPos, -d / 2 - offset); billboard.rotation.y = Math.PI; break;
+      case 2: billboard.position.set(w / 2 + offset, yPos, 0); billboard.rotation.y = Math.PI / 2; break;
+      default: billboard.position.set(-w / 2 - offset, yPos, 0); billboard.rotation.y = -Math.PI / 2; break;
     }
+    buildingGroup.add(billboard);
+  }
 
-    // Billboard
-    if (!isLeaderboard && h > 60 && Math.random() > 0.7) {
-      const texIndex = Math.floor(
-        Math.random() * this.materials.billboardMaterials.length,
-      );
-      const bbMat = this.materials.billboardMaterials[texIndex];
-
-      const bbW = 20 + Math.random() * 15;
-      const bbH = 10 + Math.random() * 10;
-      const bbGeo = new PlaneGeometry(bbW, bbH);
-
-      const billboard = new Mesh(bbGeo, bbMat);
-
-      const face = Math.floor(Math.random() * 4);
-      const offset = 1;
-
-      switch (face) {
-        case 0:
-          billboard.position.set(
-            0,
-            h * (0.5 + Math.random() * 0.3),
-            d / 2 + offset,
-          );
-          break;
-        case 1:
-          billboard.position.set(
-            0,
-            h * (0.5 + Math.random() * 0.3),
-            -d / 2 - offset,
-          );
-          billboard.rotation.y = Math.PI;
-          break;
-        case 2:
-          billboard.position.set(
-            w / 2 + offset,
-            h * (0.5 + Math.random() * 0.3),
-            0,
-          );
-          billboard.rotation.y = Math.PI / 2;
-          break;
-        default:
-          billboard.position.set(
-            -w / 2 - offset,
-            h * (0.5 + Math.random() * 0.3),
-            0,
-          );
-          billboard.rotation.y = -Math.PI / 2;
-          break;
-      }
-
-      buildingGroup.add(billboard);
-    }
+  private addDecorations(buildingGroup: Group, style: string, isLeaderboard: boolean, h: number, w: number, d: number) {
+    this.addNeonStrip(buildingGroup, isLeaderboard, h, w, d);
+    this.addAntenna(buildingGroup, style, h);
+    this.addBillboard(buildingGroup, isLeaderboard, h, w, d);
   }
 
   private addLeaderboard(

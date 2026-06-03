@@ -19,7 +19,6 @@ export class ExplorationMode implements GameMode {
   // Constants
   gravity = 0.015;
   jumpStrength = 0.4;
-  groundPosition = 3;
 
   init(context: GameContext) {
     this.context = context;
@@ -33,97 +32,83 @@ export class ExplorationMode implements GameMode {
     }
   }
 
-  update(_dt: number, _time: number) {
-    if (!this.context) return;
-    const { camera, controls, isMobile, occupiedGrids, cars, lookControls } =
-      this.context;
+  private handleTransition() {
+    if (!this.context || !this.isTransitioning) return false;
+    const { camera } = this.context;
+    const targetPos = new Vector3(0, 3, 0);
+    const targetQ = new Quaternion().setFromEuler(this.playerRotation);
 
-    if (this.isTransitioning) {
-      const targetPos = new Vector3(0, 3, 0);
-      const targetQ = new Quaternion().setFromEuler(this.playerRotation);
+    camera.position.lerp(targetPos, 0.05);
+    camera.quaternion.slerp(targetQ, 0.05);
 
-      camera.position.lerp(targetPos, 0.05);
-      camera.quaternion.slerp(targetQ, 0.05);
-
-      if (camera.position.distanceTo(targetPos) < 1) {
-        this.isTransitioning = false;
-        camera.position.copy(targetPos);
-        camera.rotation.copy(this.playerRotation);
-      }
-      return;
-    }
-
-    const speed = 2.0;
-
-    const direction = new Vector3();
-    const frontVector = new Vector3(
-      0,
-      0,
-      Number(controls.value.backward) - Number(controls.value.forward),
-    );
-    const sideVector = new Vector3(
-      Number(controls.value.left) - Number(controls.value.right),
-      0,
-      0,
-    );
-
-    // Mobile Look Controls
-    if (isMobile.value) {
-      const rotateSpeed = 0.03;
-      if (lookControls.value.left) this.playerRotation.y += rotateSpeed;
-      if (lookControls.value.right) this.playerRotation.y -= rotateSpeed;
-      if (lookControls.value.up) this.playerRotation.x += rotateSpeed;
-      if (lookControls.value.down) this.playerRotation.x -= rotateSpeed;
-
-      this.playerRotation.x = Math.max(
-        -Math.PI / 2,
-        Math.min(Math.PI / 2, this.playerRotation.x),
-      );
+    if (camera.position.distanceTo(targetPos) < 1) {
+      this.isTransitioning = false;
+      camera.position.copy(targetPos);
       camera.rotation.copy(this.playerRotation);
     }
+    return true;
+  }
 
-    direction
+  private handleMobileLook() {
+    if (!this.context || !this.context.isMobile.value) return;
+    const { camera, lookControls } = this.context;
+    const rotateSpeed = 0.03;
+    if (lookControls.value.left) this.playerRotation.y += rotateSpeed;
+    if (lookControls.value.right) this.playerRotation.y -= rotateSpeed;
+    if (lookControls.value.up) this.playerRotation.x += rotateSpeed;
+    if (lookControls.value.down) this.playerRotation.x -= rotateSpeed;
+
+    this.playerRotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.playerRotation.x));
+    camera.rotation.copy(this.playerRotation);
+  }
+
+  private computeMovement(): { dx: number; dz: number } | null {
+    if (!this.context) return null;
+    const { camera, controls } = this.context;
+    const speed = 2.0;
+
+    const frontVector = new Vector3(0, 0, Number(controls.value.backward) - Number(controls.value.forward));
+    const sideVector = new Vector3(Number(controls.value.left) - Number(controls.value.right), 0, 0);
+
+    const direction = new Vector3()
       .subVectors(frontVector, sideVector)
       .normalize()
       .multiplyScalar(speed)
       .applyEuler(new Euler(0, camera.rotation.y, 0));
 
-    const nextX = camera.position.x + direction.x;
-    const nextZ = camera.position.z + direction.z;
+    return { dx: direction.x, dz: direction.z };
+  }
 
-    // Grid Collision
+  private checkGridCollision(nextX: number, nextZ: number): boolean {
+    if (!this.context) return false;
+    const { occupiedGrids } = this.context;
     const ix = Math.round((nextX - START_OFFSET) / CELL_SIZE);
     const iz = Math.round((nextZ - START_OFFSET) / CELL_SIZE);
-    let collided = false;
 
-    if (occupiedGrids.has(`${ix},${iz}`)) {
-      const cX = START_OFFSET + ix * CELL_SIZE;
-      const cZ = START_OFFSET + iz * CELL_SIZE;
-      const dims = occupiedGrids.get(`${ix},${iz}`);
-      if (dims) {
-        if (
-          Math.abs(nextX - cX) < dims.halfW + 2 &&
-          Math.abs(nextZ - cZ) < dims.halfD + 2
-        ) {
-          collided = true;
-        }
-      }
-    }
+    if (!occupiedGrids.has(`${ix},${iz}`)) return false;
 
-    if (!collided) {
-      camera.position.x = nextX;
-      camera.position.z = nextZ;
-    }
+    const cX = START_OFFSET + ix * CELL_SIZE;
+    const cZ = START_OFFSET + iz * CELL_SIZE;
+    const dims = occupiedGrids.get(`${ix},${iz}`);
+    return dims
+      ? Math.abs(nextX - cX) < dims.halfW + 2 && Math.abs(nextZ - cZ) < dims.halfD + 2
+      : false;
+  }
 
-    // Bounds check
+  private enforceCameraBounds() {
+    if (!this.context) return;
+    const { camera } = this.context;
     if (camera.position.x > BOUNDS) camera.position.x = -BOUNDS;
     if (camera.position.x < -BOUNDS) camera.position.x = BOUNDS;
     if (camera.position.z > BOUNDS) camera.position.z = -BOUNDS;
     if (camera.position.z < -BOUNDS) camera.position.z = BOUNDS;
+  }
 
+  private updateJumpAndBob() {
+    if (!this.context) return;
+    const { camera, controls } = this.context;
     const currentGroundH = getHeight(camera.position.x, camera.position.z) + 3;
 
-    // Jump & Bobbing
     if (this.isJumping) {
       camera.position.y += this.velocityY;
       this.velocityY -= this.gravity;
@@ -132,21 +117,18 @@ export class ExplorationMode implements GameMode {
         this.isJumping = false;
         this.velocityY = 0;
       }
+    } else if (controls.value.forward || controls.value.backward || controls.value.left || controls.value.right) {
+      camera.position.y = currentGroundH + Math.sin(Date.now() * 0.01) * 0.1;
     } else {
-      if (
-        controls.value.forward ||
-        controls.value.backward ||
-        controls.value.left ||
-        controls.value.right
-      ) {
-        camera.position.y = currentGroundH + Math.sin(Date.now() * 0.01) * 0.1;
-      } else {
-        camera.position.y = currentGroundH;
-      }
+      camera.position.y = currentGroundH;
     }
+  }
 
-    // Car collision check (Player getting hit)
+  private checkCarCollisions() {
+    if (!this.context) return;
+    const { camera, cars } = this.context;
     const hitDistSq = 15 * 15;
+
     for (let i = 0; i < cars.length; i++) {
       const car = cars[i];
       const distSq = camera.position.distanceToSquared(car.position);
@@ -156,25 +138,48 @@ export class ExplorationMode implements GameMode {
           car.userData.isPlayerHit = true;
           carAudio.playCrash();
         }
-      } else {
-        if (car.userData.isPlayerHit) {
-          car.userData.isPlayerHit = false;
-        }
+      } else if (car.userData.isPlayerHit) {
+        car.userData.isPlayerHit = false;
+      }
+    }
+  }
+
+  update(_dt: number, _time: number) {
+    if (!this.context) return;
+    const { camera } = this.context;
+
+    if (this.handleTransition()) return;
+
+    this.handleMobileLook();
+
+    const movement = this.computeMovement();
+    if (movement) {
+      const nextX = camera.position.x + movement.dx;
+      const nextZ = camera.position.z + movement.dz;
+
+      if (!this.checkGridCollision(nextX, nextZ)) {
+        camera.position.x = nextX;
+        camera.position.z = nextZ;
       }
     }
 
-    // Story objective proximity detection
+    this.enforceCameraBounds();
+    this.updateJumpAndBob();
+    this.checkCarCollisions();
     this.updateStoryObjectives(camera.position.x, camera.position.z);
-
-    // Update minimap data
     this.updateMinimap(camera.position.x, camera.position.z);
+  }
+
+  private canCheckObjective(ctx: any, ss: any): boolean {
+    if (!ctx?.updateObjective || !ctx?.storyState) return false;
+    if (!ss?.active || ss.showingBriefing || ss.showingDialogue || ss.missionComplete) return false;
+    return true;
   }
 
   private updateStoryObjectives(px: number, pz: number) {
     const ctx = this.context;
-    if (!ctx || !ctx.updateObjective || !ctx.storyState) return;
-    const ss = ctx.storyState.value;
-    if (!ss.active || ss.showingBriefing || ss.showingDialogue || ss.missionComplete) return;
+    const ss = ctx?.storyState?.value;
+    if (!this.canCheckObjective(ctx, ss)) return;
     const mission = ss.missions[ss.currentMissionIndex];
     if (!mission) return;
     const now = Date.now();
@@ -185,8 +190,7 @@ export class ExplorationMode implements GameMode {
       if (obj.completed) continue;
       const dx = px - obj.x;
       const dz = pz - obj.z;
-      const dist = Math.sqrt(dx * dx + dz * dz);
-      if (dist < 50) {
+      if (Math.sqrt(dx * dx + dz * dz) < 50) {
         ctx.updateObjective(ss.currentMissionIndex, i);
         break;
       }
@@ -220,24 +224,19 @@ export class ExplorationMode implements GameMode {
     }
   }
 
-  onKeyDown(event: KeyboardEvent) {
+  private handleStoryInteraction(event: KeyboardEvent) {
+    if (!this.context || (event.key !== "e" && event.key !== "E")) return;
+    const ss = this.context.storyState?.value;
+    if (ss?.showingBriefing && this.context.dismissBriefing) {
+      this.context.dismissBriefing();
+    } else if (ss?.showingDialogue && this.context.advanceDialogue) {
+      this.context.advanceDialogue();
+    }
+  }
+
+  private handleControlsKey(event: KeyboardEvent) {
     if (!this.context) return;
     const c = this.context.controls.value;
-
-    if (event.code === "Space" && !this.isJumping) {
-      this.isJumping = true;
-      this.velocityY = this.jumpStrength;
-    }
-
-    if (event.key === "e" || event.key === "E") {
-      const ss = this.context.storyState?.value;
-      if (ss?.showingBriefing && this.context.dismissBriefing) {
-        this.context.dismissBriefing();
-      } else if (ss?.showingDialogue && this.context.advanceDialogue) {
-        this.context.advanceDialogue();
-      }
-    }
-
     switch (event.key.toLowerCase()) {
       case "w":
       case "arrowup":
@@ -256,6 +255,18 @@ export class ExplorationMode implements GameMode {
         c.right = true;
         break;
     }
+  }
+
+  onKeyDown(event: KeyboardEvent) {
+    if (!this.context) return;
+
+    if (event.code === "Space" && !this.isJumping) {
+      this.isJumping = true;
+      this.velocityY = this.jumpStrength;
+    }
+
+    this.handleStoryInteraction(event);
+    this.handleControlsKey(event);
   }
 
   onKeyUp(event: KeyboardEvent) {

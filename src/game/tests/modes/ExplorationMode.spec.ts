@@ -1,8 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { ExplorationMode } from "../../modes/ExplorationMode";
-import { Scene, PerspectiveCamera, WebGLRenderer } from "three";
+import { Scene, PerspectiveCamera, WebGLRenderer, Group } from "three";
 import { ref } from "vue";
 import type { GameContext } from "../../types";
+
+vi.mock("../../audio/CarAudio", () => ({
+  carAudio: { playCrash: vi.fn() },
+}));
 
 vi.mock("../../utils/HeightMap", () => ({
   getHeight: vi.fn(() => 0),
@@ -98,11 +102,122 @@ describe("ExplorationMode", () => {
     expect(context.controls.value.right).toBe(true);
   });
 
-  it("onKeyUp unsets controls", () => {
+  it("onKeyUp unsets forward control", () => {
     mode.init(context);
     context.controls.value.forward = true;
     mode.onKeyUp(new KeyboardEvent("keyup", { key: "w" }));
     expect(context.controls.value.forward).toBe(false);
+  });
+
+  it("onKeyUp unsets all WASD controls", () => {
+    mode.init(context);
+    const c = context.controls.value;
+    c.forward = true;
+    c.backward = true;
+    c.left = true;
+    c.right = true;
+    mode.onKeyUp(new KeyboardEvent("keyup", { key: "w" }));
+    expect(c.forward).toBe(false);
+    mode.onKeyUp(new KeyboardEvent("keyup", { key: "s" }));
+    expect(c.backward).toBe(false);
+    mode.onKeyUp(new KeyboardEvent("keyup", { key: "a" }));
+    expect(c.left).toBe(false);
+    mode.onKeyUp(new KeyboardEvent("keyup", { key: "d" }));
+    expect(c.right).toBe(false);
+  });
+
+  it("onKeyUp unsets all arrow key controls", () => {
+    mode.init(context);
+    const c = context.controls.value;
+    c.forward = true;
+    c.backward = true;
+    c.left = true;
+    c.right = true;
+    mode.onKeyUp(new KeyboardEvent("keyup", { key: "ArrowUp" }));
+    expect(c.forward).toBe(false);
+    mode.onKeyUp(new KeyboardEvent("keyup", { key: "ArrowDown" }));
+    expect(c.backward).toBe(false);
+    mode.onKeyUp(new KeyboardEvent("keyup", { key: "ArrowLeft" }));
+    expect(c.left).toBe(false);
+    mode.onKeyUp(new KeyboardEvent("keyup", { key: "ArrowRight" }));
+    expect(c.right).toBe(false);
+  });
+
+  it("E key dismisses briefing via handleStoryInteraction", () => {
+    mode.init(context);
+    const dismissBriefing = vi.fn();
+    context.storyState = ref({
+      active: true, showingBriefing: true, showingDialogue: false,
+      missionComplete: false, currentMissionIndex: 0, currentDialogueIndex: 0,
+      missions: [],
+    });
+    context.dismissBriefing = dismissBriefing;
+    mode.onKeyDown(new KeyboardEvent("keydown", { key: "e" }));
+    expect(dismissBriefing).toHaveBeenCalled();
+  });
+
+  it("E key advances dialogue via handleStoryInteraction", () => {
+    mode.init(context);
+    const advanceDialogue = vi.fn();
+    context.storyState = ref({
+      active: true, showingBriefing: false, showingDialogue: true,
+      missionComplete: false, currentMissionIndex: 0, currentDialogueIndex: 0,
+      missions: [],
+    });
+    context.advanceDialogue = advanceDialogue;
+    mode.onKeyDown(new KeyboardEvent("keydown", { key: "e" }));
+    expect(advanceDialogue).toHaveBeenCalled();
+  });
+
+  it("update forwards player position and mission to minimapData", () => {
+    mode.init(context);
+    context.minimapData = ref({
+      playerX: 0, playerZ: 0, playerRotation: 0,
+      currentMissionId: "", objectives: [],
+    });
+    context.storyState = ref({
+      active: true, showingBriefing: false, showingDialogue: false,
+      missionComplete: false, currentMissionIndex: 0, currentDialogueIndex: 0,
+      missions: [{ id: "m1", title: "", brief: "", dialogue: [],
+        objectives: [{ id: "o1", type: "goto", label: "", x: 10, z: 10, completed: false, description: "" }],
+      }],
+    });
+    mode.isTransitioning = false;
+    context.camera.position.set(42, 3, 99);
+    mode.update(0.1, 0);
+    expect(context.minimapData.value.playerX).toBe(42);
+    expect(context.minimapData.value.playerZ).toBe(99);
+    expect(context.minimapData.value.currentMissionId).toBe("m1");
+    expect(context.minimapData.value.objectives).toHaveLength(1);
+  });
+
+  it("detects car collision and plays crash sound", () => {
+    const car = new Group();
+    car.position.set(0, 0, 0);
+    car.userData.isPlayerHit = false;
+    context.cars = [car];
+    mode.init(context);
+    mode.isTransitioning = false;
+    context.camera.position.set(0, 3, 0);
+    mode.update(0.1, 0);
+    expect(car.userData.isPlayerHit).toBe(true);
+  });
+
+  it("update detects proximity to story objective", () => {
+    const updateObjective = vi.fn();
+    context.updateObjective = updateObjective;
+    context.storyState = ref({
+      active: true, showingBriefing: false, showingDialogue: false,
+      missionComplete: false, currentMissionIndex: 0, currentDialogueIndex: 0,
+      missions: [{ id: "m1", title: "", brief: "", dialogue: [],
+        objectives: [{ id: "o1", type: "goto", label: "", x: 0, z: 0, completed: false, description: "" }],
+      }],
+    });
+    mode.init(context);
+    mode.isTransitioning = false;
+    context.camera.position.set(0, 3, 0);
+    mode.update(0.1, 0);
+    expect(updateObjective).toHaveBeenCalledWith(0, 0);
   });
 
   it("Space key triggers jump", () => {

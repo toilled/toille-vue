@@ -87,86 +87,73 @@ export class DemoMode implements GameMode {
     this.setCameraForScene(0);
   }
 
+  private getMeshTopPoint(child: Mesh, worldPos: Vector3): number {
+    let topY = worldPos.y;
+    if (child.geometry && child.geometry.parameters && child.geometry.parameters.height) {
+      topY += (child.geometry.parameters.height * child.scale.y) / 2;
+    } else if (child.geometry && child.geometry.boundingBox) {
+      topY = child.geometry.boundingBox.max.y * child.scale.y + worldPos.y;
+    }
+    return topY;
+  }
+
+  private isSpire(child: Mesh): boolean {
+    return !!(child.geometry && (child.geometry.type === "ConeGeometry" || child.geometry.constructor.name === "ConeGeometry"));
+  }
+
+  private isAntenna(child: Mesh): boolean {
+    return !!(
+      child.geometry &&
+      child.geometry.type === "BoxGeometry" &&
+      child.scale.x < 5 &&
+      child.scale.z < 5 &&
+      child.scale.y > 20
+    );
+  }
+
+  private getBuildingHighestPoint(buildingGroup: Object3D): { point: Vector3; maxY: number } | null {
+    const highestPoint = new Vector3();
+    let maxY = -Infinity;
+    let foundSpire = false;
+
+    buildingGroup.traverse((child: Object3D) => {
+      if (!(child instanceof Mesh)) return;
+      const worldPos = new Vector3();
+      child.getWorldPosition(worldPos);
+      const topY = this.getMeshTopPoint(child, worldPos);
+      const isImportant = this.isSpire(child) || this.isAntenna(child);
+
+      if (isImportant) {
+        if (topY > maxY) {
+          maxY = topY;
+          highestPoint.copy(worldPos);
+          highestPoint.y = topY;
+          foundSpire = true;
+        }
+      } else if (!foundSpire && topY > maxY) {
+        maxY = topY;
+        highestPoint.copy(worldPos);
+        highestPoint.y = topY;
+      }
+    });
+
+    return maxY > 100 ? { point: highestPoint.clone(), maxY } : null;
+  }
+
   private identifySparkTargets() {
     this.sparkTargets = [];
     if (!this.context.buildings) return;
 
-    this.context.buildings.forEach((buildingGroup: Object3D) => {
-      // Find the highest point in the building group
-      const highestPoint = new Vector3();
-      let maxY = -Infinity;
-      let foundSpire = false;
-
-      buildingGroup.traverse((child: Object3D) => {
-        if (child instanceof Mesh) {
-          const worldPos = new Vector3();
-          child.getWorldPosition(worldPos);
-
-          // Check for ConeGeometry which indicates a spire
-          // Using constructor name as a heuristic since instanceOf might fail if imports differ in tests/runtime
-          const isCone =
-            child.geometry &&
-            (child.geometry.type === "ConeGeometry" ||
-              child.geometry.constructor.name === "ConeGeometry");
-
-          // Check for thin BoxGeometry at the top (Antenna)
-          const isAntenna =
-            child.geometry &&
-            child.geometry.type === "BoxGeometry" &&
-            child.scale.x < 5 &&
-            child.scale.z < 5 &&
-            child.scale.y > 20;
-
-          let topY = worldPos.y;
-
-          // Add half height
-          if (
-            child.geometry &&
-            child.geometry.parameters &&
-            child.geometry.parameters.height
-          ) {
-            // Scaled height
-            topY += (child.geometry.parameters.height * child.scale.y) / 2;
-          } else if (child.geometry && child.geometry.boundingBox) {
-            topY =
-              child.geometry.boundingBox.max.y * child.scale.y + worldPos.y;
-          }
-
-          if (isCone || isAntenna) {
-            // Prefer spires and antennas
-            if (topY > maxY) {
-              maxY = topY;
-              highestPoint.copy(worldPos);
-              highestPoint.y = topY;
-              foundSpire = true;
-            }
-          } else if (!foundSpire) {
-            // Fallback to highest general mesh if no spire found yet
-            if (topY > maxY) {
-              maxY = topY;
-              highestPoint.copy(worldPos);
-              highestPoint.y = topY;
-            }
-          }
-        }
-      });
-
-      // Filter for only tall buildings to avoid ground clutter
-      if (maxY > 100) {
-        this.sparkTargets.push(highestPoint);
+    for (const building of this.context.buildings) {
+      const result = this.getBuildingHighestPoint(building);
+      if (result) {
+        this.sparkTargets.push(result.point);
       }
-    });
+    }
 
-    // Fallback
     if (this.sparkTargets.length === 0) {
       for (let i = 0; i < 20; i++) {
-        this.sparkTargets.push(
-          new Vector3(
-            (Math.random() - 0.5) * 2000,
-            300 + Math.random() * 200,
-            (Math.random() - 0.5) * 2000,
-          ),
-        );
+        this.sparkTargets.push(new Vector3((Math.random() - 0.5) * 2000, 300 + Math.random() * 200, (Math.random() - 0.5) * 2000));
       }
     }
   }
@@ -268,59 +255,60 @@ export class DemoMode implements GameMode {
   }
 
   private updateScene(dt: number, time: number) {
-    const cam = this.context.camera;
-
     switch (this.sceneIndex) {
-      case 0: // Intro Flyover
-        this.cameraBasePosition.z -= 100 * dt;
-        this.cameraBasePosition.y = 400 + Math.sin(time * 0.5) * 50;
-        cam.lookAt(0, 0, 0);
-        if (this.afterimagePass) this.afterimagePass.enabled = false;
-        break;
-      case 1: {
-        // Street Level Rush
-        this.cameraBasePosition.z -= 600 * dt;
-        if (this.cameraBasePosition.z < -2000) this.cameraBasePosition.z = 2000;
+      case 0: this.updateSceneIntro(dt, time); break;
+      case 1: this.updateSceneStreet(dt, time); break;
+      case 2: this.updateSceneSpiral(dt, time); break;
+      case 3: this.updateSceneGlitchy(dt, time); break;
+    }
+  }
 
-        this.cameraBasePosition.x = Math.sin(time * 5) * 50;
+  private updateSceneIntro(_dt: number, time: number) {
+    const cam = this.context.camera;
+    this.cameraBasePosition.z -= 100 * _dt;
+    this.cameraBasePosition.y = 400 + Math.sin(time * 0.5) * 50;
+    cam.lookAt(0, 0, 0);
+    if (this.afterimagePass) this.afterimagePass.enabled = false;
+  }
 
-        const targetZ = this.cameraBasePosition.z - 200;
-        cam.lookAt(0, 20, targetZ);
+  private updateSceneStreet(dt: number, time: number) {
+    const cam = this.context.camera;
+    this.cameraBasePosition.z -= 600 * dt;
+    if (this.cameraBasePosition.z < -2000) this.cameraBasePosition.z = 2000;
+    this.cameraBasePosition.x = Math.sin(time * 5) * 50;
+    const targetZ = this.cameraBasePosition.z - 200;
+    cam.lookAt(0, 20, targetZ);
+    if (this.afterimagePass) {
+      this.afterimagePass.enabled = true;
+      this.afterimagePass.uniforms["damp"].value = 0.85;
+    }
+  }
 
-        if (this.afterimagePass) {
-          this.afterimagePass.enabled = true;
-          this.afterimagePass.uniforms["damp"].value = 0.85;
-        }
-        break;
-      }
-      case 2: {
-        // Spiral
-        const radius = 800;
-        const speed = 0.5;
-        const angle = time * speed;
-        this.cameraBasePosition.x = Math.sin(angle) * radius;
-        this.cameraBasePosition.z = Math.cos(angle) * radius;
-        this.cameraBasePosition.y = 300 + Math.sin(time) * 100;
-        cam.lookAt(0, 0, 0);
-        if (this.afterimagePass) {
-          this.afterimagePass.enabled = true;
-          this.afterimagePass.uniforms["damp"].value = 0.7;
-        }
-        break;
-      }
-      case 3: // Top Down glitchy
-        this.cameraBasePosition.x = Math.sin(time * 2) * 200;
-        this.cameraBasePosition.z = Math.cos(time * 2) * 200;
-        this.cameraBasePosition.y = 1000 + Math.sin(time) * 200;
-        cam.lookAt(0, 0, 0);
-        cam.rotation.z = time * 0.5;
+  private updateSceneSpiral(_dt: number, time: number) {
+    const cam = this.context.camera;
+    const radius = 800;
+    const speed = 0.5;
+    const angle = time * speed;
+    this.cameraBasePosition.x = Math.sin(angle) * radius;
+    this.cameraBasePosition.z = Math.cos(angle) * radius;
+    this.cameraBasePosition.y = 300 + Math.sin(time) * 100;
+    cam.lookAt(0, 0, 0);
+    if (this.afterimagePass) {
+      this.afterimagePass.enabled = true;
+      this.afterimagePass.uniforms["damp"].value = 0.7;
+    }
+  }
 
-        if (this.afterimagePass) this.afterimagePass.enabled = false;
-
-        if (this.glitchPass && Math.random() < 0.05) {
-          this.glitchPass.enabled = true;
-        }
-        break;
+  private updateSceneGlitchy(_dt: number, time: number) {
+    const cam = this.context.camera;
+    this.cameraBasePosition.x = Math.sin(time * 2) * 200;
+    this.cameraBasePosition.z = Math.cos(time * 2) * 200;
+    this.cameraBasePosition.y = 1000 + Math.sin(time) * 200;
+    cam.lookAt(0, 0, 0);
+    cam.rotation.z = time * 0.5;
+    if (this.afterimagePass) this.afterimagePass.enabled = false;
+    if (this.glitchPass && Math.random() < 0.05) {
+      this.glitchPass.enabled = true;
     }
   }
 

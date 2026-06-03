@@ -9,6 +9,7 @@
         </div>
         <div id="briefing-title">{{ currentMission?.title }}</div>
         <div id="briefing-divider">▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀</div>
+        <div id="ai-notice">[ SYSTEM WARNING: STORY IS AI GENERATED ]</div>
         <div id="briefing-text">{{ currentMission?.brief }}</div>
         <div id="briefing-objectives" v-if="currentMission">
           <div class="objective-header">OBJECTIVES:</div>
@@ -233,8 +234,18 @@ onBeforeUnmount(() => {
   font-family: "Courier New", Courier, monospace;
   font-size: 10px;
   color: rgba(0, 255, 204, 0.2);
-  margin-bottom: 16px;
+  margin-bottom: 8px;
   letter-spacing: -1px;
+}
+
+#ai-notice {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 11px;
+  color: #ff00cc;
+  text-shadow: 0 0 8px rgba(255, 0, 204, 0.5);
+  margin-bottom: 16px;
+  letter-spacing: 2px;
+  animation: pulse 2s infinite;
 }
 
 #briefing-text {

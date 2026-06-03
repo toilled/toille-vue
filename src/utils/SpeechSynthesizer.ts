@@ -1,5 +1,5 @@
 let enabled = true;
-let currentUtterance: SpeechSynthesisUtterance | null = null;
+let _currentUtterance: SpeechSynthesisUtterance | null = null;
 
 export function setSpeechEnabled(val: boolean) {
   enabled = val;
@@ -29,7 +29,7 @@ export function speak(text: string) {
   );
   if (preferred) utterance.voice = preferred;
 
-  currentUtterance = utterance;
+  _currentUtterance = utterance;
   window.speechSynthesis.speak(utterance);
 }
 
@@ -37,5 +37,5 @@ export function stopSpeech() {
   if (typeof window !== "undefined" && window.speechSynthesis) {
     window.speechSynthesis.cancel();
   }
-  currentUtterance = null;
+  _currentUtterance = null;
 }

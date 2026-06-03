@@ -2,6 +2,18 @@ import { describe, it, expect, vi } from "vitest";
 import { GameModeManager } from "../GameModeManager";
 import { GameContext, GameMode } from "../types";
 
+function createMockMode(): GameMode {
+  return {
+    init: vi.fn(),
+    update: vi.fn(),
+    cleanup: vi.fn(),
+    onKeyDown: vi.fn(),
+    onKeyUp: vi.fn(),
+    onClick: vi.fn(),
+    onMouseMove: vi.fn(),
+  };
+}
+
 describe("GameModeManager", () => {
   let context: GameContext;
   let manager: GameModeManager;
@@ -16,30 +28,14 @@ describe("GameModeManager", () => {
   });
 
   it("sets and gets a mode", () => {
-    const mode: GameMode = {
-      init: vi.fn(),
-      update: vi.fn(),
-      cleanup: vi.fn(),
-      onKeyDown: vi.fn(),
-      onKeyUp: vi.fn(),
-      onClick: vi.fn(),
-      onMouseMove: vi.fn(),
-    };
+    const mode = createMockMode();
     manager.setMode(mode);
     expect(manager.getMode()).toBe(mode);
     expect(mode.init).toHaveBeenCalledWith(context);
   });
 
   it("clears a mode", () => {
-    const mode: GameMode = {
-      init: vi.fn(),
-      update: vi.fn(),
-      cleanup: vi.fn(),
-      onKeyDown: vi.fn(),
-      onKeyUp: vi.fn(),
-      onClick: vi.fn(),
-      onMouseMove: vi.fn(),
-    };
+    const mode = createMockMode();
     manager.setMode(mode);
     manager.clearMode();
     expect(manager.getMode()).toBeNull();
@@ -47,24 +43,8 @@ describe("GameModeManager", () => {
   });
 
   it("calls cleanup on old mode when setting new mode", () => {
-    const mode1: GameMode = {
-      init: vi.fn(),
-      update: vi.fn(),
-      cleanup: vi.fn(),
-      onKeyDown: vi.fn(),
-      onKeyUp: vi.fn(),
-      onClick: vi.fn(),
-      onMouseMove: vi.fn(),
-    };
-    const mode2: GameMode = {
-      init: vi.fn(),
-      update: vi.fn(),
-      cleanup: vi.fn(),
-      onKeyDown: vi.fn(),
-      onKeyUp: vi.fn(),
-      onClick: vi.fn(),
-      onMouseMove: vi.fn(),
-    };
+    const mode1 = createMockMode();
+    const mode2 = createMockMode();
     manager.setMode(mode1);
     manager.setMode(mode2);
     expect(mode1.cleanup).toHaveBeenCalled();
@@ -72,30 +52,14 @@ describe("GameModeManager", () => {
   });
 
   it("forwards update to current mode", () => {
-    const mode: GameMode = {
-      init: vi.fn(),
-      update: vi.fn(),
-      cleanup: vi.fn(),
-      onKeyDown: vi.fn(),
-      onKeyUp: vi.fn(),
-      onClick: vi.fn(),
-      onMouseMove: vi.fn(),
-    };
+    const mode = createMockMode();
     manager.setMode(mode);
     manager.update(0.1, 100);
     expect(mode.update).toHaveBeenCalledWith(0.1, 100);
   });
 
   it("forwards key events to current mode", () => {
-    const mode: GameMode = {
-      init: vi.fn(),
-      update: vi.fn(),
-      cleanup: vi.fn(),
-      onKeyDown: vi.fn(),
-      onKeyUp: vi.fn(),
-      onClick: vi.fn(),
-      onMouseMove: vi.fn(),
-    };
+    const mode = createMockMode();
     manager.setMode(mode);
     const event = new KeyboardEvent("keydown", { key: "w" });
     manager.onKeyDown(event);
@@ -107,15 +71,7 @@ describe("GameModeManager", () => {
   });
 
   it("forwards mouse events to current mode", () => {
-    const mode: GameMode = {
-      init: vi.fn(),
-      update: vi.fn(),
-      cleanup: vi.fn(),
-      onKeyDown: vi.fn(),
-      onKeyUp: vi.fn(),
-      onClick: vi.fn(),
-      onMouseMove: vi.fn(),
-    };
+    const mode = createMockMode();
     manager.setMode(mode);
     const event = new MouseEvent("click");
     manager.onClick(event);

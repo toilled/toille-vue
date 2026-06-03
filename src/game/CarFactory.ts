@@ -11,11 +11,6 @@ import {
   PlaneGeometry,
 } from "three";
 
-export interface CarPart {
-  mesh: Mesh;
-  partType: "body" | "wheel" | "cab" | "trailer" | "taillight" | "headlight" | "hitbox" | "underglow" | "lightbar" | "flasher";
-}
-
 export class CarFactory {
   public carGeo: BoxGeometry;
   public truckCabGeo: BoxGeometry;

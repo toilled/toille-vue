@@ -110,83 +110,65 @@ export class TrafficSystem {
     this.scene.add(this.headLightMesh);
   }
 
+  private static invisibleParts = new Set(["hitbox", "underglow", "lightbar", "flasher"]);
+
+  private processCarPart(child: Mesh, car: Group, renderAsGroup: boolean, counters: Record<string, number>) {
+    const partType = child.userData.partType as string | undefined;
+    if (!partType) return;
+
+    if (TrafficSystem.invisibleParts.has(partType)) {
+      child.visible = renderAsGroup;
+      return;
+    }
+
+    if (renderAsGroup) {
+      child.visible = true;
+      return;
+    }
+
+    child.visible = false;
+    _matrix.copy(child.matrixWorld);
+    const color = car.userData.bodyColor || 0x222222;
+    _color.copy(color);
+
+    const handler = this.partDispatch[partType as keyof typeof this.partDispatch];
+    if (handler) handler(counters);
+  }
+
+  private partDispatch: Record<string, (counters: Record<string, number>) => void> = {
+    body: (c) => { this.bodyMesh.setMatrixAt(c.bodyIdx++, _matrix); this.bodyMesh.setColorAt(c.bodyIdx - 1, _color); },
+    cab: (c) => { this.cabMesh.setMatrixAt(c.cabIdx++, _matrix); this.cabMesh.setColorAt(c.cabIdx - 1, _color); },
+    trailer: (c) => { this.trailerMesh.setMatrixAt(c.trailerIdx++, _matrix); this.trailerMesh.setColorAt(c.trailerIdx - 1, _color); },
+    wheel: (c) => { this.wheelMesh.setMatrixAt(c.wheelIdx++, _matrix); },
+    taillight: (c) => { this.tailLightMesh.setMatrixAt(c.tlIdx++, _matrix); },
+    headlight: (c) => { this.headLightMesh.setMatrixAt(c.hlIdx++, _matrix); },
+  };
+
+  private updateInstanceCount(mesh: InstancedMesh, count: number) {
+    mesh.count = count;
+    mesh.instanceMatrix.needsUpdate = true;
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  }
+
   private syncCarInstances(activeCar: Group | null) {
-    let bodyIdx = 0, cabIdx = 0, trailerIdx = 0;
-    let wheelIdx = 0, tlIdx = 0, hlIdx = 0;
+    const counters = { bodyIdx: 0, cabIdx: 0, trailerIdx: 0, wheelIdx: 0, tlIdx: 0, hlIdx: 0 };
 
     for (const car of this.cars) {
-      const isActive = car === activeCar;
-      const isFading = car.userData.fading;
-      const isPlayerControlled = car.userData.isPlayerControlled;
-      const renderAsGroup = isActive || isFading || isPlayerControlled;
-
+      const renderAsGroup = car === activeCar || car.userData.fading || car.userData.isPlayerControlled;
       car.updateWorldMatrix(true, true);
 
       car.traverse((child) => {
         if (!(child instanceof Mesh)) return;
-        const partType = child.userData.partType as string | undefined;
-        if (!partType) return;
-
-        if (partType === "hitbox" || partType === "underglow" || partType === "lightbar" || partType === "flasher") {
-          child.visible = renderAsGroup;
-          return;
-        }
-
-        if (renderAsGroup) {
-          child.visible = true;
-        } else {
-          child.visible = false;
-
-          _matrix.copy(child.matrixWorld);
-
-          switch (partType) {
-            case "body":
-              this.bodyMesh.setMatrixAt(bodyIdx, _matrix);
-              _color.copy(car.userData.bodyColor || 0x222222);
-              this.bodyMesh.setColorAt(bodyIdx, _color);
-              bodyIdx++;
-              break;
-            case "cab":
-              this.cabMesh.setMatrixAt(cabIdx, _matrix);
-              _color.copy(car.userData.bodyColor || 0x222222);
-              this.cabMesh.setColorAt(cabIdx, _color);
-              cabIdx++;
-              break;
-            case "trailer":
-              this.trailerMesh.setMatrixAt(trailerIdx, _matrix);
-              _color.copy(car.userData.bodyColor || 0x222222);
-              this.trailerMesh.setColorAt(trailerIdx, _color);
-              trailerIdx++;
-              break;
-            case "wheel":
-              this.wheelMesh.setMatrixAt(wheelIdx, _matrix);
-              wheelIdx++;
-              break;
-            case "taillight":
-              this.tailLightMesh.setMatrixAt(tlIdx, _matrix);
-              tlIdx++;
-              break;
-            case "headlight":
-              this.headLightMesh.setMatrixAt(hlIdx, _matrix);
-              hlIdx++;
-              break;
-          }
-        }
+        this.processCarPart(child, car, renderAsGroup, counters);
       });
     }
 
-    const updateCount = (mesh: InstancedMesh, count: number) => {
-      mesh.count = count;
-      mesh.instanceMatrix.needsUpdate = true;
-      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-    };
-
-    updateCount(this.bodyMesh, bodyIdx);
-    updateCount(this.cabMesh, cabIdx);
-    updateCount(this.trailerMesh, trailerIdx);
-    updateCount(this.wheelMesh, wheelIdx);
-    updateCount(this.tailLightMesh, tlIdx);
-    updateCount(this.headLightMesh, hlIdx);
+    this.updateInstanceCount(this.bodyMesh, counters.bodyIdx);
+    this.updateInstanceCount(this.cabMesh, counters.cabIdx);
+    this.updateInstanceCount(this.trailerMesh, counters.trailerIdx);
+    this.updateInstanceCount(this.wheelMesh, counters.wheelIdx);
+    this.updateInstanceCount(this.tailLightMesh, counters.tlIdx);
+    this.updateInstanceCount(this.headLightMesh, counters.hlIdx);
   }
 
   public addLightsToCar(car: Group) {
@@ -453,33 +435,34 @@ export class TrafficSystem {
     this.updateCarOrientation(car);
   }
 
-  private handlePoliceTurning(car: Group, currentPos: number) {
-    if (car.userData.isPolice && car.userData.turnCooldown <= 0) {
-      const roadIndex = Math.round(
-        (currentPos - (START_OFFSET - CELL_SIZE / 2)) / CELL_SIZE,
-      );
-      const roadCenter = START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
+  private isAtRoadCenter(car: Group, currentPos: number): boolean {
+    const roadIndex = Math.round((currentPos - (START_OFFSET - CELL_SIZE / 2)) / CELL_SIZE);
+    const roadCenter = START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
+    return Math.abs(currentPos - roadCenter) < car.userData.speed * 1.5;
+  }
 
-      if (Math.abs(currentPos - roadCenter) < car.userData.speed * 1.5) {
-        if (Math.random() < 0.4) {
-          const newDir = Math.random() > 0.5 ? 1 : -1;
-          const newLaneOffset =
-            (Math.random() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
+  private executePoliceTurn(car: Group) {
+    const newDir = Math.random() > 0.5 ? 1 : -1;
+    const laneOffset = (Math.random() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
 
-          if (car.userData.axis === "x") {
-            car.position.x = roadCenter + newLaneOffset;
-            car.userData.axis = "z";
-            car.userData.heading = newDir === 1 ? 0 : Math.PI;
-          } else {
-            car.position.z = roadCenter + newLaneOffset;
-            car.userData.axis = "x";
-            car.userData.heading = newDir === 1 ? Math.PI / 2 : -Math.PI / 2;
-          }
-          car.userData.dir = newDir;
-          car.userData.turnCooldown = 60;
-        }
-      }
+    if (car.userData.axis === "x") {
+      car.position.x = Math.round((car.position.x - (START_OFFSET - CELL_SIZE / 2)) / CELL_SIZE) * CELL_SIZE + (START_OFFSET - CELL_SIZE / 2) + laneOffset;
+      car.userData.axis = "z";
+      car.userData.heading = newDir === 1 ? 0 : Math.PI;
+    } else {
+      car.position.z = Math.round((car.position.z - (START_OFFSET - CELL_SIZE / 2)) / CELL_SIZE) * CELL_SIZE + (START_OFFSET - CELL_SIZE / 2) + laneOffset;
+      car.userData.axis = "x";
+      car.userData.heading = newDir === 1 ? Math.PI / 2 : -Math.PI / 2;
     }
+    car.userData.dir = newDir;
+    car.userData.turnCooldown = 60;
+  }
+
+  private handlePoliceTurning(car: Group, currentPos: number) {
+    if (!car.userData.isPolice || car.userData.turnCooldown > 0) return;
+    if (!this.isAtRoadCenter(car, currentPos)) return;
+    if (Math.random() >= 0.4) return;
+    this.executePoliceTurn(car);
   }
 
   private fadeCar(car: Group) {
@@ -532,48 +515,52 @@ export class TrafficSystem {
     applyCarOrientation(car, heading);
   }
 
-  private checkCollisions() {
-    const actualCollisionDist = 6;
-    const distSqThreshold = actualCollisionDist * actualCollisionDist;
+  private buildSpatialGrid(): Map<string, Group[]> {
     const gridSize = 20;
     const grid = new Map<string, Group[]>();
 
     for (const car of this.cars) {
       if (car.userData.fading) continue;
-      const gridX = Math.floor(car.position.x / gridSize);
-      const gridZ = Math.floor(car.position.z / gridSize);
-      const key = `${gridX},${gridZ}`;
-
-      if (!grid.has(key)) {
-        grid.set(key, []);
-      }
+      const key = `${Math.floor(car.position.x / gridSize)},${Math.floor(car.position.z / gridSize)}`;
+      if (!grid.has(key)) grid.set(key, []);
       grid.get(key)!.push(car);
     }
+
+    return grid;
+  }
+
+  private checkCarPairCollision(carA: Group, carB: Group, distSqThreshold: number) {
+    if (carA.uuid >= carB.uuid || carB.userData.fading) return;
+    if (carA.position.distanceToSquared(carB.position) < distSqThreshold) {
+      this.handleCollision(carA, carB);
+    }
+  }
+
+  private checkNeighborCells(carA: Group, grid: Map<string, Group[]>, gridX: number, gridZ: number, distSqThreshold: number) {
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dz = -1; dz <= 1; dz++) {
+        const neighbors = grid.get(`${gridX + dx},${gridZ + dz}`);
+        if (neighbors) {
+          for (const carB of neighbors) {
+            this.checkCarPairCollision(carA, carB, distSqThreshold);
+          }
+        }
+      }
+    }
+  }
+
+  private checkCollisions() {
+    const actualCollisionDist = 6;
+    const distSqThreshold = actualCollisionDist * actualCollisionDist;
+    const gridSize = 20;
+    const grid = this.buildSpatialGrid();
 
     for (const carA of this.cars) {
       if (carA.userData.fading) continue;
 
       const gridX = Math.floor(carA.position.x / gridSize);
       const gridZ = Math.floor(carA.position.z / gridSize);
-
-      for (let dx = -1; dx <= 1; dx++) {
-        for (let dz = -1; dz <= 1; dz++) {
-          const key = `${gridX + dx},${gridZ + dz}`;
-          const neighbors = grid.get(key);
-
-          if (neighbors) {
-            for (const carB of neighbors) {
-              if (carA.uuid >= carB.uuid || carB.userData.fading) continue;
-
-              const distSq = carA.position.distanceToSquared(carB.position);
-
-              if (distSq < distSqThreshold) {
-                this.handleCollision(carA, carB);
-              }
-            }
-          }
-        }
-      }
+      this.checkNeighborCells(carA, grid, gridX, gridZ, distSqThreshold);
     }
   }
 

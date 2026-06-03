@@ -56,6 +56,16 @@ vi.stubGlobal(
 
 // Mock Three.js
 vi.mock("three", () => {
+  const mockMatrix4 = () => ({
+    elements: [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+    copy: vi.fn(),
+    clone: vi.fn(),
+    multiply: vi.fn(),
+    decompose: vi.fn(),
+    compose: vi.fn(),
+    identity: vi.fn(),
+    invert: vi.fn(),
+  });
   const THREE = {
     Scene: vi.fn(() => ({
       add: vi.fn(),
@@ -243,7 +253,7 @@ vi.mock("three", () => {
       traverse: vi.fn(),
       userData: {},
       lookAt: vi.fn(),
-      matrixWorld: { elements: [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1], copy: vi.fn(), clone: vi.fn(), multiply: vi.fn(), decompose: vi.fn(), compose: vi.fn(), identity: vi.fn(), invert: vi.fn() },
+      matrixWorld: mockMatrix4(),
       updateWorldMatrix: vi.fn(),
     })),
     DoubleSide: 2,
@@ -279,7 +289,7 @@ vi.mock("three", () => {
       lookAt: vi.fn(),
       material: { color: { setHex: vi.fn() } },
       traverse: vi.fn(),
-      matrixWorld: { elements: [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1], copy: vi.fn(), clone: vi.fn(), multiply: vi.fn(), decompose: vi.fn(), compose: vi.fn(), identity: vi.fn(), invert: vi.fn() },
+      matrixWorld: mockMatrix4(),
       updateWorldMatrix: vi.fn(),
     })),
     InstancedMesh: vi.fn(() => ({
@@ -301,7 +311,7 @@ vi.mock("three", () => {
       material: { color: { setHex: vi.fn() }, clone: vi.fn() },
       geometry: { attributes: {} },
       raycast: vi.fn(),
-      matrixWorld: { elements: [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1], copy: vi.fn(), clone: vi.fn(), multiply: vi.fn(), decompose: vi.fn(), compose: vi.fn(), identity: vi.fn(), invert: vi.fn() },
+      matrixWorld: mockMatrix4(),
       updateWorldMatrix: vi.fn(),
     })),
     Points: vi.fn(() => ({
@@ -397,14 +407,7 @@ vi.mock("three", () => {
       slerp: vi.fn(),
     })),
     Matrix4: vi.fn(() => ({
-      elements: [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
-      copy: vi.fn(),
-      clone: vi.fn(),
-      multiply: vi.fn(),
-      decompose: vi.fn(),
-      compose: vi.fn(),
-      identity: vi.fn(),
-      invert: vi.fn(),
+      ...mockMatrix4(),
       makeTranslation: vi.fn(),
       makeRotationFromEuler: vi.fn(),
       makeScale: vi.fn(),

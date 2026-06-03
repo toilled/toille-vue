@@ -1,12 +1,12 @@
 let enabled = true;
 let currentUtterance: SpeechSynthesisUtterance | null = null;
 
-export function setSpeechEnabled(val: boolean) {
+function setSpeechEnabled(val: boolean) {
   enabled = val;
   if (!val) stopSpeech();
 }
 
-export function isSpeechEnabled(): boolean {
+function isSpeechEnabled(): boolean {
   return enabled;
 }
 

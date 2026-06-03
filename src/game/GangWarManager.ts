@@ -209,83 +209,68 @@ export class GangWarManager {
     this.warriors.push(warrior);
   }
 
-  update(dt: number) {
-    // Check for reinforcement needs
-    this.checkReinforcements();
+  private updateWarrior(warrior: Warrior, dt: number) {
+    if (warrior.state === "DEAD") return;
 
-    // Update fight markers
-    this.updateFightMarkers(dt);
-
-    // Update Warriors
-    for (const warrior of this.warriors) {
-      if (warrior.state === "DEAD") continue;
-
-      // Check if target is still valid
-      if (warrior.target) {
-        if (warrior.target.state === "DEAD") {
-          warrior.target = null;
-          warrior.state = "IDLE";
-        } else if (!this.isValidTarget(warrior, warrior.target)) {
-          // Keep target but switch to chasing?
-          // For now, if out of range, drop target and maybe find new one or move closer
-          warrior.target = null;
-          warrior.state = "IDLE";
-        }
+    if (warrior.target) {
+      if (warrior.target.state === "DEAD") {
+        warrior.target = null;
+        warrior.state = "IDLE";
+      } else if (!this.isValidTarget(warrior, warrior.target)) {
+        warrior.target = null;
+        warrior.state = "IDLE";
       }
-
-      if (!warrior.target) {
-        this.findTarget(warrior);
-      }
-
-      if (warrior.target) {
-        warrior.state = "COMBAT";
-        this.updateCombat(warrior, dt);
-      } else {
-        this.updateIdle(warrior, dt);
-      }
-
-      if (warrior.cooldown > 0) warrior.cooldown -= dt;
     }
 
-    // Update Projectiles
+    if (!warrior.target) {
+      this.findTarget(warrior);
+    }
+
+    if (warrior.target) {
+      warrior.state = "COMBAT";
+      this.updateCombat(warrior, dt);
+    } else {
+      this.updateIdle(warrior, dt);
+    }
+
+    if (warrior.cooldown > 0) warrior.cooldown -= dt;
+  }
+
+  private updateProjectile(i: number, dt: number) {
+    const proj = this.projectiles[i];
+    proj.life -= dt;
+    proj.mesh.position.add(proj.velocity.clone().multiplyScalar(dt));
+
+    let hit = false;
+    for (const warrior of this.warriors) {
+      if (warrior.state === "DEAD" || warrior.gangId === proj.shooterId) continue;
+      const distSq = warrior.group.position.distanceToSquared(proj.mesh.position);
+      if (distSq < 4) {
+        this.damageWarrior(warrior, proj.damage);
+        this.spawnSparks(proj.mesh.position);
+        hit = true;
+        break;
+      }
+    }
+
+    if (proj.mesh.position.y < 0) hit = true;
+
+    if (hit || proj.life <= 0) {
+      this.scene.remove(proj.mesh);
+      this.projectiles.splice(i, 1);
+    }
+  }
+
+  update(dt: number) {
+    this.checkReinforcements();
+    this.updateFightMarkers(dt);
+
+    for (const warrior of this.warriors) {
+      this.updateWarrior(warrior, dt);
+    }
+
     for (let i = this.projectiles.length - 1; i >= 0; i--) {
-      const proj = this.projectiles[i];
-      proj.life -= dt;
-
-      const moveStep = proj.velocity.clone().multiplyScalar(dt);
-      proj.mesh.position.add(moveStep);
-
-      // Look at direction
-      // proj.mesh.lookAt(proj.mesh.position.clone().add(proj.velocity));
-      // Optimized: It shouldn't change rotation, set on spawn.
-
-      let hit = false;
-      // Check collision with warriors
-      // Simple distance check
-      for (const warrior of this.warriors) {
-        if (warrior.state === "DEAD") continue;
-        if (warrior.gangId === proj.shooterId) continue; // Don't hit friends
-
-        const distSq = warrior.group.position.distanceToSquared(
-          proj.mesh.position,
-        );
-        if (distSq < 2 * 2) {
-          // Hit radius
-          this.damageWarrior(warrior, proj.damage);
-          this.spawnSparks(proj.mesh.position);
-          hit = true;
-          break;
-        }
-      }
-
-      // Check collision with ground/buildings roughly
-      if (proj.mesh.position.y < 0) hit = true;
-
-      // Cleanup
-      if (hit || proj.life <= 0) {
-        this.scene.remove(proj.mesh);
-        this.projectiles.splice(i, 1);
-      }
+      this.updateProjectile(i, dt);
     }
   }
 

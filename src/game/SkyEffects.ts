@@ -6,6 +6,7 @@ import {
   FogExp2,
   Mesh,
   MeshBasicMaterial,
+  Object3D,
   Points,
   PointsMaterial,
   Scene,
@@ -245,49 +246,24 @@ export class SkyEffects {
     }, 200);
   }
 
+  private disposeObject(obj: Object3D) {
+    this.scene.remove(obj);
+    if ("geometry" in obj && obj.geometry) {
+      obj.geometry.dispose();
+    }
+    if ("material" in obj && obj.material) {
+      const mat = obj.material as { map?: { dispose(): void }; dispose?(): void };
+      if (mat.map) mat.map.dispose();
+      if (typeof mat.dispose === "function") mat.dispose();
+    }
+  }
+
   dispose(): void {
-    if (this.skyDome) {
-      this.scene.remove(this.skyDome);
-      if (this.skyDome.geometry) {
-        this.skyDome.geometry.dispose();
-      }
-      if (this.skyDome.material) {
-        const skyMat = this.skyDome.material as MeshBasicMaterial;
-        if (skyMat.map) {
-          skyMat.map.dispose();
-        }
-        if (typeof skyMat.dispose === "function") {
-          skyMat.dispose();
-        }
-      }
-    }
-
-    if (this.stars) {
-      this.scene.remove(this.stars);
-      if (this.stars.geometry) {
-        this.stars.geometry.dispose();
-      }
-      if (this.stars.material) {
-        const starsMat = this.stars.material as PointsMaterial;
-        if (typeof starsMat.dispose === "function") {
-          starsMat.dispose();
-        }
-      }
-    }
-
+    if (this.skyDome) this.disposeObject(this.skyDome);
+    if (this.stars) this.disposeObject(this.stars);
     for (const cloud of this.cloudSprites) {
-      this.scene.remove(cloud);
-      if (cloud.material) {
-        const mat = cloud.material as SpriteMaterial;
-        if (mat.map) {
-          mat.map.dispose();
-        }
-        if (typeof mat.dispose === "function") {
-          mat.dispose();
-        }
-      }
+      this.disposeObject(cloud);
     }
-
     this.scene.fog = null;
   }
 }

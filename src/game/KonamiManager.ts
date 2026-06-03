@@ -87,67 +87,57 @@ export class KonamiManager {
         this.fireworkShowEndTime = Date.now() + 10000; // 10 seconds
     }
 
+    private manageShowState() {
+        if (!this.fireworkShowActive) return;
+        if (Date.now() > this.fireworkShowEndTime) {
+            this.fireworkShowActive = false;
+        } else if (Math.random() < 0.05) {
+            this.spawnFireworkRocket();
+        }
+    }
+
+    private updateParticle(i: number, dt: number, positions: Float32Array) {
+        if (this.fwLifetimes[i] <= 0) return;
+
+        this.fwPositions[i * 3] += this.fwVelocities[i * 3];
+        this.fwPositions[i * 3 + 1] += this.fwVelocities[i * 3 + 1];
+        this.fwPositions[i * 3 + 2] += this.fwVelocities[i * 3 + 2];
+
+        if (this.fwTypes[i] === 0) {
+            this.fwVelocities[i * 3 + 1] -= 0.05;
+            this.fwLifetimes[i] -= dt;
+            if (this.fwLifetimes[i] <= 0) {
+                this.explodeFirework(i);
+            }
+        } else {
+            this.fwVelocities[i * 3 + 1] -= 0.1;
+            this.fwVelocities[i * 3] *= 0.98;
+            this.fwVelocities[i * 3 + 1] *= 0.98;
+            this.fwVelocities[i * 3 + 2] *= 0.98;
+            this.fwLifetimes[i] -= dt * 0.5;
+        }
+
+        positions[i * 3] = this.fwPositions[i * 3];
+        positions[i * 3 + 1] = this.fwPositions[i * 3 + 1];
+        positions[i * 3 + 2] = this.fwPositions[i * 3 + 2];
+
+        if (this.fwLifetimes[i] <= 0) {
+            positions[i * 3 + 1] = -9999;
+            this.fwLifetimes[i] = 0;
+        }
+    }
+
     public update(dt: number) {
         if (!this.fireworks) return;
 
         const positions = this.fireworks.geometry.attributes.position.array as Float32Array;
-        // const colors = this.fireworks.geometry.attributes.color.array; // Not strictly needed unless manipulating directly here
         let needsUpdate = false;
 
-        // Manage Show State
-        if (this.fireworkShowActive) {
-            if (Date.now() > this.fireworkShowEndTime) {
-                this.fireworkShowActive = false;
-            } else {
-                // Spawn new rockets occasionally
-                if (Math.random() < 0.05) {
-                    this.spawnFireworkRocket();
-                }
-            }
-        }
+        this.manageShowState();
 
-        // Physics Update
         for (let i = 0; i < this.fireworkCount; i++) {
-            // Only update living particles
             if (this.fwLifetimes[i] > 0) {
-                // Update Physics
-                this.fwPositions[i * 3] += this.fwVelocities[i * 3]; // X
-                this.fwPositions[i * 3 + 1] += this.fwVelocities[i * 3 + 1]; // Y
-                this.fwPositions[i * 3 + 2] += this.fwVelocities[i * 3 + 2]; // Z
-
-                if (this.fwTypes[i] === 0) {
-                    // ROCKET LOGIC
-                    this.fwVelocities[i * 3 + 1] -= 0.05; // Less gravity for rocket
-
-                    this.fwLifetimes[i] -= dt;
-
-                    if (this.fwLifetimes[i] <= 0) {
-                        // Explode!
-                        this.explodeFirework(i);
-                    }
-                } else {
-                    // EXPLOSION PARTICLE LOGIC
-                    this.fwVelocities[i * 3 + 1] -= 0.1; // Standard gravity
-                    this.fwVelocities[i * 3] *= 0.98; // Air resistance
-                    this.fwVelocities[i * 3 + 1] *= 0.98;
-                    this.fwVelocities[i * 3 + 2] *= 0.98;
-
-                    this.fwLifetimes[i] -= dt * 0.5; // Fade out
-                }
-
-                // Update Array buffers
-                positions[i * 3] = this.fwPositions[i * 3];
-                positions[i * 3 + 1] = this.fwPositions[i * 3 + 1];
-                positions[i * 3 + 2] = this.fwPositions[i * 3 + 2];
-
-                // Update opacity/color if needed (Particles disappear when lifetime < 0)
-                // Note: 'fwLifetimes' is the source of truth. If it was > 0 at start of loop, we updated.
-                // If it BECAME <= 0 this frame (e.g. fade out), we need to hide it.
-                if (this.fwLifetimes[i] <= 0) {
-                    positions[i * 3 + 1] = -9999; // Move out of view
-                    this.fwLifetimes[i] = 0;
-                }
-
+                this.updateParticle(i, dt, positions);
                 needsUpdate = true;
             }
         }

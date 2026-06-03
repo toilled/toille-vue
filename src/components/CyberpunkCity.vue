@@ -786,73 +786,107 @@ function onResize() {
   updateIsMobile();
 }
 
+function collectCarMeshes(): Object3D[] {
+  const meshes: Object3D[] = [];
+  (cars as Group[]).forEach((c) =>
+    (c as Group).traverse((child) => {
+      if (child instanceof Mesh) meshes.push(child);
+    }),
+  );
+  return meshes;
+}
+
+function handleFightMarkerClick(): boolean {
+  if (!gangWarManager || gangWarManager.fightMarkers.length === 0) return false;
+  const intersects = raycaster.intersectObjects(gangWarManager.fightMarkers);
+  if (intersects.length === 0) return false;
+  const hit = intersects[0].object;
+  if (hit.userData.isFightMarker && hit.userData.target) {
+    isGameMode.value = true;
+    isCinematicMode.value = true;
+    cinematicTarget.copy(hit.userData.target);
+    emit("game-start");
+    return true;
+  }
+  return false;
+}
+
+function handleCarClick(): boolean {
+  const carMeshes = collectCarMeshes();
+  const intersects = raycaster.intersectObjects(carMeshes);
+  if (intersects.length === 0) return false;
+  const hit = intersects[0].object;
+  let target: Object3D = hit;
+  while (target.parent && target.parent.type !== "Scene") {
+    target = target.parent;
+  }
+  if (target instanceof Group && target.userData.speed !== undefined) {
+    isDrivingMode.value = true;
+    emit("game-start");
+    activeCar.value = target;
+    target.userData.isPlayerControlled = true;
+    target.userData.currentSpeed = target.userData.speed;
+    gameModeManager.setMode(new DrivingMode());
+    return true;
+  }
+  return false;
+}
+
+function handleLeaderboardClick(): boolean {
+  if (leaderboardMeshes.length === 0) return false;
+  const intersects = raycaster.intersectObjects(leaderboardMeshes);
+  if (intersects.length === 0) return false;
+  showLeaderboard.value = true;
+  return true;
+}
+
 function onClick(event: MouseEvent) {
   if (!camera) return;
-
   gameModeManager.onClick(event);
-
   if (isGameMode.value || isDrivingMode.value) return;
 
   pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
   pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
   raycaster.setFromCamera(pointer, camera);
 
-  if (gangWarManager && gangWarManager.fightMarkers.length > 0) {
-    const markerIntersects = raycaster.intersectObjects(
-      gangWarManager.fightMarkers,
-    );
-    if (markerIntersects.length > 0) {
-      const hit = markerIntersects[0].object;
-      if (hit.userData.isFightMarker && hit.userData.target) {
-        isGameMode.value = true;
-        isCinematicMode.value = true;
-        cinematicTarget.copy(hit.userData.target);
-        emit("game-start");
-        return;
-      }
-    }
-  }
-
-  const carMeshes: Object3D[] = [];
-  (cars as Group[]).forEach((c) =>
-    (c as Group).traverse((child) => {
-      if (child instanceof Mesh) carMeshes.push(child);
-    }),
-  );
-
-  const carIntersects = raycaster.intersectObjects(carMeshes);
-  if (carIntersects.length > 0) {
-    const hit = carIntersects[0].object;
-    let target = hit;
-    while (target.parent && target.parent.type !== "Scene") {
-      target = target.parent;
-    }
-
-    if (target instanceof Group && target.userData.speed !== undefined) {
-      isDrivingMode.value = true;
-      emit("game-start");
-
-      activeCar.value = target;
-      target.userData.isPlayerControlled = true;
-      target.userData.currentSpeed = target.userData.speed;
-
-      gameModeManager.setMode(new DrivingMode());
-      return;
-    }
-  }
-
-  if (leaderboardMeshes.length > 0) {
-    const lbIntersects = raycaster.intersectObjects(leaderboardMeshes);
-    if (lbIntersects.length > 0) {
-      showLeaderboard.value = true;
-      return;
-    }
-  }
+  if (handleFightMarkerClick()) return;
+  if (handleCarClick()) return;
+  handleLeaderboardClick();
 }
 
 function onMouseMove(event: MouseEvent) {
   gameModeManager.onMouseMove(event);
+}
+
+function renderFallbackImage() {
+  try {
+    const dataUrl = renderer.domElement.toDataURL("image/png");
+    if (!canvasContainer.value) return;
+    while (canvasContainer.value.firstChild) {
+      canvasContainer.value.removeChild(canvasContainer.value.firstChild);
+    }
+    const img = document.createElement("img");
+    img.src = dataUrl;
+    img.alt = "";
+    img.style.width = "100%";
+    img.style.height = "100%";
+    img.style.objectFit = "cover";
+    img.style.display = "block";
+    canvasContainer.value.appendChild(img);
+  } catch (_e) {
+    if (!canvasContainer.value) return;
+    while (canvasContainer.value.firstChild) {
+      canvasContainer.value.removeChild(canvasContainer.value.firstChild);
+    }
+    canvasContainer.value.style.background = "#050510";
+  }
+}
+
+function disposeManagers() {
+  if (konamiManager) konamiManager.dispose();
+  if (gangWarManager) gangWarManager.dispose();
+  if (multiplayerManager) multiplayerManager.dispose();
+  if (skyEffects?.dispose) skyEffects.dispose();
 }
 
 function fallbackToStaticImage() {
@@ -870,29 +904,7 @@ function fallbackToStaticImage() {
     renderer.render(scene, camera);
   }
 
-  try {
-    const dataUrl = renderer.domElement.toDataURL("image/png");
-    if (canvasContainer.value) {
-      while (canvasContainer.value.firstChild) {
-        canvasContainer.value.removeChild(canvasContainer.value.firstChild);
-      }
-      const img = document.createElement("img");
-      img.src = dataUrl;
-      img.alt = "";
-      img.style.width = "100%";
-      img.style.height = "100%";
-      img.style.objectFit = "cover";
-      img.style.display = "block";
-      canvasContainer.value.appendChild(img);
-    }
-  } catch (_e) {
-    if (canvasContainer.value) {
-      while (canvasContainer.value.firstChild) {
-        canvasContainer.value.removeChild(canvasContainer.value.firstChild);
-      }
-      canvasContainer.value.style.background = "#050510";
-    }
-  }
+  renderFallbackImage();
 
   renderer.dispose();
   carAudio.stop();
@@ -904,17 +916,146 @@ function fallbackToStaticImage() {
   window.removeEventListener("keyup", onKeyUp);
   window.removeEventListener("mousemove", onMouseMove);
 
-  if (konamiManager) {
-    konamiManager.dispose();
+  disposeManagers();
+}
+
+function checkLowFps(now: number): boolean {
+  if (lastFpsCheckTime === 0) {
+    if (startTime.value > 0 && now - startTime.value > FALLBACK_MONITOR_DELAY_MS) {
+      lastFpsCheckTime = now;
+    }
+    return false;
   }
-  if (gangWarManager) {
-    gangWarManager.dispose();
+
+  frameTimestamps.push(now);
+  if (frameTimestamps.length > 60) frameTimestamps.shift();
+  if (frameTimestamps.length < 30 || now - lastFpsCheckTime < FALLBACK_CHECK_INTERVAL_MS) return false;
+
+  const elapsed = frameTimestamps[frameTimestamps.length - 1] - frameTimestamps[0];
+  if (elapsed <= 0) return false;
+
+  const fps = ((frameTimestamps.length - 1) / elapsed) * 1000;
+  lastFpsCheckTime = now;
+
+  if (fps < FALLBACK_FPS_THRESHOLD) {
+    lowFpsCount++;
+    if (lowFpsCount >= FALLBACK_FPS_CONSECUTIVE_CHECKS) {
+      fallbackToStaticImage();
+      return true;
+    }
+  } else {
+    lowFpsCount = 0;
   }
-  if (multiplayerManager) {
-    multiplayerManager.dispose();
+  return false;
+}
+
+function updateMultiplayer(dt: number) {
+  if (!multiplayerManager) return;
+  multiplayerManager.update(dt);
+  if (isExplorationMode.value) {
+    multiplayerManager.broadcast(camera.position.x, camera.position.y, camera.position.z, camera.rotation.y, "walking");
+  } else if (isDrivingMode.value && activeCar.value) {
+    const heading = activeCar.value.userData.heading ?? activeCar.value.rotation.y;
+    multiplayerManager.broadcast(activeCar.value.position.x, activeCar.value.position.y, activeCar.value.position.z, heading, "driving");
   }
-  if (skyEffects && skyEffects.dispose) {
-    skyEffects.dispose();
+}
+
+function updateCityMaterials() {
+  if (!cityBuilder) return;
+  const materials = cityBuilder.getAudioMaterials();
+  for (const key in materials) {
+    const mat = materials[key];
+    if (mat.emissiveIntensity > EMISSIVE_INTENSITY_TARGET) {
+      mat.emissiveIntensity = MathUtils.lerp(mat.emissiveIntensity, EMISSIVE_INTENSITY_TARGET, EMISSIVE_LERP_FACTOR);
+    }
+  }
+}
+
+function updateSparks() {
+  if (!sparks) return;
+  const positions = sparks.geometry.attributes.position.array as Float32Array;
+  let needsUpdate = false;
+
+  for (let i = 0; i < SPARK_COUNT; i++) {
+    if (sparkLifetimes[i] <= 0) continue;
+    sparkVelocities[i * 3 + 1] -= SPARK_GRAVITY;
+    positions[i * 3] += sparkVelocities[i * 3];
+    positions[i * 3 + 1] += sparkVelocities[i * 3 + 1];
+    positions[i * 3 + 2] += sparkVelocities[i * 3 + 2];
+
+    const h = getHeight(positions[i * 3], positions[i * 3 + 2]);
+    if (positions[i * 3 + 1] < h) {
+      positions[i * 3 + 1] = h;
+      sparkVelocities[i * 3 + 1] *= -0.5;
+    }
+
+    const ix = Math.round((positions[i * 3] - START_OFFSET) / CELL_SIZE);
+    const iz = Math.round((positions[i * 3 + 2] - START_OFFSET) / CELL_SIZE);
+    const key = `${ix},${iz}`;
+
+    if (occupiedGrids.has(key)) {
+      const cX = START_OFFSET + ix * CELL_SIZE;
+      const cZ = START_OFFSET + iz * CELL_SIZE;
+      const dims = occupiedGrids.get(key);
+      if (dims && Math.abs(positions[i * 3] - cX) < dims.halfW && Math.abs(positions[i * 3 + 2] - cZ) < dims.halfD) {
+        sparkLifetimes[i] = 0;
+      }
+    }
+
+    sparkLifetimes[i] -= SPARK_LIFETIME_DECAY;
+    if (sparkLifetimes[i] < 0) {
+      sparkLifetimes[i] = 0;
+      positions[i * 3 + 1] = SPARK_OFF_SCREEN_Y;
+    }
+    needsUpdate = true;
+  }
+
+  if (needsUpdate) {
+    sparks.geometry.attributes.position.needsUpdate = true;
+  }
+}
+
+function updateCamera(time: number, now: number) {
+  if (gameModeManager.getMode()) return;
+
+  if (isCinematicMode.value) {
+    const angle = time * INTRO_ORBIT_SPEED;
+    const tx = cinematicTarget.x + Math.sin(angle) * INTRO_ORBIT_RADIUS;
+    const tz = cinematicTarget.z + Math.cos(angle) * INTRO_ORBIT_RADIUS;
+    camera.position.x += (tx - camera.position.x) * CAMERA_LERP_FACTOR;
+    camera.position.z += (tz - camera.position.z) * CAMERA_LERP_FACTOR;
+    camera.position.y += (CAMERA_CINEMATIC_Y - camera.position.y) * CAMERA_LERP_FACTOR;
+    currentLookAt.lerp(cinematicTarget, CAMERA_LERP_FACTOR);
+    camera.lookAt(currentLookAt);
+    return;
+  }
+
+  const orbitRadius = ORBIT_RADIUS_DESKTOP;
+  const targetY = CAMERA_TARGET_Y_DESKTOP;
+  const introProgress = startTime.value === 0 ? 0 : Math.min(1, (now - startTime.value) / INTRO_DURATION_MS);
+
+  camera.position.x = Math.sin(time * ORBIT_SPEED) * orbitRadius;
+  camera.position.z = Math.cos(time * ORBIT_SPEED) * orbitRadius;
+
+  if (startTime.value === 0) {
+    camera.position.y = CAMERA_START_Y;
+  } else if (introProgress < 1) {
+    const ease = 1 - Math.pow(1 - introProgress, 3);
+    camera.position.y = CAMERA_START_Y + (targetY - CAMERA_START_Y) * ease;
+  } else if (Math.abs(camera.position.y - targetY) > 1) {
+    camera.position.y += (targetY - camera.position.y) * CAMERA_LERP_FACTOR;
+  }
+
+  const targetLookAt = new Vector3(0, 0, 0);
+  currentLookAt.lerp(targetLookAt, CAMERA_LOOK_AT_LERP);
+  camera.lookAt(currentLookAt);
+}
+
+function renderFrame() {
+  if (composer) {
+    composer.render();
+  } else {
+    renderer.render(scene, camera);
   }
 }
 
@@ -927,188 +1068,18 @@ function animate() {
   const dt = (now - lastTime.value) / 1000;
   lastTime.value = now;
 
-  if (startTime.value > 0 && lastFpsCheckTime === 0 && now - startTime.value > FALLBACK_MONITOR_DELAY_MS) {
-    lastFpsCheckTime = now;
-  }
-
-  if (lastFpsCheckTime > 0) {
-    frameTimestamps.push(now);
-    if (frameTimestamps.length > 60) {
-      frameTimestamps.shift();
-    }
-
-    if (frameTimestamps.length >= 30 && now - lastFpsCheckTime >= FALLBACK_CHECK_INTERVAL_MS) {
-      const elapsed = frameTimestamps[frameTimestamps.length - 1] - frameTimestamps[0];
-      if (elapsed > 0) {
-        const fps = ((frameTimestamps.length - 1) / elapsed) * 1000;
-        lastFpsCheckTime = now;
-
-        if (fps < FALLBACK_FPS_THRESHOLD) {
-          lowFpsCount++;
-          if (lowFpsCount >= FALLBACK_FPS_CONSECUTIVE_CHECKS) {
-            fallbackToStaticImage();
-            return;
-          }
-        } else {
-          lowFpsCount = 0;
-        }
-      }
-    }
-  }
+  if (checkLowFps(now)) return;
 
   konamiManager.update(dt);
   gangWarManager.update(dt);
   skyEffects.update(dt);
   gameModeManager.update(dt, time);
   trafficSystem.update(activeCar.value);
-  if (multiplayerManager) {
-    multiplayerManager.update(dt);
-    if (isExplorationMode.value) {
-      multiplayerManager.broadcast(
-        camera.position.x,
-        camera.position.y,
-        camera.position.z,
-        camera.rotation.y,
-        "walking",
-      );
-    } else if (isDrivingMode.value && activeCar.value) {
-      const heading =
-        activeCar.value.userData.heading ?? activeCar.value.rotation.y;
-      multiplayerManager.broadcast(
-        activeCar.value.position.x,
-        activeCar.value.position.y,
-        activeCar.value.position.z,
-        heading,
-        "driving",
-      );
-    }
-  }
-
-  if (cityBuilder) {
-    const materials = cityBuilder.getAudioMaterials();
-    for (const key in materials) {
-      const mat = materials[key];
-      if (mat.emissiveIntensity > EMISSIVE_INTENSITY_TARGET) {
-        mat.emissiveIntensity = MathUtils.lerp(
-          mat.emissiveIntensity,
-          EMISSIVE_INTENSITY_TARGET,
-          EMISSIVE_LERP_FACTOR,
-        );
-      }
-    }
-  }
-
-  if (sparks) {
-    const positions = sparks.geometry.attributes.position.array;
-    let needsUpdate = false;
-
-    for (let i = 0; i < SPARK_COUNT; i++) {
-      if (sparkLifetimes[i] > 0) {
-        sparkVelocities[i * 3 + 1] -= SPARK_GRAVITY;
-        positions[i * 3] += sparkVelocities[i * 3];
-        positions[i * 3 + 1] += sparkVelocities[i * 3 + 1];
-        positions[i * 3 + 2] += sparkVelocities[i * 3 + 2];
-
-        const h = getHeight(positions[i * 3], positions[i * 3 + 2]);
-
-        if (positions[i * 3 + 1] < h) {
-          positions[i * 3 + 1] = h;
-          sparkVelocities[i * 3 + 1] *= -0.5;
-        }
-
-        const ix = Math.round((positions[i * 3] - START_OFFSET) / CELL_SIZE);
-        const iz = Math.round(
-          (positions[i * 3 + 2] - START_OFFSET) / CELL_SIZE,
-        );
-
-        if (occupiedGrids.has(`${ix},${iz}`)) {
-          const cX = START_OFFSET + ix * CELL_SIZE;
-          const cZ = START_OFFSET + iz * CELL_SIZE;
-          const dims = occupiedGrids.get(`${ix},${iz}`);
-
-          if (
-            dims &&
-            Math.abs(positions[i * 3] - cX) < dims.halfW &&
-            Math.abs(positions[i * 3 + 2] - cZ) < dims.halfD
-          ) {
-            sparkLifetimes[i] = 0;
-          }
-        }
-
-        sparkLifetimes[i] -= SPARK_LIFETIME_DECAY;
-        if (sparkLifetimes[i] < 0) {
-          sparkLifetimes[i] = 0;
-          positions[i * 3 + 1] = SPARK_OFF_SCREEN_Y;
-        }
-        needsUpdate = true;
-      }
-    }
-    if (needsUpdate) {
-      sparks.geometry.attributes.position.needsUpdate = true;
-    }
-  }
-
-  if (!gameModeManager.getMode()) {
-    if (isCinematicMode.value) {
-      const angle = time * INTRO_ORBIT_SPEED;
-
-      const tx = cinematicTarget.x + Math.sin(angle) * INTRO_ORBIT_RADIUS;
-      const tz = cinematicTarget.z + Math.cos(angle) * INTRO_ORBIT_RADIUS;
-
-      camera.position.x += (tx - camera.position.x) * CAMERA_LERP_FACTOR;
-      camera.position.z += (tz - camera.position.z) * CAMERA_LERP_FACTOR;
-      camera.position.y +=
-        (CAMERA_CINEMATIC_Y - camera.position.y) * CAMERA_LERP_FACTOR;
-
-      currentLookAt.lerp(cinematicTarget, CAMERA_LERP_FACTOR);
-      camera.lookAt(currentLookAt);
-    } else {
-      const orbitRadius = ORBIT_RADIUS_DESKTOP;
-      camera.position.x = Math.sin(time * ORBIT_SPEED) * orbitRadius;
-      camera.position.z = Math.cos(time * ORBIT_SPEED) * orbitRadius;
-
-      const targetY = CAMERA_TARGET_Y_DESKTOP;
-
-      const introProgress =
-        startTime.value === 0
-          ? 0
-          : Math.min(1, (now - startTime.value) / INTRO_DURATION_MS);
-
-      if (startTime.value === 0) {
-        camera.position.y = CAMERA_START_Y;
-        camera.position.x =
-          Math.sin(time * ORBIT_SPEED + Math.PI * 2) * orbitRadius;
-        camera.position.z =
-          Math.cos(time * ORBIT_SPEED + Math.PI * 2) * orbitRadius;
-      } else if (introProgress < 1) {
-        const ease = 1 - Math.pow(1 - introProgress, 3);
-        const startY = CAMERA_START_Y;
-        const currentY = startY + (targetY - startY) * ease;
-        camera.position.y = currentY;
-
-        const spiralAngle = (1 - ease) * Math.PI * 2;
-        camera.position.x =
-          Math.sin(time * ORBIT_SPEED + spiralAngle) * orbitRadius;
-        camera.position.z =
-          Math.cos(time * ORBIT_SPEED + spiralAngle) * orbitRadius;
-      } else {
-        if (Math.abs(camera.position.y - targetY) > 1) {
-          camera.position.y +=
-            (targetY - camera.position.y) * CAMERA_LERP_FACTOR;
-        }
-      }
-
-      const targetLookAt = new Vector3(0, 0, 0);
-      currentLookAt.lerp(targetLookAt, CAMERA_LOOK_AT_LERP);
-      camera.lookAt(currentLookAt);
-    }
-  }
-
-  if (composer) {
-    composer.render();
-  } else {
-    renderer.render(scene, camera);
-  }
+  updateMultiplayer(dt);
+  updateCityMaterials();
+  updateSparks();
+  updateCamera(time, now);
+  renderFrame();
 }
 
 function playPewSound(pos?: Vector3) {

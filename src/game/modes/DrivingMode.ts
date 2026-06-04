@@ -16,6 +16,7 @@ import {
   Object3D,
 } from "three";
 import { getHeight, getNormal, applyCarOrientation } from "../../utils/HeightMap";
+import { handleControlsKeyDown, handleControlsKeyUp } from "../../utils/controls";
 
 export class DrivingMode implements GameMode {
   context: GameContext | null = null;
@@ -486,48 +487,12 @@ export class DrivingMode implements GameMode {
 
   onKeyDown(event: KeyboardEvent) {
     if (!this.context || this.context.isGameOver.value) return;
-    const c = this.context.controls.value;
-    switch (event.key.toLowerCase()) {
-      case "w":
-      case "arrowup":
-        c.forward = true;
-        break;
-      case "s":
-      case "arrowdown":
-        c.backward = true;
-        break;
-      case "a":
-      case "arrowleft":
-        c.left = true;
-        break;
-      case "d":
-      case "arrowright":
-        c.right = true;
-        break;
-    }
+    handleControlsKeyDown(this.context.controls.value, event);
   }
 
   onKeyUp(event: KeyboardEvent) {
     if (!this.context || this.context.isGameOver.value) return;
-    const c = this.context.controls.value;
-    switch (event.key.toLowerCase()) {
-      case "w":
-      case "arrowup":
-        c.forward = false;
-        break;
-      case "s":
-      case "arrowdown":
-        c.backward = false;
-        break;
-      case "a":
-      case "arrowleft":
-        c.left = false;
-        break;
-      case "d":
-      case "arrowright":
-        c.right = false;
-        break;
-    }
+    handleControlsKeyUp(this.context.controls.value, event);
   }
 
   onClick(_event: MouseEvent) {}

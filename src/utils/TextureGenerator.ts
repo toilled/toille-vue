@@ -17,6 +17,33 @@ function drawWindow(ctx: CanvasRenderingContext2D, x: number, y: number, w: numb
   }
 }
 
+const GRID_COLS = 16;
+const GRID_ROWS = 64;
+const GRID_PADDING_X = 8;
+const GRID_PADDING_Y = 4;
+
+function createGridCanvas(
+  ctx: CanvasRenderingContext2D,
+  fillColor: string,
+  cellColor: string | null,
+  drawCell: (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) => void,
+) {
+  ctx.fillStyle = fillColor;
+  ctx.fillRect(0, 0, 1024, 1024);
+
+  const w = (1024 / GRID_COLS) - GRID_PADDING_X;
+  const h = (1024 / GRID_ROWS) - GRID_PADDING_Y;
+
+  if (cellColor) ctx.fillStyle = cellColor;
+  for (let r = 0; r < GRID_ROWS; r++) {
+    for (let c = 0; c < GRID_COLS; c++) {
+      const x = c * (w + GRID_PADDING_X) + GRID_PADDING_X / 2;
+      const y = r * (h + GRID_PADDING_Y) + GRID_PADDING_Y / 2;
+      drawCell(ctx, x, y, w, h);
+    }
+  }
+}
+
 // Reusable Texture for Windows
 export function createWindowTexture() {
   const canvas = document.createElement("canvas");
@@ -24,23 +51,7 @@ export function createWindowTexture() {
   canvas.height = 1024;
   const ctx = canvas.getContext("2d");
   if (ctx) {
-    ctx.fillStyle = "#111111";
-    ctx.fillRect(0, 0, 1024, 1024);
-
-    const cols = 16;
-    const rows = 64;
-    const paddingX = 8;
-    const paddingY = 4;
-    const w = (1024 / cols) - paddingX;
-    const h = (1024 / rows) - paddingY;
-
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        const x = c * (w + paddingX) + paddingX / 2;
-        const y = r * (h + paddingY) + paddingY / 2;
-        drawWindow(ctx, x, y, w, h);
-      }
-    }
+    createGridCanvas(ctx, "#111111", null, drawWindow);
   }
   const texture = new CanvasTexture(canvas);
   texture.wrapS = RepeatWrapping;
@@ -92,24 +103,9 @@ export function createWindowRoughnessMap() {
   canvas.height = 1024;
   const ctx = canvas.getContext("2d");
   if (ctx) {
-    ctx.fillStyle = "#ffffff"; // White = rough (frames)
-    ctx.fillRect(0, 0, 1024, 1024);
-
-    const cols = 16;
-    const rows = 64;
-    const paddingX = 8;
-    const paddingY = 4;
-    const w = (1024 / cols) - paddingX;
-    const h = (1024 / rows) - paddingY;
-
-    ctx.fillStyle = "#222222"; // Dark = smooth (glass)
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        const x = c * (w + paddingX) + paddingX / 2;
-        const y = r * (h + paddingY) + paddingY / 2;
-        ctx.fillRect(x, y, w, h);
-      }
-    }
+    createGridCanvas(ctx, "#ffffff", "#222222", (ctx, x, y, w, h) => {
+      ctx.fillRect(x, y, w, h);
+    });
   }
   const texture = new CanvasTexture(canvas);
   texture.wrapS = RepeatWrapping;

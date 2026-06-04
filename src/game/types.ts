@@ -61,6 +61,8 @@ export interface GameContext {
   updateObjective?: (missionIdx: number, objIdx: number) => void;
   advanceDialogue?: () => void;
   dismissBriefing?: () => void;
+  nearStoryTrigger?: Ref<boolean>;
+  activateStoryTrigger?: () => void;
 }
 
 export interface StoryObjective {

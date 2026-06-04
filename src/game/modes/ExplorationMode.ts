@@ -1,6 +1,7 @@
 import { GameContext, GameMode } from "../types";
 import { carAudio } from "../audio/CarAudio";
 import { BOUNDS, CELL_SIZE, START_OFFSET } from "../config";
+import { STORY_TRIGGER_POSITION } from "../StoryItemsManager";
 import { Vector3, Euler, Quaternion } from "three";
 import { getHeight } from "../../utils/HeightMap";
 
@@ -166,6 +167,7 @@ export class ExplorationMode implements GameMode {
     this.enforceCameraBounds();
     this.updateJumpAndBob();
     this.checkCarCollisions();
+    this.checkStoryTriggerProximity(camera.position.x, camera.position.z);
     this.updateStoryObjectives(camera.position.x, camera.position.z);
     this.updateMinimap(camera.position.x, camera.position.z);
   }
@@ -174,6 +176,20 @@ export class ExplorationMode implements GameMode {
     if (!ctx?.updateObjective || !ctx?.storyState) return false;
     if (!ss?.active || ss.showingBriefing || ss.showingDialogue || ss.missionComplete) return false;
     return true;
+  }
+
+  private checkStoryTriggerProximity(px: number, pz: number) {
+    const ctx = this.context;
+    if (!ctx?.nearStoryTrigger || !ctx?.storyState) return;
+    const ss = ctx.storyState.value;
+    if (ss.active || ss.missions.length === 0) {
+      ctx.nearStoryTrigger.value = false;
+      return;
+    }
+    const dx = px - STORY_TRIGGER_POSITION.x;
+    const dz = pz - STORY_TRIGGER_POSITION.z;
+    const dist = Math.sqrt(dx * dx + dz * dz);
+    ctx.nearStoryTrigger.value = dist < 50;
   }
 
   private updateStoryObjectives(px: number, pz: number) {
@@ -231,6 +247,8 @@ export class ExplorationMode implements GameMode {
       this.context.dismissBriefing();
     } else if (ss?.showingDialogue && this.context.advanceDialogue) {
       this.context.advanceDialogue();
+    } else if (this.context.nearStoryTrigger?.value && this.context.activateStoryTrigger) {
+      this.context.activateStoryTrigger();
     }
   }
 

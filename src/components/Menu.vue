@@ -23,18 +23,7 @@
       >
         <img src="/person-icon.svg" alt="Explore City" class="icon" />
       </div>
-      <div
-        @click="$emit('story')"
-        class="icon-wrapper"
-        :class="{ disabled: !cityOn || cityFallback }"
-        title="Story Mode"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.5" class="icon">
-          <path d="M4 6h16M4 12h16M4 18h12" stroke-linecap="round" />
-          <circle cx="18" cy="18" r="3" />
-          <path d="M18 16v2l1 1" stroke-linecap="round" />
-        </svg>
-      </div>
+
       <div
         @click="$emit('demo')"
         class="icon-wrapper"
@@ -153,7 +142,6 @@ defineProps<{
 
 const emit = defineEmits<{
   (e: "explore"): void;
-  (e: "story"): void;
   (e: "toggle-content"): void;
   (e: "demo"): void;
 }>();

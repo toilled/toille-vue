@@ -31,6 +31,25 @@
     :visible="isExplorationMode && storyState.active"
     :currentMissionId="minimapData.currentMissionId"
   />
+  <Transition name="fade">
+    <div v-if="isExplorationMode && !storyState.active && !storyItemsManager?.isTriggerHidden()" id="signal-finder">
+      <div id="signal-label">SIGNAL DETECTED</div>
+      <div id="signal-bars">
+        <div v-for="i in 5" :key="i" class="signal-bar" :class="{ active: signalStrength > i * 0.2 }"></div>
+      </div>
+      <div id="signal-strength">{{ Math.round(signalStrength * 100) }}%</div>
+    </div>
+  </Transition>
+  <Transition name="fade">
+    <div v-if="showStoryHint && isExplorationMode && !storyState.active && signalStrength > 0.4" id="story-hint">
+      A faint encrypted transmission originates from the northwest...
+    </div>
+  </Transition>
+  <Transition name="fade">
+    <div v-if="nearStoryTrigger && isExplorationMode && !storyState.active" id="story-trigger-prompt">
+      [E] EXAMINE DEAD DROP
+    </div>
+  </Transition>
   <StoryDialog
     :visible="storyState.active"
     :showingBriefing="storyState.showingBriefing"
@@ -51,6 +70,7 @@ import MiniMap from "./MiniMap.vue";
 import StoryDialog from "./StoryDialog.vue";
 import { ScoreService, type ScoreEntry } from "../utils/ScoreService";
 import { StoryManager } from "../game/StoryManager";
+import { StoryItemsManager, STORY_TRIGGER_POSITION } from "../game/StoryItemsManager";
 import {
   AdditiveBlending,
   BufferAttribute,
@@ -305,6 +325,11 @@ function createLeaderboardTexture() {
 }
 
 let storyManager: StoryManager;
+let storyItemsManager: StoryItemsManager | null = null;
+
+const nearStoryTrigger = ref(false);
+const signalStrength = ref(0);
+const showStoryHint = ref(false);
 
 const storyState = ref<StoryState>({
   active: false,
@@ -327,6 +352,7 @@ const minimapData = ref<MinimapData>({
 function updateStoryObjective(missionIdx: number, objIdx: number) {
   if (storyManager) {
     storyManager.completeObjective(missionIdx, objIdx);
+    storyItemsManager?.completeObjective(missionIdx, objIdx);
   }
 }
 
@@ -340,6 +366,20 @@ function dismissStoryBriefing() {
   if (storyManager) {
     storyManager.dismissBriefing();
   }
+}
+
+function activateStoryTrigger() {
+  if (isFallbackMode.value) return;
+  if (!isGameMode.value) {
+    isGameMode.value = true;
+    isExplorationMode.value = true;
+    emit("game-start");
+    gameModeManager.setMode(new ExplorationMode());
+  }
+  storyManager.start();
+  storyItemsManager?.hideTrigger();
+  storyItemsManager?.setCurrentMission(0);
+  nearStoryTrigger.value = false;
 }
 
 const isMobile = ref(false);
@@ -637,6 +677,11 @@ onMounted(() => {
   // Story manager
   storyManager = new StoryManager(storyState);
 
+  // Story items (trigger + objective markers)
+  storyItemsManager = new StoryItemsManager(scene);
+  storyItemsManager.createTrigger();
+  storyItemsManager.createAllObjectiveMarkers();
+
   // Initialize Game Context and Manager
   const context: GameContext = {
     scene,
@@ -666,6 +711,8 @@ onMounted(() => {
     updateObjective: updateStoryObjective,
     advanceDialogue: advanceStoryDialogue,
     dismissBriefing: dismissStoryBriefing,
+    nearStoryTrigger,
+    activateStoryTrigger,
   };
   gameModeManager = new GameModeManager(context);
 
@@ -700,6 +747,13 @@ function onKeyUp(event: KeyboardEvent) {
     event.preventDefault();
   }
 }
+
+watch(
+  () => storyState.value.currentMissionIndex,
+  (newIdx) => {
+    storyItemsManager?.setCurrentMission(newIdx);
+  },
+);
 
 watch(showSplash, (newVal, oldVal) => {
   if (oldVal === true && newVal === false) {
@@ -960,6 +1014,20 @@ function updateMultiplayer(dt: number) {
   }
 }
 
+function updateSignalStrength() {
+  if (isExplorationMode.value && !storyState.active && !storyItemsManager?.isTriggerHidden()) {
+    const dx = camera.position.x - STORY_TRIGGER_POSITION.x;
+    const dz = camera.position.z - STORY_TRIGGER_POSITION.z;
+    const dist = Math.sqrt(dx * dx + dz * dz);
+    signalStrength.value = Math.max(0, Math.min(1, 1 - dist / 1500));
+    if (signalStrength.value > 0.05 && !showStoryHint.value) {
+      showStoryHint.value = true;
+    }
+  } else {
+    signalStrength.value = 0;
+  }
+}
+
 function updateCityMaterials() {
   if (!cityBuilder) return;
   const materials = cityBuilder.getAudioMaterials();
@@ -1075,6 +1143,8 @@ function animate() {
   skyEffects.update(dt);
   gameModeManager.update(dt, time);
   trafficSystem.update(activeCar.value);
+  storyItemsManager?.updateTriggerAnimation(time * 1000);
+  updateSignalStrength();
   updateMultiplayer(dt);
   updateCityMaterials();
   updateSparks();
@@ -1170,6 +1240,10 @@ onBeforeUnmount(() => {
   if (skyEffects && skyEffects.dispose) {
     skyEffects.dispose();
   }
+  if (storyItemsManager) {
+    storyItemsManager.dispose();
+    storyItemsManager = null;
+  }
 });
 </script>
 
@@ -1252,5 +1326,89 @@ onBeforeUnmount(() => {
     transform: translate(0);
     clip-path: inset(0 0 0 0);
   }
+}
+
+#story-trigger-prompt {
+  position: fixed;
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: "Courier New", Courier, monospace;
+  font-size: 14px;
+  color: #ff00cc;
+  text-shadow: 0 0 12px #ff00cc, 0 0 24px rgba(255, 0, 204, 0.5);
+  letter-spacing: 3px;
+  z-index: 25;
+  pointer-events: none;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+#signal-finder {
+  position: fixed;
+  top: 16px;
+  right: 210px;
+  z-index: 16;
+  background: rgba(5, 5, 20, 0.85);
+  border: 1px solid rgba(255, 0, 204, 0.25);
+  padding: 8px 12px;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#signal-label {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 9px;
+  color: #ff00cc;
+  letter-spacing: 2px;
+  text-shadow: 0 0 6px rgba(255, 0, 204, 0.3);
+}
+
+#signal-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 16px;
+}
+
+.signal-bar {
+  width: 4px;
+  background: rgba(255, 0, 204, 0.15);
+  transition: all 0.3s ease;
+}
+
+.signal-bar:nth-child(1) { height: 4px; }
+.signal-bar:nth-child(2) { height: 7px; }
+.signal-bar:nth-child(3) { height: 10px; }
+.signal-bar:nth-child(4) { height: 13px; }
+.signal-bar:nth-child(5) { height: 16px; }
+
+.signal-bar.active {
+  background: #ff00cc;
+  box-shadow: 0 0 6px #ff00cc;
+}
+
+#signal-strength {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 10px;
+  color: rgba(255, 0, 204, 0.7);
+  min-width: 28px;
+  text-align: right;
+}
+
+#story-hint {
+  position: fixed;
+  bottom: 150px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: "Courier New", Courier, monospace;
+  font-size: 12px;
+  color: rgba(255, 0, 204, 0.6);
+  text-shadow: 0 0 8px rgba(255, 0, 204, 0.2);
+  letter-spacing: 1px;
+  z-index: 25;
+  pointer-events: none;
+  text-align: center;
 }
 </style>

@@ -130,6 +130,10 @@ vi.mock("three", () => {
       translate: vi.fn(),
     })),
     SphereGeometry: vi.fn(),
+    OctahedronGeometry: vi.fn(),
+    TorusGeometry: vi.fn(() => ({
+      rotateX: vi.fn(),
+    })),
     ConeGeometry: vi.fn(() => ({
       translate: vi.fn(),
     })),

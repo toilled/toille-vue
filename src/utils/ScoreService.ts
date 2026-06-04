@@ -19,19 +19,25 @@ function validateScore(score: number): number {
   return Math.max(MIN_SCORE, Math.min(score, MAX_SCORE));
 }
 
+async function handleResponse(res: Response): Promise<ScoreEntry[] | null> {
+  if (res.ok) {
+    const contentType = res.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      const data = await res.json();
+      if (Array.isArray(data)) return data;
+    }
+  }
+  return null;
+}
+
 export const ScoreService = {
   async getTopScores(): Promise<ScoreEntry[]> {
     try {
       const res = await fetch("/api/scores");
+      const data = await handleResponse(res);
+      if (data) return data;
 
-      if (res.ok) {
-        const contentType = res.headers.get("content-type");
-        if (contentType && contentType.includes("application/json")) {
-          const data = await res.json();
-          if (Array.isArray(data)) return data;
-        }
-      } else {
-        // API exists but returned error (e.g. 500 No Database in Preview)
+      if (!res.ok) {
         console.warn(
           "Leaderboard API returned error, falling back to local storage.",
           res.status,
@@ -59,18 +65,13 @@ export const ScoreService = {
         body: JSON.stringify({ name: sanitizedName, score: validatedScore }),
       });
 
-      if (res.ok) {
-        const contentType = res.headers.get("content-type");
-        if (contentType && contentType.includes("application/json")) {
-          const data = await res.json();
-          if (Array.isArray(data)) return data;
-        }
-      } else {
-        console.warn(
-          "Leaderboard API returned error during submission, falling back to local storage.",
-          res.status,
-        );
-      }
+      const data = await handleResponse(res);
+      if (data) return data;
+
+      console.warn(
+        "Leaderboard API returned error during submission, falling back to local storage.",
+        res.status,
+      );
     } catch (e) {
       console.warn("API unavailable, using local storage:", e);
     }

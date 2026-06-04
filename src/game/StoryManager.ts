@@ -189,11 +189,17 @@ export class StoryManager {
     this.state.value = { ...s };
   }
 
-  // fallow-ignore-next-line unused-class-member
-  getPlayerObjective(playerX: number, playerZ: number, proximity = 45): { missionIdx: number; objIdx: number } | null {
+  private getCurrentMission() {
     const s = this.state.value;
     if (!s.active || s.showingBriefing || s.showingDialogue || s.missionComplete) return null;
     const mission = s.missions[s.currentMissionIndex];
+    if (!mission) return null;
+    return mission;
+  }
+
+  // fallow-ignore-next-line unused-class-member
+  getPlayerObjective(playerX: number, playerZ: number, proximity = 45): { missionIdx: number; objIdx: number } | null {
+    const mission = this.getCurrentMission();
     if (!mission) return null;
     for (let i = 0; i < mission.objectives.length; i++) {
       const obj = mission.objectives[i];
@@ -202,7 +208,7 @@ export class StoryManager {
       const dz = playerZ - obj.z;
       const dist = Math.sqrt(dx * dx + dz * dz);
       if (dist < proximity) {
-        return { missionIdx: s.currentMissionIndex, objIdx: i };
+        return { missionIdx: this.state.value.currentMissionIndex, objIdx: i };
       }
     }
     return null;
@@ -210,9 +216,7 @@ export class StoryManager {
 
   // fallow-ignore-next-line unused-class-member
   getCurrentObjectivePosition(): { x: number; z: number } | null {
-    const s = this.state.value;
-    if (!s.active || s.showingBriefing || s.showingDialogue || s.missionComplete) return null;
-    const mission = s.missions[s.currentMissionIndex];
+    const mission = this.getCurrentMission();
     if (!mission) return null;
     for (const obj of mission.objectives) {
       if (!obj.completed) {

@@ -4,6 +4,7 @@ import { BOUNDS, CELL_SIZE, START_OFFSET } from "../config";
 import { STORY_TRIGGER_POSITION } from "../StoryItemsManager";
 import { Vector3, Euler, Quaternion } from "three";
 import { getHeight } from "../../utils/HeightMap";
+import { handleControlsKeyDown, handleControlsKeyUp } from "../../utils/controls";
 
 export class ExplorationMode implements GameMode {
   context: GameContext | null = null;
@@ -213,6 +214,13 @@ export class ExplorationMode implements GameMode {
     }
   }
 
+  private getMinimapObjectives(ss: any) {
+    if (!ss.active || !ss.missions[ss.currentMissionIndex]) return [];
+    return ss.missions[ss.currentMissionIndex].objectives.map((o: any) => ({
+      x: o.x, z: o.z, completed: o.completed, label: o.label, type: o.type,
+    }));
+  }
+
   private updateMinimap(px: number, pz: number) {
     const ctx = this.context;
     if (!ctx || !ctx.minimapData || !ctx.storyState) return;
@@ -224,13 +232,7 @@ export class ExplorationMode implements GameMode {
     mdata.currentMissionId = ss.active && !ss.missionComplete
       ? ss.missions[ss.currentMissionIndex]?.id ?? ""
       : "";
-    const objs: { x: number; z: number; completed: boolean; label: string; type: string }[] = [];
-    if (ss.active && ss.missions[ss.currentMissionIndex]) {
-      for (const o of ss.missions[ss.currentMissionIndex].objectives) {
-        objs.push({ x: o.x, z: o.z, completed: o.completed, label: o.label, type: o.type });
-      }
-    }
-    mdata.objectives = objs;
+    mdata.objectives = this.getMinimapObjectives(ss);
     ctx.minimapData.value = { ...mdata };
   }
 
@@ -240,38 +242,25 @@ export class ExplorationMode implements GameMode {
     }
   }
 
-  private handleStoryInteraction(event: KeyboardEvent) {
-    if (!this.context || (event.key !== "e" && event.key !== "E")) return;
+  private advanceStoryFromEvent() {
+    if (!this.context) return false;
     const ss = this.context.storyState?.value;
     if (ss?.showingBriefing && this.context.dismissBriefing) {
       this.context.dismissBriefing();
-    } else if (ss?.showingDialogue && this.context.advanceDialogue) {
-      this.context.advanceDialogue();
-    } else if (this.context.nearStoryTrigger?.value && this.context.activateStoryTrigger) {
-      this.context.activateStoryTrigger();
+      return true;
     }
+    if (ss?.showingDialogue && this.context.advanceDialogue) {
+      this.context.advanceDialogue();
+      return true;
+    }
+    return false;
   }
 
-  private handleControlsKey(event: KeyboardEvent) {
-    if (!this.context) return;
-    const c = this.context.controls.value;
-    switch (event.key.toLowerCase()) {
-      case "w":
-      case "arrowup":
-        c.forward = true;
-        break;
-      case "s":
-      case "arrowdown":
-        c.backward = true;
-        break;
-      case "a":
-      case "arrowleft":
-        c.left = true;
-        break;
-      case "d":
-      case "arrowright":
-        c.right = true;
-        break;
+  private handleStoryInteraction(event: KeyboardEvent) {
+    if (!this.context || (event.key !== "e" && event.key !== "E")) return;
+    if (this.advanceStoryFromEvent()) return;
+    if (this.context.nearStoryTrigger?.value && this.context.activateStoryTrigger) {
+      this.context.activateStoryTrigger();
     }
   }
 
@@ -284,50 +273,19 @@ export class ExplorationMode implements GameMode {
     }
 
     this.handleStoryInteraction(event);
-    this.handleControlsKey(event);
+    handleControlsKeyDown(this.context.controls.value, event);
   }
 
   onKeyUp(event: KeyboardEvent) {
     if (!this.context) return;
-    const c = this.context.controls.value;
-    switch (event.key.toLowerCase()) {
-      case "w":
-      case "arrowup":
-        c.forward = false;
-        break;
-      case "s":
-      case "arrowdown":
-        c.backward = false;
-        break;
-      case "a":
-      case "arrowleft":
-        c.left = false;
-        break;
-      case "d":
-      case "arrowright":
-        c.right = false;
-        break;
-    }
+    handleControlsKeyUp(this.context.controls.value, event);
   }
 
   onClick(_event: MouseEvent) {
     if (!this.context) return;
-    if (this.context.storyState?.value.showingDialogue) {
-      if (this.context.advanceDialogue) {
-        this.context.advanceDialogue();
-        return;
-      }
-    }
-    if (this.context.storyState?.value.showingBriefing) {
-      if (this.context.dismissBriefing) {
-        this.context.dismissBriefing();
-        return;
-      }
-    }
-    if (!this.context.isMobile.value) {
-      if (document.pointerLockElement !== document.body) {
-        document.body.requestPointerLock();
-      }
+    if (this.advanceStoryFromEvent()) return;
+    if (!this.context.isMobile.value && document.pointerLockElement !== document.body) {
+      document.body.requestPointerLock();
     }
   }
 

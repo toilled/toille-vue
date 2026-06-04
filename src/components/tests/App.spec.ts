@@ -29,6 +29,32 @@ vi.mock("../../configs/titles.json", () => ({
   },
 }));
 
+async function mountApp(stubs: Record<string, unknown> = {}) {
+  const router = createTestRouter();
+  router.push("/");
+  await router.isReady();
+  const app = mount(App, {
+    global: {
+      plugins: [router],
+      stubs: { Starfield: true, ...stubs },
+    },
+  });
+  await flushPromises();
+  return app;
+}
+
+async function scrollToBottom(el: any) {
+  Object.defineProperty(document.documentElement, "scrollHeight", {
+    value: 2000,
+    configurable: true,
+  });
+  window.innerHeight = 800;
+  window.scrollY = 1200;
+  window.dispatchEvent(new Event("scroll"));
+  await new Promise((r) => setTimeout(r, 30));
+  await flushPromises();
+}
+
 describe("App.vue", () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let wrapper: any;
@@ -72,37 +98,14 @@ describe("App.vue", () => {
   });
 
   it("renders the main components", async () => {
-    const router = createTestRouter();
-    router.push("/");
-    await router.isReady();
-    wrapper = mount(App, {
-      global: {
-        plugins: [router],
-        stubs: {
-          "router-view": true,
-          Starfield: true,
-        },
-      },
-    });
-    await flushPromises();
+    wrapper = await mountApp({ "router-view": true });
     expect(wrapper.findComponent({ name: "Title" }).exists()).toBe(true);
     expect(wrapper.findComponent({ name: "Menu" }).exists()).toBe(true);
     expect(wrapper.find("router-view-stub").exists()).toBe(true);
   });
 
   it("toggles the Activity component", async () => {
-    const router = createTestRouter();
-    router.push("/");
-    await router.isReady();
-    wrapper = mount(App, {
-      global: {
-        plugins: [router],
-        stubs: {
-          Starfield: true,
-        },
-      },
-    });
-    await flushPromises();
+    wrapper = await mountApp();
     const title = wrapper.findComponent({ name: "Title" });
     await title.vm.$emit("activity");
     await flushPromises();
@@ -113,18 +116,7 @@ describe("App.vue", () => {
   });
 
   it("toggles the Suggestion component", async () => {
-    const router = createTestRouter();
-    router.push("/");
-    await router.isReady();
-    wrapper = mount(App, {
-      global: {
-        plugins: [router],
-        stubs: {
-          Starfield: true,
-        },
-      },
-    });
-    await flushPromises();
+    wrapper = await mountApp();
     const title = wrapper.findComponent({ name: "Title" });
     await title.vm.$emit("joke");
     await flushPromises();
@@ -135,51 +127,28 @@ describe("App.vue", () => {
   });
 
   it("toggles the Checker component", async () => {
-    const router = createTestRouter();
-    router.push("/");
-    await router.isReady();
-    vi.useFakeTimers();
-    wrapper = mount(App, {
-      global: {
-        plugins: [router],
-        stubs: {
-          Starfield: true,
-        },
-      },
-    });
-    await flushPromises();
-    vi.advanceTimersByTime(2000);
-    await flushPromises();
+    wrapper = await mountApp();
+
+    await scrollToBottom(wrapper);
+
     const footer = wrapper.find("footer");
     await footer.trigger("click");
     await flushPromises();
     expect(wrapper.findComponent({ name: "Checker" }).exists()).toBe(true);
-    vi.useRealTimers();
   });
 
-  it("shows and hides the hint", async () => {
-    const router = createTestRouter();
-    router.push("/");
-    await router.isReady();
-    vi.useFakeTimers();
-    wrapper = mount(App, {
-      global: {
-        plugins: [router],
-        stubs: {
-          Starfield: true,
-          TypingText: true,
-        },
-      },
-    });
-    await flushPromises();
+  it("shows and hides the hint on scroll", async () => {
+    wrapper = await mountApp({ TypingText: true });
     expect(wrapper.findComponent({ name: "TypingText" }).exists()).toBe(false);
-    vi.advanceTimersByTime(2000);
-    await flushPromises();
+
+    await scrollToBottom(wrapper);
     expect(wrapper.findComponent({ name: "TypingText" }).exists()).toBe(true);
-    vi.advanceTimersByTime(3000);
+
+    window.scrollY = 0;
+    window.dispatchEvent(new Event("scroll"));
+    await new Promise((r) => setTimeout(r, 30));
     await flushPromises();
     expect(wrapper.findComponent({ name: "TypingText" }).exists()).toBe(false);
-    vi.useRealTimers();
   });
 
   it("updates the document title on route change", async () => {

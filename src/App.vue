@@ -39,7 +39,7 @@
       </div>
     </main>
 
-    <Transition name="fade">
+    <Transition name="slide-fade">
       <footer
         class="app-footer"
         v-if="noFootersShowing && showHint"
@@ -52,13 +52,13 @@
       </footer>
     </Transition>
 
-    <Transition name="fade">
+    <Transition name="slide-fade">
       <Checker v-if="checker" :class="{ 'fade-out': gameMode }" />
     </Transition>
-    <Transition name="fade">
+    <Transition name="slide-fade">
       <Activity v-show="activity" :class="{ 'fade-out': gameMode }" />
     </Transition>
-    <Transition name="fade">
+    <Transition name="slide-fade">
       <Suggestion
         v-show="joke"
         :class="{ 'fade-out': gameMode }"
@@ -296,6 +296,9 @@ function handleScroll() {
     scrollRafId = requestAnimationFrame(() => {
       scrollRafId = null;
       updateActiveSection();
+      const scrollBottom = window.innerHeight + window.scrollY;
+      const pageHeight = document.documentElement.scrollHeight;
+      showHint.value = scrollBottom >= pageHeight - 50;
     });
   }
 }
@@ -323,14 +326,6 @@ onMounted(() => {
   isClient.value = true;
 
   history.scrollRestoration = "manual";
-
-  setTimeout(() => {
-    showHint.value = true;
-  }, 2000);
-
-  setTimeout(() => {
-    showHint.value = false;
-  }, 5000);
 
   let lastTouchTime = 0;
 
@@ -490,6 +485,26 @@ html.fx .app-header {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: opacity 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              max-height 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              margin 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              padding 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  overflow: hidden;
+  max-height: 300px;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  opacity: 0;
+  max-height: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .fade-out {

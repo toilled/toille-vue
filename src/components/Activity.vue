@@ -21,8 +21,8 @@
         Loading from The Bored API.
       </p>
     </article>
-    <Transition name="fade">
-      <article v-if="!hideHint" style="padding-top: 0; margin-top: 0; margin-bottom: 0">
+    <Transition name="slide-fade">
+      <article v-if="!hideHint">
         <footer style="font-style: oblique; font-size: 0.8em; margin-top: 0">
           Click to update
         </footer>

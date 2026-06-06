@@ -17,6 +17,7 @@
           @explore="startExploration"
           @demo="startDemoMode"
           @toggle-content="toggleContent"
+          @toggle-terminal="toggleTerminal"
         />
       </nav>
     </header>
@@ -67,6 +68,9 @@
         title="Have a laugh!"
       />
     </Transition>
+    <Transition name="fade">
+      <Terminal v-if="terminal" @close="terminal = false" />
+    </Transition>
   </div>
 
   <CyberpunkCity
@@ -90,6 +94,7 @@ const CyberpunkCity = defineAsyncComponent(() => {
 import { cityBackground } from "./utils/CityBackgroundManager";
 import titles from "./configs/titles.json";
 import { Page } from "./interfaces/Page";
+import Terminal from "./components/Terminal.vue";
 
 const visiblePages = computed(() => {
   return pages.filter((page: Page) => !page.hidden);
@@ -99,6 +104,7 @@ const visiblePages = computed(() => {
 const checker = ref(false);
 const activity = ref(false);
 const joke = ref(false);
+const terminal = ref(false);
 const showHint = ref(false);
 const route = useRoute();
 const router = useRouter();
@@ -233,6 +239,10 @@ function toggleActivity() {
 
 function toggleJoke() {
   joke.value = !joke.value;
+}
+
+function toggleTerminal() {
+  terminal.value = !terminal.value;
 }
 
 function getSectionIdFromPage(page: Page): string {

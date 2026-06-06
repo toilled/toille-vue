@@ -120,6 +120,12 @@
           <line x1="3" y1="3" x2="21" y2="21" />
         </svg>
       </div>
+      <div class="icon-wrapper terminal-icon" @click="$emit('toggle-terminal')" title="Open Terminal">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
+          <polyline points="4 17 10 11 4 5" />
+          <line x1="12" y1="19" x2="20" y2="19" />
+        </svg>
+      </div>
       <div class="icon-wrapper">
         <WeatherIcon />
       </div>
@@ -144,6 +150,7 @@ const emit = defineEmits<{
   (e: "explore"): void;
   (e: "toggle-content"): void;
   (e: "demo"): void;
+  (e: "toggle-terminal"): void;
 }>();
 
 const showTools = ref(false);
@@ -303,6 +310,9 @@ const toggleCityBackground = () => {
   }
   .icon-wrapper {
     padding: 0.25rem;
+  }
+  .icon-wrapper.terminal-icon {
+    display: none;
   }
   .icon {
     width: 20px;

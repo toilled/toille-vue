@@ -14,9 +14,9 @@ export function setupPostProcessing(
     const size = renderer.getSize(new Vector2());
 
     const bloomPass = new UnrealBloomPass(size, 1.5, 0.4, 0.85);
-    bloomPass.threshold = 0.5;
-    bloomPass.strength = msaaSamples === 0 ? 0.6 : 1.0;
-    bloomPass.radius = 0.8;
+    bloomPass.threshold = 0.3;
+    bloomPass.strength = msaaSamples === 0 ? 0.8 : 1.2;
+    bloomPass.radius = 0.6;
 
     const outputPass = new OutputPass();
 

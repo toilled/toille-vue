@@ -60,17 +60,17 @@ export class CityBuilder {
     this.createGround();
     this.createBuildings(lbTexture);
 
-    // Setup Fog
-    this.scene.fog = new FogExp2(0x050510, isMobile ? 0.00057 : 0.001);
+    this.scene.fog = new FogExp2(0x0a0015, isMobile ? 0.0005 : 0.0009);
   }
 
   private setupLighting() {
-    const hemiLight = new HemisphereLight(0xffffff, 0x444444, 0.4);
+    const hemiLight = new HemisphereLight(0x220033, 0x050510, 0.6);
     hemiLight.position.set(0, 500, 0);
     this.scene.add(hemiLight);
 
-    this.addDirectionalLight(100, 300, 100, 0xff00cc);
-    this.addDirectionalLight(-100, 300, -100, 0x00ccff);
+    this.addDirectionalLight(150, 350, 100, 0xff00cc);
+    this.addDirectionalLight(-150, 300, -150, 0x00ccff);
+    this.addDirectionalLight(50, 200, -200, 0xaa44ff);
   }
 
   private addDirectionalLight(x: number, y: number, z: number, color: number) {
@@ -434,37 +434,76 @@ export class CityBuilder {
   }
 
   private addNeonStrip(buildingGroup: Group, isLeaderboard: boolean, h: number, w: number, d: number) {
-    if (isLeaderboard || h <= 50 || Math.random() <= 0.6) return;
-    const color = new Color().setHSL(Math.random(), 1.0, 0.5);
-    const strip = new Mesh(this.materials.neonStripGeo, new MeshBasicMaterial({ color }));
-    strip.scale.set(1, h * 0.8, 1);
-    const face = Math.floor(Math.random() * 4);
-    const offset = 0.6;
-    switch (face) {
-      case 0: strip.position.set(0, h / 2, d / 2 + offset); break;
-      case 1: strip.position.set(0, h / 2, -d / 2 - offset); break;
-      case 2: strip.position.set(w / 2 + offset, h / 2, 0); break;
-      case 3: strip.position.set(-w / 2 - offset, h / 2, 0); break;
+    if (isLeaderboard || h <= 40) return;
+    // Add more strips: 0-2 per building
+    const stripCount = Math.random() > 0.6 ? 1 : (Math.random() > 0.3 ? 2 : 0);
+    const usedFaces: number[] = [];
+    for (let s = 0; s < stripCount; s++) {
+      const color = new Color().setHSL(Math.random(), 1.0, 0.5 + Math.random() * 0.2);
+      const strip = new Mesh(this.materials.neonStripGeo, new MeshBasicMaterial({ color }));
+      const stripHeight = h * (0.3 + Math.random() * 0.6);
+      strip.scale.set(1, stripHeight, 1);
+      const face = Math.floor(Math.random() * 4);
+      if (usedFaces.includes(face)) continue;
+      usedFaces.push(face);
+      const offset = 0.6;
+      const yPos = h * (0.3 + Math.random() * 0.5);
+      switch (face) {
+        case 0: strip.position.set(0, yPos, d / 2 + offset); break;
+        case 1: strip.position.set(0, yPos, -d / 2 - offset); break;
+        case 2: strip.position.set(w / 2 + offset, yPos, 0); break;
+        case 3: strip.position.set(-w / 2 - offset, yPos, 0); break;
+      }
+      buildingGroup.add(strip);
     }
-    buildingGroup.add(strip);
   }
 
   private addAntenna(buildingGroup: Group, style: string, h: number) {
-    if (style === "SPIRE" || style === "CYLINDRICAL" || style === "TWISTED" || Math.random() <= 0.7) return;
-    const antenna = new Mesh(this.materials.boxGeo, this.materials.antennaMat);
-    antenna.scale.set(2, 20 + Math.random() * 50, 2);
-    antenna.position.y = h;
-    buildingGroup.add(antenna);
+    if (style === "SPIRE" || style === "CYLINDRICAL" || style === "TWISTED") return;
+    if (Math.random() > 0.4) {
+      const antenna = new Mesh(this.materials.boxGeo, this.materials.antennaMat);
+      antenna.scale.set(1.5, 15 + Math.random() * 40, 1.5);
+      antenna.position.set((Math.random() - 0.5) * 10, h, (Math.random() - 0.5) * 10);
+      buildingGroup.add(antenna);
+    }
+    if (Math.random() > 0.6) {
+      const antenna2 = new Mesh(this.materials.coneGeo, this.materials.antennaMat);
+      antenna2.scale.set(1, 8 + Math.random() * 15, 1);
+      antenna2.position.set((Math.random() - 0.5) * 15, h, (Math.random() - 0.5) * 15);
+      buildingGroup.add(antenna2);
+    }
+  }
+
+  private addRooftopDetails(buildingGroup: Group, style: string, h: number, w: number, d: number) {
+    if (style === "SPIRE" || style === "CYLINDRICAL") return;
+    const detailCount = Math.floor(Math.random() * 3);
+    for (let i = 0; i < detailCount; i++) {
+      const dh = 2 + Math.random() * 6;
+      const dw = 3 + Math.random() * 8;
+      const dd = 3 + Math.random() * 8;
+      const detail = new Mesh(this.materials.boxGeo, this.materials.roofMaterial);
+      detail.scale.set(dw, dh, dd);
+      detail.position.set(
+        (Math.random() - 0.5) * w * 0.6,
+        h,
+        (Math.random() - 0.5) * d * 0.6,
+      );
+      buildingGroup.add(detail);
+    }
   }
 
   private addBillboard(buildingGroup: Group, isLeaderboard: boolean, h: number, w: number, d: number) {
-    if (isLeaderboard || h <= 60 || Math.random() <= 0.7) return;
+    if (isLeaderboard || h <= 50 || Math.random() <= 0.6) return;
     const texIndex = Math.floor(Math.random() * this.materials.billboardMaterials.length);
-    const bbGeo = new PlaneGeometry(20 + Math.random() * 15, 10 + Math.random() * 10);
-    const billboard = new Mesh(bbGeo, this.materials.billboardMaterials[texIndex]);
+    const bbW = 20 + Math.random() * 20;
+    const bbH = 12 + Math.random() * 14;
+    const bbGeo = new PlaneGeometry(bbW, bbH);
+    const billboardMat = this.materials.billboardMaterials[texIndex];
+    billboardMat.opacity = 0.85 + Math.random() * 0.15;
+    const billboard = new Mesh(bbGeo, billboardMat);
     const face = Math.floor(Math.random() * 4);
     const offset = 1;
-    const yPos = h * (0.5 + Math.random() * 0.3);
+    const yPos = h * (0.4 + Math.random() * 0.35);
     switch (face) {
       case 0: billboard.position.set(0, yPos, d / 2 + offset); break;
       case 1: billboard.position.set(0, yPos, -d / 2 - offset); billboard.rotation.y = Math.PI; break;
@@ -477,6 +516,7 @@ export class CityBuilder {
   private addDecorations(buildingGroup: Group, style: string, isLeaderboard: boolean, h: number, w: number, d: number) {
     this.addNeonStrip(buildingGroup, isLeaderboard, h, w, d);
     this.addAntenna(buildingGroup, style, h);
+    this.addRooftopDetails(buildingGroup, style, h, w, d);
     this.addBillboard(buildingGroup, isLeaderboard, h, w, d);
   }
 

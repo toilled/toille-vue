@@ -605,7 +605,7 @@ onMounted(() => {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = quality.shadowMapType === 1 ? PCFShadowMap : PCFSoftShadowMap;
   renderer.toneMapping = ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.2;
+  renderer.toneMappingExposure = 1.4;
   canvasContainer.value.appendChild(renderer.domElement);
 
   // Post Processing

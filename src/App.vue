@@ -313,7 +313,11 @@ function handleScroll() {
       updateActiveSection();
       const scrollBottom = window.innerHeight + window.scrollY;
       const pageHeight = document.documentElement.scrollHeight;
-      showHint.value = scrollBottom >= pageHeight - 50;
+      if (scrollBottom >= pageHeight - 50) {
+        showHint.value = true;
+      } else if (scrollBottom <= pageHeight - 150) {
+        showHint.value = false;
+      }
     });
   }
 }

@@ -54,17 +54,17 @@
     </Transition>
 
     <Transition name="slide-fade">
-      <div class="container" v-if="checker">
+      <div class="container" style="min-width:0" v-if="checker">
         <Checker :class="{ 'fade-out': gameMode }" />
       </div>
     </Transition>
     <Transition name="slide-fade">
-      <div class="container" v-show="activity">
+      <div class="container" style="min-width:0" v-show="activity">
         <Activity :class="{ 'fade-out': gameMode }" />
       </div>
     </Transition>
     <Transition name="slide-fade">
-      <div class="container" v-show="joke">
+      <div class="container" style="min-width:0" v-show="joke">
         <Suggestion
           :class="{ 'fade-out': gameMode }"
           url="https://icanhazdadjoke.com/"

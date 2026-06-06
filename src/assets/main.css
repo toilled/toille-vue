@@ -291,6 +291,7 @@ h2 > a {
   max-width: var(--content-width);
   margin: 1.5rem auto;
   width: 100%;
+  box-sizing: border-box;
 }
 
 section p,
@@ -424,11 +425,6 @@ section p:last-child,
    ============================================ */
 @media (max-width: 600px) {
   .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-
-  .content-container {
     padding-left: 1rem;
     padding-right: 1rem;
   }

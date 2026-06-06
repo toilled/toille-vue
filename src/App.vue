@@ -48,7 +48,7 @@
         @click="checker = !checker"
       >
         <div class="container">
-          <TypingText text="The titles might be clickable..." />
+          <TypingText text="The titles might be clickable..." :skip-animation="hintHasBeenShown" />
         </div>
       </footer>
     </Transition>
@@ -111,6 +111,13 @@ const activity = ref(false);
 const joke = ref(false);
 const terminal = ref(false);
 const showHint = ref(false);
+const hintHasBeenShown = ref(false);
+
+watch(showHint, (val) => {
+  if (val && !hintHasBeenShown.value) {
+    hintHasBeenShown.value = true;
+  }
+}, { flush: 'post' });
 const route = useRoute();
 const router = useRouter();
 const gameMode = ref(false);

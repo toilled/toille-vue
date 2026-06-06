@@ -3,16 +3,16 @@
 </template>
 
 <script setup lang="ts">
-
-
 const props = defineProps<{
   text: string;
+  skipAnimation?: boolean;
 }>();
 
-const displayedText = ref('');
+const displayedText = ref(props.skipAnimation ? props.text : '');
 let index = 0;
 
 onMounted(() => {
+  if (props.skipAnimation) return;
   const typing = setInterval(() => {
     if (index < props.text.length) {
       displayedText.value += props.text.charAt(index);

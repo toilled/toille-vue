@@ -209,7 +209,7 @@ export class StoryItemsManager {
     if (glow) {
       glow.rotation.y = time * 0.5;
       glow.position.y = 10 + Math.sin(time * 2) * 0.5;
-      glow.material.opacity = 0.2 + Math.sin(time * 3) * 0.15;
+      (glow.material as MeshBasicMaterial).opacity = 0.2 + Math.sin(time * 3) * 0.15;
     }
   }
 

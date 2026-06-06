@@ -32,7 +32,7 @@
     :currentMissionId="minimapData.currentMissionId"
   />
   <Transition name="fade">
-    <div v-if="isExplorationMode && !storyState.active && !storyItemsManager?.isTriggerHidden()" id="signal-finder">
+    <div v-if="isExplorationMode && !storyState.active && !isStoryTriggerHidden()" id="signal-finder">
       <div id="signal-label">SIGNAL DETECTED</div>
       <div id="signal-bars">
         <div v-for="i in 5" :key="i" class="signal-bar" :class="{ active: signalStrength > i * 0.2 }"></div>
@@ -366,6 +366,10 @@ function dismissStoryBriefing() {
   if (storyManager) {
     storyManager.dismissBriefing();
   }
+}
+
+function isStoryTriggerHidden(): boolean {
+  return storyItemsManager?.isTriggerHidden() ?? false;
 }
 
 function activateStoryTrigger() {
@@ -1015,7 +1019,7 @@ function updateMultiplayer(dt: number) {
 }
 
 function updateSignalStrength() {
-  if (isExplorationMode.value && !storyState.active && !storyItemsManager?.isTriggerHidden()) {
+  if (isExplorationMode.value && !storyState.value.active && !storyItemsManager?.isTriggerHidden()) {
     const dx = camera.position.x - STORY_TRIGGER_POSITION.x;
     const dz = camera.position.z - STORY_TRIGGER_POSITION.z;
     const dist = Math.sqrt(dx * dx + dz * dz);

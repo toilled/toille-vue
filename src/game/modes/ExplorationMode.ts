@@ -197,7 +197,7 @@ export class ExplorationMode implements GameMode {
     const ctx = this.context;
     const ss = ctx?.storyState?.value;
     if (!this.canCheckObjective(ctx, ss)) return;
-    const mission = ss.missions[ss.currentMissionIndex];
+    const mission = ss!.missions[ss!.currentMissionIndex];
     if (!mission) return;
     const now = Date.now();
     if (now - this.lastObjectiveProximityCheck < 500) return;
@@ -208,7 +208,7 @@ export class ExplorationMode implements GameMode {
       const dx = px - obj.x;
       const dz = pz - obj.z;
       if (Math.sqrt(dx * dx + dz * dz) < 50) {
-        ctx.updateObjective(ss.currentMissionIndex, i);
+        ctx!.updateObjective!(ss!.currentMissionIndex, i);
         break;
       }
     }

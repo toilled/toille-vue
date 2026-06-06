@@ -1,5 +1,5 @@
 import { GameMode, GameContext } from "../types";
-import { Vector3, MathUtils, Mesh, Object3D } from "three";
+import { Vector3, MathUtils, Mesh, Object3D, BoxGeometry } from "three";
 import { cyberpunkAudio } from "../../utils/CyberpunkAudio";
 import { audioManager } from "../../utils/AudioManager";
 import { AfterimagePass } from "three/examples/jsm/postprocessing/AfterimagePass.js";
@@ -89,8 +89,9 @@ export class DemoMode implements GameMode {
 
   private getMeshTopPoint(child: Mesh, worldPos: Vector3): number {
     let topY = worldPos.y;
-    if (child.geometry && child.geometry.parameters && child.geometry.parameters.height) {
-      topY += (child.geometry.parameters.height * child.scale.y) / 2;
+    const geo = child.geometry as BoxGeometry;
+    if (geo?.parameters?.height) {
+      topY += (geo.parameters.height * child.scale.y) / 2;
     } else if (child.geometry && child.geometry.boundingBox) {
       topY = child.geometry.boundingBox.max.y * child.scale.y + worldPos.y;
     }

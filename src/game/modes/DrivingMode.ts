@@ -14,6 +14,7 @@ import {
   Mesh,
   SpotLight,
   Object3D,
+  Vector3,
 } from "three";
 import { getHeight, getNormal, applyCarOrientation } from "../../utils/HeightMap";
 import { handleControlsKeyDown, handleControlsKeyUp } from "../../utils/controls";
@@ -281,7 +282,7 @@ export class DrivingMode implements GameMode {
     return heading;
   }
 
-  private handleBuildingCollision(car: Group, dims: { halfW: number; halfD: number; isRound?: boolean }, cX: number, cZ: number, spawnSparks: (pos: { x: number; y: number; z: number }) => void) {
+  private handleBuildingCollision(car: Group, dims: { halfW: number; halfD: number; isRound?: boolean }, cX: number, cZ: number, spawnSparks: (pos: Vector3) => void) {
     const margin = 5;
     if (dims.isRound) {
       const radius = Math.max(dims.halfW, dims.halfD);

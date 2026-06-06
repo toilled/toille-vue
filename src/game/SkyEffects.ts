@@ -248,11 +248,12 @@ export class SkyEffects {
 
   private disposeObject(obj: Object3D) {
     this.scene.remove(obj);
-    if ("geometry" in obj && obj.geometry) {
-      obj.geometry.dispose();
+    const mesh = obj as Mesh;
+    if (mesh.geometry) {
+      mesh.geometry.dispose();
     }
-    if ("material" in obj && obj.material) {
-      const mat = obj.material as { map?: { dispose(): void }; dispose?(): void };
+    if (mesh.material) {
+      const mat = mesh.material as { map?: { dispose(): void }; dispose?(): void };
       if (mat.map) mat.map.dispose();
       if (typeof mat.dispose === "function") mat.dispose();
     }

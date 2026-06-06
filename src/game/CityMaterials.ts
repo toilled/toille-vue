@@ -15,6 +15,19 @@ import {
   createWindowRoughnessMap,
 } from "../utils/TextureGenerator";
 
+const BUILDING_COLORS: number[] = [
+  0x1a1a2e, // deep indigo
+  0x16213e, // dark navy
+  0x0f3460, // dark blue
+  0x2d1b2e, // dark purple
+  0x1b1b2f, // midnight
+  0x222831, // charcoal
+  0x2a2a3a, // dark steel
+  0x1a1a2e, // deep indigo
+  0x1e2029, // gunmetal
+  0x241e2e, // dark violet
+];
+
 export class CityMaterials {
   public windowTexture: CanvasTexture;
   public windowRoughnessMap: CanvasTexture;
@@ -51,40 +64,43 @@ export class CityMaterials {
       map: this.windowTexture,
       emissiveMap: this.windowTexture,
       roughnessMap: this.windowRoughnessMap,
-      emissive: 0xffffff, // Needs to be full white to let texture colors through
-      emissiveIntensity: 0.8, // Reduced intensity
-      roughness: 0.5, // Base roughness, modulated by map
-      metalness: 0.8,
+      emissive: 0xffffff,
+      emissiveIntensity: 1.0,
+      roughness: 0.4,
+      metalness: 0.7,
     });
 
-    // Initialize audio materials
+    // Initialize audio materials with color variation
     const audioKeys = ["kick", "snare", "hihat", "bass0", "bass1", "bass2", "bass3", "bass4"];
     audioKeys.forEach((key) => {
-      this.audioMaterials[key] = this.buildingMaterial.clone();
+      const msg = this.buildingMaterial.clone();
+      const colorIndex = Math.floor(Math.random() * BUILDING_COLORS.length);
+      msg.color.setHex(BUILDING_COLORS[colorIndex]);
+      this.audioMaterials[key] = msg;
     });
 
     this.roofMaterial = new MeshStandardMaterial({
-      color: 0x111111,
-      roughness: 0.9,
-      metalness: 0.1,
+      color: 0x1a1a1a,
+      roughness: 0.8,
+      metalness: 0.3,
     });
 
     this.edgeMat1 = new LineBasicMaterial({
       color: 0xff00cc,
       transparent: true,
-      opacity: 0.4,
+      opacity: 0.45,
     });
     this.edgeMat2 = new LineBasicMaterial({
       color: 0x00ccff,
       transparent: true,
-      opacity: 0.4,
+      opacity: 0.45,
     });
     this.topEdgeMat = new LineBasicMaterial({
       color: 0xffffff,
       transparent: true,
-      opacity: 0.5,
+      opacity: 0.55,
     });
-    this.antennaMat = new MeshBasicMaterial({ color: 0xffffff });
+    this.antennaMat = new MeshBasicMaterial({ color: 0xaaaaaa });
 
     this.billboardMaterials = this.billboardTextures.map(
       (tex) =>

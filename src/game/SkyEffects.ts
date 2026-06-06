@@ -29,8 +29,8 @@ interface SkyEffectConfig {
 
 const DEFAULT_CONFIG: SkyEffectConfig = {
   cloudCount: 80,
-  starCount: 500,
-  fogDensity: 0.0008,
+  starCount: 800,
+  fogDensity: 0.0007,
   fogColor: 0x0a0015,
   skyTopColor: 0x000011,
   skyBottomColor: 0x1a0030,
@@ -67,30 +67,52 @@ export class SkyEffects {
     canvas.height = 512;
     const ctx = canvas.getContext("2d");
     if (ctx && ctx.createLinearGradient) {
+      // Deep space at top, neon horizon at bottom
       const gradient = ctx.createLinearGradient(0, 0, 0, 512);
-      gradient.addColorStop(0, "#000022");
-      gradient.addColorStop(0.3, "#0a0025");
-      gradient.addColorStop(0.6, "#150030");
-      gradient.addColorStop(0.8, "#1a0035");
-      gradient.addColorStop(1, "#0a0015");
+      gradient.addColorStop(0, "#000011");
+      gradient.addColorStop(0.15, "#050020");
+      gradient.addColorStop(0.35, "#0a0028");
+      gradient.addColorStop(0.55, "#150035");
+      gradient.addColorStop(0.7, "#1a0035");
+      gradient.addColorStop(0.82, "#1a0030");
+      gradient.addColorStop(0.9, "#150025");
+      gradient.addColorStop(0.95, "#200020");
+      gradient.addColorStop(1, "#2a0015");
 
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, 512, 512);
 
-      ctx.fillStyle = "rgba(255, 0, 100, 0.03)";
-      for (let i = 0; i < 5; i++) {
+      // City glow at horizon (bottom)
+      const horizonGlow = ctx.createRadialGradient(256, 470, 10, 256, 470, 120);
+      horizonGlow.addColorStop(0, "rgba(255, 50, 100, 0.15)");
+      horizonGlow.addColorStop(0.4, "rgba(255, 0, 100, 0.08)");
+      horizonGlow.addColorStop(0.7, "rgba(100, 0, 200, 0.04)");
+      horizonGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.fillStyle = horizonGlow;
+      ctx.fillRect(0, 380, 512, 132);
+
+      const horizonGlow2 = ctx.createRadialGradient(256, 470, 10, 256, 470, 100);
+      horizonGlow2.addColorStop(0, "rgba(0, 200, 255, 0.08)");
+      horizonGlow2.addColorStop(1, "rgba(0, 200, 255, 0)");
+      ctx.fillStyle = horizonGlow2;
+      ctx.fillRect(100, 400, 312, 112);
+
+      // Subtle nebula patches (magenta)
+      ctx.fillStyle = "rgba(255, 0, 120, 0.04)";
+      for (let i = 0; i < 8; i++) {
         const x = Math.random() * 512;
-        const y = 200 + Math.random() * 200;
-        const radius = 50 + Math.random() * 100;
+        const y = Math.random() * 350;
+        const radius = 40 + Math.random() * 100;
         ctx.beginPath();
         ctx.arc(x, y, radius, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      ctx.fillStyle = "rgba(0, 255, 200, 0.02)";
-      for (let i = 0; i < 3; i++) {
+      // Subtle nebula patches (cyan)
+      ctx.fillStyle = "rgba(0, 200, 255, 0.03)";
+      for (let i = 0; i < 5; i++) {
         const x = Math.random() * 512;
-        const y = 300 + Math.random() * 150;
+        const y = Math.random() * 300;
         const radius = 30 + Math.random() * 80;
         ctx.beginPath();
         ctx.arc(x, y, radius, 0, Math.PI * 2);
@@ -113,6 +135,7 @@ export class SkyEffects {
     const geometry = new BufferGeometry();
     const positions = new Float32Array(this.config.starCount * 3);
     const colors = new Float32Array(this.config.starCount * 3);
+    const sizes = new Float32Array(this.config.starCount);
 
     const starColors = [
       new Color(0xff00ff),
@@ -120,31 +143,39 @@ export class SkyEffects {
       new Color(0xffffff),
       new Color(0xffaa00),
       new Color(0x00ff88),
+      new Color(0x8888ff),
+      new Color(0xff4488),
+      new Color(0x44ffaa),
     ];
 
     for (let i = 0; i < this.config.starCount; i++) {
       const theta = Math.random() * Math.PI * 2;
-      const phi = Math.random() * Math.PI * 0.4;
-      const radius = 2000 + Math.random() * 500;
+      const phi = Math.acos(2 * Math.random() - 1);
+      const maxPhi = Math.PI * 0.45;
+      const clampedPhi = Math.min(phi, maxPhi);
+      const radius = 1800 + Math.random() * 700;
 
-      positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-      positions[i * 3 + 1] = radius * Math.cos(phi) + 500;
-      positions[i * 3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
+      positions[i * 3] = radius * Math.sin(clampedPhi) * Math.cos(theta);
+      positions[i * 3 + 1] = radius * Math.cos(clampedPhi) + 600;
+      positions[i * 3 + 2] = radius * Math.sin(clampedPhi) * Math.sin(theta);
 
       const color = starColors[Math.floor(Math.random() * starColors.length)];
       colors[i * 3] = color.r;
       colors[i * 3 + 1] = color.g;
       colors[i * 3 + 2] = color.b;
+
+      sizes[i] = 1 + Math.random() * 4;
     }
 
     geometry.setAttribute("position", new BufferAttribute(positions, 3));
     geometry.setAttribute("color", new BufferAttribute(colors, 3));
+    geometry.setAttribute("size", new BufferAttribute(sizes, 1));
 
     const material = new PointsMaterial({
       size: 3,
       vertexColors: true,
       transparent: true,
-      opacity: 0.8,
+      opacity: 0.9,
       blending: AdditiveBlending,
       sizeAttenuation: true,
       depthWrite: false,
@@ -215,10 +246,19 @@ export class SkyEffects {
         .array as Float32Array;
       const time = this.time * 0.1;
 
-      for (let i = 0; i < this.config.starCount; i += 10) {
-        positions[i * 3 + 1] += Math.sin(time * 2 + i) * 0.5;
+      for (let i = 0; i < this.config.starCount; i += 5) {
+        positions[i * 3 + 1] += Math.sin(time * 1.5 + i * 0.7) * 0.3;
       }
       this.stars.geometry.attributes.position.needsUpdate = true;
+
+      // Twinkle the star opacity via size
+      if (this.stars.geometry.attributes.size) {
+        const sizes = this.stars.geometry.attributes.size.array as Float32Array;
+        for (let i = 0; i < this.config.starCount; i += 3) {
+          sizes[i] = (1 + Math.random() * 4) * (0.7 + 0.3 * Math.sin(time * 3 + i * 1.1));
+        }
+        this.stars.geometry.attributes.size.needsUpdate = true;
+      }
     }
   }
 

@@ -2,17 +2,30 @@ import { CanvasTexture, NearestFilter, RepeatWrapping } from "three";
 import { ROAD_WIDTH, CELL_SIZE } from "../game/config";
 
 function drawWindow(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
-  if (Math.random() > 0.95) {
+  if (Math.random() > 0.88) {
     const rand = Math.random();
-    if (rand > 0.9) ctx.fillStyle = "#ffffff";
-    else if (rand > 0.7) ctx.fillStyle = "#ffaa00";
-    else if (rand > 0.4) ctx.fillStyle = "#00ffcc";
-    else ctx.fillStyle = "#ff00cc";
-    ctx.globalAlpha = 0.7 + Math.random() * 0.3;
+    if (rand > 0.8) ctx.fillStyle = "#ffffff";
+    else if (rand > 0.55) ctx.fillStyle = "#ffaa00";
+    else if (rand > 0.3) ctx.fillStyle = "#00ffcc";
+    else if (rand > 0.1) ctx.fillStyle = "#ff00cc";
+    else ctx.fillStyle = "#aa44ff";
+    ctx.globalAlpha = 0.6 + Math.random() * 0.4;
     ctx.fillRect(x, y, w, h);
+    ctx.shadowColor = ctx.fillStyle;
+    ctx.shadowBlur = 6;
+    ctx.globalAlpha = 0.3;
+    ctx.fillRect(x - 1, y - 1, w + 2, h + 2);
+    ctx.shadowBlur = 0;
     ctx.globalAlpha = 1.0;
   } else {
-    ctx.fillStyle = "#050505";
+    const darkRand = Math.random();
+    if (darkRand > 0.92) {
+      ctx.fillStyle = "#1a1a2e";
+    } else if (darkRand > 0.84) {
+      ctx.fillStyle = "#0a0a1a";
+    } else {
+      ctx.fillStyle = "#050505";
+    }
     ctx.fillRect(x, y, w, h);
   }
 }
@@ -115,80 +128,141 @@ export function createWindowRoughnessMap() {
 
 export function createGroundTexture() {
   const canvas = document.createElement("canvas");
-  canvas.width = 1024; // Higher res
+  canvas.width = 1024;
   canvas.height = 1024;
   const ctx = canvas.getContext("2d");
   if (ctx) {
-    ctx.fillStyle = "#080808"; // Dark asphalt
+    ctx.fillStyle = "#080808";
     ctx.fillRect(0, 0, 1024, 1024);
 
-    // Roads are at the edges (tiled)
     const roadRatio = ROAD_WIDTH / CELL_SIZE;
     const roadPx = 1024 * roadRatio;
     const halfRoad = roadPx / 2;
+    const laneOffset = halfRoad * 0.25;
+    const laneWidth = 3;
 
-    ctx.fillStyle = "#0a0a0a"; // Slightly lighter road color
-    // Horizontal
+    // Road surface
+    ctx.fillStyle = "#0c0c10";
     ctx.fillRect(0, 0, 1024, halfRoad);
     ctx.fillRect(0, 1024 - halfRoad, 1024, halfRoad);
-    // Vertical
     ctx.fillRect(0, 0, halfRoad, 1024);
     ctx.fillRect(1024 - halfRoad, 0, halfRoad, 1024);
 
-    // Dashed Center Lines
-    ctx.strokeStyle = "#444444"; // Not lit
-    ctx.lineWidth = 4;
-    ctx.setLineDash([20, 20]);
+    // Glowing road edge strips (neon lane edges)
+    const edgeGlowColors = ["rgba(255, 0, 204, 0.4)", "rgba(0, 255, 204, 0.4)"];
+    // Top road - bottom edge glow
+    ctx.fillStyle = edgeGlowColors[0];
+    ctx.fillRect(0, halfRoad - 2, 1024, 2);
+    ctx.fillStyle = edgeGlowColors[1];
+    ctx.fillRect(0, 0, 1024, 2);
+    // Bottom road - top edge glow
+    ctx.fillStyle = edgeGlowColors[0];
+    ctx.fillRect(0, 1024 - halfRoad, 1024, 2);
+    ctx.fillStyle = edgeGlowColors[1];
+    ctx.fillRect(0, 1024 - 2, 1024, 2);
+    // Left road - right edge glow
+    ctx.fillStyle = edgeGlowColors[0];
+    ctx.fillRect(halfRoad - 2, 0, 2, 1024);
+    ctx.fillStyle = edgeGlowColors[1];
+    ctx.fillRect(0, 0, 2, 1024);
+    // Right road - left edge glow
+    ctx.fillStyle = edgeGlowColors[0];
+    ctx.fillRect(1024 - halfRoad, 0, 2, 1024);
+    ctx.fillStyle = edgeGlowColors[1];
+    ctx.fillRect(1024 - 2, 0, 2, 1024);
 
-    // Horizontal
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(1024, 0);
-    ctx.stroke();
+    // Double lane lines (dashed) - two parallel lines per road
+    ctx.setLineDash([16, 20]);
+    ctx.lineWidth = laneWidth;
 
-    ctx.beginPath();
-    ctx.moveTo(0, 1024);
-    ctx.lineTo(1024, 1024);
-    ctx.stroke();
+    // Top road lane lines
+    ctx.strokeStyle = "#ff00cc";
+    ctx.globalAlpha = 0.6;
+    ctx.beginPath(); ctx.moveTo(0, laneOffset); ctx.lineTo(1024, laneOffset); ctx.stroke();
+    ctx.strokeStyle = "#00ffcc";
+    ctx.globalAlpha = 0.4;
+    ctx.beginPath(); ctx.moveTo(0, halfRoad - laneOffset); ctx.lineTo(1024, halfRoad - laneOffset); ctx.stroke();
 
-    // Vertical
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(0, 1024);
-    ctx.stroke();
+    // Bottom road lane lines
+    ctx.strokeStyle = "#ff00cc";
+    ctx.globalAlpha = 0.6;
+    ctx.beginPath(); ctx.moveTo(0, 1024 - laneOffset); ctx.lineTo(1024, 1024 - laneOffset); ctx.stroke();
+    ctx.strokeStyle = "#00ffcc";
+    ctx.globalAlpha = 0.4;
+    ctx.beginPath(); ctx.moveTo(0, 1024 - halfRoad + laneOffset); ctx.lineTo(1024, 1024 - halfRoad + laneOffset); ctx.stroke();
 
-    ctx.beginPath();
-    ctx.moveTo(1024, 0);
-    ctx.lineTo(1024, 1024);
-    ctx.stroke();
+    // Left road lane lines
+    ctx.strokeStyle = "#ff00cc";
+    ctx.globalAlpha = 0.6;
+    ctx.beginPath(); ctx.moveTo(laneOffset, 0); ctx.lineTo(laneOffset, 1024); ctx.stroke();
+    ctx.strokeStyle = "#00ffcc";
+    ctx.globalAlpha = 0.4;
+    ctx.beginPath(); ctx.moveTo(halfRoad - laneOffset, 0); ctx.lineTo(halfRoad - laneOffset, 1024); ctx.stroke();
+
+    // Right road lane lines
+    ctx.strokeStyle = "#ff00cc";
+    ctx.globalAlpha = 0.6;
+    ctx.beginPath(); ctx.moveTo(1024 - laneOffset, 0); ctx.lineTo(1024 - laneOffset, 1024); ctx.stroke();
+    ctx.strokeStyle = "#00ffcc";
+    ctx.globalAlpha = 0.4;
+    ctx.beginPath(); ctx.moveTo(1024 - halfRoad + laneOffset, 0); ctx.lineTo(1024 - halfRoad + laneOffset, 1024); ctx.stroke();
 
     ctx.setLineDash([]);
+    ctx.globalAlpha = 1.0;
 
-    // Intersection Stop Lines
-    ctx.fillStyle = "#333333";
-    const stopOffset = halfRoad * 0.8;
-    const stopW = 8;
+    // Center divider line (solid neon) down the middle of each road
+    ctx.strokeStyle = "#ffff00";
+    ctx.globalAlpha = 0.3;
+    ctx.lineWidth = 2;
+    // Top road center
+    const centerOffset = halfRoad / 2;
+    ctx.beginPath(); ctx.moveTo(0, centerOffset); ctx.lineTo(1024, centerOffset); ctx.stroke();
+    // Bottom road center
+    ctx.beginPath(); ctx.moveTo(0, 1024 - centerOffset); ctx.lineTo(1024, 1024 - centerOffset); ctx.stroke();
+    // Left road center
+    ctx.beginPath(); ctx.moveTo(centerOffset, 0); ctx.lineTo(centerOffset, 1024); ctx.stroke();
+    // Right road center
+    ctx.beginPath(); ctx.moveTo(1024 - centerOffset, 0); ctx.lineTo(1024 - centerOffset, 1024); ctx.stroke();
+    ctx.globalAlpha = 1.0;
 
-    // Top Intersection
-    // Horizontal Stop line for vertical traffic entering intersection from top?
-    // Actually, let's just put stop lines before the intersection
+    // Crosswalks at intersections
+    ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+    const crosswalkW = 6;
+    const crosswalkSpacing = 8;
+    const crosswalkCount = 6;
+    for (let c = 0; c < crosswalkCount; c++) {
+      const offset = crosswalkSpacing + c * (crosswalkSpacing + crosswalkW);
+      if (offset + crosswalkW > halfRoad - 4) break;
+      // Top intersection
+      ctx.fillRect(offset, 0, crosswalkW, halfRoad);
+      ctx.fillRect(offset, 1024 - halfRoad, crosswalkW, halfRoad);
+      // Left intersection
+      ctx.fillRect(0, offset, halfRoad, crosswalkW);
+      ctx.fillRect(1024 - halfRoad, offset, halfRoad, crosswalkW);
+    }
 
-    // Vertical Road (top)
-    ctx.fillRect(halfRoad, stopOffset, halfRoad, stopW);
+    // Noise/wet look
+    ctx.fillStyle = "rgba(255, 255, 255, 0.025)";
+    for (let i = 0; i < 3000; i++) {
+      ctx.fillRect(Math.random() * 1024, Math.random() * 1024, 1 + Math.random() * 2, 1 + Math.random() * 2);
+    }
 
-    // Vertical Road (bottom)
-    ctx.fillRect(halfRoad, 1024 - stopOffset, halfRoad, stopW);
-
-    // Horizontal Road (left)
-    ctx.fillRect(stopOffset, halfRoad, stopW, halfRoad);
-
-    // Horizontal Road (right)
-    ctx.fillRect(1024 - stopOffset, halfRoad, stopW, halfRoad);
-
-    // Add noise / wet look
-    ctx.fillStyle = "rgba(255, 255, 255, 0.03)";
-    for (let i = 0; i < 2000; i++) {
-      ctx.fillRect(Math.random() * 1024, Math.random() * 1024, 2, 2);
+    // Occasional neon puddle reflections
+    ctx.fillStyle = "rgba(255, 0, 204, 0.04)";
+    for (let i = 0; i < 8; i++) {
+      const px = Math.random() * 1024;
+      const py = Math.random() * 1024;
+      ctx.beginPath();
+      ctx.arc(px, py, 10 + Math.random() * 25, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = "rgba(0, 255, 204, 0.03)";
+    for (let i = 0; i < 6; i++) {
+      const px = Math.random() * 1024;
+      const py = Math.random() * 1024;
+      ctx.beginPath();
+      ctx.arc(px, py, 8 + Math.random() * 20, 0, Math.PI * 2);
+      ctx.fill();
     }
   }
   const texture = new CanvasTexture(canvas);
@@ -290,22 +364,25 @@ export function createCloudTexture() {
   if (ctx && ctx.createRadialGradient) {
     ctx.clearRect(0, 0, 256, 128);
 
+    // Base cloud shape with stronger neon tint
     const gradient = ctx.createRadialGradient(128, 64, 0, 128, 64, 128);
-    gradient.addColorStop(0, "rgba(60, 20, 80, 0.4)");
-    gradient.addColorStop(0.4, "rgba(40, 10, 60, 0.2)");
-    gradient.addColorStop(0.7, "rgba(20, 5, 40, 0.1)");
+    gradient.addColorStop(0, "rgba(80, 20, 100, 0.5)");
+    gradient.addColorStop(0.3, "rgba(50, 15, 80, 0.3)");
+    gradient.addColorStop(0.6, "rgba(30, 10, 60, 0.15)");
     gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
 
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 256, 128);
 
+    // Multiple neon glow patches (magenta/pink)
     ctx.globalCompositeOperation = "source-atop";
-    for (let i = 0; i < 8; i++) {
-      const x = 30 + Math.random() * 180;
-      const y = 20 + Math.random() * 80;
-      const r = 20 + Math.random() * 40;
+    for (let i = 0; i < 10; i++) {
+      const x = 20 + Math.random() * 200;
+      const y = 15 + Math.random() * 90;
+      const r = 15 + Math.random() * 45;
       const glow = ctx.createRadialGradient(x, y, 0, x, y, r);
-      glow.addColorStop(0, "rgba(255, 0, 150, 0.15)");
+      const alpha = 0.08 + Math.random() * 0.12;
+      glow.addColorStop(0, `rgba(255, 0, 150, ${alpha})`);
       glow.addColorStop(1, "rgba(255, 0, 150, 0)");
       ctx.fillStyle = glow;
       ctx.beginPath();
@@ -313,13 +390,29 @@ export function createCloudTexture() {
       ctx.fill();
     }
 
-    for (let i = 0; i < 5; i++) {
-      const x = 40 + Math.random() * 160;
-      const y = 30 + Math.random() * 60;
-      const r = 15 + Math.random() * 30;
+    // Cyan glow patches
+    for (let i = 0; i < 7; i++) {
+      const x = 30 + Math.random() * 180;
+      const y = 20 + Math.random() * 80;
+      const r = 12 + Math.random() * 35;
       const glow = ctx.createRadialGradient(x, y, 0, x, y, r);
-      glow.addColorStop(0, "rgba(0, 255, 200, 0.1)");
+      const alpha = 0.06 + Math.random() * 0.1;
+      glow.addColorStop(0, `rgba(0, 255, 200, ${alpha})`);
       glow.addColorStop(1, "rgba(0, 255, 200, 0)");
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Subtle yellow/orange glow patches for variety
+    for (let i = 0; i < 4; i++) {
+      const x = 40 + Math.random() * 160;
+      const y = 25 + Math.random() * 70;
+      const r = 10 + Math.random() * 25;
+      const glow = ctx.createRadialGradient(x, y, 0, x, y, r);
+      glow.addColorStop(0, "rgba(255, 200, 0, 0.06)");
+      glow.addColorStop(1, "rgba(255, 200, 0, 0)");
       ctx.fillStyle = glow;
       ctx.beginPath();
       ctx.arc(x, y, r, 0, Math.PI * 2);

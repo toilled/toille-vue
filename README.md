@@ -1,38 +1,31 @@
 # toille-vue
 
-This is a simple Vue.js web application built with Vite and TypeScript. It serves as a personal website and includes a few interactive components.
+A personal portfolio and experimental sandbox built with Astro + Vue islands.
 
-## Features
+## Architecture
 
-*   **Dynamic Pages**: Page content is loaded from a JSON file and rendered dynamically using Vue Router.
-*   **Interactive Components**: Includes an alcohol unit checker, a mini-game, and components that fetch data from external APIs.
-*   **Styling**: Uses `@picocss/pico` for lightweight and clean styling.
+Migrated from a Vue 3 SPA (Vite + SSR) to **Astro with islands architecture**:
+
+- **Static HTML** — Portfolio content rendered at build time, zero JavaScript overhead
+- **Vue islands** — Interactive components (3D city, games) hydrate independently via `client:load`, `client:visible`, `client:idle`
+- **3D Cyberpunk City** — `client:visible` island, loads only when scrolled into view
+- **Game pages** — `/checker`, `/noughts-and-crosses`, `/ask`, `/quiz` — standalone Astro pages with Vue islands
+
+## Setup
+
+```bash
+npm install
+npm run dev     # Dev server
+npm run build   # Static build to dist/
+npm test        # Unit tests
+```
 
 ## Project Structure
 
-*   `src/components`: Contains all the Vue components.
-*   `src/configs/pages.json`: Defines the pages and their content.
-*   `src/interfaces`: Contains TypeScript interfaces.
-*   `src/main.ts`: The application's entry point.
-
-## Setup and Installation
-
-1.  **Clone the repository:**
-    ```bash
-    git clone <repository-url>
-    ```
-2.  **Navigate to the project directory:**
-    ```bash
-    cd toille-vue
-    ```
-3.  **Install dependencies:**
-    ```bash
-    npm install
-    ```
-
-## Available Scripts
-
-*   **`npm run dev`**: Starts the development server.
-*   **`npm run build`**: Builds the application for production.
-*   **`npm run serve`**: Serves the production build locally.
-*   **`npm run test`**: Runs the unit tests.
+- `src/pages/*.astro` — Astro pages (file-based routing)
+- `src/layouts/BaseLayout.astro` — HTML shell with is:global styles
+- `src/components/*.vue` — Vue components used as islands
+- `src/components/AppShell.vue` — Header/menu/modals island (client:idle)
+- `src/game/` — Three.js 3D game engine
+- `src/utils/` — Shared utilities (audio, city background, etc.)
+- `src/configs/` — Page and title configuration

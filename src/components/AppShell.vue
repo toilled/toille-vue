@@ -22,24 +22,6 @@
       </nav>
     </header>
 
-    <main id="main-content" tabindex="-1" class="app-main">
-      <div class="container">
-        <Transition name="cyberpunk-glitch">
-          <div
-            class="router-view-container"
-
-            v-show="isContentVisible"
-          >
-            <router-view v-slot="{ Component, route }">
-              <ErrorBoundary>
-                <component :is="Component" :key="route.path" />
-              </ErrorBoundary>
-            </router-view>
-          </div>
-        </Transition>
-      </div>
-    </main>
-
     <Transition name="slide-fade">
       <footer
         class="app-footer"
@@ -77,34 +59,25 @@
       <Terminal v-if="terminal" @close="terminal = false" />
     </Transition>
   </div>
-
-  <CyberpunkCity
-    v-if="showCity"
-    ref="cyberpunkCityRef"
-    @game-start="gameMode = true"
-    @game-end="gameMode = false"
-    @fallback="cityFallback = true"
-  />
 </template>
 
 <script setup lang="ts">
-import pages from "./configs/pages.json";
-
-const CyberpunkCity = defineAsyncComponent(() => {
-  if (import.meta.env.SSR) {
-    return { render: () => null } as any;
-  }
-  return import("./components/CyberpunkCity.vue") as any;
-});
-import { cityBackground } from "./utils/CityBackgroundManager";
-import titles from "./configs/titles.json";
-import { Page } from "./interfaces/Page";
-import Terminal from "./components/Terminal.vue";
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import Title from "./Title.vue";
+import Menu from "./Menu.vue";
+import TypingText from "./TypingText.vue";
+import Checker from "./Checker.vue";
+import Activity from "./Activity.vue";
+import Suggestion from "./Suggestion.vue";
+import Terminal from "./Terminal.vue";
+import pages from "../configs/pages.json";
+import titles from "../configs/titles.json";
+import { cityBackground } from "../utils/CityBackgroundManager";
+import type { Page } from "../interfaces/Page";
 
 const visiblePages = computed(() => {
   return pages.filter((page: Page) => !page.hidden);
 });
-
 
 const checker = ref(false);
 const activity = ref(false);
@@ -118,16 +91,14 @@ watch(showHint, (val) => {
     hintHasBeenShown.value = true;
   }
 }, { flush: 'post' });
-const route = useRoute();
-const router = useRouter();
+
 const gameMode = ref(false);
 const cityFallback = ref(false);
 const isContentVisible = ref(true);
-const isClient = ref(false);
-const showCity = computed(() => isClient.value && cityBackground.isEnabled.value);
 const activeSection = ref("home");
 let scrollSpyLocked = false;
 let scrollLockTimeout: ReturnType<typeof setTimeout>;
+let scrollRafId: number | null = null;
 const headerRef = ref<HTMLElement | null>(null);
 
 function getScrollOffset(): number {
@@ -135,6 +106,42 @@ function getScrollOffset(): number {
     return 160 + 16;
   }
   return headerRef.value.offsetHeight + 24;
+}
+
+function updateActiveSection() {
+  if (scrollSpyLocked) return;
+  const sectionIds = visiblePages.value.map(getSectionIdFromPage);
+  const headerOffset = getScrollOffset();
+  let currentSection = sectionIds[0];
+
+  for (const id of sectionIds) {
+    const el = document.getElementById(id);
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      if (rect.top <= headerOffset + 100) {
+        currentSection = id;
+      }
+    }
+  }
+
+  if (currentSection !== activeSection.value) {
+    activeSection.value = currentSection;
+  }
+
+  const lastId = sectionIds[sectionIds.length - 1];
+  const lastEl = document.getElementById(lastId);
+  if (lastEl) {
+    const rect = lastEl.getBoundingClientRect();
+    showHint.value = rect.bottom <= window.innerHeight + 50;
+  }
+}
+
+function handleScroll() {
+  if (scrollRafId !== null) return;
+  scrollRafId = requestAnimationFrame(() => {
+    updateActiveSection();
+    scrollRafId = null;
+  });
 }
 
 function lockScrollSpy(duration: number = 1200) {
@@ -163,25 +170,16 @@ function scrollToSection(sectionId: string, behavior: ScrollBehavior = "smooth")
   }
 }
 
-provide("activeSection", activeSection);
-provide("navigateToSection", scrollToSection);
-
 function toggleContent() {
   isContentVisible.value = !isContentVisible.value;
 }
 
-const cyberpunkCityRef = ref<InstanceType<typeof import("./components/CyberpunkCity.vue").default> | null>(null);
-
 function startExploration() {
-  if (cyberpunkCityRef.value && cyberpunkCityRef.value.startExplorationMode) {
-    cyberpunkCityRef.value.startExplorationMode();
-  }
+  window.dispatchEvent(new CustomEvent("city:explore"));
 }
 
 function startDemoMode() {
-  if (cyberpunkCityRef.value && cyberpunkCityRef.value.startDemoMode) {
-    cyberpunkCityRef.value.startDemoMode();
-  }
+  window.dispatchEvent(new CustomEvent("city:demo"));
 }
 
 function navigatePage(direction: "next" | "prev") {
@@ -222,22 +220,16 @@ function handleTouchEnd(e: TouchEvent) {
 function handleKeydown(e: KeyboardEvent) {
   if (gameMode.value) return;
 
-  if (e.key === "Escape") {
-    const gameRoutes = ["/noughts-and-crosses", "/checker", "/ask"];
-    if (gameRoutes.includes(route.path)) {
-      router.push("/");
-    }
-  }
+  const isHome = window.location.pathname === "/" || window.location.pathname === "";
+  if (!isHome) return;
 
-  if (route.path === "/" || route.path === "") {
-    switch (e.key) {
-      case "ArrowRight":
-        navigatePage("next");
-        break;
-      case "ArrowLeft":
-        navigatePage("prev");
-        break;
-    }
+  switch (e.key) {
+    case "ArrowRight":
+      navigatePage("next");
+      break;
+    case "ArrowLeft":
+      navigatePage("prev");
+      break;
   }
 }
 
@@ -262,37 +254,6 @@ function getSectionIdFromPage(page: Page): string {
   return page.link.replace(/^\//, "");
 }
 
-function updateActiveSection() {
-  if (scrollSpyLocked) return;
-
-  const sectionIds = visiblePages.value.map(getSectionIdFromPage);
-  if (sectionIds.length === 0) return;
-
-  const headerBottom = getScrollOffset();
-  let currentActive = sectionIds[0];
-  let maxVisibleHeight = 0;
-
-  for (let i = 0; i < sectionIds.length; i++) {
-    const id = sectionIds[i];
-    const el = document.getElementById(id);
-    if (!el) continue;
-
-    const rect = el.getBoundingClientRect();
-    const visibleTop = Math.max(rect.top, headerBottom);
-    const visibleBottom = Math.min(rect.bottom, window.innerHeight);
-    const visibleHeight = Math.max(0, visibleBottom - visibleTop);
-
-    if (visibleHeight > maxVisibleHeight) {
-      maxVisibleHeight = visibleHeight;
-      currentActive = sectionIds[i];
-    }
-  }
-
-  if (currentActive !== activeSection.value) {
-    activeSection.value = currentActive;
-  }
-}
-
 function handleInitialHash() {
   const hash = window.location.hash.replace(/^#/, "");
   if (hash) {
@@ -311,23 +272,7 @@ function handleInitialHash() {
   }
 }
 
-let scrollRafId: number | null = null;
 
-function handleScroll() {
-  if (scrollRafId === null) {
-    scrollRafId = requestAnimationFrame(() => {
-      scrollRafId = null;
-      updateActiveSection();
-      const scrollBottom = window.innerHeight + window.scrollY;
-      const pageHeight = document.documentElement.scrollHeight;
-      if (scrollBottom >= pageHeight - 50) {
-        showHint.value = true;
-      } else if (scrollBottom <= pageHeight - 150) {
-        showHint.value = false;
-      }
-    });
-  }
-}
 
 function scrollToHash(hash: string) {
   if (!hash) {
@@ -349,8 +294,6 @@ function scrollToHash(hash: string) {
 }
 
 onMounted(() => {
-  isClient.value = true;
-
   history.scrollRestoration = "manual";
 
   let lastTouchTime = 0;
@@ -367,6 +310,7 @@ onMounted(() => {
   });
 
   window.addEventListener("keydown", handleKeydown);
+  window.addEventListener("scroll", handleScroll, { passive: true });
 
   const contentEl = document.getElementById("content-wrapper");
   if (contentEl) {
@@ -374,24 +318,25 @@ onMounted(() => {
     contentEl.addEventListener("touchend", handleTouchEnd, { passive: true });
   }
 
-  window.addEventListener("scroll", handleScroll, { passive: true });
+  window.addEventListener("city:game-start", () => { gameMode.value = true; });
+  window.addEventListener("city:game-end", () => { gameMode.value = false; });
+  window.addEventListener("city:fallback", () => { cityFallback.value = true; });
+
   handleInitialHash();
   updateActiveSection();
 });
 
-watch(() => route.hash, (newHash) => {
-  if (route.path !== "/") return;
+watch(() => window.location.hash, (newHash) => {
+  if (window.location.pathname !== "/") return;
   scrollToHash(newHash);
-});
-
-onErrorCaptured((err) => {
-  console.error("App Error Captured:", err);
-  return true;
 });
 
 onUnmounted(() => {
   window.removeEventListener("keydown", handleKeydown);
   window.removeEventListener("scroll", handleScroll);
+  window.removeEventListener("city:game-start", () => {});
+  window.removeEventListener("city:game-end", () => {});
+  window.removeEventListener("city:fallback", () => {});
   const contentEl = document.getElementById("content-wrapper");
   if (contentEl) {
     contentEl.removeEventListener("touchstart", handleTouchStart);
@@ -401,46 +346,6 @@ onUnmounted(() => {
     cancelAnimationFrame(scrollRafId);
   }
   clearTimeout(scrollLockTimeout);
-});
-
-function getTitleForPath(path: string): string {
-  switch (path) {
-    case "/noughts-and-crosses":
-      return "Noughts and Crosses";
-    case "/checker":
-      return "Checker";
-    case "/ask":
-      return "Ask Me";
-    default:
-      const page = visiblePages.value.find(
-        (p: Page) => getSectionIdFromPage(p) === activeSection.value
-      );
-      return page ? page.title : "Elliot Dickerson";
-  }
-}
-
-watch(
-  () => route.path,
-  (newPath) => {
-    const pageTitle = getTitleForPath(newPath);
-    if (typeof document !== "undefined") {
-      document.title = "Elliot > " + pageTitle;
-    }
-  },
-  { immediate: true },
-);
-
-watch(activeSection, () => {
-  const pageTitle = getTitleForPath(route.path);
-  if (typeof document !== "undefined") {
-    document.title = "Elliot > " + pageTitle;
-  }
-}, { immediate: true });
-
-watch(showCity, (val) => {
-  if (val) {
-    cityFallback.value = false;
-  }
 });
 </script>
 
@@ -501,6 +406,7 @@ html.fx .app-header {
   border-top: 1px solid rgba(0, 255, 204, 0.1);
   opacity: 0.6;
   font-size: 0.85rem;
+  cursor: pointer;
 }
 
 .fade-enter-active,
@@ -539,84 +445,13 @@ html.fx .app-header {
   transition: opacity 2s ease;
 }
 
-.cyberpunk-glitch-enter-active {
-  animation: glitch-in 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-}
-
-.cyberpunk-glitch-leave-active {
-  animation: glitch-out 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-}
-
-@keyframes glitch-in {
-  0% {
-    opacity: 0;
-    transform: scaleY(0.1) skewX(20deg);
-    filter: hue-rotate(90deg);
-    clip-path: inset(50% 0 50% 0);
-  }
-  20% {
-    opacity: 1;
-    transform: scaleY(0.4) skewX(-10deg);
-    clip-path: inset(20% 0 30% 0);
-  }
-  60% {
-    transform: scaleY(1.1) skewX(5deg);
-    clip-path: inset(0 0 0 0);
-  }
-  100% {
-    opacity: 1;
-    transform: scaleY(1) skewX(0);
-    filter: hue-rotate(0deg);
-  }
-}
-
-@keyframes glitch-out {
-  0% {
-    opacity: 1;
-    transform: scaleY(1) skewX(0);
-    clip-path: inset(0 0 0 0);
-  }
-  40% {
-    transform: scaleY(1.1) skewX(-5deg);
-    clip-path: inset(10% 0 10% 0);
-  }
-  80% {
-    opacity: 0.5;
-    transform: scaleY(0.2) skewX(40deg);
-    clip-path: inset(40% 0 40% 0);
-  }
-  100% {
-    opacity: 0;
-    transform: scaleY(0.1) skewX(60deg);
-    clip-path: inset(50% 0 50% 0);
-  }
-}
-
 @media (max-width: 768px) {
-  .app-main {
-    padding: 1rem 0;
-  }
   .header-nav {
     flex-direction: column;
     gap: 0.5rem;
     align-items: center;
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
-  }
-}
-
-#main-content:focus {
-  outline: none;
-}
-
-html {
-  scroll-behavior: smooth;
-  scroll-padding-top: 80px;
-}
-
-@media (max-width: 768px) {
-  html {
-    scroll-padding-top: 180px;
   }
 }
 </style>

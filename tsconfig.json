@@ -17,5 +17,5 @@
     "noImplicitReturns": true,
     "exactOptionalPropertyTypes": true
   },
-  "include": ["src/**/*", "auto-imports.d.ts", "components.d.ts"]
+  "include": ["src/**/*", "astro.config.mjs"]
 }

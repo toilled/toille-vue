@@ -520,6 +520,52 @@ export class CityBuilder {
     this.addBillboard(buildingGroup, isLeaderboard, h, w, d);
   }
 
+  private placeLeaderboardPanel(
+    buildingGroup: Group,
+    sideIndex: number,
+    lbGeo: PlaneGeometry,
+    lbTexture: Texture,
+    w: number,
+    h: number,
+    d: number,
+  ) {
+    const lbMat = new MeshBasicMaterial({
+      map: lbTexture,
+      side: DoubleSide,
+      color: 0xffffff,
+    });
+    const lbMesh = new Mesh(lbGeo, lbMat);
+    lbMesh.userData = { isLeaderboard: true };
+    const offset = 0.6;
+    const yPos = h * 0.7;
+
+    const panelPositions = [
+      { x: 0, y: yPos, z: d / 2 + offset, ry: 0 },
+      { x: 0, y: yPos, z: -d / 2 - offset, ry: Math.PI },
+      { x: w / 2 + offset, y: yPos, z: 0, ry: Math.PI / 2 },
+      { x: -w / 2 - offset, y: yPos, z: 0, ry: -Math.PI / 2 },
+    ];
+
+    const pos = panelPositions[sideIndex];
+    lbMesh.position.set(pos.x, pos.y, pos.z);
+    lbMesh.rotation.y = pos.ry;
+    buildingGroup.add(lbMesh);
+
+    const spotPositions = [
+      { x: 0, z: d + 30 },
+      { x: 0, z: -d - 30 },
+      { x: w + 30, z: 0 },
+      { x: -w - 30, z: 0 },
+    ];
+
+    const spot = new SpotLight(0x00ffcc, 500, 100, 0.6, 0.5, 1);
+    const sp = spotPositions[sideIndex];
+    spot.position.set(sp.x, h * 0.9, sp.z);
+    spot.target = lbMesh;
+    buildingGroup.add(spot);
+    buildingGroup.add(spot.target);
+  }
+
   private addLeaderboard(
     buildingGroup: Group,
     w: number,
@@ -532,58 +578,7 @@ export class CityBuilder {
     const lbGeo = new PlaneGeometry(lbW, lbH);
 
     for (let i = 0; i < 4; i++) {
-      const lbMat = new MeshBasicMaterial({
-        map: lbTexture,
-        side: DoubleSide,
-        color: 0xffffff,
-      });
-
-      const lbMesh = new Mesh(lbGeo, lbMat);
-      lbMesh.userData = { isLeaderboard: true };
-      const offset = 0.6;
-      const yPos = h * 0.7;
-
-      switch (i) {
-        case 0:
-          lbMesh.position.set(0, yPos, d / 2 + offset);
-          lbMesh.rotation.y = 0;
-          break;
-        case 1:
-          lbMesh.position.set(0, yPos, -d / 2 - offset);
-          lbMesh.rotation.y = Math.PI;
-          break;
-        case 2:
-          lbMesh.position.set(w / 2 + offset, yPos, 0);
-          lbMesh.rotation.y = Math.PI / 2;
-          break;
-        default:
-          lbMesh.position.set(-w / 2 - offset, yPos, 0);
-          lbMesh.rotation.y = -Math.PI / 2;
-          break;
-      }
-
-      buildingGroup.add(lbMesh);
-
-      const spot = new SpotLight(0x00ffcc, 500, 100, 0.6, 0.5, 1);
-
-      switch (i) {
-        case 0:
-          spot.position.set(0, h * 0.9, d + 30);
-          break;
-        case 1:
-          spot.position.set(0, h * 0.9, -d - 30);
-          break;
-        case 2:
-          spot.position.set(w + 30, h * 0.9, 0);
-          break;
-        default:
-          spot.position.set(-w - 30, h * 0.9, 0);
-          break;
-      }
-
-      spot.target = lbMesh;
-      buildingGroup.add(spot);
-      buildingGroup.add(spot.target);
+      this.placeLeaderboardPanel(buildingGroup, i, lbGeo, lbTexture, w, h, d);
     }
   }
 }

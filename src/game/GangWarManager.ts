@@ -417,36 +417,22 @@ export class GangWarManager {
     });
   }
 
-  updateFightMarkers(dt: number) {
-    this.lastMarkerUpdate += dt;
-    if (this.lastMarkerUpdate < 1.0) {
-      // Update every second
-      // Just animate existing arrows
-      const time = Date.now() * 0.003;
-      this.fightMarkers.forEach((m) => {
-        m.position.y = 80 + Math.sin(time) * 5;
-        m.rotation.y += dt;
-      });
-      return;
-    }
-    this.lastMarkerUpdate = 0;
+  private animateExistingMarkers(dt: number) {
+    const time = Date.now() * 0.003;
+    this.fightMarkers.forEach((m) => {
+      m.position.y = 80 + Math.sin(time) * 5;
+      m.rotation.y += dt;
+    });
+  }
 
-    // Clear old markers
-    this.fightMarkers.forEach((m) => this.scene.remove(m));
-    this.fightMarkers = [];
+  private findCombatantClusters(): Vector3[] {
+    const combatants = this.warriors.filter((w) => w.state === "COMBAT" && w.hp > 0);
+    if (combatants.length === 0) return [];
 
-    // Identify clusters of combat
-    const combatants = this.warriors.filter(
-      (w) => w.state === "COMBAT" && w.hp > 0,
-    );
-    if (combatants.length === 0) return;
-
-    // Simple clustering: Grid based? Or just proximity
     const clusters: Vector3[] = [];
     const visited = new Set<number>();
     const clusterRangeSq = 100 * 100;
 
-    // Warning: O(N^2) on combatants
     for (let i = 0; i < combatants.length; i++) {
       if (visited.has(i)) continue;
 
@@ -456,12 +442,7 @@ export class GangWarManager {
 
       for (let j = i + 1; j < combatants.length; j++) {
         if (visited.has(j)) continue;
-
-        if (
-          combatants[i].group.position.distanceToSquared(
-            combatants[j].group.position,
-          ) < clusterRangeSq
-        ) {
+        if (combatants[i].group.position.distanceToSquared(combatants[j].group.position) < clusterRangeSq) {
           center.add(combatants[j].group.position);
           count++;
           visited.add(j);
@@ -469,21 +450,42 @@ export class GangWarManager {
       }
 
       if (count >= 4) {
-        // Only show for decent fights
         center.divideScalar(count);
         clusters.push(center);
       }
     }
 
+    return clusters;
+  }
+
+  private createFightMarkerArrows(clusters: Vector3[]) {
     clusters.forEach((pos) => {
       const arrow = new Mesh(this.arrowGeo, this.arrowMat);
       arrow.position.set(pos.x, 80, pos.z);
-      arrow.userData.isFightMarker = true; // Tag for raycasting
-      arrow.userData.target = pos; // Store target location
-
+      arrow.userData.isFightMarker = true;
+      arrow.userData.target = pos;
       this.scene.add(arrow);
       this.fightMarkers.push(arrow);
     });
+  }
+
+  private clearFightMarkers() {
+    this.fightMarkers.forEach((m) => this.scene.remove(m));
+    this.fightMarkers = [];
+  }
+
+  updateFightMarkers(dt: number) {
+    this.lastMarkerUpdate += dt;
+    if (this.lastMarkerUpdate < 1.0) {
+      this.animateExistingMarkers(dt);
+      return;
+    }
+    this.lastMarkerUpdate = 0;
+
+    this.clearFightMarkers();
+
+    const clusters = this.findCombatantClusters();
+    this.createFightMarkerArrows(clusters);
   }
 
   dispose() {

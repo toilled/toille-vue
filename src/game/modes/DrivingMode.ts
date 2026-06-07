@@ -4,25 +4,30 @@ import {
   BOUNDS,
   CELL_SIZE,
   START_OFFSET,
-  GRID_SIZE,
-  CITY_SIZE,
 } from "../config";
 import {
   Group,
-  BoxGeometry,
-  MeshStandardMaterial,
-  Mesh,
-  SpotLight,
-  Object3D,
   Vector3,
 } from "three";
 import { getHeight, getNormal, applyCarOrientation } from "../../utils/HeightMap";
 import { handleControlsKeyDown, handleControlsKeyUp } from "../../utils/controls";
+import { RedCarAI } from "../RedCarAI";
 
 export class DrivingMode implements GameMode {
   context: GameContext | null = null;
-  redCar: Group | null = null;
-  redCarSpeed: number = 0;
+  private redCarAI: RedCarAI | null = null;
+
+  get redCar(): Group | null {
+    return this.redCarAI?.car ?? null;
+  }
+
+  get redCarSpeed(): number {
+    return this.redCarAI?.speed ?? 0;
+  }
+
+  set redCarSpeed(speed: number) {
+    if (this.redCarAI) this.redCarAI.speed = speed;
+  }
 
   init(context: GameContext) {
     this.context = context;
@@ -44,99 +49,15 @@ export class DrivingMode implements GameMode {
       context.spawnCheckpoint();
       carAudio.start();
 
-      // Init Red Car Speed
-      this.redCarSpeed = 1.4;
-
-      // Spawn Red Car
-      this.spawnRedCar();
+      // Init Red Car AI
+      this.redCarAI = new RedCarAI(context);
+      this.redCarAI.speed = 1.4;
+      this.redCarAI.spawn();
     }
   }
 
   spawnRedCar() {
-    if (!this.context) return;
-
-    // Create Red Car Mesh
-    const carGroup = new Group();
-
-    // Car Body
-    const bodyGeo = new BoxGeometry(14, 4, 30);
-    const bodyMat = new MeshStandardMaterial({
-      color: 0xff0000,
-      roughness: 0.2,
-      metalness: 0.6,
-    });
-    const body = new Mesh(bodyGeo, bodyMat);
-    body.position.y = 3;
-    body.castShadow = true;
-    carGroup.add(body);
-
-    // Cabin
-    const cabinGeo = new BoxGeometry(12, 3, 16);
-    const cabinMat = new MeshStandardMaterial({
-      color: 0x330000,
-      roughness: 0.2,
-      metalness: 0.8,
-    });
-    const cabin = new Mesh(cabinGeo, cabinMat);
-    cabin.position.y = 6.5;
-    cabin.position.z = -2;
-    carGroup.add(cabin);
-
-    // Add Lights (Red Glow)
-    const light = new SpotLight(0xff0000, 200, 100, Math.PI / 3, 0.5, 1);
-    light.position.set(0, 10, 0);
-    const target = new Object3D();
-    target.position.set(0, 0, 10);
-    carGroup.add(target);
-    light.target = target;
-    carGroup.add(light);
-
-    this.redCar = carGroup;
-    this.context.scene.add(this.redCar);
-
-    // Position it far away
-    this.respawnRedCar();
-  }
-
-  respawnRedCar() {
-    if (!this.context || !this.redCar) return;
-    const player = this.context.activeCar.value;
-    if (!player) return;
-
-    // Find a valid road position far from player
-    let spawned = false;
-    let attempts = 0;
-    while (!spawned && attempts < 20) {
-      const roadIndex = Math.floor(Math.random() * (GRID_SIZE + 1));
-      const roadCoordinate =
-        START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
-      const otherCoord = (Math.random() - 0.5) * CITY_SIZE;
-
-      const axis = Math.random() > 0.5 ? "x" : "z";
-      let x, z;
-
-      if (axis === "x") {
-        z = roadCoordinate; // Road runs x-axis
-        x = otherCoord;
-        this.redCar.userData.heading =
-          Math.random() > 0.5 ? Math.PI / 2 : -Math.PI / 2;
-      } else {
-        x = roadCoordinate; // Road runs z-axis
-        z = otherCoord;
-        this.redCar.userData.heading = Math.random() > 0.5 ? 0 : Math.PI;
-      }
-
-      // Check dist
-      const dist = Math.sqrt(
-        (x - player.position.x) ** 2 + (z - player.position.z) ** 2,
-      );
-      if (dist > 500) {
-        const h = getHeight(x, z);
-        this.redCar.position.set(x, h + 1, z);
-        spawned = true;
-      }
-      attempts++;
-    }
+    this.redCarAI?.spawn();
   }
 
   private handleGameOver(car: Group) {
@@ -201,7 +122,9 @@ export class DrivingMode implements GameMode {
       timeLeft.value += 15;
       playPewSound();
       spawnCheckpoint();
-      this.redCarSpeed = Math.min(this.redCarSpeed + 0.1, 2.2);
+      if (this.redCarAI) {
+        this.redCarAI.speed = Math.min(this.redCarAI.speed + 0.1, 2.2);
+      }
     }
 
     navArrow.visible = true;
@@ -328,136 +251,7 @@ export class DrivingMode implements GameMode {
     if (heading !== undefined) {
       this.followCarCamera(car, heading);
     }
-    this.updateRedCar(car);
-  }
-
-  private moveRedCar() {
-    if (!this.redCar) return;
-    const heading = this.redCar.userData.heading ?? 0;
-    const speed = this.redCarSpeed;
-    this.redCar.position.x += Math.sin(heading) * speed;
-    this.redCar.position.z += Math.cos(heading) * speed;
-    this.redCar.position.y = getHeight(this.redCar.position.x, this.redCar.position.z) + 1;
-
-    const normal = getNormal(this.redCar.position.x, this.redCar.position.z);
-    this.redCar.up.set(normal.x, normal.y, normal.z);
-    const lookDist = 5;
-    const tx = this.redCar.position.x + Math.sin(heading) * lookDist;
-    const tz = this.redCar.position.z + Math.cos(heading) * lookDist;
-    const ty = getHeight(tx, tz) + 1;
-    this.redCar.lookAt(tx, ty, tz);
-  }
-
-  private steerTowardsPlayer(playerCar: Group) {
-    if (!this.redCar) return;
-    const heading = this.redCar.userData.heading ?? 0;
-    const isZAxis = Math.abs(Math.cos(heading)) > 0.5;
-
-    const roadHalf = CELL_SIZE / 2;
-    const gridX = Math.round((this.redCar.position.x - START_OFFSET - roadHalf) / CELL_SIZE);
-    const gridZ = Math.round((this.redCar.position.z - START_OFFSET - roadHalf) / CELL_SIZE);
-    const roadCenterX = START_OFFSET + gridX * CELL_SIZE + roadHalf;
-    const roadCenterZ = START_OFFSET + gridZ * CELL_SIZE + roadHalf;
-
-    const lateralSpeed = this.redCarSpeed * 0.3;
-    const maxOffset = 18;
-
-    if (isZAxis) {
-      const targetX = Math.max(roadCenterX - maxOffset, Math.min(roadCenterX + maxOffset, playerCar.position.x));
-      const diff = targetX - this.redCar.position.x;
-      if (Math.abs(diff) > 0.1) {
-        this.redCar.position.x += Math.sign(diff) * Math.min(Math.abs(diff), lateralSpeed);
-      }
-    } else {
-      const targetZ = Math.max(roadCenterZ - maxOffset, Math.min(roadCenterZ + maxOffset, playerCar.position.z));
-      const diff = targetZ - this.redCar.position.z;
-      if (Math.abs(diff) > 0.1) {
-        this.redCar.position.z += Math.sign(diff) * Math.min(Math.abs(diff), lateralSpeed);
-      }
-    }
-
-    return { roadCenterX, roadCenterZ, isZAxis };
-  }
-
-  private handleRedCarIntersection(roadCenterX: number, roadCenterZ: number, isZAxis: boolean, playerCar: Group) {
-    if (!this.redCar) return;
-    const longDist = isZAxis
-      ? Math.abs(this.redCar.position.z - roadCenterZ)
-      : Math.abs(this.redCar.position.x - roadCenterX);
-    const latDist = isZAxis
-      ? Math.abs(this.redCar.position.x - roadCenterX)
-      : Math.abs(this.redCar.position.z - roadCenterZ);
-
-    if (longDist >= 5 || latDist >= 25) return;
-
-    const directions = [0, Math.PI / 2, Math.PI, -Math.PI / 2];
-    let bestDir = this.redCar.userData.heading ?? 0;
-    let minDst = Infinity;
-    const curDirX = Math.sin(bestDir);
-    const curDirZ = Math.cos(bestDir);
-
-    for (const dir of directions) {
-      const dx = Math.sin(dir);
-      const dz = Math.cos(dir);
-      if (dx * curDirX + dz * curDirZ < -0.9) continue;
-      const d = ((this.redCar.position.x + dx * 100) - playerCar.position.x) ** 2 +
-                ((this.redCar.position.z + dz * 100) - playerCar.position.z) ** 2;
-      if (d < minDst) {
-        minDst = d;
-        bestDir = dir;
-      }
-    }
-
-    this.redCar.userData.heading = bestDir;
-    this.redCar.position.x += Math.sin(bestDir) * 6;
-    this.redCar.position.z += Math.cos(bestDir) * 6;
-  }
-
-  private updateRedCarBounds() {
-    if (!this.redCar) return;
-    if (this.redCar.position.x > BOUNDS) this.redCar.position.x = -BOUNDS;
-    if (this.redCar.position.x < -BOUNDS) this.redCar.position.x = BOUNDS;
-    if (this.redCar.position.z > BOUNDS) this.redCar.position.z = -BOUNDS;
-    if (this.redCar.position.z < -BOUNDS) this.redCar.position.z = BOUNDS;
-  }
-
-  private checkRedCarCollision(playerCar: Group) {
-    if (!this.redCar || !this.context || !this.context.isGameOver) return;
-    const dist = this.redCar.position.distanceTo(playerCar.position);
-    if (dist < 10) {
-      this.context.isGameOver.value = true;
-    }
-  }
-
-  private updateChaseArrow(playerCar: Group) {
-    if (!this.context || !this.context.chaseArrow || !this.redCar) return;
-    const arrow = this.context.chaseArrow;
-    arrow.visible = true;
-    arrow.position.copy(playerCar.position);
-    arrow.position.y += 3;
-    arrow.lookAt(this.redCar.position);
-
-    const dist = this.redCar.position.distanceTo(playerCar.position);
-    const op = dist < 200 ? 1 : dist > 600 ? 0 : 1 - (dist - 200) / 400;
-
-    arrow.traverse((c) => {
-      if ("material" in c && c.material) {
-        (c.material as { opacity: number }).opacity = op;
-      }
-    });
-  }
-
-  updateRedCar(playerCar: Group) {
-    if (!this.redCar) return;
-
-    this.moveRedCar();
-    const road = this.steerTowardsPlayer(playerCar);
-    if (road) {
-      this.handleRedCarIntersection(road.roadCenterX, road.roadCenterZ, road.isZAxis, playerCar);
-    }
-    this.updateRedCarBounds();
-    this.checkRedCarCollision(playerCar);
-    this.updateChaseArrow(playerCar);
+    this.redCarAI?.update(car);
   }
 
   cleanup() {
@@ -471,10 +265,7 @@ export class DrivingMode implements GameMode {
       if (this.context.checkpointMesh)
         this.context.checkpointMesh.visible = false;
 
-      if (this.redCar) {
-        this.context.scene.remove(this.redCar);
-        this.redCar = null;
-      }
+      this.redCarAI?.cleanup();
 
       const c = this.context.controls.value;
       c.forward = false;

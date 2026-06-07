@@ -26,29 +26,7 @@ const mapSize = 180;
 const worldSize = BOUNDS * 2;
 const scale = mapSize / worldSize;
 
-function draw() {
-  const canvas = canvasRef.value;
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-
-  ctx.clearRect(0, 0, mapSize, mapSize);
-
-  const cx = mapSize / 2;
-  const cy = mapSize / 2;
-
-  ctx.save();
-  ctx.translate(cx, cy);
-
-  // Draw city grid background
-  const gridScale = scale;
-  const halfGrid = (GRID_SIZE * CELL_SIZE) / 2;
-
-  // Dark background
-  ctx.fillStyle = "rgba(5, 5, 20, 0.85)";
-  ctx.fillRect(-cx, -cy, mapSize, mapSize);
-
-  // Grid lines
+function drawGrid(ctx: CanvasRenderingContext2D, gridScale: number, halfGrid: number) {
   ctx.strokeStyle = "rgba(0, 255, 204, 0.08)";
   ctx.lineWidth = 0.5;
   for (let i = 0; i <= GRID_SIZE; i++) {
@@ -62,8 +40,9 @@ function draw() {
     ctx.lineTo(halfGrid * gridScale, pos);
     ctx.stroke();
   }
+}
 
-  // Draw roads (streets between blocks)
+function drawRoads(ctx: CanvasRenderingContext2D, gridScale: number, halfGrid: number) {
   const roadWidth = 40;
   ctx.fillStyle = "rgba(0, 255, 204, 0.06)";
   for (let i = 0; i <= GRID_SIZE; i++) {
@@ -72,8 +51,9 @@ function draw() {
     ctx.fillRect(pos - rw / 2, -halfGrid * gridScale, rw, halfGrid * 2 * gridScale);
     ctx.fillRect(-halfGrid * gridScale, pos - rw / 2, halfGrid * 2 * gridScale, rw);
   }
+}
 
-  // Draw buildings
+function drawBuildings(ctx: CanvasRenderingContext2D, gridScale: number) {
   const blockSize = 150;
   ctx.fillStyle = "rgba(0, 150, 255, 0.15)";
   ctx.strokeStyle = "rgba(0, 150, 255, 0.08)";
@@ -89,39 +69,39 @@ function draw() {
       ctx.strokeRect(sx - bs / 2, sy - bs / 2, bs, bs);
     }
   }
+}
 
-  // Draw objectives
-  for (const obj of props.objectives) {
-    if (obj.completed) continue;
-    const ox = (obj.x - 0) * gridScale;
-    const oz = (obj.z - 0) * gridScale;
+function drawMinimapObjective(ctx: CanvasRenderingContext2D, obj: { x: number; z: number; completed: boolean; label: string; type: string }, gridScale: number) {
+  if (obj.completed) return;
+  const ox = (obj.x - 0) * gridScale;
+  const oz = (obj.z - 0) * gridScale;
 
-    if (obj.type === "collect") {
-      ctx.fillStyle = "#ffcc00";
-      ctx.shadowColor = "#ffcc00";
-      ctx.shadowBlur = 6;
-      ctx.beginPath();
-      ctx.arc(ox, oz, 4, 0, Math.PI * 2);
-      ctx.fill();
-    } else if (obj.type === "interact") {
-      ctx.fillStyle = "#ff00cc";
-      ctx.shadowColor = "#ff00cc";
-      ctx.shadowBlur = 6;
-      ctx.beginPath();
-      ctx.arc(ox, oz, 4, 0, Math.PI * 2);
-      ctx.fill();
-    } else {
-      ctx.fillStyle = "#00ffcc";
-      ctx.shadowColor = "#00ffcc";
-      ctx.shadowBlur = 6;
-      ctx.beginPath();
-      ctx.arc(ox, oz, 3.5, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.shadowBlur = 0;
+  if (obj.type === "collect") {
+    ctx.fillStyle = "#ffcc00";
+    ctx.shadowColor = "#ffcc00";
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.arc(ox, oz, 4, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (obj.type === "interact") {
+    ctx.fillStyle = "#ff00cc";
+    ctx.shadowColor = "#ff00cc";
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.arc(ox, oz, 4, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    ctx.fillStyle = "#00ffcc";
+    ctx.shadowColor = "#00ffcc";
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.arc(ox, oz, 3.5, 0, Math.PI * 2);
+    ctx.fill();
   }
+  ctx.shadowBlur = 0;
+}
 
-  // Draw player position (triangle showing direction)
+function drawPlayer(ctx: CanvasRenderingContext2D, gridScale: number) {
   const px = (props.playerX - 0) * gridScale;
   const pz = (props.playerZ - 0) * gridScale;
   const rot = props.playerRotation;
@@ -130,7 +110,6 @@ function draw() {
   ctx.translate(px, pz);
   ctx.rotate(-rot);
 
-  // Player glow
   ctx.shadowColor = "#00ffcc";
   ctx.shadowBlur = 10;
   ctx.fillStyle = "#00ffcc";
@@ -143,8 +122,38 @@ function draw() {
   ctx.shadowBlur = 0;
 
   ctx.restore();
+}
 
-  // Border ring
+function draw() {
+  const canvas = canvasRef.value;
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  ctx.clearRect(0, 0, mapSize, mapSize);
+
+  const cx = mapSize / 2;
+  const cy = mapSize / 2;
+
+  ctx.save();
+  ctx.translate(cx, cy);
+
+  const gridScale = scale;
+  const halfGrid = (GRID_SIZE * CELL_SIZE) / 2;
+
+  ctx.fillStyle = "rgba(5, 5, 20, 0.85)";
+  ctx.fillRect(-cx, -cy, mapSize, mapSize);
+
+  drawGrid(ctx, gridScale, halfGrid);
+  drawRoads(ctx, gridScale, halfGrid);
+  drawBuildings(ctx, gridScale);
+
+  for (const obj of props.objectives) {
+    drawMinimapObjective(ctx, obj, gridScale);
+  }
+
+  drawPlayer(ctx, gridScale);
+
   ctx.strokeStyle = "rgba(0, 255, 204, 0.4)";
   ctx.lineWidth = 1.5;
   ctx.strokeRect(-cx, -cy, mapSize, mapSize);

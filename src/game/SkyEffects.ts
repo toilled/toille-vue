@@ -59,6 +59,60 @@ export class SkyEffects {
     this.scene.add(this.stars);
   }
 
+  private drawSkyGradient(ctx: CanvasRenderingContext2D) {
+    const gradient = ctx.createLinearGradient(0, 0, 0, 512);
+    gradient.addColorStop(0, "#000011");
+    gradient.addColorStop(0.15, "#050020");
+    gradient.addColorStop(0.35, "#0a0028");
+    gradient.addColorStop(0.55, "#150035");
+    gradient.addColorStop(0.7, "#1a0035");
+    gradient.addColorStop(0.82, "#1a0030");
+    gradient.addColorStop(0.9, "#150025");
+    gradient.addColorStop(0.95, "#200020");
+    gradient.addColorStop(1, "#2a0015");
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 512, 512);
+  }
+
+  private drawHorizonGlow(ctx: CanvasRenderingContext2D) {
+    const glow = ctx.createRadialGradient(256, 470, 10, 256, 470, 120);
+    glow.addColorStop(0, "rgba(255, 50, 100, 0.15)");
+    glow.addColorStop(0.4, "rgba(255, 0, 100, 0.08)");
+    glow.addColorStop(0.7, "rgba(100, 0, 200, 0.04)");
+    glow.addColorStop(1, "rgba(0, 0, 0, 0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 380, 512, 132);
+
+    const glow2 = ctx.createRadialGradient(256, 470, 10, 256, 470, 100);
+    glow2.addColorStop(0, "rgba(0, 200, 255, 0.08)");
+    glow2.addColorStop(1, "rgba(0, 200, 255, 0)");
+    ctx.fillStyle = glow2;
+    ctx.fillRect(100, 400, 312, 112);
+  }
+
+  private drawNebulaPatches(ctx: CanvasRenderingContext2D) {
+    ctx.fillStyle = "rgba(255, 0, 120, 0.04)";
+    for (let i = 0; i < 8; i++) {
+      const x = Math.random() * 512;
+      const y = Math.random() * 350;
+      const radius = 40 + Math.random() * 100;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.fillStyle = "rgba(0, 200, 255, 0.03)";
+    for (let i = 0; i < 5; i++) {
+      const x = Math.random() * 512;
+      const y = Math.random() * 300;
+      const radius = 30 + Math.random() * 80;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
   private createSkyDome(): Mesh {
     const geometry = new SphereGeometry(2800, 32, 32);
 
@@ -66,58 +120,10 @@ export class SkyEffects {
     canvas.width = 512;
     canvas.height = 512;
     const ctx = canvas.getContext("2d");
-    if (ctx && ctx.createLinearGradient) {
-      // Deep space at top, neon horizon at bottom
-      const gradient = ctx.createLinearGradient(0, 0, 0, 512);
-      gradient.addColorStop(0, "#000011");
-      gradient.addColorStop(0.15, "#050020");
-      gradient.addColorStop(0.35, "#0a0028");
-      gradient.addColorStop(0.55, "#150035");
-      gradient.addColorStop(0.7, "#1a0035");
-      gradient.addColorStop(0.82, "#1a0030");
-      gradient.addColorStop(0.9, "#150025");
-      gradient.addColorStop(0.95, "#200020");
-      gradient.addColorStop(1, "#2a0015");
-
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, 512, 512);
-
-      // City glow at horizon (bottom)
-      const horizonGlow = ctx.createRadialGradient(256, 470, 10, 256, 470, 120);
-      horizonGlow.addColorStop(0, "rgba(255, 50, 100, 0.15)");
-      horizonGlow.addColorStop(0.4, "rgba(255, 0, 100, 0.08)");
-      horizonGlow.addColorStop(0.7, "rgba(100, 0, 200, 0.04)");
-      horizonGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
-      ctx.fillStyle = horizonGlow;
-      ctx.fillRect(0, 380, 512, 132);
-
-      const horizonGlow2 = ctx.createRadialGradient(256, 470, 10, 256, 470, 100);
-      horizonGlow2.addColorStop(0, "rgba(0, 200, 255, 0.08)");
-      horizonGlow2.addColorStop(1, "rgba(0, 200, 255, 0)");
-      ctx.fillStyle = horizonGlow2;
-      ctx.fillRect(100, 400, 312, 112);
-
-      // Subtle nebula patches (magenta)
-      ctx.fillStyle = "rgba(255, 0, 120, 0.04)";
-      for (let i = 0; i < 8; i++) {
-        const x = Math.random() * 512;
-        const y = Math.random() * 350;
-        const radius = 40 + Math.random() * 100;
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // Subtle nebula patches (cyan)
-      ctx.fillStyle = "rgba(0, 200, 255, 0.03)";
-      for (let i = 0; i < 5; i++) {
-        const x = Math.random() * 512;
-        const y = Math.random() * 300;
-        const radius = 30 + Math.random() * 80;
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.fill();
-      }
+    if (ctx && typeof ctx.createLinearGradient === "function") {
+      this.drawSkyGradient(ctx);
+      this.drawHorizonGlow(ctx);
+      this.drawNebulaPatches(ctx);
     }
 
     const texture = new CanvasTexture(canvas);

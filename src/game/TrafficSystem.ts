@@ -172,73 +172,37 @@ export class TrafficSystem {
   }
 
   public addLightsToCar(car: Group) {
-    const hlColor = 0xffffaa;
-    const hlIntensity = 800;
-    const hlDist = 800;
-    const hlAngle = Math.PI / 4.5;
-    const hlPenumbra = 0.2;
-
     const isTruck = !!car.userData.isTruck;
-
     const yPos = isTruck ? 4 : 2;
     const zFront = isTruck ? 8 : 4;
     const zBack = isTruck ? -10 : -4;
     const xOffset = isTruck ? 2 : 1.5;
 
-    this.createSpotLight(
-      car,
-      xOffset,
-      yPos,
-      zFront,
-      hlColor,
-      hlIntensity,
-      hlDist,
-      hlAngle,
-      hlPenumbra,
-      36,
-    );
-    this.createSpotLight(
-      car,
-      -xOffset,
-      yPos,
-      zFront,
-      hlColor,
-      hlIntensity,
-      hlDist,
-      hlAngle,
-      hlPenumbra,
-      36,
-    );
+    this.addHeadlights(car, xOffset, yPos, zFront);
+    this.addTaillights(car, xOffset, yPos, zBack);
+  }
 
+  private addHeadlights(car: Group, xOffset: number, yPos: number, zFront: number) {
+    const hlColor = 0xffffaa;
+    const hlIntensity = 800;
+    const hlDist = 800;
+    const hlAngle = Math.PI / 4.5;
+    const hlPenumbra = 0.2;
+    const hlTargetZ = 36;
+
+    this.createSpotLight(car, xOffset, yPos, zFront, hlColor, hlIntensity, hlDist, hlAngle, hlPenumbra, hlTargetZ);
+    this.createSpotLight(car, -xOffset, yPos, zFront, hlColor, hlIntensity, hlDist, hlAngle, hlPenumbra, hlTargetZ);
+  }
+
+  private addTaillights(car: Group, xOffset: number, yPos: number, zBack: number) {
     const tlColor = 0xff0000;
     const tlIntensity = 50;
     const tlDist = 50;
     const tlAngle = Math.PI / 2.5;
+    const tlTargetZ = -16;
 
-    this.createSpotLight(
-      car,
-      xOffset,
-      yPos,
-      zBack,
-      tlColor,
-      tlIntensity,
-      tlDist,
-      tlAngle,
-      0.5,
-      -16,
-    );
-    this.createSpotLight(
-      car,
-      -xOffset,
-      yPos,
-      zBack,
-      tlColor,
-      tlIntensity,
-      tlDist,
-      tlAngle,
-      0.5,
-      -16,
-    );
+    this.createSpotLight(car, xOffset, yPos, zBack, tlColor, tlIntensity, tlDist, tlAngle, 0.5, tlTargetZ);
+    this.createSpotLight(car, -xOffset, yPos, zBack, tlColor, tlIntensity, tlDist, tlAngle, 0.5, tlTargetZ);
   }
 
   private createSpotLight(
@@ -288,51 +252,61 @@ export class TrafficSystem {
     targetsToRemove.forEach((t) => car.remove(t));
   }
 
-  public resetCar(carGroup: Group, activeCar?: Group | null) {
-    const wasActive = activeCar && carGroup.uuid === activeCar.uuid;
-    const isPolice = !!carGroup.userData.isPolice;
-
-    // Clean up fading materials
-    if (carGroup.userData._fadeInitialized) {
-      carGroup.traverse((child) => {
-        if (child instanceof Mesh) {
-          const mat = child.material;
-          const orig = child.userData._originalMaterial as import("three").Material | undefined;
-          if (!Array.isArray(mat) && orig) {
-            mat.dispose();
-            child.material = orig;
-            delete child.userData._originalMaterial;
-          }
+  private cleanupFadingMaterials(carGroup: Group) {
+    if (!carGroup.userData._fadeInitialized) return;
+    carGroup.traverse((child) => {
+      if (child instanceof Mesh) {
+        const mat = child.material;
+        const orig = child.userData._originalMaterial as import("three").Material | undefined;
+        if (!Array.isArray(mat) && orig) {
+          mat.dispose();
+          child.material = orig;
+          delete child.userData._originalMaterial;
         }
-      });
-      carGroup.userData._fadeInitialized = false;
-    }
+      }
+    });
+    carGroup.userData._fadeInitialized = false;
+  }
 
-    this.removeLightsFromCar(carGroup);
-
+  private chooseRoadPosition(): { axis: string; dir: number; x: number; z: number; laneOffset: number } {
     const axis = Math.random() > 0.5 ? "x" : "z";
     const dir = Math.random() > 0.5 ? 1 : -1;
-
     const roadIndex = Math.floor(Math.random() * (GRID_SIZE + 1));
     const roadCoordinate = START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
     const laneOffset = (Math.random() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
 
-    let x = 0,
-      z = 0;
+    let x = 0, z = 0;
     if (axis === "x") {
       z = roadCoordinate + laneOffset;
       x = (Math.random() - 0.5) * CITY_SIZE;
-      carGroup.rotation.y = dir === 1 ? Math.PI / 2 : -Math.PI / 2;
     } else {
       x = roadCoordinate + laneOffset;
       z = (Math.random() - 0.5) * CITY_SIZE;
+    }
+    return { axis, dir, x, z, laneOffset };
+  }
+
+  private setCarHeading(carGroup: Group, axis: string, dir: number) {
+    if (axis === "x") {
+      carGroup.rotation.y = dir === 1 ? Math.PI / 2 : -Math.PI / 2;
+    } else {
       carGroup.rotation.y = dir === 1 ? 0 : Math.PI;
     }
-
     carGroup.userData.heading = carGroup.rotation.y;
+  }
+
+  public resetCar(carGroup: Group, activeCar?: Group | null) {
+    const wasActive = activeCar && carGroup.uuid === activeCar.uuid;
+    const isPolice = !!carGroup.userData.isPolice;
+
+    this.cleanupFadingMaterials(carGroup);
+    this.removeLightsFromCar(carGroup);
+
+    const { axis, dir, x, z, laneOffset } = this.chooseRoadPosition();
+    this.setCarHeading(carGroup, axis, dir);
+
     carGroup.position.set(x, getHeight(x, z) + 1, z);
 
-    // Reset properties
     Object.assign(carGroup.userData, {
       speed: isPolice ? 2.5 + Math.random() * 1.5 : 0.5 + Math.random() * 1.0,
       dir,

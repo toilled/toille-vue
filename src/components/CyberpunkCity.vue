@@ -173,6 +173,7 @@ let animationId: number;
 let isActive = false;
 let lastWidth = typeof window !== "undefined" ? window.innerWidth : 0;
 
+let buildings: Object3D[] = [];
 let occupiedGrids = new Map<
   string,
   { halfW: number; halfD: number; isRound?: boolean }
@@ -215,27 +216,11 @@ function updateLeaderboard(newScores: ScoreEntry[]) {
   // Texture update is handled by watch(leaderboard)
 }
 
-function updateLeaderboardTexture() {
-  if (!leaderboardCanvas) return;
-  const ctx = leaderboardCanvas.getContext("2d");
-  if (!ctx) return;
-
-  // Reset transform to identity
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-  // Background
-  ctx.fillStyle = "#100010";
-  ctx.fillRect(0, 0, LEADERBOARD_CANVAS_SIZE, LEADERBOARD_CANVAS_SIZE);
-
-  // Scale everything by 2
-  ctx.scale(2, 2);
-
-  // Border
+function drawLeaderboardTitle(ctx: CanvasRenderingContext2D) {
   ctx.strokeStyle = "#00ffcc";
   ctx.lineWidth = 8;
   ctx.strokeRect(4, 4, 504, 504);
 
-  // Title
   ctx.fillStyle = "#00ffcc";
   ctx.font = "bold 60px Arial";
   ctx.textAlign = "center";
@@ -244,13 +229,13 @@ function updateLeaderboardTexture() {
   ctx.fillText("LEADERBOARD", 256, 80);
   ctx.shadowBlur = 0;
 
-  // Header Line
   ctx.beginPath();
   ctx.moveTo(20, 100);
   ctx.lineTo(492, 100);
   ctx.stroke();
+}
 
-  // Scores
+function drawLeaderboardScores(ctx: CanvasRenderingContext2D) {
   ctx.font = "bold 40px Courier New";
   ctx.textAlign = "left";
   let y = 160;
@@ -259,45 +244,50 @@ function updateLeaderboardTexture() {
     ctx.textAlign = "center";
     ctx.fillStyle = "#aaaaaa";
     ctx.fillText("Loading...", 256, 250);
-  } else {
-    leaderboard.value.forEach((entry, idx) => {
-      switch (idx) {
-        case 0:
-          ctx.fillStyle = "#ffff00"; // Gold
-          break;
-        case 1:
-          ctx.fillStyle = "#cccccc"; // Silver
-          break;
-        case 2:
-          ctx.fillStyle = "#cd7f32"; // Bronze
-          break;
-        default:
-          ctx.fillStyle = "#ffffff";
-          break;
-      }
-
-      // Format: 1. NAME   1000
-      const rank = `${idx + 1}.`;
-      const name = entry.name.substring(0, 8).toUpperCase();
-      const scoreStr = entry.score.toString();
-
-      ctx.fillText(rank, 40, y);
-      ctx.fillText(name, 110, y);
-
-      // Right align score
-      ctx.textAlign = "right";
-      ctx.fillText(scoreStr, 470, y);
-      ctx.textAlign = "left";
-
-      y += 60;
-    });
+    return;
   }
 
-  // Footer / Instructions
+  leaderboard.value.forEach((entry, idx) => {
+    const colors = ["#ffff00", "#cccccc", "#cd7f32", "#ffffff"];
+    ctx.fillStyle = colors[idx] || colors[3];
+
+    const rank = `${idx + 1}.`;
+    const name = entry.name.substring(0, 8).toUpperCase();
+    const scoreStr = entry.score.toString();
+
+    ctx.fillText(rank, 40, y);
+    ctx.fillText(name, 110, y);
+
+    ctx.textAlign = "right";
+    ctx.fillText(scoreStr, 470, y);
+    ctx.textAlign = "left";
+
+    y += 60;
+  });
+}
+
+function drawLeaderboardFooter(ctx: CanvasRenderingContext2D) {
   ctx.fillStyle = "#00ffcc";
   ctx.font = "20px Arial";
   ctx.textAlign = "center";
   ctx.fillText("CRASH TO SUBMIT SCORE", 256, 480);
+}
+
+function updateLeaderboardTexture() {
+  if (!leaderboardCanvas) return;
+  const ctx = leaderboardCanvas.getContext("2d");
+  if (!ctx) return;
+
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+  ctx.fillStyle = "#100010";
+  ctx.fillRect(0, 0, LEADERBOARD_CANVAS_SIZE, LEADERBOARD_CANVAS_SIZE);
+
+  ctx.scale(2, 2);
+
+  drawLeaderboardTitle(ctx);
+  drawLeaderboardScores(ctx);
+  drawLeaderboardFooter(ctx);
 
   if (leaderboardTexture) {
     leaderboardTexture.needsUpdate = true;
@@ -575,29 +565,15 @@ function activateSpark(
   sparkVelocities[i * 3 + 2] = (Math.random() - 0.5) * SPARK_RANDOM_VELOCITY;
 }
 
-onMounted(() => {
-  if (!canvasContainer.value) return;
-
-  updateIsMobile();
-
-  const width = canvasContainer.value.clientWidth || window.innerWidth;
-  const height = canvasContainer.value.clientHeight || window.innerHeight;
-
-  // Scene setup
+function initScene(width: number, height: number) {
   scene = new Scene();
-  // scene.background handled by SkyEffects sky dome
 
-  // Camera setup
-  camera = new PerspectiveCamera(
-    CAMERA_FOV,
-    width / height,
-    CAMERA_NEAR,
-    CAMERA_FAR,
-  );
+  camera = new PerspectiveCamera(CAMERA_FOV, width / height, CAMERA_NEAR, CAMERA_FAR);
   camera.position.set(0, 250, 600);
   camera.lookAt(0, 0, 0);
+}
 
-  // Renderer setup
+function initRenderer(width: number, height: number) {
   const quality = getBrowserQuality();
   renderer = new WebGLRenderer({ antialias: false, alpha: false, powerPreference: "high-performance" });
   renderer.setSize(width, height);
@@ -606,23 +582,21 @@ onMounted(() => {
   renderer.shadowMap.type = quality.shadowMapType === 1 ? PCFShadowMap : PCFSoftShadowMap;
   renderer.toneMapping = ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.4;
-  canvasContainer.value.appendChild(renderer.domElement);
+  canvasContainer.value!.appendChild(renderer.domElement);
 
-  // Post Processing
   composer = setupPostProcessing(scene, camera, renderer, quality.msaaSamples);
+}
 
-  // Sky Effects
+function initGameWorld() {
   skyEffects = new SkyEffects(scene);
   skyEffects.addClouds();
 
-  // City Builder
   const lbTexture = createLeaderboardTexture();
   cityBuilder = new CityBuilder(scene);
   cityBuilder.buildCity(isMobile.value, lbTexture);
-  const buildings = cityBuilder.getBuildings();
+  buildings = cityBuilder.getBuildings();
   occupiedGrids = cityBuilder.getOccupiedGrids();
 
-  // Extract leaderboard meshes for raycasting
   buildings.forEach((b) => {
     b.traverse((c) => {
       if (c instanceof Mesh && c.userData.isLeaderboard) {
@@ -630,12 +604,12 @@ onMounted(() => {
       }
     });
   });
+}
 
-  // Traffic System
+function initTrafficAndSparks() {
   trafficSystem = new TrafficSystem(scene, CAR_COUNT, (pos) => spawnSparks(pos));
   cars = trafficSystem.getCars();
 
-  // Initialize Sparks
   const sparkGeo = new BufferGeometry();
   sparkGeo.setAttribute("position", new BufferAttribute(sparkPositions, 3));
 
@@ -652,41 +626,36 @@ onMounted(() => {
   sparks = new Points(sparkGeo, sparkMat);
   sparks.frustumCulled = false;
   scene.add(sparks);
+}
 
-  // Initialize Fireworks via Manager
+function initGameManagers() {
   konamiManager = new KonamiManager(scene);
 
-  // Initialize Gang Wars
-  gangWarManager = new GangWarManager(
-    scene,
-    occupiedGrids,
-    spawnSparks,
-    playPewSound,
-  );
+  gangWarManager = new GangWarManager(scene, occupiedGrids, spawnSparks, playPewSound);
 
-  // Initialize Multiplayer
   multiplayerManager = new MultiplayerManager(scene);
   multiplayerManager.connect();
 
   createCheckpoint();
   createNavArrow();
   createChaseArrow();
+}
 
+function initEventListeners() {
   window.addEventListener("resize", onResize);
   window.addEventListener("click", onClick);
   window.addEventListener("keydown", onKeyDown);
   window.addEventListener("keyup", onKeyUp);
   window.addEventListener("mousemove", onMouseMove);
+}
 
-  // Story manager
+function initStoryAndMode() {
   storyManager = new StoryManager(storyState);
 
-  // Story items (trigger + objective markers)
   storyItemsManager = new StoryItemsManager(scene);
   storyItemsManager.createTrigger();
   storyItemsManager.createAllObjectiveMarkers();
 
-  // Initialize Game Context and Manager
   const context: GameContext = {
     scene,
     camera,
@@ -722,6 +691,23 @@ onMounted(() => {
 
   isActive = true;
   animate();
+}
+
+onMounted(() => {
+  if (!canvasContainer.value) return;
+
+  updateIsMobile();
+
+  const width = canvasContainer.value.clientWidth || window.innerWidth;
+  const height = canvasContainer.value.clientHeight || window.innerHeight;
+
+  initScene(width, height);
+  initRenderer(width, height);
+  initGameWorld();
+  initTrafficAndSparks();
+  initGameManagers();
+  initEventListeners();
+  initStoryAndMode();
 
   ScoreService.getTopScores().then((scores) => {
     leaderboard.value = scores;
@@ -729,7 +715,6 @@ onMounted(() => {
   });
 
   cyberpunkAudio.addListener(onAudioNote);
-
   showSplash.value = false;
 });
 

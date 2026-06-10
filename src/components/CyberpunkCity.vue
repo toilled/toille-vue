@@ -781,6 +781,13 @@ function startStoryMode() {
 
 function startDemoMode() {
   if (isFallbackMode.value) return;
+  if (
+    !confirm(
+      "⚠ EPILEPSY WARNING: This demo contains flashing lights, strobing patterns, and rapid visual effects that may trigger seizures in people with photosensitive epilepsy. If you or anyone in your household has a history of seizures, please do not proceed.\n\nClick OK to confirm you understand and wish to continue.",
+    )
+  )
+    return;
+  audioManager.photosensitivityConfirmed = true;
   isGameMode.value = true;
   emit("game-start");
   gameModeManager.setMode(new DemoMode());
@@ -1207,7 +1214,7 @@ function onAudioNote(type: string, data?: any) {
   } else {
     key = type;
   }
-  if (materials[key]) {
+  if (materials[key] && audioManager.photosensitivityConfirmed) {
     let boost = EMISSIVE_INTENSITY_BOOST_BASS;
     if (type === "hihat") boost = EMISSIVE_INTENSITY_BOOST_HIHAT;
     materials[key].emissiveIntensity = boost;

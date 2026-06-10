@@ -51,6 +51,7 @@ export interface GameContext {
   spawnSparks: (position: Vector3) => void;
   playPewSound: () => void;
   spawnCheckpoint: () => void;
+  reportCheckpoint: () => void;
 
   checkpointMesh: Mesh | undefined;
   navArrow: Group;

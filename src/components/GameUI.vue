@@ -15,6 +15,7 @@
     :drivingScore="drivingScore"
     :isDrivingMode="isDrivingMode"
     :leaderboard="leaderboard"
+    :gameSessionId="gameSessionId"
     @update-leaderboard="$emit('update-leaderboard', $event)"
   />
 
@@ -181,6 +182,7 @@ const props = defineProps({
     required: true,
   },
   showLeaderboard: Boolean,
+  gameSessionId: { type: String as PropType<string | null>, default: null },
 });
 
 const emit = defineEmits([

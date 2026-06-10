@@ -41,6 +41,7 @@ describe("ExplorationMode", () => {
       spawnSparks: vi.fn(),
       playPewSound: vi.fn(),
       spawnCheckpoint: vi.fn(),
+      reportCheckpoint: vi.fn(),
       checkpointMesh: undefined,
       navArrow: { visible: false } as never,
       chaseArrow: { visible: false } as never,

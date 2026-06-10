@@ -89,4 +89,71 @@ describe("ScoreService", () => {
     const scores = await ScoreService.getTopScores();
     expect(scores.length).toBeLessThanOrEqual(5);
   });
+
+  it("createSession returns game_id on success", async () => {
+    const mockFetch = vi.mocked(fetch);
+    mockFetch.mockResolvedValue({
+      ok: true,
+      headers: { get: vi.fn(() => "application/json") },
+      json: () => Promise.resolve({ game_id: "abc-123" }),
+    } as never);
+
+    const gameId = await ScoreService.createSession();
+    expect(gameId).toBe("abc-123");
+    expect(mockFetch).toHaveBeenCalledWith("/api/scores", expect.objectContaining({
+      method: "POST",
+      body: JSON.stringify({ action: "create" }),
+    }));
+  });
+
+  it("createSession returns null on failure", async () => {
+    const mockFetch = vi.mocked(fetch);
+    mockFetch.mockRejectedValue(new Error("Network error"));
+
+    const gameId = await ScoreService.createSession();
+    expect(gameId).toBeNull();
+  });
+
+  it("recordCheckpoint sends checkpoint event", async () => {
+    const mockFetch = vi.mocked(fetch);
+    mockFetch.mockResolvedValue({ ok: true } as never);
+
+    await ScoreService.recordCheckpoint("abc-123");
+    expect(mockFetch).toHaveBeenCalledWith("/api/scores", expect.objectContaining({
+      method: "POST",
+      body: JSON.stringify({ action: "checkpoint", game_id: "abc-123" }),
+    }));
+  });
+
+  it("recordCheckpoint does not throw on failure", async () => {
+    const mockFetch = vi.mocked(fetch);
+    mockFetch.mockRejectedValue(new Error("Network error"));
+
+    await expect(ScoreService.recordCheckpoint("abc-123")).resolves.toBeUndefined();
+  });
+
+  it("submitScore with gameId sends session-based submission", async () => {
+    const mockFetch = vi.mocked(fetch);
+    mockFetch.mockResolvedValue({
+      ok: true,
+      headers: { get: vi.fn(() => "application/json") },
+      json: () => Promise.resolve([{ name: "ACE", score: 1000 }]),
+    } as never);
+
+    const scores = await ScoreService.submitScore("ACE", 1000, "session-1");
+    expect(scores).toEqual([{ name: "ACE", score: 1000 }]);
+    expect(mockFetch).toHaveBeenCalledWith("/api/scores", expect.objectContaining({
+      method: "POST",
+      body: JSON.stringify({ action: "submit", game_id: "session-1", name: "ACE", score: 1000 }),
+    }));
+  });
+
+  it("submitScore with gameId falls back to local on failure", async () => {
+    const mockFetch = vi.mocked(fetch);
+    mockFetch.mockRejectedValue(new Error("Network error"));
+
+    const scores = await ScoreService.submitScore("ACE", 1000, "session-1");
+    expect(scores.length).toBe(1);
+    expect(scores[0].score).toBe(1000);
+  });
 });

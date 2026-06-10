@@ -98,7 +98,7 @@ export class DrivingMode implements GameMode {
 
   private updateTimerAndCheckpoint(car: Group, dt: number) {
     if (!this.context) return;
-    const { timeLeft, checkpointMesh, navArrow, drivingScore, playPewSound, spawnCheckpoint, isGameOver, distToTarget } = this.context;
+    const { timeLeft, checkpointMesh, navArrow, drivingScore, playPewSound, spawnCheckpoint, isGameOver, distToTarget, reportCheckpoint } = this.context;
 
     timeLeft.value -= dt;
     if (timeLeft.value <= 0) {
@@ -122,6 +122,7 @@ export class DrivingMode implements GameMode {
       timeLeft.value += 15;
       playPewSound();
       spawnCheckpoint();
+      reportCheckpoint();
       if (this.redCarAI) {
         this.redCarAI.speed = Math.min(this.redCarAI.speed + 0.1, 2.2);
       }

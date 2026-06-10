@@ -6,6 +6,7 @@ class AudioManager {
   ctx: AudioContext | null = null;
   masterGain: GainNode | null = null;
   isSoundEnabled = ref(false);
+  photosensitivityConfirmed = false;
 
   init() {
     if (!this.ctx) {

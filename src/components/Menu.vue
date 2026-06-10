@@ -159,6 +159,11 @@ const soundOn = computed(() => audioManager.isSoundEnabled.value);
 const cityOn = computed(() => cityBackground.isEnabled.value);
 
 const toggleSound = () => {
+  if (!audioManager.isSoundEnabled.value && !audioManager.photosensitivityConfirmed) {
+    audioManager.photosensitivityConfirmed = confirm(
+      "⚠ EPILEPSY WARNING: Enabling sound activates reactive visual effects including flashing lights and strobing patterns that may trigger seizures in people with photosensitive epilepsy.\n\nClick OK to confirm you understand and wish to enable visual effects. Click Cancel to listen without flashing effects.",
+    );
+  }
   audioManager.toggleSound();
   if (audioManager.isSoundEnabled.value) {
     cyberpunkAudio.play();

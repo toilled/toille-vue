@@ -67,6 +67,7 @@ describe("DemoMode", () => {
       spawnSparks: vi.fn(),
       playPewSound: vi.fn(),
       spawnCheckpoint: vi.fn(),
+      reportCheckpoint: vi.fn(),
       checkpointMesh: undefined,
       navArrow: {} as never,
       chaseArrow: {} as never,

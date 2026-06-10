@@ -37,6 +37,7 @@ const props = defineProps({
     type: Array as PropType<ScoreEntry[]>,
     required: true,
   },
+  gameSessionId: { type: String as PropType<string | null>, default: null },
 });
 
 const emit = defineEmits(["update-leaderboard"]);
@@ -60,7 +61,7 @@ async function submitHighScore() {
   if (!playerName.value.trim()) return;
   const nameUpper = playerName.value.trim().toUpperCase();
   const finalScore = props.drivingScore;
-  const newScores = await ScoreService.submitScore(nameUpper, finalScore || 0);
+  const newScores = await ScoreService.submitScore(nameUpper, finalScore || 0, props.gameSessionId);
   isScoreSubmitted.value = true;
   emit("update-leaderboard", newScores);
 }

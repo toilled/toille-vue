@@ -19,6 +19,7 @@
     :lookControls="lookControls"
     :leaderboard="leaderboard"
     :showLeaderboard="showLeaderboard"
+    :gameSessionId="gameSessionId"
     @exit-game-mode="exitGameMode"
     @update-leaderboard="updateLeaderboard"
     @close-leaderboard="showLeaderboard = false"
@@ -207,6 +208,7 @@ let skyEffects: SkyEffects;
 
 const leaderboard = ref<ScoreEntry[]>([]);
 const showLeaderboard = ref(false);
+const gameSessionId = ref<string | null>(null);
 
 let leaderboardCanvas: HTMLCanvasElement;
 let leaderboardTexture: CanvasTexture;
@@ -676,6 +678,11 @@ function initStoryAndMode() {
     spawnSparks,
     playPewSound,
     spawnCheckpoint,
+    reportCheckpoint: () => {
+      if (gameSessionId.value) {
+        ScoreService.recordCheckpoint(gameSessionId.value);
+      }
+    },
     checkpointMesh,
     navArrow,
     chaseArrow,
@@ -801,6 +808,7 @@ function exitGameMode() {
   isGameOver.value = false;
   score.value = 0;
   drivingScore.value = 0;
+  gameSessionId.value = null;
   emit("game-end");
 }
 
@@ -869,6 +877,9 @@ function handleCarClick(): boolean {
     activeCar.value = target;
     target.userData.isPlayerControlled = true;
     target.userData.currentSpeed = target.userData.speed;
+    ScoreService.createSession().then((id) => {
+      gameSessionId.value = id;
+    });
     gameModeManager.setMode(new DrivingMode());
     return true;
   }

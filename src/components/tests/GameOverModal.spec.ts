@@ -61,7 +61,7 @@ describe("GameOverModal.vue", () => {
     await wrapper.find(".name-input").setValue("PLAYER");
     await wrapper.find(".submit-btn").trigger("click");
     await flushPromises();
-    expect(mockSubmitScore).toHaveBeenCalledWith("PLAYER", 1500);
+    expect(mockSubmitScore).toHaveBeenCalledWith("PLAYER", 1500, null);
   });
 
   it("emits update-leaderboard on mount when game is over", async () => {

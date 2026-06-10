@@ -50,7 +50,40 @@ export const ScoreService = {
     return getLocalScores();
   },
 
-  async submitScore(name: string, score: number): Promise<ScoreEntry[]> {
+  async createSession(): Promise<string | null> {
+    try {
+      const res = await fetch("/api/scores", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "create" }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data.game_id as string;
+      }
+    } catch (e) {
+      console.warn("Failed to create game session:", e);
+    }
+    return null;
+  },
+
+  async recordCheckpoint(gameId: string): Promise<void> {
+    try {
+      await fetch("/api/scores", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "checkpoint", game_id: gameId }),
+      });
+    } catch {
+      // Fire-and-forget - failures are non-critical
+    }
+  },
+
+  async submitScore(
+    name: string,
+    score: number,
+    gameId?: string | null,
+  ): Promise<ScoreEntry[]> {
     const sanitizedName = sanitizeName(name);
     const validatedScore = validateScore(score);
 
@@ -58,22 +91,32 @@ export const ScoreService = {
       return getLocalScores();
     }
 
-    try {
-      const res = await fetch("/api/scores", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: sanitizedName, score: validatedScore }),
-      });
+    if (gameId) {
+      try {
+        const res = await fetch("/api/scores", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "submit",
+            game_id: gameId,
+            name: sanitizedName,
+            score: validatedScore,
+          }),
+        });
 
-      const data = await handleResponse(res);
-      if (data) return data;
+        const data = await handleResponse(res);
+        if (data) return data;
 
-      console.warn(
-        "Leaderboard API returned error during submission, falling back to local storage.",
-        res.status,
-      );
-    } catch (e) {
-      console.warn("API unavailable, using local storage:", e);
+        console.warn(
+          "Score submission failed, falling back to local storage.",
+          res.status,
+        );
+      } catch (e) {
+        console.warn("API unavailable, using local storage:", e);
+      }
+
+      saveLocalScore(sanitizedName, validatedScore);
+      return getLocalScores();
     }
 
     saveLocalScore(sanitizedName, validatedScore);
@@ -98,7 +141,6 @@ function saveLocalScore(name: string, score: number) {
   const scores = getLocalScores();
   scores.push({ name, score });
   scores.sort((a, b) => b.score - a.score);
-  // Keep top 5
   const top5 = scores.slice(0, 5);
   localStorage.setItem(LOCAL_KEY, JSON.stringify(top5));
 }

@@ -227,7 +227,10 @@ export class CityBuilder {
   }
 
   private selectMaterial(isLeaderboardBuilding: boolean): MeshStandardMaterial {
-    if (isLeaderboardBuilding) return this.materials.buildingMaterial;
+    if (isLeaderboardBuilding) {
+      this.materials.buildingMaterial.emissiveIntensity = 0.2;
+      return this.materials.buildingMaterial;
+    }
     const audioKeys = Object.keys(this.materials.audioMaterials);
     const channelIndex = Math.floor(Math.random() * audioKeys.length);
     return this.materials.audioMaterials[audioKeys[channelIndex]];

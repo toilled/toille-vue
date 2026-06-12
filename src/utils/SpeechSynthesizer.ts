@@ -1,4 +1,4 @@
-let enabled = true;
+const enabled = true;
 
 export function speak(text: string) {
   if (!enabled || typeof window === "undefined" || !window.speechSynthesis) return;

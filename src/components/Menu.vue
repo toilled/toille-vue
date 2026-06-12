@@ -375,5 +375,10 @@ const changeLanguage = (event: Event) => {
     width: 18px;
     height: 18px;
   }
+  .lang-select {
+    padding: 0.05rem 0.1rem;
+    font-size: 0.7rem;
+    margin-right: 0.25rem;
+  }
 }
 </style>

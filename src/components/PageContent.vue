@@ -11,11 +11,11 @@
                   v-if="showHint"
                   class="page-hint"
                 >
-                  - Nothing here
+                  {{ t("notFound.nothingHere") }}
                 </span>
               </Transition>
             </template>
-            <template v-else> 404 - Page not found </template>
+            <template v-else> {{ t("notFound.pageNotFound") }} </template>
           </h2>
         </header>
         <div class="page-body">
@@ -29,17 +29,17 @@
           </template>
           <template v-else>
             <Paragraph
-              :paragraph="`The page <strong>${route.params.name}</strong> does not exist!`"
+              :paragraph="t('notFound.pageDoesNotExist', { name: route.params.name })"
               :last="false"
             />
-            <div class="not-found-nav">
-              <h3>Available Pages:</h3>
+              <div class="not-found-nav">
+              <h3>{{ t("notFound.availablePages") }}</h3>
               <ul>
                 <li v-for="p in availablePages" :key="p.link">
                   <router-link :to="p.link">{{ p.icon }} {{ p.name }}</router-link>
                 </li>
               </ul>
-              <router-link to="/" class="button outline">Go Home</router-link>
+              <router-link to="/" class="button outline">{{ t("notFound.goHome") }}</router-link>
             </div>
           </template>
         </div>
@@ -49,9 +49,13 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
 import { useHead } from "@vueuse/head";
-import pages from "../configs/pages.json";
 import { Page } from "../interfaces/Page";
+import { useTranslatedPages } from "../composables/useTranslatedPages";
+
+const { t } = useI18n();
+const { translatedPages } = useTranslatedPages();
 
 /**
  * @file PageContent.vue
@@ -79,17 +83,17 @@ const route = useRoute();
 const page = computed(() => {
   if (route.params.name) {
     return (
-      pages.find((p) => p.link.slice(1) === route.params.name)
+      translatedPages.value.find((p) => p.link.slice(1) === route.params.name)
     ) as Page | undefined;
   }
   if (route.params.pathMatch) {
     return null;
   }
-  return pages[0] as Page;
+  return translatedPages.value[0] as Page;
 });
 
 const availablePages = computed(() => {
-  return pages.filter((p: Page) => !p.hidden);
+  return translatedPages.value.filter((p: Page) => !p.hidden);
 });
 
 /**
@@ -100,7 +104,7 @@ const pageTitle = computed(() => {
   return `Elliot > ${t}`;
 });
 
-const description = computed(() => page.value?.metaDescription || "The experimental website of Elliot Dickerson made in Vue.");
+const description = computed(() => page.value?.metaDescription || t("meta.defaultDescription"));
 
 const pageMeta = computed(() => {
   const tags: Record<string, string>[] = [

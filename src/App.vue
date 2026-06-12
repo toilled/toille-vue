@@ -4,7 +4,7 @@
       <nav class="container header-nav">
         <Title
           :title="titles.title"
-          :subtitle="titles.subtitle"
+          :subtitle="t('site.subtitle')"
           :activity="activity"
           :joke="joke"
           @activity="toggleActivity"
@@ -48,7 +48,7 @@
         @click="checker = !checker"
       >
         <div class="container">
-          <TypingText text="The titles might be clickable..." :skip-animation="hintHasBeenShown" />
+          <TypingText :text="t('footer.hint')" :skip-animation="hintHasBeenShown" />
         </div>
       </footer>
     </Transition>
@@ -69,7 +69,7 @@
           :class="{ 'fade-out': gameMode }"
           url="https://icanhazdadjoke.com/"
           valueName="joke"
-          title="Have a laugh!"
+          :title="t('haveALaugh')"
         />
       </div>
     </Transition>
@@ -88,7 +88,11 @@
 </template>
 
 <script setup lang="ts">
-import pages from "./configs/pages.json";
+import { useI18n } from "vue-i18n";
+import { useTranslatedPages } from "./composables/useTranslatedPages";
+
+const { t } = useI18n();
+const { translatedPages } = useTranslatedPages();
 
 const CyberpunkCity = defineAsyncComponent(() => {
   if (import.meta.env.SSR) {
@@ -103,7 +107,7 @@ import Terminal from "./components/Terminal.vue";
 import { useScrollSpy } from "./composables/useScrollSpy";
 
 const visiblePages = computed(() => {
-  return pages.filter((page: Page) => !page.hidden);
+  return translatedPages.value.filter((page: Page) => !page.hidden);
 });
 
 const route = useRoute();
@@ -265,16 +269,16 @@ onUnmounted(() => {
 function getTitleForPath(path: string): string {
   switch (path) {
     case "/noughts-and-crosses":
-      return "Noughts and Crosses";
+      return t("app.titleNoughtsAndCrosses");
     case "/checker":
-      return "Checker";
+      return t("app.titleChecker");
     case "/ask":
-      return "Ask Me";
+      return t("app.titleAsk");
     default:
       const page = visiblePages.value.find(
         (p: Page) => getSectionIdFromPage(p) === activeSection.value
       );
-      return page ? page.title : "Elliot Dickerson";
+      return page ? page.title : t("site.title");
   }
 }
 
@@ -283,7 +287,7 @@ watch(
   (newPath) => {
     const pageTitle = getTitleForPath(newPath);
     if (typeof document !== "undefined") {
-      document.title = "Elliot > " + pageTitle;
+      document.title = t("site.titlePrefix") + pageTitle;
     }
   },
   { immediate: true },
@@ -292,7 +296,7 @@ watch(
 watch(activeSection, () => {
   const pageTitle = getTitleForPath(route.path);
   if (typeof document !== "undefined") {
-    document.title = "Elliot > " + pageTitle;
+    document.title = t("site.titlePrefix") + pageTitle;
   }
 }, { immediate: true });
 

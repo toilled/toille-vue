@@ -62,8 +62,8 @@ describe("PageContent.vue", () => {
       },
     });
     await flushPromises();
-    expect(wrapper.text()).toContain("404 - Page not found");
-    expect(wrapper.text()).toContain(`The page ${pageName} does not exist!`);
+    expect(wrapper.text()).toContain("notFound.pageNotFound");
+    expect(wrapper.text()).toContain(`notFound.pageDoesNotExist`);
   });
 
   it("renders a 404 message for a catch-all route", async () => {
@@ -76,7 +76,7 @@ describe("PageContent.vue", () => {
       },
     });
     await flushPromises();
-    expect(wrapper.text()).toContain("404 - Page not found");
+    expect(wrapper.text()).toContain("notFound.pageNotFound");
   });
 
   it("shows a hint on title mousedown", async () => {
@@ -92,10 +92,10 @@ describe("PageContent.vue", () => {
     await flushPromises();
     const title = wrapper.find(".title");
     await title.trigger("mousedown");
-    expect(wrapper.text()).toContain("Nothing here");
+    expect(wrapper.text()).toContain("notFound.nothingHere");
     vi.runAllTimers();
     await flushPromises();
-    expect(wrapper.text()).not.toContain("Nothing here");
+    expect(wrapper.text()).not.toContain("notFound.nothingHere");
     vi.useRealTimers();
   });
 });

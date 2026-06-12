@@ -14,7 +14,7 @@
       <header>
         <strong>{{ title }}</strong>
       </header>
-      <p class="marginless" aria-busy="true">{{ url }} might be down.</p>
+      <p class="marginless" aria-busy="true">{{ url }} {{ t("suggestionDown") }}</p>
     </article>
     <Transition name="slide-fade">
       <article v-if="!hideHint">
@@ -27,7 +27,9 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 
 /**
  * @file Suggestion.vue

@@ -7,7 +7,7 @@
       class="tools-toggle"
       @click="showTools = !showTools"
       :class="{ expanded: showTools }"
-      aria-label="Toggle tools"
+      :aria-label="t('menu.toggleTools')"
     >
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="toggle-icon">
         <line x1="5" y1="12" x2="19" y2="12" />
@@ -19,37 +19,37 @@
         @click="$emit('explore')"
         class="icon-wrapper"
         :class="{ disabled: !cityOn || cityFallback }"
-        title="Explore City"
+        :title="t('menu.exploreCity')"
       >
-        <img src="/person-icon.svg" alt="Explore City" class="icon" />
+        <img src="/person-icon.svg" :alt="t('menu.exploreCity')" class="icon" />
       </div>
 
       <div
         @click="$emit('demo')"
         class="icon-wrapper"
         :class="{ disabled: !cityOn || cityFallback }"
-        title="64k Demo"
+        :title="t('menu.demo')"
       >
-        <img src="/64k-icon.svg" alt="64k Demo" class="icon" />
+        <img src="/64k-icon.svg" :alt="t('menu.demo')" class="icon" />
       </div>
-      <div @click="toggleSound" class="icon-wrapper" title="Toggle Sound">
+      <div @click="toggleSound" class="icon-wrapper" :title="t('menu.toggleSound')">
         <img
           v-if="soundOn"
           src="/sound-icon.svg"
-          alt="Toggle sound"
+          :alt="t('menu.toggleSound')"
           class="icon"
         />
         <img
           v-else
           src="/mute-icon.svg"
-          alt="Toggle sound"
+          :alt="t('menu.toggleSound')"
           class="icon"
         />
       </div>
       <div
         @click="$emit('toggle-content')"
         class="icon-wrapper"
-        title="Toggle Visibility"
+        :title="t('menu.toggleVisibility')"
       >
         <svg
           v-if="contentVisible"
@@ -88,7 +88,7 @@
       <div
         @click="toggleCityBackground"
         class="icon-wrapper"
-        title="Toggle City Background"
+        :title="t('menu.toggleCity')"
       >
         <svg
           v-if="cityOn"
@@ -120,7 +120,7 @@
           <line x1="3" y1="3" x2="21" y2="21" />
         </svg>
       </div>
-      <div class="icon-wrapper terminal-icon" @click="$emit('toggle-terminal')" title="Open Terminal">
+      <div class="icon-wrapper terminal-icon" @click="$emit('toggle-terminal')" :title="t('menu.openTerminal')">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
           <polyline points="4 17 10 11 4 5" />
           <line x1="12" y1="19" x2="20" y2="19" />
@@ -129,16 +129,21 @@
       <div class="icon-wrapper">
         <WeatherIcon />
       </div>
+      <LanguageSelector />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
 
 import { Page } from "../interfaces/Page";
 import { cyberpunkAudio } from "../utils/CyberpunkAudio";
 import { audioManager } from "../utils/AudioManager";
 import { cityBackground } from "../utils/CityBackgroundManager";
+import LanguageSelector from "./LanguageSelector.vue";
+
+const { t } = useI18n();
 
 defineProps<{
   pages: Page[];
@@ -161,7 +166,7 @@ const cityOn = computed(() => cityBackground.isEnabled.value);
 const toggleSound = () => {
   if (!audioManager.isSoundEnabled.value && !audioManager.photosensitivityConfirmed) {
     audioManager.photosensitivityConfirmed = confirm(
-      "⚠ EPILEPSY WARNING: Enabling sound activates reactive visual effects including flashing lights and strobing patterns that may trigger seizures in people with photosensitive epilepsy.\n\nClick OK to confirm you understand and wish to enable visual effects. Click Cancel to listen without flashing effects.",
+      t("epilepsy.warning"),
     );
   }
   audioManager.toggleSound();

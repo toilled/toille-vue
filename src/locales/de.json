@@ -1,0 +1,144 @@
+{
+  "nav": {
+    "home": "Startseite",
+    "about": "Über mich",
+    "interests": "Interessen",
+    "hidden": "Versteckt"
+  },
+  "menu": {
+    "exploreCity": "Stadt erkunden",
+    "demo": "64k Demo",
+    "toggleSound": "Sound umschalten",
+    "toggleVisibility": "Sichtbarkeit umschalten",
+    "toggleCity": "Stadthintergrund umschalten",
+    "openTerminal": "Terminal öffnen",
+    "toggleTools": "Werkzeuge umschalten",
+    "weather": "Wetter"
+  },
+  "site": {
+    "title": "Elliot Dickerson",
+    "subtitle": "Softwareentwickler",
+    "titlePrefix": "Elliot > "
+  },
+  "home": {
+    "whatIDo": "Was ich mache",
+    "fullStack": "Full-Stack-Entwicklung",
+    "fullStackDesc": "End-to-End-Webanwendungen — von der Datenbankarchitektur bis zu ausgefeilten Frontends.",
+    "creativeUI": "Kreatives UI/UX",
+    "creativeUIDesc": "Benutzeroberflächen, die Freude machen — reaktionsschnell, zugänglich und durchdacht gestaltet.",
+    "interactive3D": "Interaktives 3D",
+    "interactive3DDesc": "Immersive Browser-Erlebnisse mit Three.js und WebGL."
+  },
+  "about": {
+    "technicalSkills": "Technische Fähigkeiten",
+    "backend": "Backend-Entwicklung",
+    "frontend": "Frontend-Entwicklung",
+    "tools": "Werkzeuge und Plattformen"
+  },
+  "interests": {
+    "musicCreative": "Musik und Kreativität",
+    "guitarCompositions": "Gitarrenkompositionen",
+    "guitarDesc": "Originalmusik auf meinem YouTube-Kanal",
+    "visitYouTube": "YouTube-Kanal besuchen →",
+    "3dGraphics": "3D-Grafiken",
+    "experimentation": "Experimentieren",
+    "multiInstrumentalist": "Multi-Instrumentalist",
+    "techDiscovery": "Technologieentdeckung"
+  },
+  "footer": {
+    "hint": "Die Titel sind vielleicht anklickbar..."
+  },
+  "notFound": {
+    "nothingHere": "- Nichts hier",
+    "pageNotFound": "404 - Seite nicht gefunden",
+    "availablePages": "Verfügbare Seiten:",
+    "goHome": "Zur Startseite",
+    "pageDoesNotExist": "Die Seite <strong>{name}</strong> existiert nicht!"
+  },
+  "weather": {
+    "loading": "Wetter wird geladen...",
+    "unavailable": "Wetterdaten nicht verfügbar",
+    "clearSky": "Klarer Himmel",
+    "partlyCloudy": "Teilweise bewölkt",
+    "fog": "Nebel",
+    "rain": "Regen",
+    "snow": "Schnee",
+    "thunderstorm": "Gewitter",
+    "unknown": "Unbekannt",
+    "forecast": "Wettervorhersage",
+    "nextHours": "Nächste 6 Stunden in Cheltenham",
+    "temp": "Temp",
+    "rainLabel": "Regen",
+    "close": "Schließen",
+    "location": "{desc} ({temp}°C) in Cheltenham, UK"
+  },
+  "epilepsy": {
+    "warning": "⚠ EPILEPSIE-WARNUNG: Das Einschalten des Tons aktiviert reaktive visuelle Effekte, einschließlich blinkender Lichter und Stroboskopmuster, die bei Menschen mit photosensitiver Epilepsie Anfälle auslösen können.\n\nKlicken Sie auf OK, um zu bestätigen, dass Sie dies verstehen und die visuellen Effekte aktivieren möchten. Klicken Sie auf Abbrechen, um ohne blinkende Effekte zu hören."
+  },
+  "language": {
+    "label": "Sprache",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "it": "Italiano",
+    "pt": "Português",
+    "ru": "Русский",
+    "ar": "العربية",
+    "zhCN": "简体中文",
+    "ja": "日本語",
+    "ko": "한국어",
+    "hi": "हिन्दी",
+    "nl": "Nederlands"
+  },
+  "meta": {
+    "defaultDescription": "Die experimentelle Website von Elliot Dickerson erstellt mit Vue.",
+    "homeDescription": "Willkommen auf Elliot Dickersons experimenteller Vue.js-Website mit Projekten, Spielen und mehr.",
+    "homeKeywords": "Vue.js, Webentwicklung, Softwareentwickler, Projekte, Spiele",
+    "aboutDescription": "Erfahren Sie mehr über Elliot Dickerson - BSc (Hons) Absolvent mit 14 Jahren Erfahrung in PHP- und JavaScript-Entwicklung.",
+    "aboutKeywords": "Softwareentwickler, PHP, Laravel, Symfony, VueJS, React, Erfahrung",
+    "interestsDescription": "Entdecken Sie Elliots Interessen an Programmierung, Musik und kreativen Projekten.",
+    "interestsKeywords": "Programmierung, Musik, Gitarre, YouTube, Hobbys, kreative Projekte",
+    "hiddenDescription": "Geheime Seite mit Links zu lustigen Projekten und Spielen erstellt mit Vue.js.",
+    "hiddenKeywords": "versteckt, Spiele, Werkzeuge, Projekte, geheim"
+  },
+  "app": {
+    "titleNoughtsAndCrosses": "Tic-Tac-Toe",
+    "titleChecker": "Alkoholprüfung",
+    "titleAsk": "Frag mich"
+  },
+  "haveALaugh": "Lach mal!",
+  "suggestionDown": "ist möglicherweise nicht erreichbar.",
+  "pages": {
+    "home": {
+      "name": "Startseite",
+      "title": "Startseite",
+      "body0": "Willkommen in meinem persönlichen Portfolio und experimentellen Spielplatz. Diese Plattform dient als Raum, um neue Webtechnologien zu erkunden, Funktionen zu prototypen und technische Projekte zu präsentieren.",
+      "body1": "Derzeit bin ich Softwareentwickler bei RM, wo ich mein Fachwissen einsetze, um den Teamerfolg zu fördern und hochwertige Softwarelösungen zu liefern. Ich bin begeistert von kontinuierlichem Lernen und beruflicher Weiterentwicklung.",
+      "body2": "Diese Seite wurde vollständig mit Vue 3, TypeScript und modernen Werkzeugen erstellt — sie dient sowohl als Portfolio als auch als Spielplatz."
+    },
+    "about": {
+      "name": "Über mich",
+      "title": "Über Mich",
+      "body0": "Ich besitze einen BSc (Hons) Abschluss und verfüge über einen umfassenden Hintergrund in professioneller Softwareentwicklung, der den Großteil meiner Karriere umfasst.",
+      "body1": "Mit über einem Jahrzehnt Erfahrung in der Software- und Webentwicklung spezialisiere ich mich auf PHP- und JavaScript-Ökosysteme. Meine technischen Fähigkeiten umfassen robustes Datenbankmanagement mit MySQL und die Nutzung von Git für fortgeschrittene Versionskontrolle.",
+      "body2": "Im Laufe meiner Karriere habe ich erfolgreich Projekte mit einer Vielzahl moderner Frameworks und Bibliotheken umgesetzt, darunter:<ul><li>Laravel und Symfony für die PHP-Backend-Architektur</li><li>React, SolidJS und VueJS für die Entwicklung skalierbarer, dynamischer Benutzeroberflächen</li></ul>",
+      "body3": "Derzeit als Softwareentwickler bei RM tätig, bin ich bestrebt, komplexe technische Herausforderungen zu bewältigen und zu innovativen, wirkungsvollen Projekten beizutragen."
+    },
+    "interests": {
+      "name": "Interessen",
+      "title": "Meine Interessen",
+      "body0": "Neben meinen beruflichen Aktivitäten bin ich stark in die persönliche Entwicklung und technische Erkundung investiert. Ich entwickle aktiv Nebenprojekte, um mit innovativen Konzepten zu experimentieren und an der Spitze neuer Technologien zu bleiben.",
+      "body1": "Musik ist ein bedeutendes kreatives Ventil für mich. Ich bin Multiinstrumentalist mit Schwerpunkt Gitarre. Ich komponiere eigene Stücke und teile regelmäßig meine Arbeit auf meinem <a href=\"https://www.youtube.com/%40toilled\" class=\"contrast\" target=\"_blank\" rel=\"noopener noreferrer\">YouTube-Kanal</a>.",
+      "body2": "Derzeit erweitere ich mein technisches Repertoire, indem ich Three.js für die Darstellung komplexer 3D-Grafiken und die Gestaltung immersiver Weberlebnisse erkunde. Die interaktive 3D-Umgebung auf dieser Seite ist ein Zeugnis dieser laufenden Experimente."
+    },
+    "hidden": {
+      "name": "Versteckt",
+      "title": "Versteckt",
+      "body0": "Willkommen auf der versteckten Seite! Dieser Bereich ist nicht in der Hauptnavigation verlinkt, aber hier für die Neugierigen, die ihn finden möchten.",
+      "body1": "Hier sind einige lustige Projekte und Spiele, die ich erstellt habe:",
+      "body2": "<ul><li>Alcohol Checker - Berechnen Sie, wann Sie nüchtern genug zum Fahren sind</li><li>Noughts and Crosses - Klassisches Tic-Tac-Toe gegen einen Bot</li><li>Ask Me - Chatten Sie mit einem automatisierten Assistenten über meinen Hintergrund</li></ul>",
+      "body3": "Viel Spaß beim Erkunden dieser kleinen Experimente!"
+    }
+  }
+}

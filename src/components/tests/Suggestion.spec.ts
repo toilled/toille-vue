@@ -27,7 +27,7 @@ describe("Suggestion.vue", () => {
       },
     });
     expect(wrapper.text()).toContain(
-      "https://icanhazdadjoke.com/ might be down.",
+      "https://icanhazdadjoke.com/ suggestionDown",
     );
     await flushPromises();
     expect(wrapper.text()).toContain(mockSuggestion.joke);
@@ -63,11 +63,11 @@ describe("Suggestion.vue", () => {
       },
     });
     expect(wrapper.text()).toContain(
-      "https://icanhazdadjoke.com/ might be down.",
+      "https://icanhazdadjoke.com/ suggestionDown",
     );
     await flushPromises();
     expect(wrapper.text()).not.toContain(
-      "https://icanhazdadjoke.com/ might be down.",
+      "https://icanhazdadjoke.com/ suggestionDown",
     );
   });
 
@@ -100,7 +100,7 @@ describe("Suggestion.vue", () => {
     });
     await flushPromises();
     expect(wrapper.text()).toContain(
-      "https://icanhazdadjoke.com/ might be down.",
+      "https://icanhazdadjoke.com/ suggestionDown",
     );
     expect(consoleErrorSpy).toHaveBeenCalledWith(new Error("API is down"));
     consoleErrorSpy.mockRestore();

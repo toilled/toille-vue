@@ -56,8 +56,8 @@ describe("SinglePageContent.vue", () => {
     const wrapper = mount(SinglePageContent, {
       global: { stubs: getStubs() },
     });
-    expect(wrapper.text()).toContain("What I Do");
-    expect(wrapper.text()).toContain("Full-Stack Development");
+    expect(wrapper.text()).toContain("home.whatIDo");
+    expect(wrapper.text()).toContain("home.fullStack");
   });
 
   it("renders about section with skills", () => {
@@ -71,6 +71,6 @@ describe("SinglePageContent.vue", () => {
     const wrapper = mount(SinglePageContent, {
       global: { stubs: getStubs() },
     });
-    expect(wrapper.text()).toContain("Music & Creative");
+    expect(wrapper.text()).toContain("interests.musicCreative");
   });
 });

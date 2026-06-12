@@ -1,0 +1,144 @@
+{
+  "nav": {
+    "home": "首页",
+    "about": "关于",
+    "interests": "兴趣",
+    "hidden": "隐藏"
+  },
+  "menu": {
+    "exploreCity": "探索城市",
+    "demo": "64k 演示",
+    "toggleSound": "切换声音",
+    "toggleVisibility": "切换可见性",
+    "toggleCity": "切换城市背景",
+    "openTerminal": "打开终端",
+    "toggleTools": "切换工具",
+    "weather": "天气"
+  },
+  "site": {
+    "title": "Elliot Dickerson",
+    "subtitle": "软件工程师",
+    "titlePrefix": "Elliot > "
+  },
+  "home": {
+    "whatIDo": "我的专长",
+    "fullStack": "全栈开发",
+    "fullStackDesc": "端到端 Web 应用 — 从数据库架构到精致的前端。",
+    "creativeUI": "创意 UI/UX",
+    "creativeUIDesc": "令人愉悦的界面 — 响应迅速、易于访问、精心设计。",
+    "interactive3D": "交互式 3D",
+    "interactive3DDesc": "由 Three.js 和 WebGL 驱动的沉浸式浏览器体验。"
+  },
+  "about": {
+    "technicalSkills": "技术技能",
+    "backend": "后端开发",
+    "frontend": "前端开发",
+    "tools": "工具与平台"
+  },
+  "interests": {
+    "musicCreative": "音乐与创意",
+    "guitarCompositions": "吉他作曲",
+    "guitarDesc": "在我的 YouTube 频道上分享原创音乐",
+    "visitYouTube": "访问 YouTube 频道 →",
+    "3dGraphics": "3D 图形",
+    "experimentation": "实验探索",
+    "multiInstrumentalist": "多乐器演奏者",
+    "techDiscovery": "技术发现"
+  },
+  "footer": {
+    "hint": "标题可能是可点击的..."
+  },
+  "notFound": {
+    "nothingHere": "- 这里什么都没有",
+    "pageNotFound": "404 - 页面未找到",
+    "availablePages": "可用页面：",
+    "goHome": "返回首页",
+    "pageDoesNotExist": "页面 <strong>{name}</strong> 不存在！"
+  },
+  "weather": {
+    "loading": "加载天气中...",
+    "unavailable": "天气数据不可用",
+    "clearSky": "晴朗",
+    "partlyCloudy": "多云",
+    "fog": "雾",
+    "rain": "雨",
+    "snow": "雪",
+    "thunderstorm": "雷暴",
+    "unknown": "未知",
+    "forecast": "天气预报",
+    "nextHours": "切尔滕纳姆未来 6 小时",
+    "temp": "温度",
+    "rainLabel": "降雨",
+    "close": "关闭",
+    "location": "{desc}（{temp}°C）- 切尔滕纳姆，英国"
+  },
+  "epilepsy": {
+    "warning": "⚠ 癫痫警告：启用声音会激活反应性视觉效果，包括闪烁的灯光和频闪模式，可能引发光敏性癫痫患者的癫痫发作。\n\n单击【确定】确认您了解并希望启用视觉效果。单击【取消】以在没有闪烁效果的情况下收听。"
+  },
+  "language": {
+    "label": "语言",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "it": "Italiano",
+    "pt": "Português",
+    "ru": "Русский",
+    "ar": "العربية",
+    "zhCN": "简体中文",
+    "ja": "日本語",
+    "ko": "한국어",
+    "hi": "हिन्दी",
+    "nl": "Nederlands"
+  },
+  "meta": {
+    "defaultDescription": "Elliot Dickerson 用 Vue 制作的实验性网站。",
+    "homeDescription": "欢迎来到 Elliot Dickerson 的实验性 Vue.js 网站，这里有项目、游戏等。",
+    "homeKeywords": "Vue.js, Web开发, 软件工程师, 项目, 游戏",
+    "aboutDescription": "了解 Elliot Dickerson — BSc (Hons) 毕业生，拥有 14 年 PHP 和 JavaScript 开发经验。",
+    "aboutKeywords": "软件工程师, PHP, Laravel, Symfony, VueJS, React, 经验",
+    "interestsDescription": "发现 Elliot 在编程、音乐和创意项目方面的兴趣。",
+    "interestsKeywords": "编程, 音乐, 吉他, YouTube, 爱好, 创意项目",
+    "hiddenDescription": "包含用 Vue.js 构建的有趣项目和游戏链接的秘密页面。",
+    "hiddenKeywords": "隐藏, 游戏, 工具, 项目, 秘密"
+  },
+  "app": {
+    "titleNoughtsAndCrosses": "井字游戏",
+    "titleChecker": "酒精检测",
+    "titleAsk": "问我"
+  },
+  "haveALaugh": "笑一笑！",
+  "suggestionDown": "可能已下线。",
+  "pages": {
+    "home": {
+      "name": "首页",
+      "title": "首页",
+      "body0": "欢迎来到我的个人作品集和实验沙盒。这个平台是一个探索新兴网络技术、制作新功能原型和展示技术项目的空间。",
+      "body1": "目前，我是RM的一名软件工程师，利用我的专业知识推动团队成功并提供高质量的软件解决方案。我热衷于持续学习和专业发展。",
+      "body2": "本网站完全使用Vue 3、TypeScript和现代工具构建——它既是作品集也是游乐场。"
+    },
+    "about": {
+      "name": "关于",
+      "title": "关于我",
+      "body0": "我拥有理学学士（荣誉）学位，并在专业软件工程领域拥有全面的背景，涵盖了我职业生涯的大部分时间。",
+      "body1": "拥有超过十年的软件和网络开发经验，我专注于PHP和JavaScript生态系统。我的技术能力涵盖使用MySQL进行稳健的数据库管理，以及使用Git进行高级版本控制。",
+      "body2": "在我的职业生涯中，我成功地交付了利用各种现代框架和库的项目，包括：<ul><li>Laravel和Symfony用于后端PHP架构</li><li>React、SolidJS和VueJS用于构建可扩展的动态用户界面</li></ul>",
+      "body3": "目前在RM担任软件工程师，我致力于应对复杂的技术挑战，并为创新、有影响力的项目做出贡献。"
+    },
+    "interests": {
+      "name": "兴趣",
+      "title": "我的兴趣",
+      "body0": "在我的专业工作之外，我深度投入个人发展和技术探索。我积极开发副业项目，尝试创新概念，并保持在新兴技术的前沿。",
+      "body1": "音乐对我来说是一个重要的创意出口。我是一名多乐器演奏者，主要专注于吉他。我创作原创作品，并定期在我的<a href=\"https://www.youtube.com/%40toilled\" class=\"contrast\" target=\"_blank\" rel=\"noopener noreferrer\">YouTube频道</a>上分享我的作品。",
+      "body2": "目前，我正在通过探索Three.js来扩展我的技术储备，用于渲染复杂的3D图形和设计沉浸式网络体验。本网站上的交互式3D环境就是这些正在进行实验的证明。"
+    },
+    "hidden": {
+      "name": "隐藏",
+      "title": "隐藏",
+      "body0": "欢迎来到隐藏页面！这个区域没有链接在主导航中，但它在这里等待那些足够好奇的人来发现。",
+      "body1": "以下是我创建的一些有趣的项目和游戏：",
+      "body2": "<ul><li>酒精检测器 - 计算你何时足够清醒可以开车</li><li>井字游戏 - 经典井字棋对战机器人</li><li>问我 - 与自动助手聊天了解我的背景</li></ul>",
+      "body3": "享受探索这些小实验吧！"
+    }
+  }
+}

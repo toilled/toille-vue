@@ -15,6 +15,16 @@
       </svg>
     </button>
     <div class="nav-tools" :class="{ show: showTools }">
+      <select class="lang-select" @change="changeLanguage" aria-label="Select Language">
+        <option value="en">EN</option>
+        <option value="es">ES</option>
+        <option value="fr">FR</option>
+        <option value="de">DE</option>
+        <option value="it">IT</option>
+        <option value="ja">JA</option>
+        <option value="ko">KO</option>
+        <option value="zh-CN">ZH</option>
+      </select>
       <div
         @click="$emit('explore')"
         class="icon-wrapper"
@@ -175,6 +185,16 @@ const toggleSound = () => {
 const toggleCityBackground = () => {
   cityBackground.toggle();
 };
+
+const changeLanguage = (event: Event) => {
+  const target = event.target as HTMLSelectElement;
+  const lang = target.value;
+  const select = document.querySelector('.goog-te-combo') as HTMLSelectElement | null;
+  if (select) {
+    select.value = lang;
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+};
 </script>
 
 <style scoped>
@@ -200,6 +220,25 @@ const toggleCityBackground = () => {
   margin-left: auto;
   padding-left: 0.75rem;
   border-left: 1px solid rgba(0, 255, 204, 0.25);
+}
+
+.lang-select {
+  background: transparent;
+  color: #00ffcc;
+  border: 1px solid rgba(0, 255, 204, 0.3);
+  border-radius: 4px;
+  padding: 0.1rem 0.2rem;
+  font-family: monospace;
+  font-size: 0.8rem;
+  cursor: pointer;
+  margin-right: 0.5rem;
+  margin-bottom: 0;
+  outline: none;
+}
+
+.lang-select option {
+  background: #050510;
+  color: #00ffcc;
 }
 
 .tools-toggle {

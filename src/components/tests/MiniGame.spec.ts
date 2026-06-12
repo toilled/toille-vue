@@ -20,9 +20,10 @@ describe("MiniGame.vue", () => {
   it("moves the button when it is clicked", async () => {
     const wrapper = mount(MiniGame);
     const button = wrapper.find("button");
-    const initialStyle = { ...(wrapper.vm as any).buttonStyle };
+    const vm = wrapper.vm as unknown as { buttonStyle: { left: string; top: string } };
+    const initialStyle = { ...vm.buttonStyle };
     await button.trigger("click");
-    const newStyle = (wrapper.vm as any).buttonStyle;
+    const newStyle = vm.buttonStyle;
     expect(newStyle.left).not.toBe(initialStyle.left);
     expect(newStyle.top).not.toBe(initialStyle.top);
   });

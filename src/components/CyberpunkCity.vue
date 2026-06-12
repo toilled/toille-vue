@@ -161,6 +161,9 @@ import { getHeight } from "../utils/HeightMap";
 import { audioManager } from "../utils/AudioManager";
 import { MultiplayerManager } from "../game/MultiplayerManager";
 import { getBrowserQuality } from "../utils/BrowserDetect";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const GameUI = defineAsyncComponent(() => import("./GameUI.vue"));
 
@@ -781,12 +784,7 @@ function startStoryMode() {
 
 function startDemoMode() {
   if (isFallbackMode.value) return;
-  if (
-    !confirm(
-      "⚠ EPILEPSY WARNING: This demo contains flashing lights, strobing patterns, and rapid visual effects that may trigger seizures in people with photosensitive epilepsy. If you or anyone in your household has a history of seizures, please do not proceed.\n\nClick OK to confirm you understand and wish to continue.",
-    )
-  )
-    return;
+  if (!confirm(t("epilepsy.warning"))) return;
   audioManager.photosensitivityConfirmed = true;
   isGameMode.value = true;
   emit("game-start");

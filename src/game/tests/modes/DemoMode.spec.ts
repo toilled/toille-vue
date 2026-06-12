@@ -46,6 +46,7 @@ describe("DemoMode", () => {
     composer = new EffectComposer(new WebGLRenderer());
     composer.passes = [
       { strength: 1.5, radius: 0.4, threshold: 0.85, render: vi.fn() },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ] as any;
     context = {
       scene: new Scene(),

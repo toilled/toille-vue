@@ -3,7 +3,7 @@ import { vi } from "vitest";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 // @ts-expect-error: Mocking complex overload structure
-HTMLCanvasElement.prototype.getContext = vi.fn((contextId: string, options?: any) => {
+HTMLCanvasElement.prototype.getContext = vi.fn((contextId: string, _options?: any) => {
   if (contextId === "2d" || contextId === "webgl" || contextId === "webgl2" || contextId === "experimental-webgl") {
     return {
       fillRect: vi.fn(),

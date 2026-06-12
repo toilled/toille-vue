@@ -24,7 +24,7 @@ vi.mock("vue-i18n", () => ({
       locale,
       t: (key: string) => key,
     },
-    install: (app: any) => {
+    install: (app: { config: { globalProperties: Record<string, unknown> } }) => {
       app.config.globalProperties.$t = (key: string) => key;
     },
   }),

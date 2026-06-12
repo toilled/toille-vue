@@ -1,0 +1,165 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "Chi sono",
+    "interests": "Interessi",
+    "hidden": "Nascosto"
+  },
+  "menu": {
+    "exploreCity": "Esplora città",
+    "demo": "Demo 64k",
+    "toggleSound": "Attiva audio",
+    "toggleVisibility": "Mostra/nascondi contenuto",
+    "toggleCity": "Attiva sfondo città",
+    "openTerminal": "Apri terminale",
+    "toggleTools": "Mostra/nascondi strumenti",
+    "weather": "Meteo"
+  },
+  "site": {
+    "title": "Elliot Dickerson",
+    "subtitle": "Ingegnere del Software",
+    "titlePrefix": "Elliot > "
+  },
+  "home": {
+    "whatIDo": "Cosa faccio",
+    "fullStack": "Sviluppo Full-Stack",
+    "fullStackDesc": "Applicazioni web complete — dall'architettura del database ai frontend rifiniti.",
+    "creativeUI": "UI/UX Creativo",
+    "creativeUIDesc": "Interfacce piacevoli da usare — reattive, accessibili e progettate con cura.",
+    "interactive3D": "3D Interattivo",
+    "interactive3DDesc": "Esperienze immersive nel browser con Three.js e WebGL."
+  },
+  "about": {
+    "technicalSkills": "Competenze Tecniche",
+    "backend": "Sviluppo Backend",
+    "frontend": "Sviluppo Frontend",
+    "tools": "Strumenti e Piattaforme"
+  },
+  "interests": {
+    "musicCreative": "Musica e Creatività",
+    "guitarCompositions": "Composizioni per Chitarra",
+    "guitarDesc": "Musica originale condivisa sul mio canale YouTube",
+    "visitYouTube": "Visita il canale YouTube →",
+    "3dGraphics": "Grafica 3D",
+    "experimentation": "Sperimentazione",
+    "multiInstrumentalist": "Polistrumentista",
+    "techDiscovery": "Scoperta tecnologica"
+  },
+  "footer": {
+    "hint": "I titoli potrebbero essere cliccabili..."
+  },
+  "notFound": {
+    "nothingHere": "- Niente qui",
+    "pageNotFound": "404 - Pagina non trovata",
+    "availablePages": "Pagine disponibili:",
+    "goHome": "Vai alla home",
+    "pageDoesNotExist": "La pagina <strong>{name}</strong> non esiste!"
+  },
+  "weather": {
+    "loading": "Caricamento meteo...",
+    "unavailable": "Dati meteo non disponibili",
+    "clearSky": "Cielo sereno",
+    "partlyCloudy": "Parzialmente nuvoloso",
+    "fog": "Nebbia",
+    "rain": "Pioggia",
+    "snow": "Neve",
+    "thunderstorm": "Temporale",
+    "unknown": "Sconosciuto",
+    "forecast": "Previsioni meteo",
+    "nextHours": "Prossime 6 ore a Cheltenham",
+    "temp": "Temp",
+    "rainLabel": "Pioggia",
+    "close": "Chiudi",
+    "location": "{desc} ({temp}°C) a Cheltenham, Regno Unito"
+  },
+  "epilepsy": {
+    "warning": "⚠ AVVERTENZA EPILESSIA: L'attivazione dell'audio attiva effetti visivi reattivi, inclusi lampeggiamenti e pattern stroboscopici che possono scatenare crisi epilettiche in persone con epilessia fotosensibile.\n\nFai clic su OK per confermare di aver compreso e di voler attivare gli effetti visivi. Fai clic su Annulla per ascoltare senza effetti lampeggianti."
+  },
+  "language": {
+    "label": "Lingua",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "it": "Italiano",
+    "pt": "Português",
+    "ru": "Русский",
+    "ar": "العربية",
+    "zhCN": "简体中文",
+    "ja": "日本語",
+    "ko": "한국어",
+    "hi": "हिन्दी",
+    "nl": "Nederlands"
+  },
+  "meta": {
+    "defaultDescription": "Il sito web sperimentale di Elliot Dickerson realizzato con Vue.",
+    "homeDescription": "Benvenuto sul sito sperimentale Vue.js di Elliot Dickerson con progetti, giochi e altro.",
+    "homeKeywords": "Vue.js, sviluppo web, ingegnere del software, progetti, giochi",
+    "aboutDescription": "Scopri Elliot Dickerson - Laureato BSc (Hons) con 14 anni di esperienza in sviluppo PHP e JavaScript.",
+    "aboutKeywords": "ingegnere del software, PHP, Laravel, Symfony, VueJS, React, esperienza",
+    "interestsDescription": "Scopri gli interessi di Elliot in programmazione, musica e progetti creativi.",
+    "interestsKeywords": "programmazione, musica, chitarra, YouTube, hobby, progetti creativi",
+    "hiddenDescription": "Pagina segreta con link a progetti divertenti e giochi realizzati con Vue.js.",
+    "hiddenKeywords": "nascosto, giochi, strumenti, progetti, segreto"
+  },
+  "app": {
+    "titleNoughtsAndCrosses": "Tris",
+    "titleChecker": "Controllo alcol",
+    "titleAsk": "Chiedimi"
+  },
+  "haveALaugh": "Fatti una risata!",
+  "suggestionDown": "potrebbe essere giù.",
+  "activity": {
+    "title": "Prova questa attività {type}",
+    "loading": "Caricamento da The Bored API.",
+    "clickToUpdate": "Clicca per aggiornare",
+    "clickForNew": "Clicca per un nuovo suggerimento",
+    "boredApi": "(The Bored API)",
+    "tryActivity": "Prova questa attività"
+  },
+  "suggestion": {
+    "clickToUpdate": "Clicca per aggiornare",
+    "clickForNew": "Clicca per un nuovo {name}"
+  },
+  "quiz": {
+    "title": "Quiz",
+    "correct": "Corretto!",
+    "wrong": "Sbagliato! La risposta corretta era: {answer}",
+    "nextQuestion": "Prossima domanda",
+    "loading": "Caricamento domanda...",
+    "tryAgain": "Riprova",
+    "description": "Metti alla prova le tue conoscenze con una domanda casuale del quiz."
+  },
+  "pages": {
+    "home": {
+      "name": "Home",
+      "title": "Home",
+      "body0": "Benvenuto nel mio portfolio personale e sandbox sperimentale. Questa piattaforma serve come spazio per esplorare tecnologie web emergenti, prototipare nuove funzionalità e mostrare progetti tecnici.",
+      "body1": "Attualmente sono un Ingegnere del Software presso RM, dove sfrutto la mia esperienza per guidare il successo del team e fornire soluzioni software di alta qualità. Sono appassionato di apprendimento continuo e sviluppo professionale.",
+      "body2": "Questo sito è costruito interamente con Vue 3, TypeScript e strumenti moderni — e funge sia da portfolio che da parco giochi."
+    },
+    "about": {
+      "name": "Informazioni",
+      "title": "Su di Me",
+      "body0": "Possiedo una laurea BSc (Hons) e ho una formazione completa in ingegneria del software professionale, che abbraccia la maggior parte della mia carriera.",
+      "body1": "Con oltre un decennio di esperienza dedicata nello sviluppo software e web, mi specializzo negli ecosistemi PHP e JavaScript. La mia competenza tecnica si estende alla gestione robusta di database con MySQL e all'utilizzo di Git per il controllo di versione avanzato.",
+      "body2": "Nel corso della mia carriera, ho realizzato con successo progetti sfruttando una vasta gamma di framework e librerie moderne, tra cui:<ul><li>Laravel e Symfony per l'architettura PHP backend</li><li>React, SolidJS e VueJS per creare interfacce utente scalabili e dinamiche</li></ul>",
+      "body3": "Attualmente come Ingegnere del Software presso RM, sono impegnato ad affrontare sfide tecniche complesse e contribuire a progetti innovativi e di grande impatto."
+    },
+    "interests": {
+      "name": "Interessi",
+      "title": "I Miei Interessi",
+      "body0": "Oltre alle mie attività professionali, sono profondamente impegnato nello sviluppo personale e nell'esplorazione tecnica. Sviluppo attivamente progetti secondari per sperimentare concetti innovativi e rimanere all'avanguardia delle tecnologie emergenti.",
+      "body1": "La musica è uno sfogo creativo significativo per me. Sono un polistrumentista con un focus principale sulla chitarra. Compongo pezzi originali e condivido regolarmente il mio lavoro sul mio <a href=\"https://www.youtube.com/%40toilled\" class=\"contrast\" target=\"_blank\" rel=\"noopener noreferrer\">canale YouTube</a>.",
+      "body2": "Attualmente, sto ampliando il mio repertorio tecnico esplorando Three.js per il rendering di grafica 3D complessa e la progettazione di esperienze web immersive. L'ambiente 3D interattivo presente su questo sito è una testimonianza di questi esperimenti in corso."
+    },
+    "hidden": {
+      "name": "Nascosto",
+      "title": "Nascosto",
+      "body0": "Benvenuto nella pagina nascosta! Quest'area non è collegata nella navigazione principale, ma è qui per i curiosi abbastanza audaci da trovarla.",
+      "body1": "Ecco alcuni progetti e giochi divertenti che ho creato:",
+      "body2": "<ul><li>Alcohol Checker - Calcola quando sarai sobrio per guidare</li><li>Noughts and Crosses - Tris classico contro un bot</li><li>Ask Me - Chatta con un assistente automatizzato sul mio background</li></ul>",
+      "body3": "Divertiti ad esplorare questi piccoli esperimenti!"
+    }
+  }
+}

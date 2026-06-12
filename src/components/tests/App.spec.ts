@@ -174,18 +174,18 @@ describe("App.vue", () => {
       },
     });
     await flushPromises();
-    expect(document.title).toBe("Elliot > Home");
+    expect(document.title).toBe("site.titlePrefixHome");
 
     await router.push("/checker");
     await flushPromises();
-    expect(document.title).toBe("Elliot > Checker");
+    expect(document.title).toBe("site.titlePrefixapp.titleChecker");
 
     await router.push("/ask");
     await flushPromises();
-    expect(document.title).toBe("Elliot > Ask Me");
+    expect(document.title).toBe("site.titlePrefixapp.titleAsk");
 
     await router.push("/about");
     await flushPromises();
-    expect(document.title).toBe("Elliot > Home");
+    expect(document.title).toBe("site.titlePrefixHome");
   });
 });

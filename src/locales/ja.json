@@ -1,0 +1,165 @@
+{
+  "nav": {
+    "home": "ホーム",
+    "about": "概要",
+    "interests": "興味",
+    "hidden": "非表示"
+  },
+  "menu": {
+    "exploreCity": "街を探索",
+    "demo": "64k デモ",
+    "toggleSound": "サウンド切替",
+    "toggleVisibility": "表示切替",
+    "toggleCity": "街の背景切替",
+    "openTerminal": "ターミナルを開く",
+    "toggleTools": "ツール切替",
+    "weather": "天気"
+  },
+  "site": {
+    "title": "Elliot Dickerson",
+    "subtitle": "ソフトウェアエンジニア",
+    "titlePrefix": "Elliot > "
+  },
+  "home": {
+    "whatIDo": "得意分野",
+    "fullStack": "フルスタック開発",
+    "fullStackDesc": "データベースアーキテクチャから洗練されたフロントエンドまで、エンドツーエンドのWebアプリケーション。",
+    "creativeUI": "クリエイティブUI/UX",
+    "creativeUIDesc": "使いやすく、レスポンシブで、アクセシブル、そして thoughtful にデザインされたインターフェース。",
+    "interactive3D": "インタラクティブ3D",
+    "interactive3DDesc": "Three.js と WebGL を活用した没入型ブラウザ体験。"
+  },
+  "about": {
+    "technicalSkills": "技術スキル",
+    "backend": "バックエンド開発",
+    "frontend": "フロントエンド開発",
+    "tools": "ツールとプラットフォーム"
+  },
+  "interests": {
+    "musicCreative": "音楽と創造性",
+    "guitarCompositions": "ギター作曲",
+    "guitarDesc": "YouTubeチャンネルで共有しているオリジナル音楽",
+    "visitYouTube": "YouTubeチャンネルへ →",
+    "3dGraphics": "3Dグラフィックス",
+    "experimentation": "実験",
+    "multiInstrumentalist": "マルチ楽器奏者",
+    "techDiscovery": "テクノロジー発見"
+  },
+  "footer": {
+    "hint": "タイトルはクリックできるかもしれません..."
+  },
+  "notFound": {
+    "nothingHere": "- ここには何もありません",
+    "pageNotFound": "404 - ページが見つかりません",
+    "availablePages": "利用可能なページ：",
+    "goHome": "ホームへ",
+    "pageDoesNotExist": "ページ <strong>{name}</strong> は存在しません！"
+  },
+  "weather": {
+    "loading": "天気情報を読み込み中...",
+    "unavailable": "天気データを利用できません",
+    "clearSky": "快晴",
+    "partlyCloudy": "曇り",
+    "fog": "霧",
+    "rain": "雨",
+    "snow": "雪",
+    "thunderstorm": "雷雨",
+    "unknown": "不明",
+    "forecast": "天気予報",
+    "nextHours": "チェルトナムの今後6時間",
+    "temp": "気温",
+    "rainLabel": "雨",
+    "close": "閉じる",
+    "location": "{desc}（{temp}°C）イギリス、チェルトナム"
+  },
+  "epilepsy": {
+    "warning": "⚠ てんかん警告：サウンドを有効にすると、フラッシュライトやストロボパターンを含む反応的な視覚効果が作動し、光感受性てんかんを持つ人に発作を引き起こす可能性があります。\n\nOKをクリックして、理解し視覚効果を有効にすることを確認してください。キャンセルをクリックすると、フラッシュ効果なしで聴けます。"
+  },
+  "language": {
+    "label": "言語",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "it": "Italiano",
+    "pt": "Português",
+    "ru": "Русский",
+    "ar": "العربية",
+    "zhCN": "简体中文",
+    "ja": "日本語",
+    "ko": "한국어",
+    "hi": "हिन्दी",
+    "nl": "Nederlands"
+  },
+  "meta": {
+    "defaultDescription": "Elliot Dickerson が Vue で作成した実験的なウェブサイト。",
+    "homeDescription": "Elliot Dickerson の実験的な Vue.js ウェブサイトへようこそ。プロジェクト、ゲームなど。",
+    "homeKeywords": "Vue.js, web開発, ソフトウェアエンジニア, プロジェクト, ゲーム",
+    "aboutDescription": "Elliot Dickerson について - BSc (Hons) 卒業、14年のPHPおよびJavaScript開発経験。",
+    "aboutKeywords": "ソフトウェアエンジニア, PHP, Laravel, Symfony, VueJS, React, 経験",
+    "interestsDescription": "プログラミング、音楽、クリエイティブプロジェクトにおける Elliot の興味をご覧ください。",
+    "interestsKeywords": "プログラミング, 音楽, ギター, YouTube, 趣味, クリエイティブプロジェクト",
+    "hiddenDescription": "Vue.js で作られた楽しいプロジェクトやゲームへのリンクがある秘密のページ。",
+    "hiddenKeywords": "非表示, ゲーム, ツール, プロジェクト, 秘密"
+  },
+  "app": {
+    "titleNoughtsAndCrosses": "三目並べ",
+    "titleChecker": "アルコールチェッカー",
+    "titleAsk": "質問する"
+  },
+  "haveALaugh": "笑ってみよう！",
+  "suggestionDown": "ダウンしている可能性があります。",
+  "activity": {
+    "title": "この{type}アクティビティを試す",
+    "loading": "The Bored APIから読み込み中。",
+    "clickToUpdate": "クリックして更新",
+    "clickForNew": "クリックして新しい提案を表示",
+    "boredApi": "(The Bored API)",
+    "tryActivity": "このアクティビティを試す"
+  },
+  "suggestion": {
+    "clickToUpdate": "クリックして更新",
+    "clickForNew": "クリックして新しい{name}を表示"
+  },
+  "quiz": {
+    "title": "クイズ",
+    "correct": "正解！",
+    "wrong": "不正解！正しい答えは：{answer}",
+    "nextQuestion": "次の問題",
+    "loading": "問題を読み込み中...",
+    "tryAgain": "もう一度試す",
+    "description": "ランダムなクイズ問題で知識をテストしましょう。"
+  },
+  "pages": {
+    "home": {
+      "name": "ホーム",
+      "title": "ホーム",
+      "body0": "私の個人ポートフォリオと実験的なサンドボックスへようこそ。このプラットフォームは、新しいウェブ技術を探求し、新機能のプロトタイプを作成し、技術プロジェクトを紹介する場として機能します。",
+      "body1": "現在、私はRMでソフトウェアエンジニアとして働いており、専門知識を活かしてチームの成功を促進し、高品質なソフトウェアソリューションを提供しています。継続的な学習と専門能力開発に情熱を注いでいます。",
+      "body2": "このサイトはVue 3、TypeScript、そしてモダンなツールで完全に構築されており、ポートフォリオとしても遊び場としても機能します。"
+    },
+    "about": {
+      "name": "について",
+      "title": "私について",
+      "body0": "私はBSc（Hons）の学位を取得しており、キャリアの大部分にわたるプロフェッショナルなソフトウェアエンジニアリングの幅広い背景を持っています。",
+      "body1": "10年以上のソフトウェアおよびウェブ開発の経験を持ち、PHPとJavaScriptのエコシステムを専門としています。私の技術的習熟度は、MySQLを使用した堅牢なデータベース管理と、Gitを使用した高度なバージョン管理にまで及びます。",
+      "body2": "キャリアを通じて、私は多様なモダンフレームワークとライブラリを活用したプロジェクトを成功裏に納品してきました：<ul><li>バックエンドPHPアーキテクチャのためのLaravelとSymfony</li><li>スケーラブルでダイナミックなユーザーインターフェースを構築するためのReact、SolidJS、VueJS</li></ul>",
+      "body3": "現在RMでソフトウェアエンジニアとして勤務し、複雑な技術的課題に取り組み、革新的で影響力のあるプロジェクトに貢献することに尽力しています。"
+    },
+    "interests": {
+      "name": "興味",
+      "title": "私の興味",
+      "body0": "仕事以外では、自己啓発と技術探求に深く投資しています。新しいコンセプトを実験し、最先端の技術であり続けるために、サイドプロジェクトを積極的に開発しています。",
+      "body1": "音楽は私にとって重要な創造的表現の場です。私はマルチインストゥルメンタリストで、主にギターに焦点を当てています。オリジナル曲を作曲し、私の<a href=\"https://www.youtube.com/%40toilled\" class=\"contrast\" target=\"_blank\" rel=\"noopener noreferrer\">YouTubeチャンネル</a>で定期的に作品を共有しています。",
+      "body2": "現在、Three.jsを探求して複雑な3Dグラフィックスのレンダリングと没入型ウェブ体験のデザインを行い、技術的なレパートリーを拡大しています。このサイトのインタラクティブな3D環境は、これらの進行中の実験の証です。"
+    },
+    "hidden": {
+      "name": "隠し",
+      "title": "隠しページ",
+      "body0": "隠しページへようこそ！このエリアはメインナビゲーションにはリンクされていませんが、見つけたいと思う好奇心旺盛な人のためにここにあります。",
+      "body1": "以下は私が作った楽しいプロジェクトとゲームです：",
+      "body2": "<ul><li>Alcohol Checker - 運転できるほど酔いが覚める時間を計算</li><li>Noughts and Crosses - ボットと対戦するクラシックな三目並べ</li><li>Ask Me - 自動アシスタントと私の経歴についてチャット</li></ul>",
+      "body3": "これらの小さな実験を探索してお楽しみください！"
+    }
+  }
+}

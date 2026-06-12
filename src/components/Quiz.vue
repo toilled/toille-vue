@@ -1,52 +1,56 @@
 <template>
   <article>
     <header>
-      <h2>Pub Quiz</h2>
+      <h2>{{ t("quiz.title") }}</h2>
     </header>
 
     <div v-if="currentQuestion">
-      <p class="question">{{ currentQuestion.question }}</p>
+      <p class="question">{{ translatedQuestion }}</p>
 
       <div class="options">
         <button
-          v-for="(option, index) in currentQuestion.options"
+          v-for="(_, index) in currentQuestion.options"
           :key="index"
           @click.stop="selectAnswer(index)"
           :class="getOptionClass(index)"
           :disabled="hasAnswered"
           class="outline answer-option"
         >
-          {{ option }}
+          {{ translatedOptions[index] }}
         </button>
       </div>
 
       <div v-if="hasAnswered" class="result" :class="{ correct: isCorrect, wrong: !isCorrect }">
-        <p v-if="isCorrect">Correct!</p>
-        <p v-else>Wrong! The correct answer was: {{ currentQuestion.options[currentQuestion.correctIndex] }}</p>
+        <p v-if="isCorrect">{{ t("quiz.correct") }}</p>
+        <p v-else>{{ t("quiz.wrong", { answer: translatedOptions[currentQuestion.correctIndex] }) }}</p>
 
-        <button @click.stop="nextQuestion">Next Question</button>
+        <button @click.stop="nextQuestion">{{ t("quiz.nextQuestion") }}</button>
       </div>
     </div>
     <div v-else-if="isLoading">
-      <p>Loading question...</p>
+      <p>{{ t("quiz.loading") }}</p>
     </div>
     <div v-else-if="error">
       <p class="error">{{ error }}</p>
-      <button @click.stop="nextQuestion">Try Again</button>
+      <button @click.stop="nextQuestion">{{ t("quiz.tryAgain") }}</button>
     </div>
   </article>
 </template>
 
 <script setup lang="ts">
-
+import { useI18n } from "vue-i18n";
 import { useHead } from "@vueuse/head";
+import { useTranslate } from "../composables/useTranslate";
+
+const { t } = useI18n();
+const { translate, locale } = useTranslate();
 
 useHead({
-  title: "Pub Quiz",
+  title: t("quiz.title"),
   meta: [
     {
       name: "description",
-      content: "Test your knowledge with a random pub quiz question.",
+      content: t("quiz.description"),
     },
   ],
 });
@@ -63,6 +67,8 @@ const hasAnswered = ref(false);
 const isCorrect = ref(false);
 const error = ref<string | null>(null);
 const isLoading = ref(true);
+const translatedQuestion = ref("");
+const translatedOptions = ref<string[]>([]);
 
 const decodeHTML = (html: string) => {
   const txt = document.createElement("textarea");
@@ -102,6 +108,12 @@ const fetchQuestion = async () => {
         options: allOptions,
         correctIndex
       };
+      translatedQuestion.value = decodedQuestion;
+      translatedOptions.value = [...allOptions];
+      translate(decodedQuestion).then(t => translatedQuestion.value = t);
+      allOptions.forEach((opt, i) => {
+        translate(opt).then(t => { translatedOptions.value[i] = t; });
+      });
     } else if (data.response_code === 5) { // Rate limit usually
       throw new Error("Rate limit exceeded. Please try again in a moment.");
     } else {
@@ -119,6 +131,17 @@ const fetchQuestion = async () => {
 
 onMounted(() => {
   fetchQuestion();
+});
+
+watch(locale, () => {
+  if (currentQuestion.value) {
+    translatedQuestion.value = currentQuestion.value.question;
+    translatedOptions.value = [...currentQuestion.value.options];
+    translate(currentQuestion.value.question).then(t => translatedQuestion.value = t);
+    currentQuestion.value.options.forEach((opt, i) => {
+      translate(opt).then(t => { translatedOptions.value[i] = t; });
+    });
+  }
 });
 
 const selectAnswer = (index: number) => {

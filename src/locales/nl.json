@@ -1,0 +1,165 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "Over",
+    "interests": "Interesses",
+    "hidden": "Verborgen"
+  },
+  "menu": {
+    "exploreCity": "Stad verkennen",
+    "demo": "64k Demo",
+    "toggleSound": "Geluid aan/uit",
+    "toggleVisibility": "Zichtbaarheid aan/uit",
+    "toggleCity": "Stadsachtergrond aan/uit",
+    "openTerminal": "Terminal openen",
+    "toggleTools": "Gereedschap aan/uit",
+    "weather": "Weer"
+  },
+  "site": {
+    "title": "Elliot Dickerson",
+    "subtitle": "Software Engineer",
+    "titlePrefix": "Elliot > "
+  },
+  "home": {
+    "whatIDo": "Wat ik doe",
+    "fullStack": "Full-Stack Ontwikkeling",
+    "fullStackDesc": "End-to-end webapplicaties — van database-architectuur tot gepolijste frontends.",
+    "creativeUI": "Creatieve UI/UX",
+    "creativeUIDesc": "Interfaces die een plezier zijn om te gebruiken — responsief, toegankelijk en doordacht ontworpen.",
+    "interactive3D": "Interactieve 3D",
+    "interactive3DDesc": "Meeslepende browserervaringen mogelijk gemaakt door Three.js en WebGL."
+  },
+  "about": {
+    "technicalSkills": "Technische Vaardigheden",
+    "backend": "Backend Ontwikkeling",
+    "frontend": "Frontend Ontwikkeling",
+    "tools": "Tools & Platforms"
+  },
+  "interests": {
+    "musicCreative": "Muziek & Creativiteit",
+    "guitarCompositions": "Gitaarcomposities",
+    "guitarDesc": "Originele muziek gedeeld op mijn YouTube-kanaal",
+    "visitYouTube": "Bezoek YouTube-kanaal →",
+    "3dGraphics": "3D Graphics",
+    "experimentation": "Experimentatie",
+    "multiInstrumentalist": "Multi-instrumentalist",
+    "techDiscovery": "Technologie Ontdekking"
+  },
+  "footer": {
+    "hint": "De titels zijn misschien klikbaar..."
+  },
+  "notFound": {
+    "nothingHere": "- Niets hier",
+    "pageNotFound": "404 - Pagina niet gevonden",
+    "availablePages": "Beschikbare pagina's:",
+    "goHome": "Naar home",
+    "pageDoesNotExist": "De pagina <strong>{name}</strong> bestaat niet!"
+  },
+  "weather": {
+    "loading": "Weer laden...",
+    "unavailable": "Weergegevens niet beschikbaar",
+    "clearSky": "Helder",
+    "partlyCloudy": "Half bewolkt",
+    "fog": "Mist",
+    "rain": "Regen",
+    "snow": "Sneeuw",
+    "thunderstorm": "Onweer",
+    "unknown": "Onbekend",
+    "forecast": "Weersverwachting",
+    "nextHours": "Komende 6 uur in Cheltenham",
+    "temp": "Temp",
+    "rainLabel": "Regen",
+    "close": "Sluiten",
+    "location": "{desc} ({temp}°C) in Cheltenham, VK"
+  },
+  "epilepsy": {
+    "warning": "⚠ EPILEPSIE WAARSCHUWING: Het inschakelen van geluid activeert reactieve visuele effecten, waaronder knipperende lichten en stroboscooppatronen die aanvallen kunnen veroorzaken bij mensen met fotogevoelige epilepsie.\n\nKlik op OK om te bevestigen dat u het begrijpt en de visuele effecten wilt inschakelen. Klik op Annuleren om te luisteren zonder knipperende effecten."
+  },
+  "language": {
+    "label": "Taal",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "it": "Italiano",
+    "pt": "Português",
+    "ru": "Русский",
+    "ar": "العربية",
+    "zhCN": "简体中文",
+    "ja": "日本語",
+    "ko": "한국어",
+    "hi": "हिन्दी",
+    "nl": "Nederlands"
+  },
+  "meta": {
+    "defaultDescription": "De experimentele website van Elliot Dickerson gemaakt met Vue.",
+    "homeDescription": "Welkom op Elliot Dickersons experimentele Vue.js-website met projecten, spelletjes en meer.",
+    "homeKeywords": "Vue.js, webontwikkeling, software engineer, projecten, spelletjes",
+    "aboutDescription": "Leer meer over Elliot Dickerson - BSc (Hons) afgestudeerd met 14 jaar ervaring in PHP- en JavaScript-ontwikkeling.",
+    "aboutKeywords": "software engineer, PHP, Laravel, Symfony, VueJS, React, ervaring",
+    "interestsDescription": "Ontdek Elliot's interesses in programmeren, muziek en creatieve projecten.",
+    "interestsKeywords": "programmeren, muziek, gitaar, YouTube, hobby's, creatieve projecten",
+    "hiddenDescription": "Geheime pagina met links naar leuke projecten en spelletjes gemaakt met Vue.js.",
+    "hiddenKeywords": "verborgen, spelletjes, tools, projecten, geheim"
+  },
+  "app": {
+    "titleNoughtsAndCrosses": "Boter-kaas-en-eieren",
+    "titleChecker": "Alcoholcontrole",
+    "titleAsk": "Vraag mij"
+  },
+  "haveALaugh": "Lach even!",
+  "suggestionDown": "is mogelijk niet beschikbaar.",
+  "activity": {
+    "title": "Probeer deze {type}-activiteit",
+    "loading": "Laden van The Bored API.",
+    "clickToUpdate": "Klik om te vernieuwen",
+    "clickForNew": "Klik voor een nieuwe suggestie",
+    "boredApi": "(The Bored API)",
+    "tryActivity": "Probeer deze activiteit"
+  },
+  "suggestion": {
+    "clickToUpdate": "Klik om te vernieuwen",
+    "clickForNew": "Klik voor een nieuwe {name}"
+  },
+  "quiz": {
+    "title": "Quiz",
+    "correct": "Juist!",
+    "wrong": "Fout! Het juiste antwoord was: {answer}",
+    "nextQuestion": "Volgende vraag",
+    "loading": "Vraag laden...",
+    "tryAgain": "Opnieuw proberen",
+    "description": "Test je kennis met een willekeurige quizvraag."
+  },
+  "pages": {
+    "home": {
+      "name": "Home",
+      "title": "Home",
+      "body0": "Welkom bij mijn persoonlijke portfolio en experimentele speeltuin. Dit platform dient als een ruimte om opkomende webtechnologieën te verkennen, nieuwe functies te prototypen en technische projecten te tonen.",
+      "body1": "Momenteel werk ik als Software Engineer bij RM, waar ik mijn expertise inzet om teamsucces te stimuleren en hoogwaardige softwareoplossingen te leveren. Ik ben gepassioneerd over continu leren en professionele ontwikkeling.",
+      "body2": "Deze site is volledig gebouwd met Vue 3, TypeScript en moderne tools — en fungeert zowel als portfolio als speeltuin."
+    },
+    "about": {
+      "name": "Over",
+      "title": "Over Mij",
+      "body0": "Ik heb een BSc (Hons) graad en beschik over een uitgebreide achtergrond in professionele software-engineering die het grootste deel van mijn carrière beslaat.",
+      "body1": "Met meer dan een decennium aan toegewijde ervaring in software- en webontwikkeling, specialiseer ik me in PHP- en JavaScript-ecosystemen. Mijn technische vaardigheid omvat robuust databasebeheer met MySQL en het gebruik van Git voor geavanceerde versiebeheer.",
+      "body2": "Gedurende mijn carrière heb ik succesvol projecten opgeleverd met een breed scala aan moderne frameworks en bibliotheken, waaronder:<ul><li>Laravel en Symfony voor PHP backend-architectuur</li><li>React, SolidJS en VueJS voor het maken van schaalbare, dynamische gebruikersinterfaces</li></ul>",
+      "body3": "Momenteel werkzaam als Software Engineer bij RM, ben ik toegewijd aan het aanpakken van complexe technische uitdagingen en het bijdragen aan innovatieve, impactvolle projecten."
+    },
+    "interests": {
+      "name": "Interesses",
+      "title": "Mijn Interesses",
+      "body0": "Naast mijn professionele bezigheden ben ik diep betrokken bij persoonlijke ontwikkeling en technische verkenning. Ik ontwikkel actief zijprojecten om te experimenteren met innovatieve concepten en voorop te blijven lopen in opkomende technologieën.",
+      "body1": "Muziek is een belangrijke creatieve uitlaatklep voor mij. Ik ben multi-instrumentalist met een primaire focus op gitaar. Ik componeer originele stukken en deel regelmatig mijn werk op mijn <a href=\"https://www.youtube.com/%40toilled\" class=\"contrast\" target=\"_blank\" rel=\"noopener noreferrer\">YouTube-kanaal</a>.",
+      "body2": "Momenteel breid ik mijn technische repertoire uit door Three.js te verkennen voor het renderen van complexe 3D-graphics en het ontwerpen van meeslepende webervaringen. De interactieve 3D-omgeving op deze site is een bewijs van deze lopende experimenten."
+    },
+    "hidden": {
+      "name": "Verborgen",
+      "title": "Verborgen",
+      "body0": "Welkom op de verborgen pagina! Dit gebied is niet gelinkt in de hoofdnavigatie, maar het is hier voor de nieuwsgierigen die het willen vinden.",
+      "body1": "Hier zijn enkele leuke projecten en spellen die ik heb gebouwd:",
+      "body2": "<ul><li>Alcohol Checker - Bereken wanneer je nuchter genoeg bent om te rijden</li><li>Noughts and Crosses - Klassiek boter-kaas-en-eieren tegen een bot</li><li>Ask Me - Chat met een geautomatiseerde assistent over mijn achtergrond</li></ul>",
+      "body3": "Veel plezier met het verkennen van deze kleine experimenten!"
+    }
+  }
+}

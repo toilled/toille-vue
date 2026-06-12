@@ -21,10 +21,10 @@ afterEach(() => {
 describe("Activity.vue", () => {
   it("fetches and displays an activity on mount", async () => {
     const wrapper = mount(Activity);
-    expect(wrapper.text()).toContain("Loading from The Bored API.");
+    expect(wrapper.text()).toContain("activity.loading");
     await flushPromises();
     expect(wrapper.text()).toContain(mockActivity.activity);
-    expect(wrapper.text()).toContain(`Try this ${mockActivity.type} activity`);
+    expect(wrapper.text()).toContain("activity.title");
   });
 
   it("fetches a new activity when clicked", async () => {
@@ -40,25 +40,23 @@ describe("Activity.vue", () => {
     await wrapper.trigger("click");
     await flushPromises();
     expect(wrapper.text()).toContain(newMockActivity.activity);
-    expect(wrapper.text()).toContain(
-      `Try this ${newMockActivity.type} activity`,
-    );
+    expect(wrapper.text()).toContain("activity.title");
   });
 
   it("shows a loading state while fetching", async () => {
     const wrapper = mount(Activity);
-    expect(wrapper.text()).toContain("Loading from The Bored API.");
+    expect(wrapper.text()).toContain("activity.loading");
     await flushPromises();
-    expect(wrapper.text()).not.toContain("Loading from The Bored API.");
+    expect(wrapper.text()).not.toContain("activity.loading");
   });
 
   it("hides the hint after the first click", async () => {
     const wrapper = mount(Activity);
     await flushPromises();
-    expect(wrapper.text()).toContain("Click to update");
+    expect(wrapper.text()).toContain("activity.clickToUpdate");
     await wrapper.trigger("click");
     await flushPromises();
-    expect(wrapper.text()).not.toContain("Click to update");
+    expect(wrapper.text()).not.toContain("activity.clickToUpdate");
   });
 
   it("handles fetch errors gracefully", async () => {
@@ -68,7 +66,7 @@ describe("Activity.vue", () => {
     vi.mocked(globalThis.fetch).mockRejectedValue(new Error("API is down"));
     const wrapper = mount(Activity);
     await flushPromises();
-    expect(wrapper.text()).toContain("Loading from The Bored API.");
+    expect(wrapper.text()).toContain("activity.loading");
     expect(consoleErrorSpy).toHaveBeenCalledWith(new Error("API is down"));
     consoleErrorSpy.mockRestore();
   });

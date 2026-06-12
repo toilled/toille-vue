@@ -1,0 +1,165 @@
+{
+  "nav": {
+    "home": "홈",
+    "about": "소개",
+    "interests": "관심사",
+    "hidden": "숨김"
+  },
+  "menu": {
+    "exploreCity": "도시 탐험",
+    "demo": "64k 데모",
+    "toggleSound": "소리 전환",
+    "toggleVisibility": "가시성 전환",
+    "toggleCity": "도시 배경 전환",
+    "openTerminal": "터미널 열기",
+    "toggleTools": "도구 전환",
+    "weather": "날씨"
+  },
+  "site": {
+    "title": "Elliot Dickerson",
+    "subtitle": "소프트웨어 엔지니어",
+    "titlePrefix": "Elliot > "
+  },
+  "home": {
+    "whatIDo": "전문 분야",
+    "fullStack": "풀스택 개발",
+    "fullStackDesc": "데이터베이스 아키텍처부터 세련된 프론트엔드까지 엔드투엔드 웹 애플리케이션.",
+    "creativeUI": "크리에이티브 UI/UX",
+    "creativeUIDesc": "사용하기 즐거운 인터페이스 — 반응형, 접근성, 세심하게 디자인됨.",
+    "interactive3D": "인터랙티브 3D",
+    "interactive3DDesc": "Three.js와 WebGL로 구동되는 몰입형 브라우저 경험."
+  },
+  "about": {
+    "technicalSkills": "기술 스킬",
+    "backend": "백엔드 개발",
+    "frontend": "프론트엔드 개발",
+    "tools": "도구 및 플랫폼"
+  },
+  "interests": {
+    "musicCreative": "음악과 창의성",
+    "guitarCompositions": "기타 작곡",
+    "guitarDesc": "제 YouTube 채널에서 공유하는 오리지널 음악",
+    "visitYouTube": "YouTube 채널 방문 →",
+    "3dGraphics": "3D 그래픽",
+    "experimentation": "실험",
+    "multiInstrumentalist": "멀티 악기 연주자",
+    "techDiscovery": "기술 발견"
+  },
+  "footer": {
+    "hint": "제목을 클릭할 수 있을지도 몰라요..."
+  },
+  "notFound": {
+    "nothingHere": "- 아무것도 없습니다",
+    "pageNotFound": "404 - 페이지를 찾을 수 없습니다",
+    "availablePages": "사용 가능한 페이지:",
+    "goHome": "홈으로",
+    "pageDoesNotExist": "페이지 <strong>{name}</strong>이(가) 존재하지 않습니다!"
+  },
+  "weather": {
+    "loading": "날씨 로딩 중...",
+    "unavailable": "날씨 데이터를 사용할 수 없음",
+    "clearSky": "맑음",
+    "partlyCloudy": "구름 조금",
+    "fog": "안개",
+    "rain": "비",
+    "snow": "눈",
+    "thunderstorm": "뇌우",
+    "unknown": "알 수 없음",
+    "forecast": "일기예보",
+    "nextHours": "Cheltenham 향후 6시간",
+    "temp": "기온",
+    "rainLabel": "강수량",
+    "close": "닫기",
+    "location": "{desc} ({temp}°C), Cheltenham, 영국"
+  },
+  "epilepsy": {
+    "warning": "⚠ 간질 경고: 사운드를 활성화하면 깜빡이는 불빛과 스트로보스코프 패턴을 포함한 반응형 시각 효과가 활성화되어 광과민성 간질 환자에게 발작을 유발할 수 있습니다.\n\n확인을 클릭하여 이해하고 시각 효과를 활성화하려는 의사를 확인하십시오. 취소를 클릭하면 깜빡임 효과 없이 들을 수 있습니다."
+  },
+  "language": {
+    "label": "언어",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "it": "Italiano",
+    "pt": "Português",
+    "ru": "Русский",
+    "ar": "العربية",
+    "zhCN": "简体中文",
+    "ja": "日本語",
+    "ko": "한국어",
+    "hi": "हिन्दी",
+    "nl": "Nederlands"
+  },
+  "meta": {
+    "defaultDescription": "Elliot Dickerson이 Vue로 만든 실험적인 웹사이트.",
+    "homeDescription": "Elliot Dickerson의 실험적인 Vue.js 웹사이트에 오신 것을 환영합니다. 프로젝트, 게임 등.",
+    "homeKeywords": "Vue.js, 웹 개발, 소프트웨어 엔지니어, 프로젝트, 게임",
+    "aboutDescription": "Elliot Dickerson 소개 - BSc(Hons) 졸업, 14년 PHP 및 JavaScript 개발 경험.",
+    "aboutKeywords": "소프트웨어 엔지니어, PHP, Laravel, Symfony, VueJS, React, 경험",
+    "interestsDescription": "프로그래밍, 음악 및 창의적 프로젝트에 대한 Elliot의 관심사를 확인하세요.",
+    "interestsKeywords": "프로그래밍, 음악, 기타, YouTube, 취미, 창의적 프로젝트",
+    "hiddenDescription": "Vue.js로 만든 재미있는 프로젝트와 게임 링크가 있는 비밀 페이지.",
+    "hiddenKeywords": "숨김, 게임, 도구, 프로젝트, 비밀"
+  },
+  "app": {
+    "titleNoughtsAndCrosses": "틱택토",
+    "titleChecker": "음주 측정기",
+    "titleAsk": "물어보세요"
+  },
+  "haveALaugh": "한번 웃어보세요!",
+  "suggestionDown": "다운되었을 수 있습니다.",
+  "activity": {
+    "title": "이 {type} 활동을 시도해보세요",
+    "loading": "The Bored API에서 로딩 중.",
+    "clickToUpdate": "클릭하여 업데이트",
+    "clickForNew": "클릭하여 새 제안 보기",
+    "boredApi": "(The Bored API)",
+    "tryActivity": "이 활동을 시도해보세요"
+  },
+  "suggestion": {
+    "clickToUpdate": "클릭하여 업데이트",
+    "clickForNew": "클릭하여 새 {name} 보기"
+  },
+  "quiz": {
+    "title": "퀴즈",
+    "correct": "정답!",
+    "wrong": "오답! 정답은: {answer}",
+    "nextQuestion": "다음 문제",
+    "loading": "문제 로딩 중...",
+    "tryAgain": "다시 시도",
+    "description": "무작위 퀴즈 문제로 지식을 테스트해보세요."
+  },
+  "pages": {
+    "home": {
+      "name": "홈",
+      "title": "홈",
+      "body0": "개인 포트폴리오와 실험적인 샌드박스에 오신 것을 환영합니다. 이 플랫폼은 새로운 웹 기술을 탐색하고, 새로운 기능을 프로토타입하고, 기술 프로젝트를 선보이는 공간입니다.",
+      "body1": "현재 RM에서 소프트웨어 엔지니어로 근무하며 전문 지식을 활용하여 팀의 성공을 이끌고 고품질 소프트웨어 솔루션을 제공하고 있습니다. 지속적인 학습과 전문성 개발에 열정을 가지고 있습니다.",
+      "body2": "이 사이트는 Vue 3, TypeScript 및 현대적인 도구로 완전히 구축되었으며, 포트폴리오이자 놀이터 역할을 합니다."
+    },
+    "about": {
+      "name": "소개",
+      "title": "소개",
+      "body0": "BSc(Hons) 학위를 보유하고 있으며, 제 경력 대부분을 포괄하는 전문 소프트웨어 엔지니어링에 대한 포괄적인 배경을 가지고 있습니다.",
+      "body1": "10년 이상의 소프트웨어 및 웹 개발 경험을 바탕으로 PHP와 JavaScript 생태계를 전문으로 합니다. MySQL을 사용한 강력한 데이터베이스 관리와 Git을 사용한 고급 버전 관리에 능숙합니다.",
+      "body2": "경력 전반에 걸쳐 다양한 현대 프레임워크와 라이브러리를 활용한 프로젝트를 성공적으로 수행했습니다:<ul><li>백엔드 PHP 아키텍처를 위한 Laravel과 Symfony</li><li>확장 가능하고 동적인 사용자 인터페이스를 제작하기 위한 React, SolidJS, VueJS</li></ul>",
+      "body3": "현재 RM에서 소프트웨어 엔지니어로 재직하며 복잡한 기술적 과제를 해결하고 혁신적이고 영향력 있는 프로젝트에 기여하는 데 전념하고 있습니다."
+    },
+    "interests": {
+      "name": "관심사",
+      "title": "내 관심사",
+      "body0": "전문적인 활동 외에도 개인 개발과 기술 탐구에 깊이 투자하고 있습니다. 혁신적인 개념을 실험하고 신흥 기술의 최전선에 서기 위해 부업 프로젝트를 적극적으로 개발하고 있습니다.",
+      "body1": "음악은 저에게 중요한 창의적 표현 수단입니다. 주로 기타에 중점을 둔 멀티 악기 연주자입니다. 독창적인 곡을 작곡하고 정기적으로 <a href=\"https://www.youtube.com/%40toilled\" class=\"contrast\" target=\"_blank\" rel=\"noopener noreferrer\">YouTube 채널</a>에 작업물을 공유하고 있습니다.",
+      "body2": "현재 Three.js를 탐구하여 복잡한 3D 그래픽을 렌더링하고 몰입형 웹 경험을 디자인함으로써 기술적 레퍼토리를 확장하고 있습니다. 이 사이트의 인터랙티브 3D 환경은 이러한 진행 중인 실험의 증거입니다."
+    },
+    "hidden": {
+      "name": "숨김",
+      "title": "숨김",
+      "body0": "숨겨진 페이지에 오신 것을 환영합니다! 이 영역은 메인 내비게이션에 링크되어 있지 않지만, 찾을 만큼 호기심이 많은 분들을 위해 여기에 있습니다.",
+      "body1": "제가 만든 재미있는 프로젝트와 게임들입니다:",
+      "body2": "<ul><li>Alcohol Checker - 운전하기에 충분히 술이 깰 시간 계산</li><li>Noughts and Crosses - 봇과 대결하는 클래식 틱택토</li><li>Ask Me - 자동화된 비서와 제 배경에 대해 채팅</li></ul>",
+      "body3": "이 작은 실험들을 탐험하며 즐거운 시간 보내세요!"
+    }
+  }
+}

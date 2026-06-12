@@ -4,27 +4,27 @@
     :style="{ cursor: loading ? 'progress' : '' }"
     class="content-container"
   >
-    <article v-if="activity" title="Click for a new suggestion" class="marginless">
+    <article v-if="activity" :title="t('activity.clickForNew')" class="marginless">
       <header>
         <strong>
-          Try this {{ activity.type }} activity
+          {{ t("activity.title", { type: activity.type }) }}
         </strong>
-        (The Bored API)
+        {{ t("activity.boredApi") }}
       </header>
-      <p class="marginless">{{ activity.activity }}</p>
+      <p class="marginless">{{ translatedActivityText }}</p>
     </article>
     <article v-else class="marginless">
       <header>
-        <strong>Try this activity</strong>
+        <strong>{{ t("activity.tryActivity") }}</strong>
       </header>
       <p class="marginless" aria-busy="true">
-        Loading from The Bored API.
+        {{ t("activity.loading") }}
       </p>
     </article>
     <Transition name="slide-fade">
       <article v-if="!hideHint">
         <footer style="font-style: oblique; font-size: 0.8em; margin-top: 0">
-          Click to update
+          {{ t("activity.clickToUpdate") }}
         </footer>
       </article>
     </Transition>
@@ -32,7 +32,11 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
+import { useTranslate } from "../composables/useTranslate";
 
+const { t } = useI18n();
+const { translate, locale } = useTranslate();
 
 /**
  * @file Activity.vue
@@ -54,6 +58,12 @@ const activity = ref<any>(null);
 const loading = ref(false);
 
 /**
+ * @type {import('vue').Ref<string>}
+ * @description A reactive reference to the translated activity text.
+ */
+const translatedActivityText = ref("");
+
+/**
  * @type {import('vue').Ref<boolean>}
  * @description A reactive reference to control the visibility of the "Click to update" hint.
  * It becomes true after the first user-initiated suggestion fetch.
@@ -70,6 +80,8 @@ async function fetchActivity() {
   try {
     const response = await fetch("https://bored.api.lewagon.com/api/activity");
     activity.value = await response.json();
+    translatedActivityText.value = activity.value.activity;
+    translate(activity.value.activity).then(t => translatedActivityText.value = t);
   } catch (error) {
     console.error(error);
   } finally {
@@ -91,4 +103,11 @@ function newSuggestion() {
  * @description A Vue lifecycle hook that fetches an initial activity when the component is mounted.
  */
 onMounted(fetchActivity);
+
+watch(locale, () => {
+  if (activity.value) {
+    translatedActivityText.value = activity.value.activity;
+    translate(activity.value.activity).then(t => translatedActivityText.value = t);
+  }
+});
 </script>

@@ -3,6 +3,7 @@ import { createRouter, createWebHistory, createMemoryHistory } from "vue-router"
 import { createHead } from "@vueuse/head";
 import App from "./App.vue";
 import SinglePageContent from "./components/SinglePageContent.vue";
+import i18n from "./i18n";
 
 import "./assets/main.css";
 
@@ -28,6 +29,7 @@ export function createApp() {
   const head = createHead();
   app.use(router);
   app.use(head);
+  app.use(i18n);
 
   return { app, router, head };
 }

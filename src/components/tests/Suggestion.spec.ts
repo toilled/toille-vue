@@ -27,7 +27,7 @@ describe("Suggestion.vue", () => {
       },
     });
     expect(wrapper.text()).toContain(
-      "https://icanhazdadjoke.com/ might be down.",
+      "https://icanhazdadjoke.com/ suggestionDown",
     );
     await flushPromises();
     expect(wrapper.text()).toContain(mockSuggestion.joke);
@@ -63,11 +63,11 @@ describe("Suggestion.vue", () => {
       },
     });
     expect(wrapper.text()).toContain(
-      "https://icanhazdadjoke.com/ might be down.",
+      "https://icanhazdadjoke.com/ suggestionDown",
     );
     await flushPromises();
     expect(wrapper.text()).not.toContain(
-      "https://icanhazdadjoke.com/ might be down.",
+      "https://icanhazdadjoke.com/ suggestionDown",
     );
   });
 
@@ -80,10 +80,10 @@ describe("Suggestion.vue", () => {
       },
     });
     await flushPromises();
-    expect(wrapper.text()).toContain("Click to update");
+    expect(wrapper.text()).toContain("suggestion.clickToUpdate");
     await wrapper.trigger("click");
     await flushPromises();
-    expect(wrapper.text()).not.toContain("Click to update");
+    expect(wrapper.text()).not.toContain("suggestion.clickToUpdate");
   });
 
   it("handles fetch errors gracefully", async () => {
@@ -100,7 +100,7 @@ describe("Suggestion.vue", () => {
     });
     await flushPromises();
     expect(wrapper.text()).toContain(
-      "https://icanhazdadjoke.com/ might be down.",
+      "https://icanhazdadjoke.com/ suggestionDown",
     );
     expect(consoleErrorSpy).toHaveBeenCalledWith(new Error("API is down"));
     consoleErrorSpy.mockRestore();
@@ -116,7 +116,7 @@ describe("Suggestion.vue", () => {
     });
     await flushPromises();
     expect(wrapper.find("article").attributes("title")).toBe(
-      "Click for a new joke",
+      "suggestion.clickForNew",
     );
   });
 });

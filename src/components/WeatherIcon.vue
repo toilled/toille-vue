@@ -75,8 +75,8 @@
       <div v-if="showModal" class="weather-modal-overlay" @click.self="showModal = false">
         <article class="weather-modal">
           <header class="modal-header">
-            <h2>Weather Forecast</h2>
-            <button class="close-btn" @click="showModal = false" aria-label="Close">&times;</button>
+            <h2>{{ t("weather.forecast") }}</h2>
+            <button class="close-btn" @click="showModal = false" :aria-label="t('weather.close')">&times;</button>
           </header>
           <div class="chart-container">
             <svg viewBox="0 0 300 150" class="weather-chart">
@@ -144,10 +144,10 @@
             </svg>
           </div>
           <footer class="modal-footer">
-            <small>Next 6 hours in Cheltenham</small>
+            <small>{{ t("weather.nextHours") }}</small>
             <div class="legend">
-                <span class="legend-item"><span class="dot temp"></span>Temp</span>
-                <span class="legend-item"><span class="dot rain"></span>Rain</span>
+                <span class="legend-item"><span class="dot temp"></span>{{ t("weather.temp") }}</span>
+                <span class="legend-item"><span class="dot rain"></span>{{ t("weather.rainLabel") }}</span>
             </div>
           </footer>
         </article>
@@ -157,10 +157,12 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 
 const iconType = ref<string>('');
-const description = ref<string>('Loading weather...');
+const description = ref<string>('');
 const showModal = ref(false);
 const isMounted = ref(false);
 
@@ -186,7 +188,7 @@ const fetchWeather = async () => {
     processHourlyData(data.hourly);
   } catch (error) {
     console.error('Weather fetch error:', error);
-    description.value = 'Weather data unavailable';
+    description.value = t('weather.unavailable');
     iconType.value = '';
   }
 };
@@ -238,35 +240,35 @@ const updateIcon = (code: number, temp: number) => {
   switch (true) {
     case code === 0:
       iconType.value = 'sun';
-      weatherDesc = 'Clear Sky';
+      weatherDesc = t('weather.clearSky');
       break;
     case [1, 2, 3].includes(code):
       iconType.value = 'cloud';
-      weatherDesc = 'Partly Cloudy';
+      weatherDesc = t('weather.partlyCloudy');
       break;
     case [45, 48].includes(code):
       iconType.value = 'cloud';
-      weatherDesc = 'Fog';
+      weatherDesc = t('weather.fog');
       break;
     case [51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code):
       iconType.value = 'rain';
-      weatherDesc = 'Rain';
+      weatherDesc = t('weather.rain');
       break;
     case [71, 73, 75, 77, 85, 86].includes(code):
       iconType.value = 'snow';
-      weatherDesc = 'Snow';
+      weatherDesc = t('weather.snow');
       break;
     case [95, 96, 99].includes(code):
       iconType.value = 'thunder';
-      weatherDesc = 'Thunderstorm';
+      weatherDesc = t('weather.thunderstorm');
       break;
     default:
       iconType.value = 'cloud';
-      weatherDesc = 'Unknown';
+      weatherDesc = t('weather.unknown');
       break;
   }
 
-  description.value = `${weatherDesc} (${temp}°C) in Cheltenham, UK`;
+  description.value = t('weather.location', { desc: weatherDesc, temp });
 };
 
 const toggleModal = () => {
@@ -315,6 +317,7 @@ const graphPoints = computed(() => {
 
 onMounted(() => {
   isMounted.value = true;
+  description.value = t('weather.loading');
   fetchWeather();
 });
 </script>

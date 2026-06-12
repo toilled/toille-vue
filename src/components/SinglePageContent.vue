@@ -26,61 +26,61 @@
 
         <SectionDivider v-if="getSectionId(page) === 'home'" icon="🛠️" />
         <template v-if="getSectionId(page) === 'home'">
-          <h3 class="sub-heading">What I Do</h3>
+          <h3 class="sub-heading">{{ t("home.whatIDo") }}</h3>
           <div class="what-i-do-grid">
             <div class="do-card">
               <div class="do-card-accent fullstack"></div>
               <div class="do-card-icon">🌐</div>
-              <h4 class="do-card-title">Full-Stack Development</h4>
-              <p class="do-card-desc">End-to-end web applications — from database architecture to polished frontends.</p>
+              <h4 class="do-card-title">{{ t("home.fullStack") }}</h4>
+              <p class="do-card-desc">{{ t("home.fullStackDesc") }}</p>
             </div>
             <div class="do-card">
               <div class="do-card-accent ux"></div>
               <div class="do-card-icon">🎨</div>
-              <h4 class="do-card-title">Creative UI/UX</h4>
-              <p class="do-card-desc">Interfaces that are a joy to use — responsive, accessible, and thoughtfully designed.</p>
+              <h4 class="do-card-title">{{ t("home.creativeUI") }}</h4>
+              <p class="do-card-desc">{{ t("home.creativeUIDesc") }}</p>
             </div>
             <div class="do-card">
               <div class="do-card-accent interactive"></div>
               <div class="do-card-icon">⚡</div>
-              <h4 class="do-card-title">Interactive 3D</h4>
-              <p class="do-card-desc">Immersive browser-based experiences powered by Three.js and WebGL.</p>
+              <h4 class="do-card-title">{{ t("home.interactive3D") }}</h4>
+              <p class="do-card-desc">{{ t("home.interactive3DDesc") }}</p>
             </div>
           </div>
         </template>
 
         <SectionDivider v-if="getSectionId(page) === 'about'" icon="⚡" />
         <template v-if="getSectionId(page) === 'about'">
-          <h3 class="sub-heading">Technical Skills</h3>
+          <h3 class="sub-heading">{{ t("about.technicalSkills") }}</h3>
           <SkillCard
             :skills="backendSkills"
-            category="Backend Development"
+            :category="t('about.backend')"
           />
           <SkillCard
             :skills="frontendSkills"
-            category="Frontend Development"
+            :category="t('about.frontend')"
           />
           <SkillCard
             :skills="toolsSkills"
-            category="Tools & Platforms"
+            :category="t('about.tools')"
           />
         </template>
 
         <SectionDivider v-if="getSectionId(page) === 'interests'" icon="✨" />
         <template v-if="getSectionId(page) === 'interests'">
-          <h3 class="sub-heading">Music & Creative</h3>
+          <h3 class="sub-heading">{{ t("interests.musicCreative") }}</h3>
           <div class="music-card">
             <div class="music-icon">🎸</div>
             <div class="music-content">
-              <h4>Guitar Compositions</h4>
-              <p>Original music shared on my YouTube channel</p>
+              <h4>{{ t("interests.guitarCompositions") }}</h4>
+              <p>{{ t("interests.guitarDesc") }}</p>
               <a
                 href="https://www.youtube.com/@toilled"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="music-link"
               >
-                Visit YouTube Channel →
+                {{ t("interests.visitYouTube") }}
               </a>
             </div>
           </div>
@@ -88,19 +88,19 @@
           <div class="interest-grid">
             <div class="interest-item">
               <span class="interest-icon">🕹️</span>
-              <span>3D Graphics</span>
+              <span>{{ t("interests.3dGraphics") }}</span>
             </div>
             <div class="interest-item">
               <span class="interest-icon">🧪</span>
-              <span>Experimentation</span>
+              <span>{{ t("interests.experimentation") }}</span>
             </div>
             <div class="interest-item">
               <span class="interest-icon">🎹</span>
-              <span>Multi-Instrumentalist</span>
+              <span>{{ t("interests.multiInstrumentalist") }}</span>
             </div>
             <div class="interest-item">
               <span class="interest-icon">📡</span>
-              <span>Tech Discovery</span>
+              <span>{{ t("interests.techDiscovery") }}</span>
             </div>
           </div>
         </template>
@@ -110,8 +110,12 @@
 </template>
 
 <script setup lang="ts">
-import pages from "../configs/pages.json";
+import { useI18n } from "vue-i18n";
 import { Page } from "../interfaces/Page";
+import { useTranslatedPages } from "../composables/useTranslatedPages";
+
+const { t } = useI18n();
+const { translatedPages } = useTranslatedPages();
 
 const backendSkills = [
   { name: "Laravel", icon: "/laravel-icon.svg", link: "https://laravel.com/" },
@@ -144,7 +148,7 @@ function getSectionId(page: Page): string {
 }
 
 const displayPages = computed(() => {
-  return pages.filter((page: Page) => !page.hidden);
+  return translatedPages.value.filter((page: Page) => !page.hidden);
 });
 </script>
 

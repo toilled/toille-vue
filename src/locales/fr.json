@@ -1,0 +1,165 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "about": "À propos",
+    "interests": "Centres d'intérêt",
+    "hidden": "Caché"
+  },
+  "menu": {
+    "exploreCity": "Explorer la ville",
+    "demo": "Démo 64k",
+    "toggleSound": "Activer le son",
+    "toggleVisibility": "Basculer la visibilité",
+    "toggleCity": "Basculer le fond de ville",
+    "openTerminal": "Ouvrir le terminal",
+    "toggleTools": "Basculer les outils",
+    "weather": "Météo"
+  },
+  "site": {
+    "title": "Elliot Dickerson",
+    "subtitle": "Ingénieur Logiciel",
+    "titlePrefix": "Elliot > "
+  },
+  "home": {
+    "whatIDo": "Ce que je fais",
+    "fullStack": "Développement Full-Stack",
+    "fullStackDesc": "Applications web de bout en bout — de l'architecture de base de données aux frontends soignés.",
+    "creativeUI": "UI/UX Créatif",
+    "creativeUIDesc": "Des interfaces agréables à utiliser — réactives, accessibles et conçues avec soin.",
+    "interactive3D": "3D Interactif",
+    "interactive3DDesc": "Expériences immersives dans le navigateur propulsées par Three.js et WebGL."
+  },
+  "about": {
+    "technicalSkills": "Compétences Techniques",
+    "backend": "Développement Backend",
+    "frontend": "Développement Frontend",
+    "tools": "Outils et Plateformes"
+  },
+  "interests": {
+    "musicCreative": "Musique et Créativité",
+    "guitarCompositions": "Compositions à la Guitare",
+    "guitarDesc": "Musique originale partagée sur ma chaîne YouTube",
+    "visitYouTube": "Visiter la chaîne YouTube →",
+    "3dGraphics": "Graphismes 3D",
+    "experimentation": "Expérimentation",
+    "multiInstrumentalist": "Multi-instrumentiste",
+    "techDiscovery": "Découverte technologique"
+  },
+  "footer": {
+    "hint": "Les titres sont peut-être cliquables..."
+  },
+  "notFound": {
+    "nothingHere": "- Rien ici",
+    "pageNotFound": "404 - Page non trouvée",
+    "availablePages": "Pages disponibles :",
+    "goHome": "Accueil",
+    "pageDoesNotExist": "La page <strong>{name}</strong> n'existe pas !"
+  },
+  "weather": {
+    "loading": "Chargement de la météo...",
+    "unavailable": "Données météo indisponibles",
+    "clearSky": "Ciel dégagé",
+    "partlyCloudy": "Partiellement nuageux",
+    "fog": "Brouillard",
+    "rain": "Pluie",
+    "snow": "Neige",
+    "thunderstorm": "Orage",
+    "unknown": "Inconnu",
+    "forecast": "Prévisions météo",
+    "nextHours": "6 prochaines heures à Cheltenham",
+    "temp": "Temp",
+    "rainLabel": "Pluie",
+    "close": "Fermer",
+    "location": "{desc} ({temp}°C) à Cheltenham, Royaume-Uni"
+  },
+  "epilepsy": {
+    "warning": "⚠ AVERTISSEMENT ÉPILEPSIE : L'activation du son déclenche des effets visuels réactifs, notamment des lumières clignotantes et des motifs stroboscopiques pouvant provoquer des crises chez les personnes épileptiques photosensibles.\n\nCliquez sur OK pour confirmer que vous comprenez et souhaitez activer les effets visuels. Cliquez sur Annuler pour écouter sans effets clignotants."
+  },
+  "language": {
+    "label": "Langue",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "it": "Italiano",
+    "pt": "Português",
+    "ru": "Русский",
+    "ar": "العربية",
+    "zhCN": "简体中文",
+    "ja": "日本語",
+    "ko": "한국어",
+    "hi": "हिन्दी",
+    "nl": "Nederlands"
+  },
+  "meta": {
+    "defaultDescription": "Le site web expérimental d'Elliot Dickerson fait avec Vue.",
+    "homeDescription": "Bienvenue sur le site expérimental Vue.js d'Elliot Dickerson avec projets, jeux et plus.",
+    "homeKeywords": "Vue.js, développement web, ingénieur logiciel, projets, jeux",
+    "aboutDescription": "Découvrez Elliot Dickerson - Diplômé BSc (Hons) avec 14 ans d'expérience en développement PHP et JavaScript.",
+    "aboutKeywords": "ingénieur logiciel, PHP, Laravel, Symfony, VueJS, React, expérience",
+    "interestsDescription": "Découvrez les centres d'intérêt d'Elliot : programmation, musique et projets créatifs.",
+    "interestsKeywords": "programmation, musique, guitare, YouTube, loisirs, projets créatifs",
+    "hiddenDescription": "Page secrète avec des liens vers des projets amusants et des jeux réalisés avec Vue.js.",
+    "hiddenKeywords": "caché, jeux, outils, projets, secret"
+  },
+  "app": {
+    "titleNoughtsAndCrosses": "Morpion",
+    "titleChecker": "Contrôle d'alcool",
+    "titleAsk": "Demandez-moi"
+  },
+  "haveALaugh": "Riez un peu !",
+  "suggestionDown": "pourrait être indisponible.",
+  "activity": {
+    "title": "Essayez cette activité {type}",
+    "loading": "Chargement depuis The Bored API.",
+    "clickToUpdate": "Cliquez pour mettre à jour",
+    "clickForNew": "Cliquez pour une nouvelle suggestion",
+    "boredApi": "(The Bored API)",
+    "tryActivity": "Essayez cette activité"
+  },
+  "suggestion": {
+    "clickToUpdate": "Cliquez pour mettre à jour",
+    "clickForNew": "Cliquez pour un nouveau {name}"
+  },
+  "quiz": {
+    "title": "Quiz",
+    "correct": "Correct !",
+    "wrong": "Faux ! La bonne réponse était : {answer}",
+    "nextQuestion": "Question suivante",
+    "loading": "Chargement de la question...",
+    "tryAgain": "Réessayer",
+    "description": "Testez vos connaissances avec une question de quiz aléatoire."
+  },
+  "pages": {
+    "home": {
+      "name": "Accueil",
+      "title": "Accueil",
+      "body0": "Bienvenue sur mon portfolio personnel et bac à sable expérimental. Cette plateforme sert d'espace pour explorer les technologies web émergentes, prototyper de nouvelles fonctionnalités et présenter des projets techniques.",
+      "body1": "Actuellement, je suis Ingénieur Logiciel chez RM, où je mets à profit mon expertise pour favoriser la réussite de l'équipe et fournir des solutions logicielles de haute qualité. Je suis passionné par l'apprentissage continu et le développement professionnel.",
+      "body2": "Ce site est entièrement construit avec Vue 3, TypeScript et des outils modernes — il fait office à la fois de portfolio et de terrain de jeu."
+    },
+    "about": {
+      "name": "À propos",
+      "title": "À Propos de Moi",
+      "body0": "Je suis titulaire d'un BSc (Hons) et possède une expérience complète en ingénierie logicielle professionnelle, couvrant la majeure partie de ma carrière.",
+      "body1": "Avec plus d'une décennie d'expérience dédiée au développement logiciel et web, je me spécialise dans les écosystèmes PHP et JavaScript. Ma compétence technique s'étend à la gestion robuste de bases de données avec MySQL et à l'utilisation de Git pour le contrôle de version avancé.",
+      "body2": "Tout au long de ma carrière, j'ai mené à bien des projets exploitant une gamme diversifiée de frameworks et bibliothèques modernes, notamment :<ul><li>Laravel et Symfony pour l'architecture PHP backend</li><li>React, SolidJS et VueJS pour concevoir des interfaces utilisateur évolutives et dynamiques</li></ul>",
+      "body3": "En tant qu'Ingénieur Logiciel chez RM, je m'engage à relever des défis techniques complexes et à contribuer à des projets innovants et percutants."
+    },
+    "interests": {
+      "name": "Centres d'intérêt",
+      "title": "Mes Centres d'Intérêt",
+      "body0": "Au-delà de mes activités professionnelles, je suis profondément investi dans le développement personnel et l'exploration technique. Je développe activement des projets parallèles pour expérimenter des concepts innovants et rester à la pointe des technologies émergentes.",
+      "body1": "La musique est un exutoire créatif important pour moi. Je suis multi-instrumentiste avec un accent principal sur la guitare. Je compose des pièces originales et partage régulièrement mon travail sur ma <a href=\"https://www.youtube.com/%40toilled\" class=\"contrast\" target=\"_blank\" rel=\"noopener noreferrer\">chaîne YouTube</a>.",
+      "body2": "Actuellement, j'élargis mon répertoire technique en explorant Three.js pour le rendu de graphiques 3D complexes et la conception d'expériences web immersives. L'environnement 3D interactif présenté sur ce site témoigne de ces expériences en cours."
+    },
+    "hidden": {
+      "name": "Caché",
+      "title": "Caché",
+      "body0": "Bienvenue sur la page cachée ! Cette zone n'est pas liée dans la navigation principale, mais elle est là pour les curieux assez audacieux pour la trouver.",
+      "body1": "Voici quelques projets et jeux amusants que j'ai créés :",
+      "body2": "<ul><li>Alcohol Checker - Calculez quand vous serez sobre pour conduire</li><li>Noughts and Crosses - Morpion classique contre un bot</li><li>Ask Me - Discutez avec un assistant automatisé de mon parcours</li></ul>",
+      "body3": "Amusez-vous à explorer ces petites expériences !"
+    }
+  }
+}

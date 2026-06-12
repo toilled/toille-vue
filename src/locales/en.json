@@ -1,0 +1,165 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "interests": "Interests",
+    "hidden": "Hidden"
+  },
+  "menu": {
+    "exploreCity": "Explore City",
+    "demo": "64k Demo",
+    "toggleSound": "Toggle Sound",
+    "toggleVisibility": "Toggle Visibility",
+    "toggleCity": "Toggle City Background",
+    "openTerminal": "Open Terminal",
+    "toggleTools": "Toggle tools",
+    "weather": "Weather"
+  },
+  "site": {
+    "title": "Elliot Dickerson",
+    "subtitle": "Software Engineer",
+    "titlePrefix": "Elliot > "
+  },
+  "home": {
+    "whatIDo": "What I Do",
+    "fullStack": "Full-Stack Development",
+    "fullStackDesc": "End-to-end web applications — from database architecture to polished frontends.",
+    "creativeUI": "Creative UI/UX",
+    "creativeUIDesc": "Interfaces that are a joy to use — responsive, accessible, and thoughtfully designed.",
+    "interactive3D": "Interactive 3D",
+    "interactive3DDesc": "Immersive browser-based experiences powered by Three.js and WebGL."
+  },
+  "about": {
+    "technicalSkills": "Technical Skills",
+    "backend": "Backend Development",
+    "frontend": "Frontend Development",
+    "tools": "Tools & Platforms"
+  },
+  "interests": {
+    "musicCreative": "Music & Creative",
+    "guitarCompositions": "Guitar Compositions",
+    "guitarDesc": "Original music shared on my YouTube channel",
+    "visitYouTube": "Visit YouTube Channel →",
+    "3dGraphics": "3D Graphics",
+    "experimentation": "Experimentation",
+    "multiInstrumentalist": "Multi-Instrumentalist",
+    "techDiscovery": "Tech Discovery"
+  },
+  "footer": {
+    "hint": "The titles might be clickable..."
+  },
+  "notFound": {
+    "nothingHere": "- Nothing here",
+    "pageNotFound": "404 - Page not found",
+    "availablePages": "Available Pages:",
+    "goHome": "Go Home",
+    "pageDoesNotExist": "The page <strong>{name}</strong> does not exist!"
+  },
+  "weather": {
+    "loading": "Loading weather...",
+    "unavailable": "Weather data unavailable",
+    "clearSky": "Clear Sky",
+    "partlyCloudy": "Partly Cloudy",
+    "fog": "Fog",
+    "rain": "Rain",
+    "snow": "Snow",
+    "thunderstorm": "Thunderstorm",
+    "unknown": "Unknown",
+    "forecast": "Weather Forecast",
+    "nextHours": "Next 6 hours in Cheltenham",
+    "temp": "Temp",
+    "rainLabel": "Rain",
+    "close": "Close",
+    "location": "{desc} ({temp}°C) in Cheltenham, UK"
+  },
+  "epilepsy": {
+    "warning": "⚠ EPILEPSY WARNING: Enabling sound activates reactive visual effects including flashing lights and strobing patterns that may trigger seizures in people with photosensitive epilepsy.\n\nClick OK to confirm you understand and wish to enable visual effects. Click Cancel to listen without flashing effects."
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "it": "Italiano",
+    "pt": "Português",
+    "ru": "Русский",
+    "ar": "العربية",
+    "zhCN": "简体中文",
+    "ja": "日本語",
+    "ko": "한국어",
+    "hi": "हिन्दी",
+    "nl": "Nederlands"
+  },
+  "meta": {
+    "defaultDescription": "The experimental website of Elliot Dickerson made in Vue.",
+    "homeDescription": "Welcome to Elliot Dickerson's experimental Vue.js website featuring projects, games, and more.",
+    "homeKeywords": "Vue.js, web development, software engineer, projects, games",
+    "aboutDescription": "Learn about Elliot Dickerson - BSc (Hons) graduate with 14 years of PHP and JavaScript development experience.",
+    "aboutKeywords": "software engineer, PHP, Laravel, Symfony, VueJS, React, experience",
+    "interestsDescription": "Discover Elliot's interests in coding, music, and creative projects including original guitar compositions.",
+    "interestsKeywords": "coding, music, guitar, YouTube, hobbies, creative projects",
+    "hiddenDescription": "Secret page with links to fun projects and games built with Vue.js.",
+    "hiddenKeywords": "hidden, games, tools, projects, secret"
+  },
+  "app": {
+    "titleNoughtsAndCrosses": "Noughts and Crosses",
+    "titleChecker": "Checker",
+    "titleAsk": "Ask Me"
+  },
+  "haveALaugh": "Have a laugh!",
+  "suggestionDown": "might be down.",
+  "activity": {
+    "title": "Try this {type} activity",
+    "loading": "Loading from The Bored API.",
+    "clickToUpdate": "Click to update",
+    "clickForNew": "Click for a new suggestion",
+    "boredApi": "(The Bored API)",
+    "tryActivity": "Try this activity"
+  },
+  "suggestion": {
+    "clickToUpdate": "Click to update",
+    "clickForNew": "Click for a new {name}"
+  },
+  "quiz": {
+    "title": "Pub Quiz",
+    "correct": "Correct!",
+    "wrong": "Wrong! The correct answer was: {answer}",
+    "nextQuestion": "Next Question",
+    "loading": "Loading question...",
+    "tryAgain": "Try Again",
+    "description": "Test your knowledge with a random pub quiz question."
+  },
+  "pages": {
+    "home": {
+      "name": "Home",
+      "title": "Home",
+      "body0": "Welcome to my personal portfolio and experimental sandbox. This platform serves as a space to explore emerging web technologies, prototype new features, and showcase technical projects.",
+      "body1": "Currently, I am a Software Engineer at RM, where I leverage my expertise to drive team success and deliver high-quality software solutions. I am passionate about continuous learning and professional development.",
+      "body2": "This site is built entirely with Vue 3, TypeScript, and modern tooling — and it doubles as both a portfolio and a playground."
+    },
+    "about": {
+      "name": "About",
+      "title": "About Me",
+      "body0": "I hold a BSc (Hons) degree and possess a comprehensive background in professional software engineering, spanning the majority of my career.",
+      "body1": "With over a decade of dedicated experience in software and web development, I specialize in PHP and JavaScript ecosystems. My technical proficiency extends to robust database management with MySQL and utilizing Git for advanced version control.",
+      "body2": "Throughout my career, I have successfully delivered projects leveraging a diverse range of modern frameworks and libraries, including:<ul><li>Laravel and Symfony for backend PHP architecture</li><li>React, SolidJS, and VueJS for crafting scalable, dynamic user interfaces</li></ul>",
+      "body3": "Currently serving as a Software Engineer at RM, I am committed to tackling complex technical challenges and contributing to innovative, impactful projects."
+    },
+    "interests": {
+      "name": "Interests",
+      "title": "My Interests",
+      "body0": "Beyond my professional endeavors, I am deeply invested in personal development and technical exploration. I actively develop side projects to experiment with innovative concepts and stay at the forefront of emerging technologies.",
+      "body1": "Music is a significant creative outlet for me. I am a multi-instrumentalist with a primary focus on the guitar. I compose original pieces and regularly share my work on my <a href=\"https://www.youtube.com/%40toilled\" class=\"contrast\" target=\"_blank\" rel=\"noopener noreferrer\">YouTube channel</a>.",
+      "body2": "Currently, I am expanding my technical repertoire by exploring Three.js for rendering complex 3D graphics and designing immersive web experiences. The interactive 3D environment featured on this site is a testament to these ongoing experiments."
+    },
+    "hidden": {
+      "name": "Hidden",
+      "title": "Hidden",
+      "body0": "Welcome to the hidden page! This area isn't linked in the main navigation, but it's here for those curious enough to find it.",
+      "body1": "Here are some fun projects and games I've built:",
+      "body2": "<ul><li>Alcohol Checker - Calculate when you'll be sober enough to drive</li><li>Noughts and Crosses - Classic tic-tac-toe against a bot</li><li>Ask Me - Chat with an automated assistant about my background</li></ul>",
+      "body3": "Enjoy exploring these little experiments!"
+    }
+  }
+}

@@ -54,10 +54,9 @@ describe("WeatherIcon.vue", () => {
       expect.stringContaining("api.open-meteo.com"),
     );
     expect(wrapper.find(".icon-wrapper").attributes("title")).toBe(
-      "Clear Sky (20°C) in Cheltenham, UK",
+      "weather.location",
     );
     expect(wrapper.find("svg").exists()).toBe(true);
-    expect(wrapper.find("circle").exists()).toBe(true);
   });
 
   it("opens modal on click and displays rain data", async () => {

@@ -8,7 +8,7 @@
       <header>
         <strong>{{ title }}</strong>
       </header>
-      <p class="marginless">{{ suggestion[valueName] }}</p>
+      <p class="marginless">{{ translatedSuggestionText }}</p>
     </article>
     <article v-else class="marginless">
       <header>
@@ -28,8 +28,10 @@
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
+import { useTranslate } from "../composables/useTranslate";
 
 const { t } = useI18n();
+const { translate, locale } = useTranslate();
 
 /**
  * @file Suggestion.vue
@@ -54,6 +56,12 @@ const props = defineProps<{
  * @description A reactive reference to the suggestion object fetched from the API.
  */
 const suggestion = ref<Record<string, unknown> | null>(null);
+
+/**
+ * @type {import('vue').Ref<string>}
+ * @description A reactive reference to the translated suggestion text.
+ */
+const translatedSuggestionText = ref("");
 
 /**
  * @type {import('vue').Ref<boolean>}
@@ -84,6 +92,12 @@ async function fetchSuggestion() {
       headers: { Accept: "application/json" },
     });
     suggestion.value = await response.json();
+    const s = suggestion.value;
+    const raw = s ? s[props.valueName] as string | undefined : undefined;
+    translatedSuggestionText.value = raw ?? "";
+    if (raw) {
+      translate(raw).then(t => translatedSuggestionText.value = t);
+    }
   } catch (error) {
     console.error(error);
   } finally {
@@ -105,4 +119,14 @@ function newSuggestion() {
  * @description A Vue lifecycle hook that fetches an initial suggestion when the component is mounted.
  */
 onMounted(fetchSuggestion);
+
+watch(locale, () => {
+  const s = suggestion.value;
+  if (!s) return;
+  const raw = s[props.valueName] as string | undefined;
+  translatedSuggestionText.value = raw ?? "";
+  if (raw) {
+    translate(raw).then(t => translatedSuggestionText.value = t);
+  }
+});
 </script>

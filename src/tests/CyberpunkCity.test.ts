@@ -90,7 +90,7 @@ vi.mock("three", () => {
     })),
     WebGLRenderer: vi.fn(() => ({
       setSize: vi.fn(),
-      getSize: vi.fn().mockImplementation((target: any) => {
+      getSize: vi.fn().mockImplementation((target: { width: number; height: number }) => {
         target.width = 1024;
         target.height = 768;
         return target;
@@ -116,9 +116,9 @@ vi.mock("three", () => {
       }),
       setHex: vi.fn(),
       getHex: vi.fn(() => 0),
-      copy: vi.fn(function (this: any, c: any) { if (c) { this.r = c.r; this.g = c.g; this.b = c.b; } return this; }),
-      clone: vi.fn(function (this: any) { return { ...this }; }),
-      toArray: vi.fn((arr: any[] = [], offset = 0) => { arr[offset] = 0; arr[offset + 1] = 0; arr[offset + 2] = 0; return arr; }),
+      copy: vi.fn(function (this: Record<string, number>, c: Record<string, number>) { if (c) { this.r = c.r; this.g = c.g; this.b = c.b; } return this; }),
+      clone: vi.fn(function (this: Record<string, number>) { return { ...this }; }),
+      toArray: vi.fn((arr: number[] = [], offset = 0) => { arr[offset] = 0; arr[offset + 1] = 0; arr[offset + 2] = 0; return arr; }),
     })),
     FogExp2: vi.fn(),
     BoxGeometry: vi.fn(() => ({

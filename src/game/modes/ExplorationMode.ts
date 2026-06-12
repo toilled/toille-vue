@@ -1,4 +1,4 @@
-import { GameContext, GameMode } from "../types";
+import { GameContext, GameMode, StoryObjective, StoryState } from "../types";
 import { carAudio } from "../audio/CarAudio";
 import { BOUNDS, CELL_SIZE, START_OFFSET } from "../config";
 import { STORY_TRIGGER_POSITION } from "../StoryItemsManager";
@@ -173,7 +173,7 @@ export class ExplorationMode implements GameMode {
     this.updateMinimap(camera.position.x, camera.position.z);
   }
 
-  private canCheckObjective(ctx: any, ss: any): boolean {
+  private canCheckObjective(ctx: GameContext | null | undefined, ss: StoryState | undefined): boolean {
     if (!ctx?.updateObjective || !ctx?.storyState) return false;
     if (!ss?.active || ss.showingBriefing || ss.showingDialogue || ss.missionComplete) return false;
     return true;
@@ -214,9 +214,9 @@ export class ExplorationMode implements GameMode {
     }
   }
 
-  private getMinimapObjectives(ss: any) {
+  private getMinimapObjectives(ss: StoryState) {
     if (!ss.active || !ss.missions[ss.currentMissionIndex]) return [];
-    return ss.missions[ss.currentMissionIndex].objectives.map((o: any) => ({
+    return ss.missions[ss.currentMissionIndex].objectives.map((o: StoryObjective) => ({
       x: o.x, z: o.z, completed: o.completed, label: o.label, type: o.type,
     }));
   }

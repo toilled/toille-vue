@@ -43,7 +43,7 @@ async function mountApp(stubs: Record<string, unknown> = {}) {
   return app;
 }
 
-async function scrollToBottom(_el: any) {
+async function scrollToBottom(_el: unknown) {
   Object.defineProperty(document.documentElement, "scrollHeight", {
     value: 2000,
     configurable: true,

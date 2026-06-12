@@ -16,8 +16,9 @@ describe("FeatureCard.vue", () => {
     vi.clearAllMocks();
   });
 
-  function mountWithProvide(props: Record<string, any> = {}) {
+  function mountWithProvide(props: Record<string, unknown> = {}) {
     return mount(FeatureCard, {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       props: props as any,
       global: { provide: defaultProvide },
     });

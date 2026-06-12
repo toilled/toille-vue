@@ -109,6 +109,27 @@
   },
   "haveALaugh": "Have a laugh!",
   "suggestionDown": "might be down.",
+  "activity": {
+    "title": "Try this {type} activity",
+    "loading": "Loading from The Bored API.",
+    "clickToUpdate": "Click to update",
+    "clickForNew": "Click for a new suggestion",
+    "boredApi": "(The Bored API)",
+    "tryActivity": "Try this activity"
+  },
+  "suggestion": {
+    "clickToUpdate": "Click to update",
+    "clickForNew": "Click for a new {name}"
+  },
+  "quiz": {
+    "title": "Pub Quiz",
+    "correct": "Correct!",
+    "wrong": "Wrong! The correct answer was: {answer}",
+    "nextQuestion": "Next Question",
+    "loading": "Loading question...",
+    "tryAgain": "Try Again",
+    "description": "Test your knowledge with a random pub quiz question."
+  },
   "pages": {
     "home": {
       "name": "Home",

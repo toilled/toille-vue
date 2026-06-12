@@ -109,6 +109,27 @@
   },
   "haveALaugh": "Lach even!",
   "suggestionDown": "is mogelijk niet beschikbaar.",
+  "activity": {
+    "title": "Probeer deze {type}-activiteit",
+    "loading": "Laden van The Bored API.",
+    "clickToUpdate": "Klik om te vernieuwen",
+    "clickForNew": "Klik voor een nieuwe suggestie",
+    "boredApi": "(The Bored API)",
+    "tryActivity": "Probeer deze activiteit"
+  },
+  "suggestion": {
+    "clickToUpdate": "Klik om te vernieuwen",
+    "clickForNew": "Klik voor een nieuwe {name}"
+  },
+  "quiz": {
+    "title": "Quiz",
+    "correct": "Juist!",
+    "wrong": "Fout! Het juiste antwoord was: {answer}",
+    "nextQuestion": "Volgende vraag",
+    "loading": "Vraag laden...",
+    "tryAgain": "Opnieuw proberen",
+    "description": "Test je kennis met een willekeurige quizvraag."
+  },
   "pages": {
     "home": {
       "name": "Home",

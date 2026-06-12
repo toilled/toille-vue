@@ -36,14 +36,14 @@ describe('Quiz.vue', () => {
     const wrapper = mount(Quiz);
 
     // Initial state should be loading
-    expect(wrapper.text()).toContain('Loading question...');
+    expect(wrapper.text()).toContain('quiz.loading');
 
     // Wait for fetch to complete and component to update
     await vi.waitFor(() => {
       expect(wrapper.find('.question').exists()).toBe(true);
     });
 
-    expect(wrapper.find('h2').text()).toBe('Pub Quiz');
+    expect(wrapper.find('h2').text()).toBe('quiz.title');
     expect(wrapper.find('.question').text()).toBe('What is the capital of France?');
     const options = wrapper.findAll('.options button');
     expect(options.length).toBe(4);
@@ -81,7 +81,7 @@ describe('Quiz.vue', () => {
     const result = wrapper.find('.result');
     expect(result.exists()).toBe(true);
     expect(result.classes()).toContain('correct');
-    expect(result.text()).toContain('Correct!');
+    expect(result.text()).toContain('quiz.correct');
   });
 
   it('handles a wrong answer', async () => {
@@ -116,8 +116,7 @@ describe('Quiz.vue', () => {
     const result = wrapper.find('.result');
     expect(result.exists()).toBe(true);
     expect(result.classes()).toContain('wrong');
-    expect(result.text()).toContain('Wrong!');
-    expect(result.text()).toContain('The correct answer was: 4');
+    expect(result.text()).toContain('quiz.wrong');
   });
 
   it('handles API errors', async () => {

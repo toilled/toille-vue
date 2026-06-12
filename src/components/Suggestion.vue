@@ -19,7 +19,7 @@
     <Transition name="slide-fade">
       <article v-if="!hideHint">
         <footer style="font-style: oblique; font-size: 0.8em; margin-top: 0">
-          Click to update
+          {{ t("suggestion.clickToUpdate") }}
         </footer>
       </article>
     </Transition>
@@ -71,7 +71,7 @@ const hideHint = ref(false);
  * @type {import('vue').ComputedRef<string>}
  * @description A computed property that generates the hover hint text based on the `valueName` prop.
  */
-const hoverHintText = computed(() => "Click for a new " + props.valueName);
+const hoverHintText = computed(() => t("suggestion.clickForNew", { name: props.valueName }));
 
 /**
  * @description Fetches a suggestion from the provided URL and updates the component's state.

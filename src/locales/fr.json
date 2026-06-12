@@ -109,6 +109,27 @@
   },
   "haveALaugh": "Riez un peu !",
   "suggestionDown": "pourrait être indisponible.",
+  "activity": {
+    "title": "Essayez cette activité {type}",
+    "loading": "Chargement depuis The Bored API.",
+    "clickToUpdate": "Cliquez pour mettre à jour",
+    "clickForNew": "Cliquez pour une nouvelle suggestion",
+    "boredApi": "(The Bored API)",
+    "tryActivity": "Essayez cette activité"
+  },
+  "suggestion": {
+    "clickToUpdate": "Cliquez pour mettre à jour",
+    "clickForNew": "Cliquez pour un nouveau {name}"
+  },
+  "quiz": {
+    "title": "Quiz",
+    "correct": "Correct !",
+    "wrong": "Faux ! La bonne réponse était : {answer}",
+    "nextQuestion": "Question suivante",
+    "loading": "Chargement de la question...",
+    "tryAgain": "Réessayer",
+    "description": "Testez vos connaissances avec une question de quiz aléatoire."
+  },
   "pages": {
     "home": {
       "name": "Accueil",

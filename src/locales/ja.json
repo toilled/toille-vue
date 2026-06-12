@@ -109,6 +109,27 @@
   },
   "haveALaugh": "笑ってみよう！",
   "suggestionDown": "ダウンしている可能性があります。",
+  "activity": {
+    "title": "この{type}アクティビティを試す",
+    "loading": "The Bored APIから読み込み中。",
+    "clickToUpdate": "クリックして更新",
+    "clickForNew": "クリックして新しい提案を表示",
+    "boredApi": "(The Bored API)",
+    "tryActivity": "このアクティビティを試す"
+  },
+  "suggestion": {
+    "clickToUpdate": "クリックして更新",
+    "clickForNew": "クリックして新しい{name}を表示"
+  },
+  "quiz": {
+    "title": "クイズ",
+    "correct": "正解！",
+    "wrong": "不正解！正しい答えは：{answer}",
+    "nextQuestion": "次の問題",
+    "loading": "問題を読み込み中...",
+    "tryAgain": "もう一度試す",
+    "description": "ランダムなクイズ問題で知識をテストしましょう。"
+  },
   "pages": {
     "home": {
       "name": "ホーム",

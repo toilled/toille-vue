@@ -109,6 +109,27 @@
   },
   "haveALaugh": "한번 웃어보세요!",
   "suggestionDown": "다운되었을 수 있습니다.",
+  "activity": {
+    "title": "이 {type} 활동을 시도해보세요",
+    "loading": "The Bored API에서 로딩 중.",
+    "clickToUpdate": "클릭하여 업데이트",
+    "clickForNew": "클릭하여 새 제안 보기",
+    "boredApi": "(The Bored API)",
+    "tryActivity": "이 활동을 시도해보세요"
+  },
+  "suggestion": {
+    "clickToUpdate": "클릭하여 업데이트",
+    "clickForNew": "클릭하여 새 {name} 보기"
+  },
+  "quiz": {
+    "title": "퀴즈",
+    "correct": "정답!",
+    "wrong": "오답! 정답은: {answer}",
+    "nextQuestion": "다음 문제",
+    "loading": "문제 로딩 중...",
+    "tryAgain": "다시 시도",
+    "description": "무작위 퀴즈 문제로 지식을 테스트해보세요."
+  },
   "pages": {
     "home": {
       "name": "홈",

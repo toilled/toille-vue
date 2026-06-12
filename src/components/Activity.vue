@@ -4,27 +4,27 @@
     :style="{ cursor: loading ? 'progress' : '' }"
     class="content-container"
   >
-    <article v-if="activity" title="Click for a new suggestion" class="marginless">
+    <article v-if="activity" :title="t('activity.clickForNew')" class="marginless">
       <header>
         <strong>
-          Try this {{ activity.type }} activity
+          {{ t("activity.title", { type: activity.type }) }}
         </strong>
-        (The Bored API)
+        {{ t("activity.boredApi") }}
       </header>
       <p class="marginless">{{ activity.activity }}</p>
     </article>
     <article v-else class="marginless">
       <header>
-        <strong>Try this activity</strong>
+        <strong>{{ t("activity.tryActivity") }}</strong>
       </header>
       <p class="marginless" aria-busy="true">
-        Loading from The Bored API.
+        {{ t("activity.loading") }}
       </p>
     </article>
     <Transition name="slide-fade">
       <article v-if="!hideHint">
         <footer style="font-style: oblique; font-size: 0.8em; margin-top: 0">
-          Click to update
+          {{ t("activity.clickToUpdate") }}
         </footer>
       </article>
     </Transition>
@@ -32,7 +32,9 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 
 /**
  * @file Activity.vue

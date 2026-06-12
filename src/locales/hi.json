@@ -109,6 +109,27 @@
   },
   "haveALaugh": "थोड़ा हँसिए!",
   "suggestionDown": "संभवतः डाउन है।",
+  "activity": {
+    "title": "इस {type} गतिविधि को आज़माएं",
+    "loading": "The Bored API से लोड हो रहा है।",
+    "clickToUpdate": "अपडेट करने के लिए क्लिक करें",
+    "clickForNew": "नए सुझाव के लिए क्लिक करें",
+    "boredApi": "(The Bored API)",
+    "tryActivity": "इस गतिविधि को आज़माएं"
+  },
+  "suggestion": {
+    "clickToUpdate": "अपडेट करने के लिए क्लिक करें",
+    "clickForNew": "नए {name} के लिए क्लिक करें"
+  },
+  "quiz": {
+    "title": "प्रश्नोत्तरी",
+    "correct": "सही!",
+    "wrong": "गलत! सही उत्तर था: {answer}",
+    "nextQuestion": "अगला प्रश्न",
+    "loading": "प्रश्न लोड हो रहा है...",
+    "tryAgain": "पुनः प्रयास करें",
+    "description": "यादृच्छिक प्रश्नोत्तरी प्रश्न के साथ अपने ज्ञान का परीक्षण करें।"
+  },
   "pages": {
     "home": {
       "name": "होम",

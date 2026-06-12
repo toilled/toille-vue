@@ -109,6 +109,27 @@
   },
   "haveALaugh": "Dê uma risada!",
   "suggestionDown": "pode estar offline.",
+  "activity": {
+    "title": "Experimente esta atividade de {type}",
+    "loading": "Carregando da The Bored API.",
+    "clickToUpdate": "Clique para atualizar",
+    "clickForNew": "Clique para uma nova sugestão",
+    "boredApi": "(The Bored API)",
+    "tryActivity": "Experimente esta atividade"
+  },
+  "suggestion": {
+    "clickToUpdate": "Clique para atualizar",
+    "clickForNew": "Clique para um novo {name}"
+  },
+  "quiz": {
+    "title": "Quiz",
+    "correct": "Correto!",
+    "wrong": "Errado! A resposta correta era: {answer}",
+    "nextQuestion": "Próxima pergunta",
+    "loading": "Carregando pergunta...",
+    "tryAgain": "Tentar novamente",
+    "description": "Teste seus conhecimentos com uma pergunta aleatória de quiz."
+  },
   "pages": {
     "home": {
       "name": "Início",

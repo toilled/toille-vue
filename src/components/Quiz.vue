@@ -1,7 +1,7 @@
 <template>
   <article>
     <header>
-      <h2>Pub Quiz</h2>
+      <h2>{{ t("quiz.title") }}</h2>
     </header>
 
     <div v-if="currentQuestion">
@@ -21,32 +21,34 @@
       </div>
 
       <div v-if="hasAnswered" class="result" :class="{ correct: isCorrect, wrong: !isCorrect }">
-        <p v-if="isCorrect">Correct!</p>
-        <p v-else>Wrong! The correct answer was: {{ currentQuestion.options[currentQuestion.correctIndex] }}</p>
+        <p v-if="isCorrect">{{ t("quiz.correct") }}</p>
+        <p v-else>{{ t("quiz.wrong", { answer: currentQuestion.options[currentQuestion.correctIndex] }) }}</p>
 
-        <button @click.stop="nextQuestion">Next Question</button>
+        <button @click.stop="nextQuestion">{{ t("quiz.nextQuestion") }}</button>
       </div>
     </div>
     <div v-else-if="isLoading">
-      <p>Loading question...</p>
+      <p>{{ t("quiz.loading") }}</p>
     </div>
     <div v-else-if="error">
       <p class="error">{{ error }}</p>
-      <button @click.stop="nextQuestion">Try Again</button>
+      <button @click.stop="nextQuestion">{{ t("quiz.tryAgain") }}</button>
     </div>
   </article>
 </template>
 
 <script setup lang="ts">
-
+import { useI18n } from "vue-i18n";
 import { useHead } from "@vueuse/head";
 
+const { t } = useI18n();
+
 useHead({
-  title: "Pub Quiz",
+  title: t("quiz.title"),
   meta: [
     {
       name: "description",
-      content: "Test your knowledge with a random pub quiz question.",
+      content: t("quiz.description"),
     },
   ],
 });

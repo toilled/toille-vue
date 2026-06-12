@@ -109,6 +109,27 @@
   },
   "haveALaugh": "Посмейтесь!",
   "suggestionDown": "возможно, не работает.",
+  "activity": {
+    "title": "Попробуйте это {type} занятие",
+    "loading": "Загрузка из The Bored API.",
+    "clickToUpdate": "Нажмите, чтобы обновить",
+    "clickForNew": "Нажмите для новой подсказки",
+    "boredApi": "(The Bored API)",
+    "tryActivity": "Попробуйте это занятие"
+  },
+  "suggestion": {
+    "clickToUpdate": "Нажмите, чтобы обновить",
+    "clickForNew": "Нажмите для нового {name}"
+  },
+  "quiz": {
+    "title": "Викторина",
+    "correct": "Правильно!",
+    "wrong": "Неправильно! Правильный ответ: {answer}",
+    "nextQuestion": "Следующий вопрос",
+    "loading": "Загрузка вопроса...",
+    "tryAgain": "Попробовать снова",
+    "description": "Проверьте свои знания с помощью случайного вопроса викторины."
+  },
   "pages": {
     "home": {
       "name": "Главная",

@@ -109,6 +109,27 @@
   },
   "haveALaugh": "اضحك قليلاً!",
   "suggestionDown": "قد يكون معطلاً.",
+  "activity": {
+    "title": "جرب هذا النشاط {type}",
+    "loading": "جارٍ التحميل من The Bored API.",
+    "clickToUpdate": "انقر للتحديث",
+    "clickForNew": "انقر للحصول على اقتراح جديد",
+    "boredApi": "(The Bored API)",
+    "tryActivity": "جرب هذا النشاط"
+  },
+  "suggestion": {
+    "clickToUpdate": "انقر للتحديث",
+    "clickForNew": "انقر للحصول على {name} جديد"
+  },
+  "quiz": {
+    "title": "اختبار",
+    "correct": "صحيح!",
+    "wrong": "خطأ! الإجابة الصحيحة هي: {answer}",
+    "nextQuestion": "السؤال التالي",
+    "loading": "جارٍ تحميل السؤال...",
+    "tryAgain": "حاول مرة أخرى",
+    "description": "اختبر معرفتك بسؤال اختبار عشوائي."
+  },
   "pages": {
     "home": {
       "name": "الرئيسية",

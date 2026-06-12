@@ -109,6 +109,27 @@
   },
   "haveALaugh": "笑一笑！",
   "suggestionDown": "可能已下线。",
+  "activity": {
+    "title": "试试这个{type}活动",
+    "loading": "正在从The Bored API加载。",
+    "clickToUpdate": "点击更新",
+    "clickForNew": "点击获取新建议",
+    "boredApi": "(The Bored API)",
+    "tryActivity": "试试这个活动"
+  },
+  "suggestion": {
+    "clickToUpdate": "点击更新",
+    "clickForNew": "点击获取新的{name}"
+  },
+  "quiz": {
+    "title": "问答",
+    "correct": "正确！",
+    "wrong": "错误！正确答案是：{answer}",
+    "nextQuestion": "下一题",
+    "loading": "正在加载题目...",
+    "tryAgain": "重试",
+    "description": "通过随机问答题目测试你的知识。"
+  },
   "pages": {
     "home": {
       "name": "首页",

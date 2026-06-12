@@ -80,10 +80,10 @@ describe("Suggestion.vue", () => {
       },
     });
     await flushPromises();
-    expect(wrapper.text()).toContain("Click to update");
+    expect(wrapper.text()).toContain("suggestion.clickToUpdate");
     await wrapper.trigger("click");
     await flushPromises();
-    expect(wrapper.text()).not.toContain("Click to update");
+    expect(wrapper.text()).not.toContain("suggestion.clickToUpdate");
   });
 
   it("handles fetch errors gracefully", async () => {
@@ -116,7 +116,7 @@ describe("Suggestion.vue", () => {
     });
     await flushPromises();
     expect(wrapper.find("article").attributes("title")).toBe(
-      "Click for a new joke",
+      "suggestion.clickForNew",
     );
   });
 });

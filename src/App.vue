@@ -274,11 +274,12 @@ function getTitleForPath(path: string): string {
       return t("app.titleChecker");
     case "/ask":
       return t("app.titleAsk");
-    default:
+    default: {
       const page = visiblePages.value.find(
         (p: Page) => getSectionIdFromPage(p) === activeSection.value
       );
       return page ? page.title : t("site.title");
+    }
   }
 }
 

@@ -151,7 +151,7 @@ defineProps<{
   cityFallback: boolean;
 }>();
 
-const emit = defineEmits<{
+defineEmits<{
   (e: "explore"): void;
   (e: "toggle-content"): void;
   (e: "demo"): void;

@@ -15,7 +15,12 @@ Personal portfolio and interactive 3D experience for Elliot Dickerson, built wit
 
 ```bash
 npm install
-npm run dev     # development server
-npm run build   # production build
-npm test        # unit tests
+npm run dev         # development server
+npm run build       # production build
+npm run preview     # preview production build
+npm test            # unit tests
+npm run typecheck   # TypeScript type checking
+npm run lint        # ESLint
+npm run check       # typecheck + lint + test
+npm run coverage    # test coverage report
 ```

@@ -85,6 +85,7 @@
     @game-end="gameMode = false"
     @fallback="cityFallback = true"
   />
+  <EpilepsyWarning />
 </template>
 
 <script setup lang="ts">
@@ -104,6 +105,7 @@ import { cityBackground } from "./utils/CityBackgroundManager";
 import titles from "./configs/titles.json";
 import { Page } from "./interfaces/Page";
 import Terminal from "./components/Terminal.vue";
+import EpilepsyWarning from "./components/EpilepsyWarning.vue";
 import { useScrollSpy } from "./composables/useScrollSpy";
 
 const visiblePages = computed(() => {

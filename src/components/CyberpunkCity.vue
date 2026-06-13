@@ -154,8 +154,10 @@ import { getBrowserQuality } from "../utils/BrowserDetect";
 import { drawLeaderboard, createLeaderboardCanvas } from "../utils/LeaderboardRenderer";
 import { SparkSystem } from "../utils/SparkSystem";
 import { useI18n } from "vue-i18n";
+import { useEpilepsyWarning } from "../composables/useEpilepsyWarning";
 
 const { t } = useI18n();
+const { confirm: epilepsyConfirm } = useEpilepsyWarning();
 import { useHdrDisplay } from "../composables/useHdrDisplay";
 
 const GameUI = defineAsyncComponent(() => import("./GameUI.vue"));
@@ -646,9 +648,10 @@ function startStoryMode() {
   storyManager.start();
 }
 
-function startDemoMode() {
+async function startDemoMode() {
   if (isFallbackMode.value) return;
-  if (!confirm(t("epilepsy.warning"))) return;
+  const ok = await epilepsyConfirm(t("epilepsy.warning"));
+  if (!ok) return;
   audioManager.photosensitivityConfirmed = true;
   gameModeManager.setMode(new DemoMode(), "demo");
 }

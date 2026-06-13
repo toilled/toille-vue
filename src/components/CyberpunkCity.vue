@@ -47,6 +47,9 @@
     </div>
   </Transition>
   <Transition name="fade">
+    <div v-if="hdrSupported" id="hdr-badge">HDR</div>
+  </Transition>
+  <Transition name="fade">
     <div v-if="nearStoryTrigger && isExplorationMode && !storyState.active" id="story-trigger-prompt">
       [E] EXAMINE DEAD DROP
     </div>
@@ -164,6 +167,7 @@ import { getBrowserQuality } from "../utils/BrowserDetect";
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
+import { useHdrDisplay } from "../composables/useHdrDisplay";
 
 const GameUI = defineAsyncComponent(() => import("./GameUI.vue"));
 
@@ -408,6 +412,8 @@ const props = defineProps({});
 
 const emit = defineEmits(["game-start", "game-end", "fallback"]);
 const showSplash = ref(true);
+
+const { hdrSupported, checkHdr } = useHdrDisplay();
 const isFallbackMode = ref(false);
 const frameTimestamps: number[] = [];
 let lowFpsCount = 0;
@@ -586,7 +592,8 @@ function initRenderer(width: number, height: number) {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = quality.shadowMapType === 1 ? PCFShadowMap : PCFSoftShadowMap;
   renderer.toneMapping = ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.4;
+  renderer.toneMappingExposure = hdrSupported.value ? 2.0 : 1.4;
+  renderer.outputColorSpace = 'srgb';
   canvasContainer.value!.appendChild(renderer.domElement);
 
   composer = setupPostProcessing(scene, camera, renderer, quality.msaaSamples);
@@ -707,6 +714,7 @@ onMounted(() => {
   if (!canvasContainer.value) return;
 
   updateIsMobile();
+  checkHdr();
 
   const width = canvasContainer.value.clientWidth || window.innerWidth;
   const height = canvasContainer.value.clientHeight || window.innerHeight;
@@ -1415,5 +1423,23 @@ onBeforeUnmount(() => {
   z-index: 25;
   pointer-events: none;
   text-align: center;
+}
+
+#hdr-badge {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 30;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #00ffcc;
+  background: rgba(5, 5, 20, 0.75);
+  border: 1px solid rgba(0, 255, 204, 0.3);
+  padding: 4px 8px;
+  pointer-events: none;
+  text-shadow: 0 0 6px rgba(0, 255, 204, 0.4);
+  box-shadow: 0 0 8px rgba(0, 255, 204, 0.15);
 }
 </style>

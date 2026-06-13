@@ -350,6 +350,103 @@ section p:last-child,
   transform: translateY(0);
 }
 
+/* ============================================
+   HDR / Wide Color Gamut (Display P3)
+   ============================================ */
+@media (color-gamut: p3) {
+  html {
+    --heading-color: color(display-p3 1 0.08 0.82);
+    --neon-cyan: color(display-p3 0 1 0.82);
+    --neon-magenta: color(display-p3 1 0.08 0.82);
+  }
+
+  .title {
+    text-shadow:
+      2px 2px 4px color(display-p3 1 0.08 0.82),
+      0 0 10px color(display-p3 1 0.08 0.82),
+      0 0 30px color(display-p3 1 0.08 0.82 / 0.6);
+  }
+
+  a {
+    text-shadow: 0 0 5px color(display-p3 0 1 0.82 / 0.5);
+  }
+
+  a:hover {
+    text-shadow:
+      0 0 10px #fff,
+      0 0 20px color(display-p3 0 1 0.82 / 0.5);
+  }
+
+  button {
+    background: color(display-p3 1 0.08 0.82);
+    border-color: color(display-p3 0 1 0.82);
+  }
+
+  button:hover {
+    background: color(display-p3 0.82 0.04 0.67);
+    box-shadow: 0 0 12px color(display-p3 1 0.08 0.82 / 0.3);
+  }
+
+  button:focus-visible {
+    outline-color: color(display-p3 0 1 0.82);
+  }
+
+  button.outline {
+    color: color(display-p3 1 0.08 0.82);
+    border-color: color(display-p3 1 0.08 0.82);
+  }
+
+  input,
+  textarea,
+  select {
+    border-color: color(display-p3 0 1 0.82);
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline-color: color(display-p3 1 0.08 0.82);
+  }
+
+  article {
+    box-shadow:
+      0 0 15px color(display-p3 0 1 0.82 / 0.15),
+      inset 0 0 20px color(display-p3 0 1 0.82 / 0.05);
+    border-color: color(display-p3 0 1 0.82 / 0.2);
+  }
+
+  article:hover {
+    border-color: color(display-p3 0 1 0.82 / 0.35);
+    box-shadow:
+      0 0 24px color(display-p3 0 1 0.82 / 0.2),
+      inset 0 0 20px color(display-p3 0 1 0.82 / 0.06);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: color(display-p3 1 0.08 0.82 / 0.5);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: color(display-p3 0 1 0.82 / 0.7);
+  }
+
+  section p,
+  .content-container p,
+  .text-paragraph {
+    text-shadow: 0 0 2px color(display-p3 0 1 0.82 / 0.3);
+  }
+}
+
+@media (dynamic-range: high) {
+  .title {
+    text-shadow:
+      2px 2px 4px color(display-p3 1 0.08 0.82),
+      0 0 10px color(display-p3 1 0.08 0.82),
+      0 0 40px color(display-p3 1 0.08 0.82 / 0.7),
+      0 0 80px color(display-p3 1 0.08 0.82 / 0.3);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

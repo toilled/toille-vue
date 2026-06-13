@@ -159,7 +159,7 @@ import { PropType } from "vue";
 import { Controls, LookControls } from "../game/types";
 import { ScoreEntry } from "../utils/ScoreService";
 
-const props = defineProps({
+defineProps({
   isDrivingMode: Boolean,
   isGameMode: Boolean,
   isExplorationMode: Boolean,

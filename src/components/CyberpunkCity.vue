@@ -77,12 +77,8 @@ import { StoryManager } from "../game/StoryManager";
 import { StoryItemsManager, STORY_TRIGGER_POSITION } from "../game/StoryItemsManager";
 import {
   AdditiveBlending,
-  BufferAttribute,
-  BufferGeometry,
   CanvasTexture,
   PerspectiveCamera,
-  Points,
-  PointsMaterial,
   Raycaster,
   Scene,
   Vector2,
@@ -111,15 +107,7 @@ import { carAudio } from "../game/audio/CarAudio";
 import { cyberpunkAudio } from "../utils/CyberpunkAudio";
 import { CELL_SIZE, START_OFFSET, GRID_SIZE } from "../game/config";
 import {
-  LEADERBOARD_CANVAS_SIZE,
   MOBILE_BREAKPOINT,
-  SPARK_COUNT,
-  SPARK_BURST_SIZE,
-  SPARK_GRAVITY,
-  SPARK_LIFETIME_DECAY,
-  SPARK_OFF_SCREEN_Y,
-  SPARK_MIN_VELOCITY,
-  SPARK_RANDOM_VELOCITY,
   CAR_COUNT,
   CAMERA_FOV,
   CAMERA_FAR,
@@ -148,7 +136,6 @@ import {
   EMISSIVE_INTENSITY_BOOST_HIHAT,
   EMISSIVE_INTENSITY_TARGET,
   EMISSIVE_LERP_FACTOR,
-  SPARK_SPAWN_POSITIONS_OFF_Y,
   CHASE_ARROW_POSITION_Z,
   FALLBACK_FPS_THRESHOLD,
   FALLBACK_FPS_CONSECUTIVE_CHECKS,
@@ -164,9 +151,13 @@ import { getHeight } from "../utils/HeightMap";
 import { audioManager } from "../utils/AudioManager";
 import { MultiplayerManager } from "../game/MultiplayerManager";
 import { getBrowserQuality } from "../utils/BrowserDetect";
+import { drawLeaderboard, createLeaderboardCanvas } from "../utils/LeaderboardRenderer";
+import { SparkSystem } from "../utils/SparkSystem";
 import { useI18n } from "vue-i18n";
+import { useEpilepsyWarning } from "../composables/useEpilepsyWarning";
 
 const { t } = useI18n();
+const { confirm: epilepsyConfirm } = useEpilepsyWarning();
 import { useHdrDisplay } from "../composables/useHdrDisplay";
 
 const GameUI = defineAsyncComponent(() => import("./GameUI.vue"));
@@ -222,104 +213,23 @@ let leaderboardTexture: CanvasTexture;
 
 function updateLeaderboard(newScores: ScoreEntry[]) {
   leaderboard.value = newScores;
-  // Texture update is handled by watch(leaderboard)
-}
-
-function drawLeaderboardTitle(ctx: CanvasRenderingContext2D) {
-  ctx.strokeStyle = "#00ffcc";
-  ctx.lineWidth = 8;
-  ctx.strokeRect(4, 4, 504, 504);
-
-  ctx.fillStyle = "#00ffcc";
-  ctx.font = "bold 60px Arial";
-  ctx.textAlign = "center";
-  ctx.shadowColor = "#00ffcc";
-  ctx.shadowBlur = 10;
-  ctx.fillText("LEADERBOARD", 256, 80);
-  ctx.shadowBlur = 0;
-
-  ctx.beginPath();
-  ctx.moveTo(20, 100);
-  ctx.lineTo(492, 100);
-  ctx.stroke();
-}
-
-function drawLeaderboardScores(ctx: CanvasRenderingContext2D) {
-  ctx.font = "bold 40px Courier New";
-  ctx.textAlign = "left";
-  let y = 160;
-
-  if (leaderboard.value.length === 0) {
-    ctx.textAlign = "center";
-    ctx.fillStyle = "#aaaaaa";
-    ctx.fillText("Loading...", 256, 250);
-    return;
-  }
-
-  leaderboard.value.forEach((entry, idx) => {
-    const colors = ["#ffff00", "#cccccc", "#cd7f32", "#ffffff"];
-    ctx.fillStyle = colors[idx] || colors[3];
-
-    const rank = `${idx + 1}.`;
-    const name = entry.name.substring(0, 8).toUpperCase();
-    const scoreStr = entry.score.toString();
-
-    ctx.fillText(rank, 40, y);
-    ctx.fillText(name, 110, y);
-
-    ctx.textAlign = "right";
-    ctx.fillText(scoreStr, 470, y);
-    ctx.textAlign = "left";
-
-    y += 60;
-  });
-}
-
-function drawLeaderboardFooter(ctx: CanvasRenderingContext2D) {
-  ctx.fillStyle = "#00ffcc";
-  ctx.font = "20px Arial";
-  ctx.textAlign = "center";
-  ctx.fillText("CRASH TO SUBMIT SCORE", 256, 480);
-}
-
-function updateLeaderboardTexture() {
-  if (!leaderboardCanvas) return;
-  const ctx = leaderboardCanvas.getContext("2d");
-  if (!ctx) return;
-
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-  ctx.fillStyle = "#100010";
-  ctx.fillRect(0, 0, LEADERBOARD_CANVAS_SIZE, LEADERBOARD_CANVAS_SIZE);
-
-  ctx.scale(2, 2);
-
-  drawLeaderboardTitle(ctx);
-  drawLeaderboardScores(ctx);
-  drawLeaderboardFooter(ctx);
-
-  if (leaderboardTexture) {
-    leaderboardTexture.needsUpdate = true;
-  }
 }
 
 watch(
   leaderboard,
   () => {
-    updateLeaderboardTexture();
+    if (leaderboardCanvas && leaderboardTexture) {
+      drawLeaderboard(leaderboardCanvas, leaderboardTexture, leaderboard.value);
+    }
   },
   { deep: true },
 );
 
 function createLeaderboardTexture() {
-  leaderboardCanvas = document.createElement("canvas");
-  leaderboardCanvas.width = LEADERBOARD_CANVAS_SIZE;
-  leaderboardCanvas.height = LEADERBOARD_CANVAS_SIZE;
-  leaderboardTexture = new CanvasTexture(leaderboardCanvas);
-  leaderboardTexture.anisotropy = 16;
-
-  updateLeaderboardTexture();
-
+  const result = createLeaderboardCanvas();
+  leaderboardCanvas = result.canvas;
+  leaderboardTexture = result.texture;
+  drawLeaderboard(leaderboardCanvas, leaderboardTexture, leaderboard.value);
   return leaderboardTexture;
 }
 
@@ -374,10 +284,7 @@ function isStoryTriggerHidden(): boolean {
 function activateStoryTrigger() {
   if (isFallbackMode.value) return;
   if (!isGameMode.value) {
-    isGameMode.value = true;
-    isExplorationMode.value = true;
-    emit("game-start");
-    gameModeManager.setMode(new ExplorationMode());
+    gameModeManager.setMode(new ExplorationMode(), "exploration");
   }
   storyManager.start();
   storyItemsManager?.hideTrigger();
@@ -408,7 +315,7 @@ const lookControls = ref({
   down: false,
 });
 
-const props = defineProps({});
+const _props = defineProps({});
 
 const emit = defineEmits(["game-start", "game-end", "fallback"]);
 const showSplash = ref(true);
@@ -425,14 +332,7 @@ const raycaster = new Raycaster();
 const pointer = new Vector2();
 
 // Sparks system
-let sparks: Points;
-const sparkPositions = new Float32Array(SPARK_COUNT * 3);
-// Initialize sparks off-screen
-for (let i = 0; i < SPARK_COUNT; i++) {
-  sparkPositions[i * 3 + 1] = SPARK_SPAWN_POSITIONS_OFF_Y;
-}
-const sparkVelocities = new Float32Array(SPARK_COUNT * 3);
-const sparkLifetimes = new Float32Array(SPARK_COUNT);
+let sparkSystem: SparkSystem;
 
 function createCheckpoint() {
   const geo = new CylinderGeometry(
@@ -540,40 +440,7 @@ function spawnCheckpoint() {
 }
 
 function spawnSparks(position: { x: number; y: number; z: number }) {
-  if (!sparks) return;
-  const posAttribute = sparks.geometry.attributes.position;
-
-  let spawned = 0;
-
-  for (let i = 0; i < SPARK_COUNT; i++) {
-    if (sparkLifetimes[i] <= 0) {
-      activateSpark(i, position, posAttribute);
-      spawned++;
-      if (spawned >= SPARK_BURST_SIZE) break;
-    }
-  }
-
-  if (spawned < SPARK_BURST_SIZE) {
-    for (let i = 0; i < SPARK_BURST_SIZE - spawned; i++) {
-      const randIndex = Math.floor(Math.random() * SPARK_COUNT);
-      activateSpark(randIndex, position, posAttribute);
-    }
-  }
-
-  posAttribute.needsUpdate = true;
-}
-
-function activateSpark(
-  i: number,
-  position: { x: number; y: number; z: number },
-  posAttribute: BufferAttribute | import("three").InterleavedBufferAttribute,
-) {
-  sparkLifetimes[i] = 1.0;
-  posAttribute.setXYZ(i, position.x, position.y, position.z);
-  sparkVelocities[i * 3] = (Math.random() - 0.5) * SPARK_RANDOM_VELOCITY;
-  sparkVelocities[i * 3 + 1] =
-    Math.random() * SPARK_RANDOM_VELOCITY + SPARK_MIN_VELOCITY;
-  sparkVelocities[i * 3 + 2] = (Math.random() - 0.5) * SPARK_RANDOM_VELOCITY;
+  sparkSystem.burst(new Vector3(position.x, position.y, position.z));
 }
 
 function initScene(width: number, height: number) {
@@ -622,22 +489,7 @@ function initTrafficAndSparks() {
   trafficSystem = new TrafficSystem(scene, CAR_COUNT, (pos) => spawnSparks(pos));
   cars = trafficSystem.getCars();
 
-  const sparkGeo = new BufferGeometry();
-  sparkGeo.setAttribute("position", new BufferAttribute(sparkPositions, 3));
-
-  const sparkMat = new PointsMaterial({
-    color: 0xffaa00,
-    size: 3,
-    transparent: true,
-    opacity: 1,
-    blending: AdditiveBlending,
-    sizeAttenuation: true,
-    depthWrite: false,
-  });
-
-  sparks = new Points(sparkGeo, sparkMat);
-  sparks.frustumCulled = false;
-  scene.add(sparks);
+  sparkSystem = new SparkSystem(scene);
 }
 
 function initGameManagers() {
@@ -704,7 +556,15 @@ function initStoryAndMode() {
     nearStoryTrigger,
     activateStoryTrigger,
   };
-  gameModeManager = new GameModeManager(context);
+  gameModeManager = new GameModeManager(context, (type) => {
+    isGameMode.value = type !== null;
+    isDrivingMode.value = type === "driving";
+    isExplorationMode.value = type === "exploration";
+    isCinematicMode.value = type === "cinematic";
+    if (type !== null) {
+      emit("game-start");
+    }
+  });
 
   isActive = true;
   animate();
@@ -729,7 +589,11 @@ onMounted(() => {
 
   ScoreService.getTopScores().then((scores) => {
     leaderboard.value = scores;
-    updateLeaderboardTexture();
+    if (leaderboardCanvas && leaderboardTexture) {
+      drawLeaderboard(leaderboardCanvas, leaderboardTexture, leaderboard.value);
+    }
+  }).catch(() => {
+    // Scores failed to load, leaderboard stays empty
   });
 
   cyberpunkAudio.addListener(onAudioNote);
@@ -775,28 +639,21 @@ watch(activeCar, (newCar, oldCar) => {
 
 function startExplorationMode() {
   if (isFallbackMode.value) return;
-  isGameMode.value = true;
-  isExplorationMode.value = true;
-  emit("game-start");
-  gameModeManager.setMode(new ExplorationMode());
+  gameModeManager.setMode(new ExplorationMode(), "exploration");
 }
 
 function startStoryMode() {
   if (isFallbackMode.value) return;
-  isGameMode.value = true;
-  isExplorationMode.value = true;
-  emit("game-start");
+  gameModeManager.setMode(new ExplorationMode(), "exploration");
   storyManager.start();
-  gameModeManager.setMode(new ExplorationMode());
 }
 
-function startDemoMode() {
+async function startDemoMode() {
   if (isFallbackMode.value) return;
-  if (!confirm(t("epilepsy.warning"))) return;
+  const ok = await epilepsyConfirm(t("epilepsy.warning"));
+  if (!ok) return;
   audioManager.photosensitivityConfirmed = true;
-  isGameMode.value = true;
-  emit("game-start");
-  gameModeManager.setMode(new DemoMode());
+  gameModeManager.setMode(new DemoMode(), "demo");
 }
 
 defineExpose({ startExplorationMode, startDemoMode, startStoryMode });
@@ -804,20 +661,10 @@ defineExpose({ startExplorationMode, startDemoMode, startStoryMode });
 function exitGameMode() {
   gameModeManager.clearMode();
 
-  if (isDrivingMode.value) {
-    isDrivingMode.value = false;
-  }
-
-  if (isExplorationMode.value) {
-    isExplorationMode.value = false;
-  }
-
   if (storyManager) {
     storyManager.stop();
   }
 
-  isCinematicMode.value = false;
-  isGameMode.value = false;
   isGameOver.value = false;
   score.value = 0;
   drivingScore.value = 0;
@@ -866,8 +713,8 @@ function handleFightMarkerClick(): boolean {
   if (intersects.length === 0) return false;
   const hit = intersects[0].object;
   if (hit.userData.isFightMarker && hit.userData.target) {
-    isGameMode.value = true;
     isCinematicMode.value = true;
+    isGameMode.value = true;
     cinematicTarget.copy(hit.userData.target);
     emit("game-start");
     return true;
@@ -885,15 +732,15 @@ function handleCarClick(): boolean {
     target = target.parent;
   }
   if (target instanceof Group && target.userData.speed !== undefined) {
-    isDrivingMode.value = true;
-    emit("game-start");
     activeCar.value = target;
     target.userData.isPlayerControlled = true;
     target.userData.currentSpeed = target.userData.speed;
     ScoreService.createSession().then((id) => {
       gameSessionId.value = id;
+    }).catch(() => {
+      // Session creation failed, game can still continue
     });
-    gameModeManager.setMode(new DrivingMode());
+    gameModeManager.setMode(new DrivingMode(), "driving");
     return true;
   }
   return false;
@@ -976,6 +823,8 @@ function fallbackToStaticImage() {
   renderer.dispose();
   carAudio.stop();
   cyberpunkAudio.removeListener(onAudioNote);
+  cyberpunkAudio.dispose();
+  sparkSystem.dispose();
 
   window.removeEventListener("resize", onResize);
   window.removeEventListener("click", onClick);
@@ -984,6 +833,7 @@ function fallbackToStaticImage() {
   window.removeEventListener("mousemove", onMouseMove);
 
   disposeManagers();
+  if (cityBuilder) cityBuilder.dispose();
 }
 
 function checkLowFps(now: number): boolean {
@@ -1053,46 +903,8 @@ function updateCityMaterials() {
 }
 
 function updateSparks() {
-  if (!sparks) return;
-  const positions = sparks.geometry.attributes.position.array as Float32Array;
-  let needsUpdate = false;
-
-  for (let i = 0; i < SPARK_COUNT; i++) {
-    if (sparkLifetimes[i] <= 0) continue;
-    sparkVelocities[i * 3 + 1] -= SPARK_GRAVITY;
-    positions[i * 3] += sparkVelocities[i * 3];
-    positions[i * 3 + 1] += sparkVelocities[i * 3 + 1];
-    positions[i * 3 + 2] += sparkVelocities[i * 3 + 2];
-
-    const h = getHeight(positions[i * 3], positions[i * 3 + 2]);
-    if (positions[i * 3 + 1] < h) {
-      positions[i * 3 + 1] = h;
-      sparkVelocities[i * 3 + 1] *= -0.5;
-    }
-
-    const ix = Math.round((positions[i * 3] - START_OFFSET) / CELL_SIZE);
-    const iz = Math.round((positions[i * 3 + 2] - START_OFFSET) / CELL_SIZE);
-    const key = `${ix},${iz}`;
-
-    if (occupiedGrids.has(key)) {
-      const cX = START_OFFSET + ix * CELL_SIZE;
-      const cZ = START_OFFSET + iz * CELL_SIZE;
-      const dims = occupiedGrids.get(key);
-      if (dims && Math.abs(positions[i * 3] - cX) < dims.halfW && Math.abs(positions[i * 3 + 2] - cZ) < dims.halfD) {
-        sparkLifetimes[i] = 0;
-      }
-    }
-
-    sparkLifetimes[i] -= SPARK_LIFETIME_DECAY;
-    if (sparkLifetimes[i] < 0) {
-      sparkLifetimes[i] = 0;
-      positions[i * 3 + 1] = SPARK_OFF_SCREEN_Y;
-    }
-    needsUpdate = true;
-  }
-
-  if (needsUpdate) {
-    sparks.geometry.attributes.position.needsUpdate = true;
+  if (sparkSystem) {
+    sparkSystem.update(occupiedGrids);
   }
 }
 
@@ -1257,6 +1069,7 @@ onBeforeUnmount(() => {
     storyItemsManager.dispose();
     storyItemsManager = null;
   }
+  if (cityBuilder) cityBuilder.dispose();
 });
 </script>
 

@@ -1,10 +1,4 @@
 {
-  "nav": {
-    "home": "首页",
-    "about": "关于",
-    "interests": "兴趣",
-    "hidden": "隐藏"
-  },
   "menu": {
     "exploreCity": "探索城市",
     "demo": "64k 演示",
@@ -12,8 +6,7 @@
     "toggleVisibility": "切换可见性",
     "toggleCity": "切换城市背景",
     "openTerminal": "打开终端",
-    "toggleTools": "切换工具",
-    "weather": "天气"
+    "toggleTools": "切换工具"
   },
   "site": {
     "title": "Elliot Dickerson",
@@ -92,15 +85,7 @@
     "nl": "Nederlands"
   },
   "meta": {
-    "defaultDescription": "Elliot Dickerson 用 Vue 制作的实验性网站。",
-    "homeDescription": "欢迎来到 Elliot Dickerson 的实验性 Vue.js 网站，这里有项目、游戏等。",
-    "homeKeywords": "Vue.js, Web开发, 软件工程师, 项目, 游戏",
-    "aboutDescription": "了解 Elliot Dickerson — BSc (Hons) 毕业生，拥有 14 年 PHP 和 JavaScript 开发经验。",
-    "aboutKeywords": "软件工程师, PHP, Laravel, Symfony, VueJS, React, 经验",
-    "interestsDescription": "发现 Elliot 在编程、音乐和创意项目方面的兴趣。",
-    "interestsKeywords": "编程, 音乐, 吉他, YouTube, 爱好, 创意项目",
-    "hiddenDescription": "包含用 Vue.js 构建的有趣项目和游戏链接的秘密页面。",
-    "hiddenKeywords": "隐藏, 游戏, 工具, 项目, 秘密"
+    "defaultDescription": "Elliot Dickerson 用 Vue 制作的实验性网站。"
   },
   "app": {
     "titleNoughtsAndCrosses": "井字游戏",

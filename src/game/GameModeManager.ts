@@ -1,19 +1,26 @@
-import { GameContext, GameMode } from "./types";
+import { GameContext, GameMode, GameModeType } from "./types";
 
 export class GameModeManager {
     private currentMode: GameMode | null = null;
+    private currentType: GameModeType | null = null;
     private context: GameContext;
+    private onModeChange: ((type: GameModeType | null) => void) | null = null;
 
-    constructor(context: GameContext) {
+    constructor(context: GameContext, onModeChange?: (type: GameModeType | null) => void) {
         this.context = context;
+        this.onModeChange = onModeChange ?? null;
     }
 
-    setMode(mode: GameMode) {
+    setMode(mode: GameMode, type?: GameModeType) {
         if (this.currentMode) {
             this.currentMode.cleanup();
         }
         this.currentMode = mode;
+        this.currentType = type ?? null;
         this.currentMode.init(this.context);
+        if (this.onModeChange) {
+            this.onModeChange(this.currentType);
+        }
     }
 
     getMode(): GameMode | null {
@@ -25,6 +32,10 @@ export class GameModeManager {
             this.currentMode.cleanup();
         }
         this.currentMode = null;
+        this.currentType = null;
+        if (this.onModeChange) {
+            this.onModeChange(null);
+        }
     }
 
     update(dt: number, time: number) {
@@ -33,7 +44,6 @@ export class GameModeManager {
         }
     }
 
-    // Input Forwarding
     onKeyDown(event: KeyboardEvent) {
         if (this.currentMode) this.currentMode.onKeyDown(event);
     }

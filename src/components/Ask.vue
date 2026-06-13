@@ -19,7 +19,7 @@
       </div>
       <div class="suggestions" v-if="messages.length <= 1">
         <p>Quick questions:</p>
-        <button v-for="q in suggestedQuestions" @click="askQuestion(q)" class="outline suggestion-btn">
+        <button v-for="(q, i) in suggestedQuestions" :key="i" @click="askQuestion(q)" class="outline suggestion-btn">
           {{ q }}
         </button>
       </div>
@@ -100,7 +100,7 @@ onMounted(() => {
     if (saved) {
       try {
         messages.value = JSON.parse(saved);
-      } catch (e) {
+      } catch (_e) {
         initializeChat();
       }
     } else {

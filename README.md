@@ -1,38 +1,26 @@
 # toille-vue
 
-This is a simple Vue.js web application built with Vite and TypeScript. It serves as a personal website and includes a few interactive components.
+Personal portfolio and interactive 3D experience for Elliot Dickerson, built with Vue 3 + TypeScript + Three.js.
 
 ## Features
 
-*   **Dynamic Pages**: Page content is loaded from a JSON file and rendered dynamically using Vue Router.
-*   **Interactive Components**: Includes an alcohol unit checker, a mini-game, and components that fetch data from external APIs.
-*   **Styling**: Uses `@picocss/pico` for lightweight and clean styling.
+*   **3D Cyberpunk City**: Real-time Three.js city with driving, exploration, and audio-reactive demo modes.
+*   **SSR on Cloudflare Pages**: Server-side rendering via Cloudflare Functions.
+*   **i18n**: 13 locales with runtime translation support.
+*   **Interactive Apps**: Alcohol checker, tic-tac-toe (minimax AI), chatbot, quiz.
+*   **Multiplayer**: MQTT-based presence showing other players in the city.
+*   **Dynamic Pages**: Page content loaded from JSON and rendered via Vue Router.
 
-## Project Structure
+## Setup
 
-*   `src/components`: Contains all the Vue components.
-*   `src/configs/pages.json`: Defines the pages and their content.
-*   `src/interfaces`: Contains TypeScript interfaces.
-*   `src/main.ts`: The application's entry point.
-
-## Setup and Installation
-
-1.  **Clone the repository:**
-    ```bash
-    git clone <repository-url>
-    ```
-2.  **Navigate to the project directory:**
-    ```bash
-    cd toille-vue
-    ```
-3.  **Install dependencies:**
-    ```bash
-    npm install
-    ```
-
-## Available Scripts
-
-*   **`npm run dev`**: Starts the development server.
-*   **`npm run build`**: Builds the application for production.
-*   **`npm run serve`**: Serves the production build locally.
-*   **`npm run test`**: Runs the unit tests.
+```bash
+npm install
+npm run dev         # development server
+npm run build       # production build
+npm run preview     # preview production build
+npm test            # unit tests
+npm run typecheck   # TypeScript type checking
+npm run lint        # ESLint
+npm run check       # typecheck + lint + test
+npm run coverage    # test coverage report
+```

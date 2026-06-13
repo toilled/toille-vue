@@ -46,8 +46,6 @@ export const EMISSIVE_INTENSITY_BOOST_HIHAT = 1.0;
 export const EMISSIVE_INTENSITY_TARGET = 0.2;
 export const EMISSIVE_LERP_FACTOR = 0.1;
 
-export const SPARK_SPAWN_POSITIONS_OFF_Y = -99999;
-
 export const CHASE_ARROW_POSITION_Z = 25;
 
 export const FALLBACK_FPS_THRESHOLD = 25;

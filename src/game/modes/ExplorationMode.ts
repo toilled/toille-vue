@@ -1,10 +1,11 @@
 import { GameContext, GameMode, StoryObjective, StoryState } from "../types";
 import { carAudio } from "../audio/CarAudio";
-import { BOUNDS, CELL_SIZE, START_OFFSET } from "../config";
+import { BOUNDS } from "../config";
 import { STORY_TRIGGER_POSITION } from "../StoryItemsManager";
 import { Vector3, Euler, Quaternion } from "three";
 import { getHeight } from "../../utils/HeightMap";
 import { handleControlsKeyDown, handleControlsKeyUp } from "../../utils/controls";
+import { checkGridCollision } from "../../utils/GridCollision";
 
 export class ExplorationMode implements GameMode {
   context: GameContext | null = null;
@@ -83,18 +84,7 @@ export class ExplorationMode implements GameMode {
 
   private checkGridCollision(nextX: number, nextZ: number): boolean {
     if (!this.context) return false;
-    const { occupiedGrids } = this.context;
-    const ix = Math.round((nextX - START_OFFSET) / CELL_SIZE);
-    const iz = Math.round((nextZ - START_OFFSET) / CELL_SIZE);
-
-    if (!occupiedGrids.has(`${ix},${iz}`)) return false;
-
-    const cX = START_OFFSET + ix * CELL_SIZE;
-    const cZ = START_OFFSET + iz * CELL_SIZE;
-    const dims = occupiedGrids.get(`${ix},${iz}`);
-    return dims
-      ? Math.abs(nextX - cX) < dims.halfW + 2 && Math.abs(nextZ - cZ) < dims.halfD + 2
-      : false;
+    return checkGridCollision(nextX, nextZ, this.context.occupiedGrids, 2);
   }
 
   private enforceCameraBounds() {

@@ -141,9 +141,11 @@ import { Page } from "../interfaces/Page";
 import { cyberpunkAudio } from "../utils/CyberpunkAudio";
 import { audioManager } from "../utils/AudioManager";
 import { cityBackground } from "../utils/CityBackgroundManager";
+import { useEpilepsyWarning } from "../composables/useEpilepsyWarning";
 import LanguageSelector from "./LanguageSelector.vue";
 
 const { t } = useI18n();
+const { confirm: epilepsyConfirm } = useEpilepsyWarning();
 
 defineProps<{
   pages: Page[];
@@ -151,7 +153,7 @@ defineProps<{
   cityFallback: boolean;
 }>();
 
-const emit = defineEmits<{
+defineEmits<{
   (e: "explore"): void;
   (e: "toggle-content"): void;
   (e: "demo"): void;
@@ -163,11 +165,11 @@ const showTools = ref(false);
 const soundOn = computed(() => audioManager.isSoundEnabled.value);
 const cityOn = computed(() => cityBackground.isEnabled.value);
 
-const toggleSound = () => {
+const toggleSound = async () => {
   if (!audioManager.isSoundEnabled.value && !audioManager.photosensitivityConfirmed) {
-    audioManager.photosensitivityConfirmed = confirm(
-      t("epilepsy.warning"),
-    );
+    const ok = await epilepsyConfirm(t("epilepsy.warning"));
+    if (!ok) return;
+    audioManager.photosensitivityConfirmed = true;
   }
   audioManager.toggleSound();
   if (audioManager.isSoundEnabled.value) {

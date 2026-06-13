@@ -34,6 +34,7 @@ export class CityBuilder {
     { halfW: number; halfD: number; isRound?: boolean }
   >();
   private materials: CityMaterials;
+  private ground: Mesh | null = null;
 
   constructor(scene: Scene) {
     this.scene = scene;
@@ -124,11 +125,11 @@ export class CityBuilder {
     const offset = -CITY_SIZE / CELL_SIZE;
     groundTexture.offset.set(offset, offset);
     groundNormalMap.offset.set(offset, offset);
-    const plane = new Mesh(planeGeometry, planeMaterial);
-    plane.rotation.x = -Math.PI / 2;
-    plane.position.y = -0.5;
-    plane.receiveShadow = true;
-    this.scene.add(plane);
+    this.ground = new Mesh(planeGeometry, planeMaterial);
+    this.ground.rotation.x = -Math.PI / 2;
+    this.ground.position.y = -0.5;
+    this.ground.receiveShadow = true;
+    this.scene.add(this.ground);
   }
 
   private createBuildings(lbTexture: Texture) {
@@ -582,6 +583,14 @@ export class CityBuilder {
 
     for (let i = 0; i < 4; i++) {
       this.placeLeaderboardPanel(buildingGroup, i, lbGeo, lbTexture, w, h, d);
+    }
+  }
+
+  dispose() {
+    this.materials.dispose();
+    this.ground?.geometry?.dispose();
+    if (this.ground?.material) {
+      (this.ground.material as MeshStandardMaterial).dispose();
     }
   }
 }

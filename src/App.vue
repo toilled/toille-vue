@@ -43,7 +43,7 @@
     <Transition name="slide-fade">
       <footer
         class="app-footer"
-        v-if="noFootersShowing && showHint"
+        v-if="noFootersShowing"
         v-show="isContentVisible"
         @click="checker = !checker"
       >
@@ -85,6 +85,7 @@
     @game-end="gameMode = false"
     @fallback="cityFallback = true"
   />
+  <EpilepsyWarning />
 </template>
 
 <script setup lang="ts">
@@ -104,6 +105,7 @@ import { cityBackground } from "./utils/CityBackgroundManager";
 import titles from "./configs/titles.json";
 import { Page } from "./interfaces/Page";
 import Terminal from "./components/Terminal.vue";
+import EpilepsyWarning from "./components/EpilepsyWarning.vue";
 import { useScrollSpy } from "./composables/useScrollSpy";
 
 const visiblePages = computed(() => {
@@ -126,7 +128,6 @@ const headerRef = ref<HTMLElement | null>(null);
 
 const {
   activeSection,
-  showHint,
   hintHasBeenShown,
   handleScroll,
   scrollToSection,
@@ -274,11 +275,12 @@ function getTitleForPath(path: string): string {
       return t("app.titleChecker");
     case "/ask":
       return t("app.titleAsk");
-    default:
+    default: {
       const page = visiblePages.value.find(
         (p: Page) => getSectionIdFromPage(p) === activeSection.value
       );
       return page ? page.title : t("site.title");
+    }
   }
 }
 

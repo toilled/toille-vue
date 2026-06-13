@@ -103,6 +103,8 @@ export interface MinimapData {
   currentMissionId: string;
 }
 
+export type GameModeType = "driving" | "exploration" | "cinematic" | "demo" | null;
+
 export interface GameMode {
   init(context: GameContext): void;
   update(dt: number, time: number): void;

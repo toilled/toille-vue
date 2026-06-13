@@ -1,6 +1,6 @@
 import { useI18n } from "vue-i18n";
 import pages from "../configs/pages.json";
-import { Page } from "../interfaces/Page";
+import type { Page } from "../interfaces/Page";
 
 export function useTranslatedPages() {
   const { t, te } = useI18n();

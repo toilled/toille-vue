@@ -37,6 +37,9 @@ export class MultiplayerManager {
   }
 
   public connect() {
+    if (this.client) {
+      this.client.end(true);
+    }
     this.client = mqtt.connect("wss://broker.emqx.io:8084/mqtt");
 
     this.client.on("connect", () => {

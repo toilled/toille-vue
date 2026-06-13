@@ -1,10 +1,4 @@
 {
-  "nav": {
-    "home": "होम",
-    "about": "परिचय",
-    "interests": "रुचियाँ",
-    "hidden": "छिपा हुआ"
-  },
   "menu": {
     "exploreCity": "शहर का अन्वेषण करें",
     "demo": "64k डेमो",
@@ -12,8 +6,7 @@
     "toggleVisibility": "दृश्यता बदलें",
     "toggleCity": "शहर की पृष्ठभूमि बदलें",
     "openTerminal": "टर्मिनल खोलें",
-    "toggleTools": "उपकरण बदलें",
-    "weather": "मौसम"
+    "toggleTools": "उपकरण बदलें"
   },
   "site": {
     "title": "एलियट डिकरसन",
@@ -92,15 +85,7 @@
     "nl": "Nederlands"
   },
   "meta": {
-    "defaultDescription": "Elliot Dickerson का Vue में बनाया गया प्रयोगात्मक वेबसाइट।",
-    "homeDescription": "Elliot Dickerson की प्रयोगात्मक Vue.js वेबसाइट में आपका स्वागत है, जिसमें प्रोजेक्ट, गेम और बहुत कुछ।",
-    "homeKeywords": "Vue.js, वेब डेवलपमेंट, सॉफ्टवेयर इंजीनियर, प्रोजेक्ट, गेम",
-    "aboutDescription": "Elliot Dickerson के बारे में जानें - BSc (Hons) स्नातक जिनके पास 14 वर्षों का PHP और JavaScript डेवलपमेंट अनुभव है।",
-    "aboutKeywords": "सॉफ्टवेयर इंजीनियर, PHP, Laravel, Symfony, VueJS, React, अनुभव",
-    "interestsDescription": "कोडिंग, संगीत और रचनात्मक परियोजनाओं में Elliot की रुचियाँ खोजें।",
-    "interestsKeywords": "कोडिंग, संगीत, गिटार, YouTube, शौक, रचनात्मक परियोजनाएँ",
-    "hiddenDescription": "Vue.js के साथ बनाई गई मजेदार परियोजनाओं और गेम के लिंक वाला गुप्त पृष्ठ।",
-    "hiddenKeywords": "छिपा हुआ, गेम, उपकरण, परियोजनाएँ, गुप्त"
+    "defaultDescription": "Elliot Dickerson का Vue में बनाया गया प्रयोगात्मक वेबसाइट।"
   },
   "app": {
     "titleNoughtsAndCrosses": "टिक-टैक-टो",

@@ -1,10 +1,4 @@
 {
-  "nav": {
-    "home": "ホーム",
-    "about": "概要",
-    "interests": "興味",
-    "hidden": "非表示"
-  },
   "menu": {
     "exploreCity": "街を探索",
     "demo": "64k デモ",
@@ -12,8 +6,7 @@
     "toggleVisibility": "表示切替",
     "toggleCity": "街の背景切替",
     "openTerminal": "ターミナルを開く",
-    "toggleTools": "ツール切替",
-    "weather": "天気"
+    "toggleTools": "ツール切替"
   },
   "site": {
     "title": "Elliot Dickerson",
@@ -92,15 +85,7 @@
     "nl": "Nederlands"
   },
   "meta": {
-    "defaultDescription": "Elliot Dickerson が Vue で作成した実験的なウェブサイト。",
-    "homeDescription": "Elliot Dickerson の実験的な Vue.js ウェブサイトへようこそ。プロジェクト、ゲームなど。",
-    "homeKeywords": "Vue.js, web開発, ソフトウェアエンジニア, プロジェクト, ゲーム",
-    "aboutDescription": "Elliot Dickerson について - BSc (Hons) 卒業、14年のPHPおよびJavaScript開発経験。",
-    "aboutKeywords": "ソフトウェアエンジニア, PHP, Laravel, Symfony, VueJS, React, 経験",
-    "interestsDescription": "プログラミング、音楽、クリエイティブプロジェクトにおける Elliot の興味をご覧ください。",
-    "interestsKeywords": "プログラミング, 音楽, ギター, YouTube, 趣味, クリエイティブプロジェクト",
-    "hiddenDescription": "Vue.js で作られた楽しいプロジェクトやゲームへのリンクがある秘密のページ。",
-    "hiddenKeywords": "非表示, ゲーム, ツール, プロジェクト, 秘密"
+    "defaultDescription": "Elliot Dickerson が Vue で作成した実験的なウェブサイト。"
   },
   "app": {
     "titleNoughtsAndCrosses": "三目並べ",

@@ -1,10 +1,4 @@
 {
-  "nav": {
-    "home": "Home",
-    "about": "Over",
-    "interests": "Interesses",
-    "hidden": "Verborgen"
-  },
   "menu": {
     "exploreCity": "Stad verkennen",
     "demo": "64k Demo",
@@ -12,8 +6,7 @@
     "toggleVisibility": "Zichtbaarheid aan/uit",
     "toggleCity": "Stadsachtergrond aan/uit",
     "openTerminal": "Terminal openen",
-    "toggleTools": "Gereedschap aan/uit",
-    "weather": "Weer"
+    "toggleTools": "Gereedschap aan/uit"
   },
   "site": {
     "title": "Elliot Dickerson",
@@ -92,15 +85,7 @@
     "nl": "Nederlands"
   },
   "meta": {
-    "defaultDescription": "De experimentele website van Elliot Dickerson gemaakt met Vue.",
-    "homeDescription": "Welkom op Elliot Dickersons experimentele Vue.js-website met projecten, spelletjes en meer.",
-    "homeKeywords": "Vue.js, webontwikkeling, software engineer, projecten, spelletjes",
-    "aboutDescription": "Leer meer over Elliot Dickerson - BSc (Hons) afgestudeerd met 14 jaar ervaring in PHP- en JavaScript-ontwikkeling.",
-    "aboutKeywords": "software engineer, PHP, Laravel, Symfony, VueJS, React, ervaring",
-    "interestsDescription": "Ontdek Elliot's interesses in programmeren, muziek en creatieve projecten.",
-    "interestsKeywords": "programmeren, muziek, gitaar, YouTube, hobby's, creatieve projecten",
-    "hiddenDescription": "Geheime pagina met links naar leuke projecten en spelletjes gemaakt met Vue.js.",
-    "hiddenKeywords": "verborgen, spelletjes, tools, projecten, geheim"
+    "defaultDescription": "De experimentele website van Elliot Dickerson gemaakt met Vue."
   },
   "app": {
     "titleNoughtsAndCrosses": "Boter-kaas-en-eieren",

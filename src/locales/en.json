@@ -1,10 +1,4 @@
 {
-  "nav": {
-    "home": "Home",
-    "about": "About",
-    "interests": "Interests",
-    "hidden": "Hidden"
-  },
   "menu": {
     "exploreCity": "Explore City",
     "demo": "64k Demo",
@@ -12,8 +6,7 @@
     "toggleVisibility": "Toggle Visibility",
     "toggleCity": "Toggle City Background",
     "openTerminal": "Open Terminal",
-    "toggleTools": "Toggle tools",
-    "weather": "Weather"
+    "toggleTools": "Toggle tools"
   },
   "site": {
     "title": "Elliot Dickerson",
@@ -92,15 +85,7 @@
     "nl": "Nederlands"
   },
   "meta": {
-    "defaultDescription": "The experimental website of Elliot Dickerson made in Vue.",
-    "homeDescription": "Welcome to Elliot Dickerson's experimental Vue.js website featuring projects, games, and more.",
-    "homeKeywords": "Vue.js, web development, software engineer, projects, games",
-    "aboutDescription": "Learn about Elliot Dickerson - BSc (Hons) graduate with 14 years of PHP and JavaScript development experience.",
-    "aboutKeywords": "software engineer, PHP, Laravel, Symfony, VueJS, React, experience",
-    "interestsDescription": "Discover Elliot's interests in coding, music, and creative projects including original guitar compositions.",
-    "interestsKeywords": "coding, music, guitar, YouTube, hobbies, creative projects",
-    "hiddenDescription": "Secret page with links to fun projects and games built with Vue.js.",
-    "hiddenKeywords": "hidden, games, tools, projects, secret"
+    "defaultDescription": "The experimental website of Elliot Dickerson made in Vue."
   },
   "app": {
     "titleNoughtsAndCrosses": "Noughts and Crosses",

@@ -107,6 +107,7 @@ function createInitialState(): StoryState {
 
 export class StoryManager {
   private state: Ref<StoryState>;
+  private advanceTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(storyState: Ref<StoryState>) {
     this.state = storyState;
@@ -124,7 +125,15 @@ export class StoryManager {
   }
 
   stop() {
+    this.clearTimers();
     this.state.value.active = false;
+  }
+
+  private clearTimers() {
+    if (this.advanceTimer !== null) {
+      clearTimeout(this.advanceTimer);
+      this.advanceTimer = null;
+    }
   }
 
   // fallow-ignore-next-line unused-class-member
@@ -167,7 +176,7 @@ export class StoryManager {
     if (allDone) {
       s.missionComplete = true;
       if (missionIdx < s.missions.length - 1) {
-        setTimeout(() => {
+        this.advanceTimer = setTimeout(() => {
           this.advanceMission();
         }, 3000);
       }

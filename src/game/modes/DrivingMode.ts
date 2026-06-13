@@ -1,17 +1,11 @@
 import { GameContext, GameMode } from "../types";
 import { carAudio } from "../audio/CarAudio";
-import {
-  BOUNDS,
-  CELL_SIZE,
-  START_OFFSET,
-} from "../config";
-import {
-  Group,
-  Vector3,
-} from "three";
+import { BOUNDS } from "../config";
+import { Group } from "three";
 import { getHeight, getNormal, applyCarOrientation } from "../../utils/HeightMap";
 import { handleControlsKeyDown, handleControlsKeyUp } from "../../utils/controls";
 import { RedCarAI } from "../RedCarAI";
+import { checkGridCollision, resolveBuildingCollision } from "../../utils/GridCollision";
 
 export class DrivingMode implements GameMode {
   context: GameContext | null = null;
@@ -176,16 +170,16 @@ export class DrivingMode implements GameMode {
   private checkBuildingCollision(car: Group) {
     if (!this.context) return;
     const { occupiedGrids, spawnSparks } = this.context;
-    const ix = Math.round((car.position.x - START_OFFSET) / CELL_SIZE);
-    const iz = Math.round((car.position.z - START_OFFSET) / CELL_SIZE);
-    const gridKey = `${ix},${iz}`;
 
-    if (!occupiedGrids.has(gridKey)) return;
-    const cX = START_OFFSET + ix * CELL_SIZE;
-    const cZ = START_OFFSET + iz * CELL_SIZE;
-    const dims = occupiedGrids.get(gridKey);
-    if (dims) {
-      this.handleBuildingCollision(car, dims, cX, cZ, spawnSparks);
+    if (!checkGridCollision(car.position.x, car.position.z, occupiedGrids, 5)) return;
+
+    const result = resolveBuildingCollision(car.position.x, car.position.z, occupiedGrids, 5);
+    if (result.hit) {
+      car.userData.currentSpeed *= -0.5;
+      carAudio.playCrash();
+      car.position.x += result.bounceX;
+      car.position.z += result.bounceZ;
+      spawnSparks(car.position);
     }
   }
 
@@ -204,35 +198,6 @@ export class DrivingMode implements GameMode {
     this.checkBuildingCollision(car);
 
     return heading;
-  }
-
-  private handleBuildingCollision(car: Group, dims: { halfW: number; halfD: number; isRound?: boolean }, cX: number, cZ: number, spawnSparks: (pos: Vector3) => void) {
-    const margin = 5;
-    if (dims.isRound) {
-      const radius = Math.max(dims.halfW, dims.halfD);
-      const dx = car.position.x - cX;
-      const dz = car.position.z - cZ;
-      const dist = Math.sqrt(dx * dx + dz * dz);
-      if (dist < radius + margin) {
-        car.userData.currentSpeed *= -0.5;
-        carAudio.playCrash();
-        let normalX = 0;
-        let normalZ = 1;
-        if (dist > 0.001) {
-          normalX = dx / dist;
-          normalZ = dz / dist;
-        }
-        car.position.x += normalX * (radius + margin - dist + 2);
-        car.position.z += normalZ * (radius + margin - dist + 2);
-        spawnSparks(car.position);
-      }
-    } else if (Math.abs(car.position.x - cX) < dims.halfW + margin && Math.abs(car.position.z - cZ) < dims.halfD + margin) {
-      car.userData.currentSpeed *= -0.5;
-      carAudio.playCrash();
-      car.position.x += Math.sign(car.position.x - cX) * 2;
-      car.position.z += Math.sign(car.position.z - cZ) * 2;
-      spawnSparks(car.position);
-    }
   }
 
   update(dt: number, _time: number) {

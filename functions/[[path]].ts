@@ -23,7 +23,7 @@ async function tryFetchIndexHtml(url: URL, context: RequestContext) {
 }
 
 async function handleSsrRequest(url: URL, context: RequestContext) {
-  const appHtml = await render(url.pathname);
+  const { html: appHtml, statusCode } = await render(url.pathname);
   const response = await context.next();
 
   let htmlResult: { template: string; headers: Headers } | null = null;
@@ -41,7 +41,7 @@ async function handleSsrRequest(url: URL, context: RequestContext) {
   htmlResult.headers.set("content-type", "text/html;charset=UTF-8");
   htmlResult.headers.set("cache-control", "public, max-age=0, must-revalidate");
 
-  return new Response(html, { headers: htmlResult.headers, status: 200 });
+  return new Response(html, { headers: htmlResult.headers, status: statusCode });
 }
 
 export const onRequest = async (context: RequestContext) => {

@@ -118,4 +118,24 @@ export class CityMaterials {
     this.initAudioMaterials();
     this.initEdgeAndBillboardMaterials();
   }
+
+  dispose() {
+    this.windowTexture.dispose();
+    this.windowRoughnessMap.dispose();
+    this.billboardTextures.forEach((t) => t.dispose());
+    this.buildingMaterial.dispose();
+    Object.values(this.audioMaterials).forEach((m) => m.dispose());
+    this.roofMaterial.dispose();
+    this.edgeMat1.dispose();
+    this.edgeMat2.dispose();
+    this.topEdgeMat.dispose();
+    this.antennaMat.dispose();
+    this.billboardMaterials.forEach((m) => m.dispose());
+    this.boxGeo.dispose();
+    this.edgesGeo.dispose();
+    this.coneGeo.dispose();
+    this.coneEdgesGeo.dispose();
+    this.cylinderGeo.dispose();
+    this.neonStripGeo.dispose();
+  }
 }

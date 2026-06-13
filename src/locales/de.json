@@ -1,10 +1,4 @@
 {
-  "nav": {
-    "home": "Startseite",
-    "about": "Über mich",
-    "interests": "Interessen",
-    "hidden": "Versteckt"
-  },
   "menu": {
     "exploreCity": "Stadt erkunden",
     "demo": "64k Demo",
@@ -12,8 +6,7 @@
     "toggleVisibility": "Sichtbarkeit umschalten",
     "toggleCity": "Stadthintergrund umschalten",
     "openTerminal": "Terminal öffnen",
-    "toggleTools": "Werkzeuge umschalten",
-    "weather": "Wetter"
+    "toggleTools": "Werkzeuge umschalten"
   },
   "site": {
     "title": "Elliot Dickerson",
@@ -92,15 +85,7 @@
     "nl": "Nederlands"
   },
   "meta": {
-    "defaultDescription": "Die experimentelle Website von Elliot Dickerson erstellt mit Vue.",
-    "homeDescription": "Willkommen auf Elliot Dickersons experimenteller Vue.js-Website mit Projekten, Spielen und mehr.",
-    "homeKeywords": "Vue.js, Webentwicklung, Softwareentwickler, Projekte, Spiele",
-    "aboutDescription": "Erfahren Sie mehr über Elliot Dickerson - BSc (Hons) Absolvent mit 14 Jahren Erfahrung in PHP- und JavaScript-Entwicklung.",
-    "aboutKeywords": "Softwareentwickler, PHP, Laravel, Symfony, VueJS, React, Erfahrung",
-    "interestsDescription": "Entdecken Sie Elliots Interessen an Programmierung, Musik und kreativen Projekten.",
-    "interestsKeywords": "Programmierung, Musik, Gitarre, YouTube, Hobbys, kreative Projekte",
-    "hiddenDescription": "Geheime Seite mit Links zu lustigen Projekten und Spielen erstellt mit Vue.js.",
-    "hiddenKeywords": "versteckt, Spiele, Werkzeuge, Projekte, geheim"
+    "defaultDescription": "Die experimentelle Website von Elliot Dickerson erstellt mit Vue."
   },
   "app": {
     "titleNoughtsAndCrosses": "Tic-Tac-Toe",

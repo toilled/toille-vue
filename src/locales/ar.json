@@ -1,10 +1,4 @@
 {
-  "nav": {
-    "home": "الرئيسية",
-    "about": "حول",
-    "interests": "الاهتمامات",
-    "hidden": "مخفي"
-  },
   "menu": {
     "exploreCity": "استكشاف المدينة",
     "demo": "عرض 64k",
@@ -12,8 +6,7 @@
     "toggleVisibility": "تبديل الرؤية",
     "toggleCity": "تبديل خلفية المدينة",
     "openTerminal": "فتح الطرفية",
-    "toggleTools": "تبديل الأدوات",
-    "weather": "الطقس"
+    "toggleTools": "تبديل الأدوات"
   },
   "site": {
     "title": "إليوت ديكرسون",
@@ -92,15 +85,7 @@
     "nl": "Nederlands"
   },
   "meta": {
-    "defaultDescription": "الموقع التجريبي لإليوت ديكرسون والمبني باستخدام Vue.",
-    "homeDescription": "مرحباً بك في موقع إليوت ديكرسون التجريبي المبني بـ Vue.js مع مشاريع وألعاب والمزيد.",
-    "homeKeywords": "Vue.js، تطوير ويب، مهندس برمجيات، مشاريع، ألعاب",
-    "aboutDescription": "تعرف على إليوت ديكرسون - خريج BSc (Hons) مع 14 عاماً من الخبرة في تطوير PHP و JavaScript.",
-    "aboutKeywords": "مهندس برمجيات، PHP، Laravel، Symfony، VueJS، React، خبرة",
-    "interestsDescription": "اكتشف اهتمامات إليوت في البرمجة والموسيقى والمشاريع الإبداعية.",
-    "interestsKeywords": "برمجة، موسيقى، جيتار، YouTube، هوايات، مشاريع إبداعية",
-    "hiddenDescription": "صفحة سرية مع روابط لمشاريع وألعاب ممتعة مبنية بـ Vue.js.",
-    "hiddenKeywords": "مخفي، ألعاب، أدوات، مشاريع، سري"
+    "defaultDescription": "الموقع التجريبي لإليوت ديكرسون والمبني باستخدام Vue."
   },
   "app": {
     "titleNoughtsAndCrosses": "إكس أوم",

@@ -41,6 +41,7 @@
 import { useI18n } from "vue-i18n";
 import { useHead } from "@vueuse/head";
 import { useTranslate } from "../composables/useTranslate";
+import DOMPurify from "dompurify";
 
 const { t } = useI18n();
 const { translate, locale } = useTranslate();
@@ -72,7 +73,7 @@ const translatedOptions = ref<string[]>([]);
 
 const decodeHTML = (html: string) => {
   const txt = document.createElement("textarea");
-  txt.innerHTML = html;
+  txt.innerHTML = DOMPurify.sanitize(html);
   return txt.value;
 };
 

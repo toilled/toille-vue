@@ -590,6 +590,8 @@ onMounted(() => {
     if (leaderboardCanvas && leaderboardTexture) {
       drawLeaderboard(leaderboardCanvas, leaderboardTexture, leaderboard.value);
     }
+  }).catch(() => {
+    // Scores failed to load, leaderboard stays empty
   });
 
   cyberpunkAudio.addListener(onAudioNote);
@@ -732,6 +734,8 @@ function handleCarClick(): boolean {
     target.userData.currentSpeed = target.userData.speed;
     ScoreService.createSession().then((id) => {
       gameSessionId.value = id;
+    }).catch(() => {
+      // Session creation failed, game can still continue
     });
     gameModeManager.setMode(new DrivingMode(), "driving");
     return true;
@@ -817,6 +821,7 @@ function fallbackToStaticImage() {
   carAudio.stop();
   cyberpunkAudio.removeListener(onAudioNote);
   cyberpunkAudio.dispose();
+  sparkSystem.dispose();
 
   window.removeEventListener("resize", onResize);
   window.removeEventListener("click", onClick);

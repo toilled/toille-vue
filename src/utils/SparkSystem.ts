@@ -1,4 +1,4 @@
-import { AdditiveBlending, BufferAttribute, BufferGeometry, Points, PointsMaterial, Scene, Vector3 } from "three";
+import { AdditiveBlending, BufferAttribute, BufferGeometry, Material, Points, PointsMaterial, Scene, Vector3 } from "three";
 import { getHeight } from "./HeightMap";
 import {
   SPARK_COUNT,
@@ -16,8 +16,10 @@ export class SparkSystem {
   private positions: Float32Array;
   private velocities: Float32Array;
   private lifetimes: Float32Array;
+  private scene: Scene;
 
   constructor(scene: Scene) {
+    this.scene = scene;
     this.positions = new Float32Array(SPARK_COUNT * 3);
     for (let i = 0; i < SPARK_COUNT; i++) {
       this.positions[i * 3 + 1] = SPARK_OFF_SCREEN_Y;
@@ -109,5 +111,14 @@ export class SparkSystem {
     if (needsUpdate) {
       this.points.geometry.attributes.position.needsUpdate = true;
     }
+  }
+
+  dispose() {
+    this.scene.remove(this.points);
+    this.points.geometry.dispose();
+    const mat = this.points.material;
+    if (mat instanceof Material) {
+      mat.dispose();
     }
+  }
 }

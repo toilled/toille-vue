@@ -1,10 +1,4 @@
 {
-  "nav": {
-    "home": "Accueil",
-    "about": "À propos",
-    "interests": "Centres d'intérêt",
-    "hidden": "Caché"
-  },
   "menu": {
     "exploreCity": "Explorer la ville",
     "demo": "Démo 64k",
@@ -12,8 +6,7 @@
     "toggleVisibility": "Basculer la visibilité",
     "toggleCity": "Basculer le fond de ville",
     "openTerminal": "Ouvrir le terminal",
-    "toggleTools": "Basculer les outils",
-    "weather": "Météo"
+    "toggleTools": "Basculer les outils"
   },
   "site": {
     "title": "Elliot Dickerson",
@@ -92,15 +85,7 @@
     "nl": "Nederlands"
   },
   "meta": {
-    "defaultDescription": "Le site web expérimental d'Elliot Dickerson fait avec Vue.",
-    "homeDescription": "Bienvenue sur le site expérimental Vue.js d'Elliot Dickerson avec projets, jeux et plus.",
-    "homeKeywords": "Vue.js, développement web, ingénieur logiciel, projets, jeux",
-    "aboutDescription": "Découvrez Elliot Dickerson - Diplômé BSc (Hons) avec 14 ans d'expérience en développement PHP et JavaScript.",
-    "aboutKeywords": "ingénieur logiciel, PHP, Laravel, Symfony, VueJS, React, expérience",
-    "interestsDescription": "Découvrez les centres d'intérêt d'Elliot : programmation, musique et projets créatifs.",
-    "interestsKeywords": "programmation, musique, guitare, YouTube, loisirs, projets créatifs",
-    "hiddenDescription": "Page secrète avec des liens vers des projets amusants et des jeux réalisés avec Vue.js.",
-    "hiddenKeywords": "caché, jeux, outils, projets, secret"
+    "defaultDescription": "Le site web expérimental d'Elliot Dickerson fait avec Vue."
   },
   "app": {
     "titleNoughtsAndCrosses": "Morpion",

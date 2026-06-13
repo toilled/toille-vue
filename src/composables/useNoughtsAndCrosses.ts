@@ -5,6 +5,8 @@ export function useNoughtsAndCrosses() {
 
   const isPlayerTurn = computed(() => currentPlayer.value === "X" && !winner.value);
 
+  let moveTimeout: ReturnType<typeof setTimeout> | null = null;
+
   const makeMove = (index: number) => {
     if (board.value[index] || winner.value) return;
 
@@ -19,7 +21,7 @@ export function useNoughtsAndCrosses() {
     }
 
     currentPlayer.value = "O";
-    setTimeout(() => {
+    moveTimeout = setTimeout(() => {
       computerMove();
     }, 500);
   };
@@ -98,10 +100,22 @@ export function useNoughtsAndCrosses() {
   };
 
   const resetGame = () => {
+    if (moveTimeout !== null) {
+      clearTimeout(moveTimeout);
+      moveTimeout = null;
+    }
     board.value = Array(9).fill("");
     currentPlayer.value = "X";
     winner.value = null;
   };
+
+  if (typeof onBeforeUnmount !== 'undefined') {
+    onBeforeUnmount(() => {
+      if (moveTimeout !== null) {
+        clearTimeout(moveTimeout);
+      }
+    });
+  }
 
   return {
     board,

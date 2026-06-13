@@ -3,6 +3,7 @@ import { createRouter, createWebHistory, createMemoryHistory } from "vue-router"
 import { createHead } from "@vueuse/head";
 import App from "./App.vue";
 import SinglePageContent from "./components/SinglePageContent.vue";
+import PageContent from "./components/PageContent.vue";
 import i18n from "./i18n";
 
 import "./assets/main.css";
@@ -16,7 +17,7 @@ const routes = [
   },
   { path: "/ask", component: () => import("./components/Ask.vue") },
   { path: "/quiz", component: () => import("./components/Quiz.vue") },
-  { path: "/:pathMatch(.*)*", component: SinglePageContent },
+  { path: "/:pathMatch(.*)*", component: PageContent },
 ];
 
 export function createApp() {

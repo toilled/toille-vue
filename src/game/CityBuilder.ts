@@ -588,7 +588,7 @@ export class CityBuilder {
 
   dispose() {
     this.materials.dispose();
-    this.ground?.geometry.dispose();
+    this.ground?.geometry?.dispose();
     if (this.ground?.material) {
       (this.ground.material as MeshStandardMaterial).dispose();
     }

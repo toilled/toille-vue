@@ -830,6 +830,7 @@ function fallbackToStaticImage() {
   window.removeEventListener("mousemove", onMouseMove);
 
   disposeManagers();
+  if (cityBuilder) cityBuilder.dispose();
 }
 
 function checkLowFps(now: number): boolean {
@@ -1065,6 +1066,7 @@ onBeforeUnmount(() => {
     storyItemsManager.dispose();
     storyItemsManager = null;
   }
+  if (cityBuilder) cityBuilder.dispose();
 });
 </script>
 

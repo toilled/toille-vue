@@ -123,11 +123,13 @@ vi.mock("three", () => {
     FogExp2: vi.fn(),
     BoxGeometry: vi.fn(() => ({
       translate: vi.fn(),
+      dispose: vi.fn(),
     })),
     CylinderGeometry: vi.fn(() => ({
       rotateX: vi.fn(),
       rotateZ: vi.fn(),
       translate: vi.fn(),
+      dispose: vi.fn(),
     })),
     SphereGeometry: vi.fn(),
     OctahedronGeometry: vi.fn(),
@@ -136,8 +138,11 @@ vi.mock("three", () => {
     })),
     ConeGeometry: vi.fn(() => ({
       translate: vi.fn(),
+      dispose: vi.fn(),
     })),
-    EdgesGeometry: vi.fn(),
+    EdgesGeometry: vi.fn(() => ({
+      dispose: vi.fn(),
+    })),
     PlaneGeometry: vi.fn(() => ({
       attributes: {
         position: {
@@ -201,7 +206,9 @@ vi.mock("three", () => {
       dispose: vi.fn(),
     })),
     PointsMaterial: vi.fn(),
-    LineBasicMaterial: vi.fn(),
+    LineBasicMaterial: vi.fn(() => ({
+      dispose: vi.fn(),
+    })),
     LineSegments: vi.fn(() => ({
       position: { set: vi.fn(), copy: vi.fn(), x: 0, y: 0, z: 0 },
       rotation: { x: 0, y: 0, z: 0 },
@@ -291,7 +298,8 @@ vi.mock("three", () => {
       userData: {},
       add: vi.fn(),
       lookAt: vi.fn(),
-      material: { color: { setHex: vi.fn() } },
+      geometry: { dispose: vi.fn() },
+      material: { dispose: vi.fn(), color: { setHex: vi.fn() } },
       traverse: vi.fn(),
       matrixWorld: mockMatrix4(),
       updateWorldMatrix: vi.fn(),
@@ -368,6 +376,7 @@ vi.mock("three", () => {
       offset: {
         set: vi.fn(),
       },
+      dispose: vi.fn(),
     })),
     RepeatWrapping: 1000,
     NearestFilter: 1001,

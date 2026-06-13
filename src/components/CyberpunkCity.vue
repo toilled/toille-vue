@@ -816,6 +816,7 @@ function fallbackToStaticImage() {
   renderer.dispose();
   carAudio.stop();
   cyberpunkAudio.removeListener(onAudioNote);
+  cyberpunkAudio.dispose();
 
   window.removeEventListener("resize", onResize);
   window.removeEventListener("click", onClick);

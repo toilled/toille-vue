@@ -9,6 +9,7 @@ export class CyberpunkAudio {
   private lookahead: number = 25.0; // ms
   private scheduleAheadTime: number = 0.1; // s
   private timerID: number | null = null;
+  private noteVisualTimers: number[] = [];
   private current16thNote: number = 0;
   private bassPattern: number[] = [];
   private kickPattern: number[] = [];
@@ -176,13 +177,27 @@ export class CyberpunkAudio {
 
   pause() {
     this.isPlaying = false;
+    this.clearTimer();
+    if (this.ctx && this.ctx.state === "running") {
+      this.ctx.suspend();
+    }
+  }
+
+  dispose() {
+    this.isPlaying = false;
+    this.clearTimer();
+    this.listeners = [];
+  }
+
+  private clearTimer() {
     if (this.timerID !== null) {
       window.clearTimeout(this.timerID);
       this.timerID = null;
     }
-    if (this.ctx && this.ctx.state === "running") {
-      this.ctx.suspend();
+    for (const id of this.noteVisualTimers) {
+      window.clearTimeout(id);
     }
+    this.noteVisualTimers = [];
   }
 
   private scheduler() {
@@ -211,9 +226,12 @@ export class CyberpunkAudio {
     if (delay < 0) delay = 0;
 
     const triggerVisual = (type: string, data?: number) => {
-      setTimeout(() => {
+      const id = window.setTimeout(() => {
+        const idx = this.noteVisualTimers.indexOf(id);
+        if (idx >= 0) this.noteVisualTimers.splice(idx, 1);
         this.listeners.forEach((l) => l(type, data));
       }, delay);
+      this.noteVisualTimers.push(id);
     };
 
     if (beatNumber % 2 === 0) {

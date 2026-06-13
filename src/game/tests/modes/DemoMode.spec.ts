@@ -9,6 +9,7 @@ vi.mock("../../utils/CyberpunkAudio", () => ({
   cyberpunkAudio: {
     play: vi.fn(),
     pause: vi.fn(),
+    dispose: vi.fn(),
     addListener: vi.fn(),
     removeListener: vi.fn(),
   },

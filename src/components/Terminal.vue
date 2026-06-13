@@ -847,6 +847,12 @@ function handleKeydown(e: KeyboardEvent) {
     return;
   }
 
+  if (e.key === "d" && e.ctrlKey) {
+    e.preventDefault();
+    commands.exit([]);
+    return;
+  }
+
   if (e.key.length === 1) {
     e.preventDefault();
     currentInput.value += e.key;

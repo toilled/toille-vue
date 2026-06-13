@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
 import PageContent from "../PageContent.vue";
 import Paragraph from "../Paragraph.vue";
@@ -79,8 +79,7 @@ describe("PageContent.vue", () => {
     expect(wrapper.text()).toContain("notFound.pageNotFound");
   });
 
-  it("shows a hint on title mousedown", async () => {
-    vi.useFakeTimers();
+  it("shows a hint on the title", async () => {
     const router = createTestRouter();
     router.push("/");
     await router.isReady();
@@ -90,12 +89,6 @@ describe("PageContent.vue", () => {
       },
     });
     await flushPromises();
-    const title = wrapper.find(".title");
-    await title.trigger("mousedown");
     expect(wrapper.text()).toContain("notFound.nothingHere");
-    vi.runAllTimers();
-    await flushPromises();
-    expect(wrapper.text()).not.toContain("notFound.nothingHere");
-    vi.useRealTimers();
   });
 });

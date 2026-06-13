@@ -3,7 +3,7 @@ import type { Page } from "../interfaces/Page";
 
 export function useScrollSpy(visiblePages: ComputedRef<Page[]>, headerRef: Ref<HTMLElement | null>) {
   const activeSection = ref("home");
-  const showHint = ref(false);
+  const showHint = ref(true);
   const hintHasBeenShown = ref(false);
 
   let scrollSpyLocked = false;
@@ -105,15 +105,8 @@ export function useScrollSpy(visiblePages: ComputedRef<Page[]>, headerRef: Ref<H
     if (scrollRafId === null) {
       scrollRafId = requestAnimationFrame(() => {
         scrollRafId = null;
-        updateActiveSection();
-        const scrollBottom = window.innerHeight + window.scrollY;
-        const pageHeight = document.documentElement.scrollHeight;
-        if (scrollBottom >= pageHeight - 50) {
-          showHint.value = true;
-        } else if (scrollBottom <= pageHeight - 150) {
-          showHint.value = false;
-        }
-      });
+    updateActiveSection();
+  });
     }
   }
 
@@ -163,7 +156,6 @@ export function useScrollSpy(visiblePages: ComputedRef<Page[]>, headerRef: Ref<H
 
   return {
     activeSection,
-    showHint,
     hintHasBeenShown,
     handleScroll,
     scrollToSection,

@@ -3,17 +3,10 @@
     <section>
       <article class="marginless page-content-card">
         <header>
-          <h2 class="title" @mousedown="handleMouseDown">
+          <h2 class="title">
             <template v-if="page">
               <span v-if="page.icon" class="page-icon">{{ page.icon }} </span>{{ page.title }}
-              <Transition name="slide-fade">
-                <span
-                  v-if="showHint"
-                  class="page-hint"
-                >
-                  {{ t("notFound.nothingHere") }}
-                </span>
-              </Transition>
+              <span class="page-hint">{{ t("notFound.nothingHere") }}</span>
             </template>
             <template v-else> {{ t("notFound.pageNotFound") }} </template>
           </h2>
@@ -62,12 +55,6 @@ const { translatedPages } = useTranslatedPages();
  * @description Renders the main content of a page based on the current route.
  * It displays the page title and body, or a 404 message if the page is not found.
  */
-
-/**
- * @type {import('vue').Ref<boolean>}
- * @description A reactive reference to control the visibility of a hint on the title.
- */
-const showHint = ref(false);
 
 /**
  * @type {import('vue-router').RouteLocationNormalizedLoaded}
@@ -132,16 +119,6 @@ useHead({
   title: pageTitle,
   meta: pageMeta,
 });
-
-/**
- * @description Handles the mouse down event on the title, showing a hint for a short duration.
- */
-function handleMouseDown() {
-  showHint.value = true;
-  setTimeout(() => {
-    showHint.value = false;
-  }, 500);
-}
 
 </script>
 

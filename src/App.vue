@@ -43,7 +43,7 @@
     <Transition name="slide-fade">
       <footer
         class="app-footer"
-        v-if="noFootersShowing && showHint"
+        v-if="noFootersShowing"
         v-show="isContentVisible"
         @click="checker = !checker"
       >
@@ -126,7 +126,6 @@ const headerRef = ref<HTMLElement | null>(null);
 
 const {
   activeSection,
-  showHint,
   hintHasBeenShown,
   handleScroll,
   scrollToSection,

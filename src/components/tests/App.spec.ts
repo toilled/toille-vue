@@ -137,18 +137,9 @@ describe("App.vue", () => {
     expect(wrapper.findComponent({ name: "Checker" }).exists()).toBe(true);
   });
 
-  it("shows and hides the hint on scroll", async () => {
+  it("shows the hint always", async () => {
     wrapper = await mountApp({ TypingText: true });
-    expect(wrapper.findComponent({ name: "TypingText" }).exists()).toBe(false);
-
-    await scrollToBottom(wrapper);
     expect(wrapper.findComponent({ name: "TypingText" }).exists()).toBe(true);
-
-    window.scrollY = 0;
-    window.dispatchEvent(new Event("scroll"));
-    await new Promise((r) => setTimeout(r, 30));
-    await flushPromises();
-    expect(wrapper.findComponent({ name: "TypingText" }).exists()).toBe(false);
   });
 
   it("updates the document title on route change", async () => {

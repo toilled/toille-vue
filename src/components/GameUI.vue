@@ -284,6 +284,8 @@ function exitGameMode() {
 .control-btn {
   width: 60px;
   height: 60px;
+  padding: 0;
+  box-sizing: border-box;
   background: rgba(0, 255, 204, 0.2);
   border: 2px solid #00ffcc;
   border-radius: 50%;
@@ -313,6 +315,8 @@ function exitGameMode() {
   position: absolute;
   width: 30px;
   height: 30px;
+  padding: 0;
+  box-sizing: border-box;
   background: rgba(0, 255, 204, 0.2);
   border: 1px solid #00ffcc;
   color: #00ffcc;

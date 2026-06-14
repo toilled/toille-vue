@@ -1,7 +1,5 @@
 export const LEADERBOARD_CANVAS_SIZE = 1024;
 
-export const MOBILE_BREAKPOINT = 768;
-
 export const SPARK_COUNT = 2000;
 export const SPARK_BURST_SIZE = 30;
 export const SPARK_GRAVITY = 0.1;

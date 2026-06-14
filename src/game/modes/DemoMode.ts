@@ -29,6 +29,7 @@ const TRANSITION_DURATION = 0.9;
 
 export class DemoMode implements GameMode {
   private context!: GameContext;
+  private soundWasEnabled = false;
 
   // Scene sequencing
   private sceneIndex: number = 0;
@@ -97,6 +98,7 @@ export class DemoMode implements GameMode {
 
     this.identifySparkTargets();
 
+    this.soundWasEnabled = audioManager.isSoundEnabled.value;
     cyberpunkAudio.addListener(this.onAudioNoteBound);
     cyberpunkAudio.play();
 
@@ -174,8 +176,7 @@ export class DemoMode implements GameMode {
 
   cleanup(): void {
     cyberpunkAudio.removeListener(this.onAudioNoteBound);
-    if (!audioManager.isSoundEnabled.value) cyberpunkAudio.dispose();
-    else cyberpunkAudio.pause();
+    if (!this.soundWasEnabled) cyberpunkAudio.pause();
 
     if (this.bloomPass) this.bloomPass.strength = this.originalBloomStrength;
 

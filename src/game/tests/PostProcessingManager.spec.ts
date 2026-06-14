@@ -32,13 +32,23 @@ vi.mock("three/examples/jsm/postprocessing/OutputPass", () => ({
   },
 }));
 
+const defaultQuality = {
+  pixelRatioCap: 1,
+  shadowMapType: 1,
+  msaaSamples: 0,
+  bloomStrength: 0.3,
+  bloomRadius: 0.3,
+  bloomThreshold: 0.4,
+  starTwinkleEnabled: false,
+};
+
 describe("setupPostProcessing", () => {
   it("creates an EffectComposer with bloom and output passes", () => {
     const scene = new Scene();
     const camera = new PerspectiveCamera();
     const renderer = new WebGLRenderer();
 
-    const composer = setupPostProcessing(scene, camera, renderer);
+    const composer = setupPostProcessing(scene, camera, renderer, defaultQuality);
     expect(composer).toBeDefined();
     expect(composer.addPass).toHaveBeenCalled();
     expect(composer.render).toBeDefined();

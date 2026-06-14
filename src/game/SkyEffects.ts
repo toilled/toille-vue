@@ -225,6 +225,14 @@ export class SkyEffects {
     }
   }
 
+  private starUpdateCounter = 0;
+  private starUpdateInterval = 4;
+  private starTwinkleEnabled = true;
+
+  setStarTwinkleEnabled(enabled: boolean) {
+    this.starTwinkleEnabled = enabled;
+  }
+
   update(deltaTime: number): void {
     this.time += deltaTime;
 
@@ -248,22 +256,26 @@ export class SkyEffects {
     }
 
     if (this.stars) {
-      const positions = this.stars.geometry.attributes.position
-        .array as Float32Array;
-      const time = this.time * 0.1;
+      this.starUpdateCounter++;
 
-      for (let i = 0; i < this.config.starCount; i += 5) {
-        positions[i * 3 + 1] += Math.sin(time * 1.5 + i * 0.7) * 0.3;
-      }
-      this.stars.geometry.attributes.position.needsUpdate = true;
+      if (this.starTwinkleEnabled && this.starUpdateCounter % this.starUpdateInterval === 0) {
+        const positions = this.stars.geometry.attributes.position
+          .array as Float32Array;
+        const time = this.time * 0.1;
 
-      // Twinkle the star opacity via size
-      if (this.stars.geometry.attributes.size) {
-        const sizes = this.stars.geometry.attributes.size.array as Float32Array;
-        for (let i = 0; i < this.config.starCount; i += 3) {
-          sizes[i] = (1 + Math.random() * 4) * (0.7 + 0.3 * Math.sin(time * 3 + i * 1.1));
+        for (let i = 0; i < this.config.starCount; i += 5) {
+          positions[i * 3 + 1] += Math.sin(time * 1.5 + i * 0.7) * 0.3;
         }
-        this.stars.geometry.attributes.size.needsUpdate = true;
+        this.stars.geometry.attributes.position.needsUpdate = true;
+
+        // Twinkle the star opacity via size
+        if (this.stars.geometry.attributes.size) {
+          const sizes = this.stars.geometry.attributes.size.array as Float32Array;
+          for (let i = 0; i < this.config.starCount; i += 3) {
+            sizes[i] = (1 + Math.random() * 4) * (0.7 + 0.3 * Math.sin(time * 3 + i * 1.1));
+          }
+          this.stars.geometry.attributes.size.needsUpdate = true;
+        }
       }
     }
   }

@@ -107,7 +107,6 @@ import { carAudio } from "../game/audio/CarAudio";
 import { cyberpunkAudio } from "../utils/CyberpunkAudio";
 import { CELL_SIZE, START_OFFSET, GRID_SIZE } from "../game/config";
 import {
-  MOBILE_BREAKPOINT,
   CAR_COUNT,
   CAMERA_FOV,
   CAMERA_FAR,
@@ -150,7 +149,7 @@ import { SkyEffects } from "../game/SkyEffects";
 import { getHeight } from "../utils/HeightMap";
 import { audioManager } from "../utils/AudioManager";
 import { MultiplayerManager } from "../game/MultiplayerManager";
-import { getBrowserQuality } from "../utils/BrowserDetect";
+import { getBrowserQuality, isMobile as checkMobile } from "../utils/BrowserDetect";
 import { drawLeaderboard, createLeaderboardCanvas } from "../utils/LeaderboardRenderer";
 import { SparkSystem } from "../utils/SparkSystem";
 import { useI18n } from "vue-i18n";
@@ -292,13 +291,9 @@ function activateStoryTrigger() {
   nearStoryTrigger.value = false;
 }
 
-const isMobile = ref(false);
+const isMobile = ref(checkMobile());
 
-const updateIsMobile = () => {
-  if (typeof window !== "undefined") {
-    isMobile.value = window.innerWidth <= MOBILE_BREAKPOINT;
-  }
-};
+const ZERO_VEC = new Vector3(0, 0, 0);
 
 // Controls State
 const controls = ref({
@@ -451,19 +446,20 @@ function initScene(width: number, height: number) {
   camera.lookAt(0, 0, 0);
 }
 
+const browserQuality = getBrowserQuality();
+
 function initRenderer(width: number, height: number) {
-  const quality = getBrowserQuality();
   renderer = new WebGLRenderer({ antialias: false, alpha: false, powerPreference: "high-performance" });
   renderer.setSize(width, height);
-  renderer.setPixelRatio(quality.pixelRatioCap);
+  renderer.setPixelRatio(browserQuality.pixelRatioCap);
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = quality.shadowMapType === 1 ? PCFShadowMap : PCFSoftShadowMap;
+  renderer.shadowMap.type = browserQuality.shadowMapType === 1 ? PCFShadowMap : PCFSoftShadowMap;
   renderer.toneMapping = ACESFilmicToneMapping;
   renderer.toneMappingExposure = hdrSupported.value ? 2.0 : 1.4;
   renderer.outputColorSpace = 'srgb';
   canvasContainer.value!.appendChild(renderer.domElement);
 
-  composer = setupPostProcessing(scene, camera, renderer, quality.msaaSamples);
+  composer = setupPostProcessing(scene, camera, renderer, browserQuality);
 }
 
 function initGameWorld() {
@@ -573,7 +569,6 @@ function initStoryAndMode() {
 onMounted(() => {
   if (!canvasContainer.value) return;
 
-  updateIsMobile();
   checkHdr();
 
   const width = canvasContainer.value.clientWidth || window.innerWidth;
@@ -582,6 +577,7 @@ onMounted(() => {
   initScene(width, height);
   initRenderer(width, height);
   initGameWorld();
+  skyEffects.setStarTwinkleEnabled(browserQuality.starTwinkleEnabled);
   initTrafficAndSparks();
   initGameManagers();
   initEventListeners();
@@ -694,7 +690,7 @@ function onResize() {
   if (composer) {
     composer.setSize(containerWidth, containerHeight);
   }
-  updateIsMobile();
+  isMobile.value = checkMobile();
 }
 
 function collectCarMeshes(): Object3D[] {
@@ -939,8 +935,7 @@ function updateCamera(time: number, now: number) {
     camera.position.y += (targetY - camera.position.y) * CAMERA_LERP_FACTOR;
   }
 
-  const targetLookAt = new Vector3(0, 0, 0);
-  currentLookAt.lerp(targetLookAt, CAMERA_LOOK_AT_LERP);
+  currentLookAt.lerp(ZERO_VEC, CAMERA_LOOK_AT_LERP);
   camera.lookAt(currentLookAt);
 }
 

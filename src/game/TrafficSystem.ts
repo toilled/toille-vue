@@ -489,15 +489,27 @@ export class TrafficSystem {
     applyCarOrientation(car, heading);
   }
 
+  private spatialGrid = new Map<string, Group[]>();
+  private spatialGridPool: Group[][] = [];
+  private spatialGridSize = 20;
+
   private buildSpatialGrid(): Map<string, Group[]> {
-    const gridSize = 20;
-    const grid = new Map<string, Group[]>();
+    const grid = this.spatialGrid;
+    for (const [, bucket] of grid) {
+      bucket.length = 0;
+      this.spatialGridPool.push(bucket);
+    }
+    grid.clear();
 
     for (const car of this.cars) {
       if (car.userData.fading) continue;
-      const key = `${Math.floor(car.position.x / gridSize)},${Math.floor(car.position.z / gridSize)}`;
-      if (!grid.has(key)) grid.set(key, []);
-      grid.get(key)!.push(car);
+      const key = `${Math.floor(car.position.x / this.spatialGridSize)},${Math.floor(car.position.z / this.spatialGridSize)}`;
+      let bucket = grid.get(key);
+      if (!bucket) {
+        bucket = this.spatialGridPool.pop() ?? [];
+        grid.set(key, bucket);
+      }
+      bucket.push(car);
     }
 
     return grid;

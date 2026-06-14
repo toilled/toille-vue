@@ -603,14 +603,14 @@ function onKeyDown(event: KeyboardEvent) {
   }
   konamiManager.onKeyDown(event);
   gameModeManager.onKeyDown(event);
-  if (isGameMode.value) {
+  if (isGameMode.value && !isGameOver.value) {
     event.preventDefault();
   }
 }
 
 function onKeyUp(event: KeyboardEvent) {
   gameModeManager.onKeyUp(event);
-  if (isGameMode.value) {
+  if (isGameMode.value && !isGameOver.value) {
     event.preventDefault();
   }
 }

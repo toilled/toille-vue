@@ -16,8 +16,6 @@ describe('Title.vue', () => {
       props: {
         title: 'Test Title',
         subtitle: 'Test Subtitle',
-        activity: false,
-        joke: false,
       },
     });
     expect(wrapper.text()).toContain('Test Title');
@@ -29,8 +27,6 @@ describe('Title.vue', () => {
       props: {
         title: 'Test Title',
         subtitle: 'Test Subtitle',
-        activity: false,
-        joke: false,
       },
     });
     await wrapper.find('.title.question').trigger('mousedown');
@@ -42,8 +38,6 @@ describe('Title.vue', () => {
       props: {
         title: 'Test Title',
         subtitle: 'Test Subtitle',
-        activity: false,
-        joke: false,
       },
     });
     await wrapper.find('h2.subtitle.question').trigger('mousedown');

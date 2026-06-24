@@ -24,7 +24,6 @@ const props = defineProps({
     default: () => [],
   },
   visible: { type: Boolean, default: false },
-  currentMissionId: { type: String, default: '' },
 });
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);

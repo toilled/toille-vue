@@ -21,8 +21,6 @@
 defineProps<{
   title: string;
   subtitle: string;
-  activity: boolean;
-  joke: boolean;
 }>();
 
 const emit = defineEmits<{

@@ -239,8 +239,6 @@ export class ExplorationMode implements GameMode {
     mdata.playerX = px;
     mdata.playerZ = pz;
     mdata.playerRotation = ctx.camera.rotation.y;
-    mdata.currentMissionId =
-      ss.active && !ss.missionComplete ? (ss.missions[ss.currentMissionIndex]?.id ?? '') : '';
     mdata.objectives = this.getMinimapObjectives(ss);
     ctx.minimapData.value = { ...mdata };
   }

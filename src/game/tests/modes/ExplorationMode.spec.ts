@@ -184,7 +184,6 @@ describe('ExplorationMode', () => {
       playerX: 0,
       playerZ: 0,
       playerRotation: 0,
-      currentMissionId: '',
       objectives: [],
     });
     context.storyState = ref({
@@ -211,7 +210,6 @@ describe('ExplorationMode', () => {
     mode.update(0.1, 0);
     expect(context.minimapData.value.playerX).toBe(42);
     expect(context.minimapData.value.playerZ).toBe(99);
-    expect(context.minimapData.value.currentMissionId).toBe('m1');
     expect(context.minimapData.value.objectives).toHaveLength(1);
   });
 

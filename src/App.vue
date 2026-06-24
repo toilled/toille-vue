@@ -5,8 +5,6 @@
         <Title
           :title="titles.title"
           :subtitle="t('site.subtitle')"
-          :activity="activity"
-          :joke="joke"
           @activity="toggleActivity"
           @joke="toggleJoke"
         />

@@ -30,7 +30,6 @@
     :playerRotation="minimapData.playerRotation"
     :objectives="minimapData.objectives"
     :visible="isExplorationMode && storyState.active"
-    :currentMissionId="minimapData.currentMissionId"
   />
   <Transition name="fade">
     <div
@@ -264,7 +263,6 @@ const minimapData = ref<MinimapData>({
   playerZ: 0,
   playerRotation: 0,
   objectives: [],
-  currentMissionId: '',
 });
 
 function updateStoryObjective(missionIdx: number, objIdx: number) {

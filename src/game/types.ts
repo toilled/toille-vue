@@ -89,7 +89,6 @@ export interface MinimapData {
   playerZ: number;
   playerRotation: number;
   objectives: { x: number; z: number; completed: boolean; label: string; type: string }[];
-  currentMissionId: string;
 }
 
 export type GameModeType = 'driving' | 'exploration' | 'cinematic' | 'demo' | null;

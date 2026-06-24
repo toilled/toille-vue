@@ -57,6 +57,12 @@
     </div>
   </Transition>
   <Transition name="fade">
+    <div v-if="onlineCount > 0" id="online-indicator">
+      <span id="online-dot"></span>
+      {{ onlineCount }}
+    </div>
+  </Transition>
+  <Transition name="fade">
     <div v-if="hdrSupported" id="hdr-badge">HDR</div>
   </Transition>
   <Transition name="fade">
@@ -325,6 +331,7 @@ const showSplash = ref(true);
 
 const { hdrSupported, checkHdr } = useHdrDisplay();
 const isFallbackMode = ref(false);
+const onlineCount = ref(0);
 const frameTimestamps: number[] = [];
 let lowFpsCount = 0;
 let lastFpsCheckTime = 0;
@@ -503,7 +510,7 @@ function initGameManagers() {
 
   gangWarManager = new GangWarManager(scene, occupiedGrids, spawnSparks, playPewSound);
 
-  multiplayerManager = new MultiplayerManager(scene);
+  multiplayerManager = new MultiplayerManager(scene, onlineCount);
   multiplayerManager.connect();
 
   createCheckpoint();
@@ -1273,6 +1280,46 @@ onBeforeUnmount(() => {
   z-index: 25;
   pointer-events: none;
   text-align: center;
+}
+
+#online-indicator {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 30;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #00ffcc;
+  background: rgba(5, 5, 20, 0.75);
+  border: 1px solid rgba(0, 255, 204, 0.3);
+  padding: 4px 8px;
+  pointer-events: none;
+  text-shadow: 0 0 6px rgba(0, 255, 204, 0.4);
+  box-shadow: 0 0 8px rgba(0, 255, 204, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#online-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00ffcc;
+  box-shadow: 0 0 6px #00ffcc;
+  animation: online-pulse 2s ease-in-out infinite;
+}
+
+@keyframes online-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
 #hdr-badge {

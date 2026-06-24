@@ -1,6 +1,7 @@
 import mqtt from 'mqtt';
 import { Scene, Group, Mesh, BoxGeometry, MeshStandardMaterial, Vector3 } from 'three';
 import { CarFactory } from './CarFactory';
+import type { Ref } from 'vue';
 
 interface PlayerState {
   x: number;
@@ -26,14 +27,20 @@ export class MultiplayerManager {
   private myId: string;
   private topic = 'toille-vue/cyberpunk/players';
   private carFactory: CarFactory;
+  private onlineCountRef: Ref<number>;
 
   private lastBroadcastTime = 0;
   private broadcastInterval = 100; // max 10Hz
 
-  constructor(scene: Scene) {
+  constructor(scene: Scene, onlineCountRef: Ref<number>) {
     this.scene = scene;
     this.myId = Math.random().toString(36).substring(2, 10);
     this.carFactory = new CarFactory();
+    this.onlineCountRef = onlineCountRef;
+  }
+
+  private updateOnlineCount() {
+    this.onlineCountRef.value = this.client?.connected ? 1 + this.players.size : 0;
   }
 
   public connect() {
@@ -45,6 +52,11 @@ export class MultiplayerManager {
 
     this.client.on('connect', () => {
       this.client?.subscribe(this.topic);
+      this.updateOnlineCount();
+    });
+
+    this.client.on('disconnect', () => {
+      this.updateOnlineCount();
     });
 
     this.client.on('message', (topic, message) => {
@@ -95,6 +107,7 @@ export class MultiplayerManager {
         currentState: data.state,
       };
       this.players.set(id, player);
+      this.updateOnlineCount();
     } else {
       // Update target
       player.targetPos.set(data.x, data.y, data.z);
@@ -130,6 +143,7 @@ export class MultiplayerManager {
       if (now - player.lastUpdate > timeout) {
         this.removePlayerGroup(player.group);
         this.players.delete(id);
+        this.updateOnlineCount();
         continue;
       }
 
@@ -157,6 +171,7 @@ export class MultiplayerManager {
       this.removePlayerGroup(player.group);
     }
     this.players.clear();
+    this.updateOnlineCount();
   }
 
   private removePlayerGroup(group: Group) {

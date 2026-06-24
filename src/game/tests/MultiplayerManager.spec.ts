@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Scene, Group } from 'three';
+import { ref } from 'vue';
 import { MultiplayerManager } from '../MultiplayerManager';
 
 let mockMqttClient: {
@@ -46,7 +47,7 @@ describe('MultiplayerManager', () => {
       add: vi.fn(),
       remove: vi.fn(),
     } as unknown as Scene;
-    manager = new MultiplayerManager(scene);
+    manager = new MultiplayerManager(scene, ref(0));
   });
 
   afterEach(() => {

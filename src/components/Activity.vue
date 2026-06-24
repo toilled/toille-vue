@@ -44,12 +44,22 @@ const { translate, locale } = useTranslate();
  * It shows a loading state and allows users to fetch a new suggestion by clicking on it.
  */
 
+interface ActivityData {
+  activity: string;
+  type: string;
+  participants: number;
+  price: number;
+  link: string;
+  key: string;
+  accessibility: number;
+}
+
 /**
- * @type {import('vue').Ref<any>}
+ * @type {import('vue').Ref<ActivityData | null>}
  * @description A reactive reference to the activity object fetched from the API.
  * It is null until the first activity is fetched.
  */
-const activity = ref<any>(null);
+const activity = ref<ActivityData | null>(null);
 
 /**
  * @type {import('vue').Ref<boolean>}
@@ -79,9 +89,10 @@ async function fetchActivity() {
   loading.value = true;
   try {
     const response = await fetch('https://bored.api.lewagon.com/api/activity');
-    activity.value = await response.json();
-    translatedActivityText.value = activity.value.activity;
-    translate(activity.value.activity).then((t) => (translatedActivityText.value = t));
+    const data: ActivityData = await response.json();
+    activity.value = data;
+    translatedActivityText.value = data.activity;
+    translate(data.activity).then((t) => (translatedActivityText.value = t));
   } catch (error) {
     console.error(error);
   } finally {
@@ -105,9 +116,10 @@ function newSuggestion() {
 onMounted(fetchActivity);
 
 watch(locale, () => {
-  if (activity.value) {
-    translatedActivityText.value = activity.value.activity;
-    translate(activity.value.activity).then((t) => (translatedActivityText.value = t));
+  const a = activity.value;
+  if (a) {
+    translatedActivityText.value = a.activity;
+    translate(a.activity).then((t) => (translatedActivityText.value = t));
   }
 });
 </script>

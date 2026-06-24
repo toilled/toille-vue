@@ -192,6 +192,12 @@ const description = ref<string>('');
 const showModal = ref(false);
 const isMounted = ref(false);
 
+interface OpenMeteoHourly {
+  time: string[];
+  temperature_2m: number[];
+  rain?: number[];
+}
+
 interface HourlyData {
   time: string;
   temp: number;
@@ -219,7 +225,7 @@ const fetchWeather = async () => {
   }
 };
 
-const processHourlyData = (hourly: any) => {
+const processHourlyData = (hourly: OpenMeteoHourly) => {
   const now = new Date();
   const y = now.getFullYear();
   const m = String(now.getMonth() + 1).padStart(2, '0');

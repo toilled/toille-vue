@@ -18,6 +18,8 @@
 </template>
 
 <script setup lang="ts">
+import type { Ref } from 'vue';
+
 defineProps<{
   title: string;
   subtitle: string;
@@ -41,7 +43,7 @@ function handleSubtitleClick() {
   triggerAnimation(animatingSubtitle);
 }
 
-function triggerAnimation(animatingRef: any) {
+function triggerAnimation(animatingRef: Ref<boolean>) {
   if (animatingRef.value) return;
   animatingRef.value = true;
   setTimeout(() => {

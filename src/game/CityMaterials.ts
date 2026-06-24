@@ -8,12 +8,12 @@ import {
   BoxGeometry,
   ConeGeometry,
   CylinderGeometry,
-} from "three";
+} from 'three';
 import {
   createBillboardTextures,
   createWindowTexture,
   createWindowRoughnessMap,
-} from "../utils/TextureGenerator";
+} from '../utils/TextureGenerator';
 
 const BUILDING_COLORS: number[] = [
   0x1a1a2e, // deep indigo
@@ -84,7 +84,7 @@ export class CityMaterials {
   }
 
   private initAudioMaterials() {
-    const audioKeys = ["kick", "snare", "hihat", "bass0", "bass1", "bass2", "bass3", "bass4"];
+    const audioKeys = ['kick', 'snare', 'hihat', 'bass0', 'bass1', 'bass2', 'bass3', 'bass4'];
     audioKeys.forEach((key) => {
       const msg = this.buildingMaterial.clone();
       const colorIndex = Math.floor(Math.random() * BUILDING_COLORS.length);
@@ -107,7 +107,7 @@ export class CityMaterials {
 
     this.billboardMaterials = this.billboardTextures.map(
       (tex) =>
-        new MeshBasicMaterial({ map: tex, side: DoubleSide, transparent: true, opacity: 0.9 }),
+        new MeshBasicMaterial({ map: tex, side: DoubleSide, transparent: true, opacity: 0.9 })
     );
   }
 

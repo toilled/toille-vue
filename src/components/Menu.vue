@@ -9,7 +9,13 @@
       :class="{ expanded: showTools }"
       :aria-label="t('menu.toggleTools')"
     >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="toggle-icon">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        class="toggle-icon"
+      >
         <line x1="5" y1="12" x2="19" y2="12" />
         <line x1="12" y1="5" x2="12" y2="19" />
       </svg>
@@ -33,18 +39,8 @@
         <img src="/64k-icon.svg" :alt="t('menu.demo')" class="icon" />
       </div>
       <div @click="toggleSound" class="icon-wrapper" :title="t('menu.toggleSound')">
-        <img
-          v-if="soundOn"
-          src="/sound-icon.svg"
-          :alt="t('menu.toggleSound')"
-          class="icon"
-        />
-        <img
-          v-else
-          src="/mute-icon.svg"
-          :alt="t('menu.toggleSound')"
-          class="icon"
-        />
+        <img v-if="soundOn" src="/sound-icon.svg" :alt="t('menu.toggleSound')" class="icon" />
+        <img v-else src="/mute-icon.svg" :alt="t('menu.toggleSound')" class="icon" />
       </div>
       <div
         @click="$emit('toggle-content')"
@@ -58,9 +54,7 @@
           fill="#000000"
           class="icon"
         >
-          <path
-            d="M12 15a3 3 0 100-6 3 3 0 000 6z"
-          />
+          <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
           <path
             fill-rule="evenodd"
             d="M1.323 11.447C2.811 6.976 7.028 3.75 12.001 3.75c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113-1.487 4.471-5.705 7.697-10.677 7.697-4.97 0-9.186-3.223-10.675-7.69a1.762 1.762 0 010-1.113zM17.25 12a5.25 5.25 0 11-10.5 0 5.25 5.25 0 0110.5 0z"
@@ -85,11 +79,7 @@
           />
         </svg>
       </div>
-      <div
-        @click="toggleCityBackground"
-        class="icon-wrapper"
-        :title="t('menu.toggleCity')"
-      >
+      <div @click="toggleCityBackground" class="icon-wrapper" :title="t('menu.toggleCity')">
         <svg
           v-if="cityOn"
           xmlns="http://www.w3.org/2000/svg"
@@ -120,10 +110,43 @@
           <line x1="3" y1="3" x2="21" y2="21" />
         </svg>
       </div>
-      <div class="icon-wrapper terminal-icon" @click="$emit('toggle-terminal')" :title="t('menu.openTerminal')">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
+      <div
+        class="icon-wrapper terminal-icon"
+        @click="$emit('toggle-terminal')"
+        :title="t('menu.openTerminal')"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#000000"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="icon"
+        >
           <polyline points="4 17 10 11 4 5" />
           <line x1="12" y1="19" x2="20" y2="19" />
+        </svg>
+      </div>
+      <div
+        class="icon-wrapper"
+        @click="$emit('toggle-desktop')"
+        :title="t('desktop.toggleDesktop')"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#000000"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="icon"
+        >
+          <rect x="2" y="3" width="20" height="14" rx="2" />
+          <line x1="8" y1="21" x2="16" y2="21" />
+          <line x1="12" y1="17" x2="12" y2="21" />
         </svg>
       </div>
       <div class="icon-wrapper">
@@ -135,14 +158,14 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from "vue-i18n";
+import { useI18n } from 'vue-i18n';
 
-import { Page } from "../interfaces/Page";
-import { cyberpunkAudio } from "../utils/CyberpunkAudio";
-import { audioManager } from "../utils/AudioManager";
-import { cityBackground } from "../utils/CityBackgroundManager";
-import { useEpilepsyWarning } from "../composables/useEpilepsyWarning";
-import LanguageSelector from "./LanguageSelector.vue";
+import { Page } from '../interfaces/Page';
+import { cyberpunkAudio } from '../utils/CyberpunkAudio';
+import { audioManager } from '../utils/AudioManager';
+import { cityBackground } from '../utils/CityBackgroundManager';
+import { useEpilepsyWarning } from '../composables/useEpilepsyWarning';
+import LanguageSelector from './LanguageSelector.vue';
 
 const { t } = useI18n();
 const { confirm: epilepsyConfirm } = useEpilepsyWarning();
@@ -154,10 +177,11 @@ defineProps<{
 }>();
 
 defineEmits<{
-  (e: "explore"): void;
-  (e: "toggle-content"): void;
-  (e: "demo"): void;
-  (e: "toggle-terminal"): void;
+  (e: 'explore'): void;
+  (e: 'toggle-content'): void;
+  (e: 'demo'): void;
+  (e: 'toggle-terminal'): void;
+  (e: 'toggle-desktop'): void;
 }>();
 
 const showTools = ref(false);
@@ -167,7 +191,7 @@ const cityOn = computed(() => cityBackground.isEnabled.value);
 
 const toggleSound = async () => {
   if (!audioManager.isSoundEnabled.value && !audioManager.photosensitivityConfirmed) {
-    const ok = await epilepsyConfirm(t("epilepsy.warning"));
+    const ok = await epilepsyConfirm(t('epilepsy.warning'));
     if (!ok) return;
     audioManager.photosensitivityConfirmed = true;
   }
@@ -252,7 +276,9 @@ const toggleCityBackground = () => {
 
 .can-hover .icon-wrapper:hover {
   background: rgba(0, 255, 204, 0.1);
-  box-shadow: 0 0 12px rgba(0, 255, 204, 0.2), inset 0 0 8px rgba(0, 255, 204, 0.05);
+  box-shadow:
+    0 0 12px rgba(0, 255, 204, 0.2),
+    inset 0 0 8px rgba(0, 255, 204, 0.05);
 }
 
 .icon-wrapper:active {
@@ -308,9 +334,10 @@ const toggleCityBackground = () => {
     overflow: hidden;
     max-height: 0;
     opacity: 0;
-    transition: max-height 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                opacity 0.25s ease,
-                padding 0.3s ease;
+    transition:
+      max-height 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+      opacity 0.25s ease,
+      padding 0.3s ease;
     pointer-events: none;
   }
   .nav-tools.show {

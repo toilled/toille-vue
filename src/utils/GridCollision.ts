@@ -1,4 +1,4 @@
-import { CELL_SIZE, START_OFFSET } from "../game/config";
+import { CELL_SIZE, START_OFFSET } from '../game/config';
 
 export type OccupiedGrid = Map<string, { halfW: number; halfD: number; isRound?: boolean }>;
 
@@ -20,7 +20,7 @@ export function checkGridCollision(
   x: number,
   z: number,
   occupiedGrids: OccupiedGrid,
-  margin = 2,
+  margin = 2
 ): boolean {
   const { ix, iz } = getGridCell(x, z);
   const key = `${ix},${iz}`;
@@ -41,7 +41,7 @@ export function resolveBuildingCollision(
   x: number,
   z: number,
   occupiedGrids: OccupiedGrid,
-  margin = 5,
+  margin = 5
 ): CollisionResult {
   const { ix, iz } = getGridCell(x, z);
   const key = `${ix},${iz}`;

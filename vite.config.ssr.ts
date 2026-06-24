@@ -8,14 +8,16 @@ export default defineConfig({
     ...sharedPlugins(),
   ],
   ssr: {
-    noExternal: true, // Bundle everything for Worker
+    noExternal: [
+      /^(?!three$)/,
+    ],
     target: 'webworker',
   },
   build: {
     target: 'esnext',
     outDir: 'functions',
     emptyOutDir: false,
-    minify: false,
+    minify: 'esbuild',
     rollupOptions: {
       input: 'src/entry-server.ts',
       output: {

@@ -1,10 +1,10 @@
 // fallow-ignore-file unused-file
-import { vi } from "vitest";
-import { ref } from "vue";
+import { vi } from 'vitest';
+import { ref } from 'vue';
 
-const locale = ref("en");
+const locale = ref('en');
 
-vi.mock("vue-i18n", () => ({
+vi.mock('vue-i18n', () => ({
   useI18n: () => ({
     t: (key: string, params?: Record<string, unknown>) => {
       if (params) {

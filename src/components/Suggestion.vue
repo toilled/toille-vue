@@ -14,12 +14,12 @@
       <header>
         <strong>{{ title }}</strong>
       </header>
-      <p class="marginless" aria-busy="true">{{ url }} {{ t("suggestionDown") }}</p>
+      <p class="marginless" aria-busy="true">{{ url }} {{ t('suggestionDown') }}</p>
     </article>
     <Transition name="slide-fade">
       <article v-if="!hideHint">
         <footer style="font-style: oblique; font-size: 0.8em; margin-top: 0">
-          {{ t("suggestion.clickToUpdate") }}
+          {{ t('suggestion.clickToUpdate') }}
         </footer>
       </article>
     </Transition>
@@ -27,8 +27,8 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from "vue-i18n";
-import { useTranslate } from "../composables/useTranslate";
+import { useI18n } from 'vue-i18n';
+import { useTranslate } from '../composables/useTranslate';
 
 const { t } = useI18n();
 const { translate, locale } = useTranslate();
@@ -61,7 +61,7 @@ const suggestion = ref<Record<string, unknown> | null>(null);
  * @type {import('vue').Ref<string>}
  * @description A reactive reference to the translated suggestion text.
  */
-const translatedSuggestionText = ref("");
+const translatedSuggestionText = ref('');
 
 /**
  * @type {import('vue').Ref<boolean>}
@@ -79,7 +79,7 @@ const hideHint = ref(false);
  * @type {import('vue').ComputedRef<string>}
  * @description A computed property that generates the hover hint text based on the `valueName` prop.
  */
-const hoverHintText = computed(() => t("suggestion.clickForNew", { name: props.valueName }));
+const hoverHintText = computed(() => t('suggestion.clickForNew', { name: props.valueName }));
 
 /**
  * @description Fetches a suggestion from the provided URL and updates the component's state.
@@ -89,14 +89,14 @@ async function fetchSuggestion() {
   loading.value = true;
   try {
     const response = await fetch(props.url, {
-      headers: { Accept: "application/json" },
+      headers: { Accept: 'application/json' },
     });
     suggestion.value = await response.json();
     const s = suggestion.value;
-    const raw = s ? s[props.valueName] as string | undefined : undefined;
-    translatedSuggestionText.value = raw ?? "";
+    const raw = s ? (s[props.valueName] as string | undefined) : undefined;
+    translatedSuggestionText.value = raw ?? '';
     if (raw) {
-      translate(raw).then(t => translatedSuggestionText.value = t);
+      translate(raw).then((t) => (translatedSuggestionText.value = t));
     }
   } catch (error) {
     console.error(error);
@@ -124,9 +124,9 @@ watch(locale, () => {
   const s = suggestion.value;
   if (!s) return;
   const raw = s[props.valueName] as string | undefined;
-  translatedSuggestionText.value = raw ?? "";
+  translatedSuggestionText.value = raw ?? '';
   if (raw) {
-    translate(raw).then(t => translatedSuggestionText.value = t);
+    translate(raw).then((t) => (translatedSuggestionText.value = t));
   }
 });
 </script>

@@ -1,16 +1,16 @@
-import { describe, it, expect } from "vitest";
-import { ref } from "vue";
-import { mount } from "@vue/test-utils";
-import MenuItem from "../MenuItem.vue";
+import { describe, it, expect } from 'vitest';
+import { ref } from 'vue';
+import { mount } from '@vue/test-utils';
+import MenuItem from '../MenuItem.vue';
 
-describe("MenuItem.vue", () => {
-  it("renders the menu item with the correct link and text", () => {
-    const activeSection = ref("home");
+describe('MenuItem.vue', () => {
+  it('renders the menu item with the correct link and text', () => {
+    const activeSection = ref('home');
     const navigateToSection = (_id: string) => {};
 
     const wrapper = mount(MenuItem, {
       props: {
-        page: { name: "Home", link: "/", title: "Home", body: [] },
+        page: { name: 'Home', link: '/', title: 'Home', body: [] },
       },
       global: {
         provide: {
@@ -19,18 +19,18 @@ describe("MenuItem.vue", () => {
         },
       },
     });
-    const link = wrapper.find("a");
-    expect(link.text()).toBe("Home");
-    expect(link.attributes("href")).toBe("#home");
+    const link = wrapper.find('a');
+    expect(link.text()).toBe('Home');
+    expect(link.attributes('href')).toBe('#home');
   });
 
-  it("renders hash links correctly for about page", () => {
-    const activeSection = ref("home");
+  it('renders hash links correctly for about page', () => {
+    const activeSection = ref('home');
     const navigateToSection = (_id: string) => {};
 
     const wrapper = mount(MenuItem, {
       props: {
-        page: { name: "About", link: "/about", title: "About", body: [] },
+        page: { name: 'About', link: '/about', title: 'About', body: [] },
       },
       global: {
         provide: {
@@ -39,8 +39,8 @@ describe("MenuItem.vue", () => {
         },
       },
     });
-    const link = wrapper.find("a");
-    expect(link.text()).toBe("About");
-    expect(link.attributes("href")).toBe("#about");
+    const link = wrapper.find('a');
+    expect(link.text()).toBe('About');
+    expect(link.attributes('href')).toBe('#about');
   });
 });

@@ -30,19 +30,29 @@
     :playerRotation="minimapData.playerRotation"
     :objectives="minimapData.objectives"
     :visible="isExplorationMode && storyState.active"
-    :currentMissionId="minimapData.currentMissionId"
   />
   <Transition name="fade">
-    <div v-if="isExplorationMode && !storyState.active && !isStoryTriggerHidden()" id="signal-finder">
+    <div
+      v-if="isExplorationMode && !storyState.active && !isStoryTriggerHidden()"
+      id="signal-finder"
+    >
       <div id="signal-label">SIGNAL DETECTED</div>
       <div id="signal-bars">
-        <div v-for="i in 5" :key="i" class="signal-bar" :class="{ active: signalStrength > i * 0.2 }"></div>
+        <div
+          v-for="i in 5"
+          :key="i"
+          class="signal-bar"
+          :class="{ active: signalStrength > i * 0.2 }"
+        ></div>
       </div>
       <div id="signal-strength">{{ Math.round(signalStrength * 100) }}%</div>
     </div>
   </Transition>
   <Transition name="fade">
-    <div v-if="showStoryHint && isExplorationMode && !storyState.active && signalStrength > 0.4" id="story-hint">
+    <div
+      v-if="showStoryHint && isExplorationMode && !storyState.active && signalStrength > 0.4"
+      id="story-hint"
+    >
       A faint encrypted transmission originates from the northwest...
     </div>
   </Transition>
@@ -50,7 +60,10 @@
     <div v-if="hdrSupported" id="hdr-badge">HDR</div>
   </Transition>
   <Transition name="fade">
-    <div v-if="nearStoryTrigger && isExplorationMode && !storyState.active" id="story-trigger-prompt">
+    <div
+      v-if="nearStoryTrigger && isExplorationMode && !storyState.active"
+      id="story-trigger-prompt"
+    >
       [E] EXAMINE DEAD DROP
     </div>
   </Transition>
@@ -68,13 +81,12 @@
 </template>
 
 <script setup lang="ts">
-
-import SplashScreen from "./SplashScreen.vue";
-import MiniMap from "./MiniMap.vue";
-import StoryDialog from "./StoryDialog.vue";
-import { ScoreService, type ScoreEntry } from "../utils/ScoreService";
-import { StoryManager } from "../game/StoryManager";
-import { StoryItemsManager, STORY_TRIGGER_POSITION } from "../game/StoryItemsManager";
+import SplashScreen from './SplashScreen.vue';
+import MiniMap from './MiniMap.vue';
+import StoryDialog from './StoryDialog.vue';
+import { ScoreService, type ScoreEntry } from '../utils/ScoreService';
+import { StoryManager } from '../game/StoryManager';
+import { StoryItemsManager, STORY_TRIGGER_POSITION } from '../game/StoryItemsManager';
 import {
   AdditiveBlending,
   CanvasTexture,
@@ -95,17 +107,17 @@ import {
   PCFSoftShadowMap,
   PCFShadowMap,
   ACESFilmicToneMapping,
-} from "three";
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
-import { GameModeManager } from "../game/GameModeManager";
-import { setupPostProcessing } from "../game/PostProcessingManager";
-import { DrivingMode } from "../game/modes/DrivingMode";
-import { ExplorationMode } from "../game/modes/ExplorationMode";
-import { DemoMode } from "../game/modes/DemoMode";
-import { GameContext, StoryState, MinimapData } from "../game/types";
-import { carAudio } from "../game/audio/CarAudio";
-import { cyberpunkAudio } from "../utils/CyberpunkAudio";
-import { CELL_SIZE, START_OFFSET, GRID_SIZE } from "../game/config";
+} from 'three';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { GameModeManager } from '../game/GameModeManager';
+import { setupPostProcessing } from '../game/PostProcessingManager';
+import { DrivingMode } from '../game/modes/DrivingMode';
+import { ExplorationMode } from '../game/modes/ExplorationMode';
+import { DemoMode } from '../game/modes/DemoMode';
+import { GameContext, StoryState, MinimapData } from '../game/types';
+import { carAudio } from '../game/audio/CarAudio';
+import { cyberpunkAudio } from '../utils/CyberpunkAudio';
+import { CELL_SIZE, START_OFFSET, GRID_SIZE } from '../game/config';
 import {
   CAR_COUNT,
   CAMERA_FOV,
@@ -140,26 +152,26 @@ import {
   FALLBACK_FPS_CONSECUTIVE_CHECKS,
   FALLBACK_CHECK_INTERVAL_MS,
   FALLBACK_MONITOR_DELAY_MS,
-} from "../game/constants/CyberpunkCity";
-import { KonamiManager } from "../game/KonamiManager";
-import { GangWarManager } from "../game/GangWarManager";
-import { CityBuilder } from "../game/CityBuilder";
-import { TrafficSystem } from "../game/TrafficSystem";
-import { SkyEffects } from "../game/SkyEffects";
-import { getHeight } from "../utils/HeightMap";
-import { audioManager } from "../utils/AudioManager";
-import { MultiplayerManager } from "../game/MultiplayerManager";
-import { getBrowserQuality, isMobile as checkMobile } from "../utils/BrowserDetect";
-import { drawLeaderboard, createLeaderboardCanvas } from "../utils/LeaderboardRenderer";
-import { SparkSystem } from "../utils/SparkSystem";
-import { useI18n } from "vue-i18n";
-import { useEpilepsyWarning } from "../composables/useEpilepsyWarning";
+} from '../game/constants/CyberpunkCity';
+import { KonamiManager } from '../game/KonamiManager';
+import { GangWarManager } from '../game/GangWarManager';
+import { CityBuilder } from '../game/CityBuilder';
+import { TrafficSystem } from '../game/TrafficSystem';
+import { SkyEffects } from '../game/SkyEffects';
+import { getHeight } from '../utils/HeightMap';
+import { audioManager } from '../utils/AudioManager';
+import { MultiplayerManager } from '../game/MultiplayerManager';
+import { getBrowserQuality, isMobile as checkMobile } from '../utils/BrowserDetect';
+import { drawLeaderboard, createLeaderboardCanvas } from '../utils/LeaderboardRenderer';
+import { SparkSystem } from '../utils/SparkSystem';
+import { useI18n } from 'vue-i18n';
+import { useEpilepsyWarning } from '../composables/useEpilepsyWarning';
 
 const { t } = useI18n();
 const { confirm: epilepsyConfirm } = useEpilepsyWarning();
-import { useHdrDisplay } from "../composables/useHdrDisplay";
+import { useHdrDisplay } from '../composables/useHdrDisplay';
 
-const GameUI = defineAsyncComponent(() => import("./GameUI.vue"));
+const GameUI = defineAsyncComponent(() => import('./GameUI.vue'));
 
 const canvasContainer = ref<HTMLDivElement | null>(null);
 
@@ -169,13 +181,10 @@ let renderer: WebGLRenderer;
 let composer: EffectComposer;
 let animationId: number;
 let isActive = false;
-let lastWidth = typeof window !== "undefined" ? window.innerWidth : 0;
+let lastWidth = typeof window !== 'undefined' ? window.innerWidth : 0;
 
 let buildings: Object3D[] = [];
-let occupiedGrids = new Map<
-  string,
-  { halfW: number; halfD: number; isRound?: boolean }
->();
+let occupiedGrids = new Map<string, { halfW: number; halfD: number; isRound?: boolean }>();
 let cars: Group[] = [];
 let leaderboardMeshes: Mesh[] = [];
 
@@ -221,7 +230,7 @@ watch(
       drawLeaderboard(leaderboardCanvas, leaderboardTexture, leaderboard.value);
     }
   },
-  { deep: true },
+  { deep: true }
 );
 
 function createLeaderboardTexture() {
@@ -254,7 +263,6 @@ const minimapData = ref<MinimapData>({
   playerZ: 0,
   playerRotation: 0,
   objectives: [],
-  currentMissionId: "",
 });
 
 function updateStoryObjective(missionIdx: number, objIdx: number) {
@@ -283,7 +291,7 @@ function isStoryTriggerHidden(): boolean {
 function activateStoryTrigger() {
   if (isFallbackMode.value) return;
   if (!isGameMode.value) {
-    gameModeManager.setMode(new ExplorationMode(), "exploration");
+    gameModeManager.setMode(new ExplorationMode(), 'exploration');
   }
   storyManager.start();
   storyItemsManager?.hideTrigger();
@@ -312,7 +320,7 @@ const lookControls = ref({
 
 const _props = defineProps({});
 
-const emit = defineEmits(["game-start", "game-end", "fallback"]);
+const emit = defineEmits(['game-start', 'game-end', 'fallback']);
 const showSplash = ref(true);
 
 const { hdrSupported, checkHdr } = useHdrDisplay();
@@ -336,7 +344,7 @@ function createCheckpoint() {
     CHECKPOINT_HEIGHT,
     CHECKPOINT_SEGMENTS,
     1,
-    true,
+    true
   );
   const mat = new MeshBasicMaterial({
     color: 0x00ff00,
@@ -354,7 +362,7 @@ function createCheckpoint() {
     CHECKPOINT_CORE_RADIUS,
     CHECKPOINT_CORE_RADIUS,
     CHECKPOINT_HEIGHT,
-    CHECKPOINT_CORE_SEGMENTS,
+    CHECKPOINT_CORE_SEGMENTS
   );
   const coreMat = new MeshBasicMaterial({ color: 0xffffff });
   const core = new Mesh(coreGeo, coreMat);
@@ -372,7 +380,7 @@ function createNavArrow() {
       depthWrite: false,
       transparent: true,
       opacity: 0.9,
-    }),
+    })
   );
   cone.rotation.x = Math.PI / 2;
 
@@ -394,7 +402,7 @@ function createChaseArrow() {
       depthWrite: false,
       transparent: true,
       opacity: 0.0,
-    }),
+    })
   );
   cone.rotation.x = Math.PI / 2;
   cone.position.z = CHASE_ARROW_POSITION_Z;
@@ -410,18 +418,16 @@ function spawnCheckpoint() {
   const roadIndexX = Math.floor(Math.random() * (GRID_SIZE + 1));
   const roadIndexZ = Math.floor(Math.random() * (GRID_SIZE + 1));
 
-  const axis = Math.random() > 0.5 ? "x" : "z";
+  const axis = Math.random() > 0.5 ? 'x' : 'z';
   const roadCoordinate =
-    START_OFFSET +
-    (axis === "x" ? roadIndexX : roadIndexZ) * CELL_SIZE -
-    CELL_SIZE / 2;
+    START_OFFSET + (axis === 'x' ? roadIndexX : roadIndexZ) * CELL_SIZE - CELL_SIZE / 2;
 
   const limit = (GRID_SIZE * CELL_SIZE) / 2;
   const otherCoord = (Math.random() - 0.5) * 2 * limit * 0.9;
 
   let x = 0,
     z = 0;
-  if (axis === "x") {
+  if (axis === 'x') {
     z = roadCoordinate;
     x = otherCoord;
   } else {
@@ -449,7 +455,11 @@ function initScene(width: number, height: number) {
 const browserQuality = getBrowserQuality();
 
 function initRenderer(width: number, height: number) {
-  renderer = new WebGLRenderer({ antialias: false, alpha: false, powerPreference: "high-performance" });
+  renderer = new WebGLRenderer({
+    antialias: false,
+    alpha: false,
+    powerPreference: 'high-performance',
+  });
   renderer.setSize(width, height);
   renderer.setPixelRatio(browserQuality.pixelRatioCap);
   renderer.shadowMap.enabled = true;
@@ -502,11 +512,11 @@ function initGameManagers() {
 }
 
 function initEventListeners() {
-  window.addEventListener("resize", onResize);
-  window.addEventListener("click", onClick);
-  window.addEventListener("keydown", onKeyDown);
-  window.addEventListener("keyup", onKeyUp);
-  window.addEventListener("mousemove", onMouseMove);
+  window.addEventListener('resize', onResize);
+  window.addEventListener('click', onClick);
+  window.addEventListener('keydown', onKeyDown);
+  window.addEventListener('keyup', onKeyUp);
+  window.addEventListener('mousemove', onMouseMove);
 }
 
 function initStoryAndMode() {
@@ -554,11 +564,11 @@ function initStoryAndMode() {
   };
   gameModeManager = new GameModeManager(context, (type) => {
     isGameMode.value = type !== null;
-    isDrivingMode.value = type === "driving";
-    isExplorationMode.value = type === "exploration";
-    isCinematicMode.value = type === "cinematic";
+    isDrivingMode.value = type === 'driving';
+    isExplorationMode.value = type === 'exploration';
+    isCinematicMode.value = type === 'cinematic';
     if (type !== null) {
-      emit("game-start");
+      emit('game-start');
     }
   });
 
@@ -583,21 +593,23 @@ onMounted(() => {
   initEventListeners();
   initStoryAndMode();
 
-  ScoreService.getTopScores().then((scores) => {
-    leaderboard.value = scores;
-    if (leaderboardCanvas && leaderboardTexture) {
-      drawLeaderboard(leaderboardCanvas, leaderboardTexture, leaderboard.value);
-    }
-  }).catch(() => {
-    // Scores failed to load, leaderboard stays empty
-  });
+  ScoreService.getTopScores()
+    .then((scores) => {
+      leaderboard.value = scores;
+      if (leaderboardCanvas && leaderboardTexture) {
+        drawLeaderboard(leaderboardCanvas, leaderboardTexture, leaderboard.value);
+      }
+    })
+    .catch(() => {
+      // Scores failed to load, leaderboard stays empty
+    });
 
   cyberpunkAudio.addListener(onAudioNote);
   showSplash.value = false;
 });
 
 function onKeyDown(event: KeyboardEvent) {
-  if (event.key === "Escape") {
+  if (event.key === 'Escape') {
     exitGameMode();
     return;
   }
@@ -619,7 +631,7 @@ watch(
   () => storyState.value.currentMissionIndex,
   (newIdx) => {
     storyItemsManager?.setCurrentMission(newIdx);
-  },
+  }
 );
 
 watch(showSplash, (newVal, oldVal) => {
@@ -635,21 +647,21 @@ watch(activeCar, (newCar, oldCar) => {
 
 function startExplorationMode() {
   if (isFallbackMode.value) return;
-  gameModeManager.setMode(new ExplorationMode(), "exploration");
+  gameModeManager.setMode(new ExplorationMode(), 'exploration');
 }
 
 function startStoryMode() {
   if (isFallbackMode.value) return;
-  gameModeManager.setMode(new ExplorationMode(), "exploration");
+  gameModeManager.setMode(new ExplorationMode(), 'exploration');
   storyManager.start();
 }
 
 async function startDemoMode() {
   if (isFallbackMode.value) return;
-  const ok = await epilepsyConfirm(t("epilepsy.warning"));
+  const ok = await epilepsyConfirm(t('epilepsy.warning'));
   if (!ok) return;
   audioManager.photosensitivityConfirmed = true;
-  gameModeManager.setMode(new DemoMode(), "demo");
+  gameModeManager.setMode(new DemoMode(), 'demo');
 }
 
 defineExpose({ startExplorationMode, startDemoMode, startStoryMode });
@@ -665,7 +677,7 @@ function exitGameMode() {
   score.value = 0;
   drivingScore.value = 0;
   gameSessionId.value = null;
-  emit("game-end");
+  emit('game-end');
 }
 
 function onResize() {
@@ -698,7 +710,7 @@ function collectCarMeshes(): Object3D[] {
   (cars as Group[]).forEach((c) =>
     (c as Group).traverse((child) => {
       if (child instanceof Mesh) meshes.push(child);
-    }),
+    })
   );
   return meshes;
 }
@@ -712,7 +724,7 @@ function handleFightMarkerClick(): boolean {
     isCinematicMode.value = true;
     isGameMode.value = true;
     cinematicTarget.copy(hit.userData.target);
-    emit("game-start");
+    emit('game-start');
     return true;
   }
   return false;
@@ -724,19 +736,21 @@ function handleCarClick(): boolean {
   if (intersects.length === 0) return false;
   const hit = intersects[0].object;
   let target: Object3D = hit;
-  while (target.parent && target.parent.type !== "Scene") {
+  while (target.parent && target.parent.type !== 'Scene') {
     target = target.parent;
   }
   if (target instanceof Group && target.userData.speed !== undefined) {
     activeCar.value = target;
     target.userData.isPlayerControlled = true;
     target.userData.currentSpeed = target.userData.speed;
-    ScoreService.createSession().then((id) => {
-      gameSessionId.value = id;
-    }).catch(() => {
-      // Session creation failed, game can still continue
-    });
-    gameModeManager.setMode(new DrivingMode(), "driving");
+    ScoreService.createSession()
+      .then((id) => {
+        gameSessionId.value = id;
+      })
+      .catch(() => {
+        // Session creation failed, game can still continue
+      });
+    gameModeManager.setMode(new DrivingMode(), 'driving');
     return true;
   }
   return false;
@@ -770,25 +784,25 @@ function onMouseMove(event: MouseEvent) {
 
 function renderFallbackImage() {
   try {
-    const dataUrl = renderer.domElement.toDataURL("image/png");
+    const dataUrl = renderer.domElement.toDataURL('image/png');
     if (!canvasContainer.value) return;
     while (canvasContainer.value.firstChild) {
       canvasContainer.value.removeChild(canvasContainer.value.firstChild);
     }
-    const img = document.createElement("img");
+    const img = document.createElement('img');
     img.src = dataUrl;
-    img.alt = "";
-    img.style.width = "100%";
-    img.style.height = "100%";
-    img.style.objectFit = "cover";
-    img.style.display = "block";
+    img.alt = '';
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'cover';
+    img.style.display = 'block';
     canvasContainer.value.appendChild(img);
   } catch (_e) {
     if (!canvasContainer.value) return;
     while (canvasContainer.value.firstChild) {
       canvasContainer.value.removeChild(canvasContainer.value.firstChild);
     }
-    canvasContainer.value.style.background = "#050510";
+    canvasContainer.value.style.background = '#050510';
   }
 }
 
@@ -802,7 +816,7 @@ function disposeManagers() {
 function fallbackToStaticImage() {
   if (isFallbackMode.value) return;
   isFallbackMode.value = true;
-  emit("fallback");
+  emit('fallback');
   exitGameMode();
   isActive = false;
 
@@ -822,11 +836,11 @@ function fallbackToStaticImage() {
   cyberpunkAudio.dispose();
   sparkSystem.dispose();
 
-  window.removeEventListener("resize", onResize);
-  window.removeEventListener("click", onClick);
-  window.removeEventListener("keydown", onKeyDown);
-  window.removeEventListener("keyup", onKeyUp);
-  window.removeEventListener("mousemove", onMouseMove);
+  window.removeEventListener('resize', onResize);
+  window.removeEventListener('click', onClick);
+  window.removeEventListener('keydown', onKeyDown);
+  window.removeEventListener('keyup', onKeyUp);
+  window.removeEventListener('mousemove', onMouseMove);
 
   disposeManagers();
   if (cityBuilder) cityBuilder.dispose();
@@ -842,7 +856,8 @@ function checkLowFps(now: number): boolean {
 
   frameTimestamps.push(now);
   if (frameTimestamps.length > 60) frameTimestamps.shift();
-  if (frameTimestamps.length < 30 || now - lastFpsCheckTime < FALLBACK_CHECK_INTERVAL_MS) return false;
+  if (frameTimestamps.length < 30 || now - lastFpsCheckTime < FALLBACK_CHECK_INTERVAL_MS)
+    return false;
 
   const elapsed = frameTimestamps[frameTimestamps.length - 1] - frameTimestamps[0];
   if (elapsed <= 0) return false;
@@ -866,15 +881,31 @@ function updateMultiplayer(dt: number) {
   if (!multiplayerManager) return;
   multiplayerManager.update(dt);
   if (isExplorationMode.value) {
-    multiplayerManager.broadcast(camera.position.x, camera.position.y, camera.position.z, camera.rotation.y, "walking");
+    multiplayerManager.broadcast(
+      camera.position.x,
+      camera.position.y,
+      camera.position.z,
+      camera.rotation.y,
+      'walking'
+    );
   } else if (isDrivingMode.value && activeCar.value) {
     const heading = activeCar.value.userData.heading ?? activeCar.value.rotation.y;
-    multiplayerManager.broadcast(activeCar.value.position.x, activeCar.value.position.y, activeCar.value.position.z, heading, "driving");
+    multiplayerManager.broadcast(
+      activeCar.value.position.x,
+      activeCar.value.position.y,
+      activeCar.value.position.z,
+      heading,
+      'driving'
+    );
   }
 }
 
 function updateSignalStrength() {
-  if (isExplorationMode.value && !storyState.value.active && !storyItemsManager?.isTriggerHidden()) {
+  if (
+    isExplorationMode.value &&
+    !storyState.value.active &&
+    !storyItemsManager?.isTriggerHidden()
+  ) {
     const dx = camera.position.x - STORY_TRIGGER_POSITION.x;
     const dz = camera.position.z - STORY_TRIGGER_POSITION.z;
     const dist = Math.sqrt(dx * dx + dz * dz);
@@ -893,7 +924,11 @@ function updateCityMaterials() {
   for (const key in materials) {
     const mat = materials[key];
     if (mat.emissiveIntensity > EMISSIVE_INTENSITY_TARGET) {
-      mat.emissiveIntensity = MathUtils.lerp(mat.emissiveIntensity, EMISSIVE_INTENSITY_TARGET, EMISSIVE_LERP_FACTOR);
+      mat.emissiveIntensity = MathUtils.lerp(
+        mat.emissiveIntensity,
+        EMISSIVE_INTENSITY_TARGET,
+        EMISSIVE_LERP_FACTOR
+      );
     }
   }
 }
@@ -921,7 +956,8 @@ function updateCamera(time: number, now: number) {
 
   const orbitRadius = ORBIT_RADIUS_DESKTOP;
   const targetY = CAMERA_TARGET_Y_DESKTOP;
-  const introProgress = startTime.value === 0 ? 0 : Math.min(1, (now - startTime.value) / INTRO_DURATION_MS);
+  const introProgress =
+    startTime.value === 0 ? 0 : Math.min(1, (now - startTime.value) / INTRO_DURATION_MS);
 
   camera.position.x = Math.sin(time * ORBIT_SPEED) * orbitRadius;
   camera.position.z = Math.cos(time * ORBIT_SPEED) * orbitRadius;
@@ -979,21 +1015,18 @@ function playPewSound(pos?: Vector3) {
 
   if (!audioCtx || !dest) return;
 
-  if (audioCtx.state === "suspended") {
+  if (audioCtx.state === 'suspended') {
     audioCtx.resume();
   }
 
   const oscillator = audioCtx.createOscillator();
   const gainNode = audioCtx.createGain();
 
-  oscillator.type = "sawtooth";
-  oscillator.frequency.setValueAtTime(
-    AUDIO_OSCILLATOR_FREQ_START,
-    audioCtx.currentTime,
-  );
+  oscillator.type = 'sawtooth';
+  oscillator.frequency.setValueAtTime(AUDIO_OSCILLATOR_FREQ_START, audioCtx.currentTime);
   oscillator.frequency.exponentialRampToValueAtTime(
     AUDIO_OSCILLATOR_FREQ_END,
-    audioCtx.currentTime + AUDIO_SWEEP_DURATION,
+    audioCtx.currentTime + AUDIO_SWEEP_DURATION
   );
 
   let volume = AUDIO_VOLUME;
@@ -1006,10 +1039,7 @@ function playPewSound(pos?: Vector3) {
   }
 
   gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
-  gainNode.gain.exponentialRampToValueAtTime(
-    0.001,
-    audioCtx.currentTime + AUDIO_SWEEP_DURATION,
-  );
+  gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + AUDIO_SWEEP_DURATION);
 
   oscillator.connect(gainNode);
   gainNode.connect(dest);
@@ -1021,15 +1051,15 @@ function playPewSound(pos?: Vector3) {
 function onAudioNote(type: string, data?: any) {
   if (!cityBuilder) return;
   const materials = cityBuilder.getAudioMaterials();
-  let key = "";
-  if (type === "bass") {
+  let key = '';
+  if (type === 'bass') {
     key = `bass${data}`;
   } else {
     key = type;
   }
   if (materials[key] && audioManager.photosensitivityConfirmed) {
     let boost = EMISSIVE_INTENSITY_BOOST_BASS;
-    if (type === "hihat") boost = EMISSIVE_INTENSITY_BOOST_HIHAT;
+    if (type === 'hihat') boost = EMISSIVE_INTENSITY_BOOST_HIHAT;
     materials[key].emissiveIntensity = boost;
   }
 }
@@ -1037,11 +1067,11 @@ function onAudioNote(type: string, data?: any) {
 onBeforeUnmount(() => {
   cyberpunkAudio.removeListener(onAudioNote);
   isActive = false;
-  window.removeEventListener("resize", onResize);
-  window.removeEventListener("click", onClick);
-  window.removeEventListener("keydown", onKeyDown);
-  window.removeEventListener("keyup", onKeyUp);
-  window.removeEventListener("mousemove", onMouseMove);
+  window.removeEventListener('resize', onResize);
+  window.removeEventListener('click', onClick);
+  window.removeEventListener('keydown', onKeyDown);
+  window.removeEventListener('keyup', onKeyUp);
+  window.removeEventListener('mousemove', onMouseMove);
 
   cancelAnimationFrame(animationId);
   if (renderer) {
@@ -1154,10 +1184,12 @@ onBeforeUnmount(() => {
   bottom: 120px;
   left: 50%;
   transform: translateX(-50%);
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 14px;
   color: #ff00cc;
-  text-shadow: 0 0 12px #ff00cc, 0 0 24px rgba(255, 0, 204, 0.5);
+  text-shadow:
+    0 0 12px #ff00cc,
+    0 0 24px rgba(255, 0, 204, 0.5);
   letter-spacing: 3px;
   z-index: 25;
   pointer-events: none;
@@ -1179,7 +1211,7 @@ onBeforeUnmount(() => {
 }
 
 #signal-label {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 9px;
   color: #ff00cc;
   letter-spacing: 2px;
@@ -1199,11 +1231,21 @@ onBeforeUnmount(() => {
   transition: all 0.3s ease;
 }
 
-.signal-bar:nth-child(1) { height: 4px; }
-.signal-bar:nth-child(2) { height: 7px; }
-.signal-bar:nth-child(3) { height: 10px; }
-.signal-bar:nth-child(4) { height: 13px; }
-.signal-bar:nth-child(5) { height: 16px; }
+.signal-bar:nth-child(1) {
+  height: 4px;
+}
+.signal-bar:nth-child(2) {
+  height: 7px;
+}
+.signal-bar:nth-child(3) {
+  height: 10px;
+}
+.signal-bar:nth-child(4) {
+  height: 13px;
+}
+.signal-bar:nth-child(5) {
+  height: 16px;
+}
 
 .signal-bar.active {
   background: #ff00cc;
@@ -1211,7 +1253,7 @@ onBeforeUnmount(() => {
 }
 
 #signal-strength {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 10px;
   color: rgba(255, 0, 204, 0.7);
   min-width: 28px;
@@ -1223,7 +1265,7 @@ onBeforeUnmount(() => {
   bottom: 150px;
   left: 50%;
   transform: translateX(-50%);
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 12px;
   color: rgba(255, 0, 204, 0.6);
   text-shadow: 0 0 8px rgba(255, 0, 204, 0.2);
@@ -1238,7 +1280,7 @@ onBeforeUnmount(() => {
   bottom: 16px;
   right: 16px;
   z-index: 30;
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 2px;

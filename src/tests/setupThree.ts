@@ -1,16 +1,21 @@
-import { vi } from "vitest";
+import { vi } from 'vitest';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 // @ts-expect-error: Mocking complex overload structure
 HTMLCanvasElement.prototype.getContext = vi.fn((contextId: string, _options?: any) => {
-  if (contextId === "2d" || contextId === "webgl" || contextId === "webgl2" || contextId === "experimental-webgl") {
+  if (
+    contextId === '2d' ||
+    contextId === 'webgl' ||
+    contextId === 'webgl2' ||
+    contextId === 'experimental-webgl'
+  ) {
     return {
       fillRect: vi.fn(),
       clearRect: vi.fn(),
       getImageData: vi.fn((_x: number, _y: number, w: number, h: number) => {
-          const length = (w || 1024) * (h || 1024) * 4;
-          return { data: new Uint8ClampedArray(length) };
+        const length = (w || 1024) * (h || 1024) * 4;
+        return { data: new Uint8ClampedArray(length) };
       }),
       putImageData: vi.fn(),
       createImageData: vi.fn(() => []),
@@ -35,10 +40,10 @@ HTMLCanvasElement.prototype.getContext = vi.fn((contextId: string, _options?: an
       strokeRect: vi.fn(),
       setLineDash: vi.fn(),
       fillText: vi.fn(), // Added fillText
-      fillStyle: "",
-      strokeStyle: "",
+      fillStyle: '',
+      strokeStyle: '',
       lineWidth: 0,
-      shadowColor: "",
+      shadowColor: '',
       shadowBlur: 0,
     } as unknown as CanvasRenderingContext2D;
   }
@@ -46,32 +51,58 @@ HTMLCanvasElement.prototype.getContext = vi.fn((contextId: string, _options?: an
 });
 
 class MockColor {
-  r = 0; g = 0; b = 0;
+  r = 0;
+  g = 0;
+  b = 0;
   constructor(_color?: number | string) {}
-  setHex(_hex: number) { return this; }
-  setHSL() { return this; }
-  clone() { const c = new MockColor(); c.r = this.r; c.g = this.g; c.b = this.b; return c; }
-  copy(c: any) { if (c) { this.r = c.r; this.g = c.g; this.b = c.b; } return this; }
-  getHex() { return 0; }
-  toArray(arr: any[] = [], offset = 0) { arr[offset] = this.r; arr[offset + 1] = this.g; arr[offset + 2] = this.b; return arr; }
+  setHex(_hex: number) {
+    return this;
+  }
+  setHSL() {
+    return this;
+  }
+  clone() {
+    const c = new MockColor();
+    c.r = this.r;
+    c.g = this.g;
+    c.b = this.b;
+    return c;
+  }
+  copy(c: any) {
+    if (c) {
+      this.r = c.r;
+      this.g = c.g;
+      this.b = c.b;
+    }
+    return this;
+  }
+  getHex() {
+    return 0;
+  }
+  toArray(arr: any[] = [], offset = 0) {
+    arr[offset] = this.r;
+    arr[offset + 1] = this.g;
+    arr[offset + 2] = this.b;
+    return arr;
+  }
 }
 
-vi.mock("three", async () => {
-  const actual = await vi.importActual("three");
+vi.mock('three', async () => {
+  const actual = await vi.importActual('three');
   return {
     ...(actual as Record<string, unknown>),
     Color: MockColor,
     WebGLRenderer: class {
-      domElement = document.createElement("canvas");
+      domElement = document.createElement('canvas');
       shadowMap = { enabled: false, type: 0 };
       toneMapping = 0;
       toneMappingExposure = 1;
       setSize = vi.fn();
-    getSize = vi.fn().mockImplementation((target: any) => {
-      target.width = 1024;
-      target.height = 768;
-      return target;
-    });
+      getSize = vi.fn().mockImplementation((target: any) => {
+        target.width = 1024;
+        target.height = 768;
+        return target;
+      });
       setPixelRatio = vi.fn();
       getPixelRatio = vi.fn(() => 1);
       render = vi.fn();
@@ -89,11 +120,21 @@ vi.mock("three", async () => {
       translate() {}
       rotateX = vi.fn();
       rotateZ = vi.fn();
-      getIndex() { return this.index; }
-      getAttribute(name: string) { return this.attributes[name]; }
-      setIndex() { return this; }
-      clone() { return new (this.constructor as any)(); }
-      applyMatrix4() { return this; }
+      getIndex() {
+        return this.index;
+      }
+      getAttribute(name: string) {
+        return this.attributes[name];
+      }
+      setIndex() {
+        return this;
+      }
+      clone() {
+        return new (this.constructor as any)();
+      }
+      applyMatrix4() {
+        return this;
+      }
       computeVertexNormals() {}
       dispose() {}
     },
@@ -105,11 +146,21 @@ vi.mock("three", async () => {
       parameters: any;
       constructor() {}
       translate() {}
-      getIndex() { return this.index; }
-      getAttribute(name: string) { return this.attributes[name]; }
-      setIndex() { return this; }
-      clone() { return new (this.constructor as any)(); }
-      applyMatrix4() { return this; }
+      getIndex() {
+        return this.index;
+      }
+      getAttribute(name: string) {
+        return this.attributes[name];
+      }
+      setIndex() {
+        return this;
+      }
+      clone() {
+        return new (this.constructor as any)();
+      }
+      applyMatrix4() {
+        return this;
+      }
       computeVertexNormals() {}
       dispose() {}
     },
@@ -121,24 +172,46 @@ vi.mock("three", async () => {
       parameters: any;
       constructor() {}
       translate() {}
-      getIndex() { return this.index; }
-      getAttribute(name: string) { return this.attributes[name]; }
-      setIndex() { return this; }
-      clone() { return new (this.constructor as any)(); }
-      applyMatrix4() { return this; }
+      getIndex() {
+        return this.index;
+      }
+      getAttribute(name: string) {
+        return this.attributes[name];
+      }
+      setIndex() {
+        return this;
+      }
+      clone() {
+        return new (this.constructor as any)();
+      }
+      applyMatrix4() {
+        return this;
+      }
       computeVertexNormals() {}
       dispose() {}
     },
     BoxGeometry: class {
       groups: any[] = [];
       morphAttributes: Record<string, any> = {};
-      attributes: any = { position: { count: 24, itemSize: 3, array: new Float32Array(72) }, normal: { count: 24, itemSize: 3, array: new Float32Array(72) }, uv: { count: 24, itemSize: 2, array: new Float32Array(48) } };
+      attributes: any = {
+        position: { count: 24, itemSize: 3, array: new Float32Array(72) },
+        normal: { count: 24, itemSize: 3, array: new Float32Array(72) },
+        uv: { count: 24, itemSize: 2, array: new Float32Array(48) },
+      };
       index: any = { array: new Uint16Array(36) };
       translate() {}
-      getIndex() { return this.index; }
-      getAttribute(name: string) { return this.attributes[name]; }
-      setIndex(_arr: any) { return this; }
-      applyMatrix4(_m: any) { return this; }
+      getIndex() {
+        return this.index;
+      }
+      getAttribute(name: string) {
+        return this.attributes[name];
+      }
+      setIndex(_arr: any) {
+        return this;
+      }
+      applyMatrix4(_m: any) {
+        return this;
+      }
       clone() {
         const c = new (this.constructor as any)();
         c.groups = this.groups.map((g: any) => ({ ...g }));
@@ -183,13 +256,27 @@ vi.mock("three", async () => {
         },
       };
       index: any = null;
-      setIndex(arr: any) { this.index = arr; return this; }
-      setAttribute(name: string, attr: any) { this.attributes[name] = attr; return this; }
+      setIndex(arr: any) {
+        this.index = arr;
+        return this;
+      }
+      setAttribute(name: string, attr: any) {
+        this.attributes[name] = attr;
+        return this;
+      }
       setFromPoints() {}
-      getIndex() { return this.index; }
-      getAttribute(name: string) { return this.attributes[name]; }
-      hasAttribute(name: string) { return name in this.attributes; }
-      applyMatrix4(_m: any) { return this; }
+      getIndex() {
+        return this.index;
+      }
+      getAttribute(name: string) {
+        return this.attributes[name];
+      }
+      hasAttribute(name: string) {
+        return name in this.attributes;
+      }
+      applyMatrix4(_m: any) {
+        return this;
+      }
       clone() {
         const c = new (this.constructor as any)();
         c.attributes = this.attributes;
@@ -216,7 +303,7 @@ vi.mock("three", async () => {
           this: { x: number; y: number; z: number },
           x: number,
           y: number,
-          z: number,
+          z: number
         ) {
           this.x = x;
           this.y = y;
@@ -225,7 +312,7 @@ vi.mock("three", async () => {
         }),
         copy: vi.fn(function (
           this: { x: number; y: number; z: number },
-          v: { x: number; y: number; z: number },
+          v: { x: number; y: number; z: number }
         ) {
           this.x = v.x;
           this.y = v.y;
@@ -247,7 +334,16 @@ vi.mock("three", async () => {
       isObject3D = true;
       layers = { mask: 1, test: vi.fn(() => true) };
       raycast = vi.fn();
-      matrixWorld = { elements: [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1], copy: vi.fn(), clone: vi.fn(), multiply: vi.fn(), decompose: vi.fn(), compose: vi.fn(), identity: vi.fn(), invert: vi.fn() };
+      matrixWorld = {
+        elements: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+        copy: vi.fn(),
+        clone: vi.fn(),
+        multiply: vi.fn(),
+        decompose: vi.fn(),
+        compose: vi.fn(),
+        identity: vi.fn(),
+        invert: vi.fn(),
+      };
       updateWorldMatrix = vi.fn();
 
       constructor(geometry?: any, material?: any) {
@@ -274,7 +370,16 @@ vi.mock("three", async () => {
       removeEventListener() {}
     },
     Group: class {
-      matrixWorld = { elements: [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1], copy: vi.fn(), clone: vi.fn(), multiply: vi.fn(), decompose: vi.fn(), compose: vi.fn(), identity: vi.fn(), invert: vi.fn() };
+      matrixWorld = {
+        elements: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+        copy: vi.fn(),
+        clone: vi.fn(),
+        multiply: vi.fn(),
+        decompose: vi.fn(),
+        compose: vi.fn(),
+        identity: vi.fn(),
+        invert: vi.fn(),
+      };
       position = {
         x: 0,
         y: 0,
@@ -283,7 +388,7 @@ vi.mock("three", async () => {
           this: { x: number; y: number; z: number },
           x: number,
           y: number,
-          z: number,
+          z: number
         ) {
           this.x = x;
           this.y = y;
@@ -292,7 +397,7 @@ vi.mock("three", async () => {
         }),
         copy: vi.fn(function (
           this: { x: number; y: number; z: number },
-          v: { x: number; y: number; z: number },
+          v: { x: number; y: number; z: number }
         ) {
           this.x = v.x;
           this.y = v.y;
@@ -368,8 +473,7 @@ vi.mock("three", async () => {
       transparent = false;
       opacity = 1;
       constructor(params?: any) {
-        if (params?.color !== undefined)
-          this.color = new MockColor();
+        if (params?.color !== undefined) this.color = new MockColor();
       }
       clone() {
         const c = new (this.constructor as any)();
@@ -488,7 +592,7 @@ vi.mock("three", async () => {
   };
 });
 
-vi.mock("three/examples/jsm/postprocessing/EffectComposer", () => ({
+vi.mock('three/examples/jsm/postprocessing/EffectComposer', () => ({
   EffectComposer: class {
     constructor() {}
     addPass = vi.fn();
@@ -501,13 +605,13 @@ vi.mock("three/examples/jsm/postprocessing/EffectComposer", () => ({
   },
 }));
 
-vi.mock("three/examples/jsm/postprocessing/RenderPass", () => ({
+vi.mock('three/examples/jsm/postprocessing/RenderPass', () => ({
   RenderPass: class {
     constructor() {}
   },
 }));
 
-vi.mock("three/examples/jsm/postprocessing/UnrealBloomPass", () => ({
+vi.mock('three/examples/jsm/postprocessing/UnrealBloomPass', () => ({
   UnrealBloomPass: class {
     strength = 1.5;
     radius = 0.4;
@@ -516,7 +620,7 @@ vi.mock("three/examples/jsm/postprocessing/UnrealBloomPass", () => ({
   },
 }));
 
-vi.mock("three/examples/jsm/postprocessing/AfterimagePass", () => ({
+vi.mock('three/examples/jsm/postprocessing/AfterimagePass', () => ({
   AfterimagePass: class {
     enabled = false;
     uniforms = { damp: { value: 0.96 } };
@@ -524,7 +628,7 @@ vi.mock("three/examples/jsm/postprocessing/AfterimagePass", () => ({
   },
 }));
 
-vi.mock("three/examples/jsm/postprocessing/GlitchPass", () => ({
+vi.mock('three/examples/jsm/postprocessing/GlitchPass', () => ({
   GlitchPass: class {
     enabled = false;
     goWild = false;
@@ -532,52 +636,52 @@ vi.mock("three/examples/jsm/postprocessing/GlitchPass", () => ({
   },
 }));
 
-vi.mock("three/examples/jsm/postprocessing/OutputPass", () => ({
+vi.mock('three/examples/jsm/postprocessing/OutputPass', () => ({
   OutputPass: class {
     constructor() {}
   },
 }));
 
 vi.stubGlobal(
-  "requestAnimationFrame",
-  vi.fn((cb) => setTimeout(cb, 16)),
+  'requestAnimationFrame',
+  vi.fn((cb) => setTimeout(cb, 16))
 );
 vi.stubGlobal(
-  "cancelAnimationFrame",
-  vi.fn((id) => clearTimeout(id)),
+  'cancelAnimationFrame',
+  vi.fn((id) => clearTimeout(id))
 );
 
 vi.stubGlobal(
-  "ResizeObserver",
+  'ResizeObserver',
   class ResizeObserver {
     observe() {}
     unobserve() {}
     disconnect() {}
-  },
+  }
 );
 
 vi.stubGlobal(
-  "fetch",
+  'fetch',
   vi.fn(() =>
     Promise.resolve({
       json: () => Promise.resolve({}),
-      text: () => Promise.resolve(""),
+      text: () => Promise.resolve(''),
       ok: true,
       headers: {
         get: vi.fn(),
       },
-    }),
-  ),
+    })
+  )
 );
 
 vi.stubGlobal(
-  "AudioContext",
+  'AudioContext',
   class AudioContext {
-    state = "suspended";
+    state = 'suspended';
     currentTime = 0;
     createOscillator() {
       return {
-        type: "sine",
+        type: 'sine',
         frequency: {
           setValueAtTime: vi.fn(),
           exponentialRampToValueAtTime: vi.fn(),
@@ -600,7 +704,7 @@ vi.stubGlobal(
     }
     createBiquadFilter() {
       return {
-        type: "lowpass",
+        type: 'lowpass',
         frequency: {
           setValueAtTime: vi.fn(),
           exponentialRampToValueAtTime: vi.fn(),
@@ -617,20 +721,20 @@ vi.stubGlobal(
       return { buffer: null, connect: vi.fn(), start: vi.fn(), stop: vi.fn() };
     }
     resume() {
-      this.state = "running";
+      this.state = 'running';
       return Promise.resolve();
     }
     suspend() {
-      this.state = "suspended";
+      this.state = 'suspended';
       return Promise.resolve();
     }
     close() {
       // Added close method
-      this.state = "closed";
+      this.state = 'closed';
       return Promise.resolve();
     }
     destination = {};
     sampleRate = 44100;
-  },
+  }
 );
-vi.stubGlobal("webkitAudioContext", (globalThis as any).AudioContext);
+vi.stubGlobal('webkitAudioContext', (globalThis as any).AudioContext);

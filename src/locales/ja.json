@@ -146,5 +146,12 @@
       "body2": "<ul><li>Alcohol Checker - 運転できるほど酔いが覚める時間を計算</li><li>Noughts and Crosses - ボットと対戦するクラシックな三目並べ</li><li>Ask Me - 自動アシスタントと私の経歴についてチャット</li></ul>",
       "body3": "これらの小さな実験を探索してお楽しみください！"
     }
+  },
+  "desktop": {
+    "toggleDesktop": "Toggle Desktop Mode",
+    "launchTerminal": "Launch Terminal",
+    "launchExplorer": "Open File Explorer",
+    "startMenu": "Start Menu",
+    "shutdown": "Shut Down"
   }
 }

@@ -1,11 +1,11 @@
-import { GameContext, GameMode } from "../types";
-import { carAudio } from "../audio/CarAudio";
-import { BOUNDS } from "../config";
-import { Group } from "three";
-import { getHeight, getNormal, applyCarOrientation } from "../../utils/HeightMap";
-import { handleControlsKeyDown, handleControlsKeyUp } from "../../utils/controls";
-import { RedCarAI } from "../RedCarAI";
-import { checkGridCollision, resolveBuildingCollision } from "../../utils/GridCollision";
+import { GameContext, GameMode } from '../types';
+import { carAudio } from '../audio/CarAudio';
+import { BOUNDS } from '../config';
+import { Group } from 'three';
+import { getHeight, getNormal, applyCarOrientation } from '../../utils/HeightMap';
+import { handleControlsKeyDown, handleControlsKeyUp } from '../../utils/controls';
+import { RedCarAI } from '../RedCarAI';
+import { checkGridCollision, resolveBuildingCollision } from '../../utils/GridCollision';
 
 export class DrivingMode implements GameMode {
   context: GameContext | null = null;
@@ -34,8 +34,7 @@ export class DrivingMode implements GameMode {
       context.activeCar.value.userData.currentSpeed = 0;
       // Initialize heading if not present
       if (context.activeCar.value.userData.heading === undefined) {
-        context.activeCar.value.userData.heading =
-          context.activeCar.value.rotation.y;
+        context.activeCar.value.userData.heading = context.activeCar.value.rotation.y;
       }
 
       context.timeLeft.value = 30;
@@ -92,7 +91,17 @@ export class DrivingMode implements GameMode {
 
   private updateTimerAndCheckpoint(car: Group, dt: number) {
     if (!this.context) return;
-    const { timeLeft, checkpointMesh, navArrow, drivingScore, playPewSound, spawnCheckpoint, isGameOver, distToTarget, reportCheckpoint } = this.context;
+    const {
+      timeLeft,
+      checkpointMesh,
+      navArrow,
+      drivingScore,
+      playPewSound,
+      spawnCheckpoint,
+      isGameOver,
+      distToTarget,
+      reportCheckpoint,
+    } = this.context;
 
     timeLeft.value -= dt;
     if (timeLeft.value <= 0) {
@@ -228,8 +237,7 @@ export class DrivingMode implements GameMode {
       }
       this.context.navArrow.visible = false;
       if (this.context.chaseArrow) this.context.chaseArrow.visible = false;
-      if (this.context.checkpointMesh)
-        this.context.checkpointMesh.visible = false;
+      if (this.context.checkpointMesh) this.context.checkpointMesh.visible = false;
 
       this.redCarAI?.cleanup();
 

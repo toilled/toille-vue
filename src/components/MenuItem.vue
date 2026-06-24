@@ -1,10 +1,6 @@
 <template>
   <li class="menu-item">
-    <a
-      :href="'#' + sectionId"
-      @click.prevent="handleClick"
-      :class="{ active: isActive }"
-    >
+    <a :href="'#' + sectionId" @click.prevent="handleClick" :class="{ active: isActive }">
       <span v-if="page.icon" class="nav-icon">{{ page.icon }}</span>
       <span class="nav-label">{{ page.name }}</span>
     </a>
@@ -12,19 +8,20 @@
 </template>
 
 <script setup lang="ts">
-import type { Ref } from "vue";
-import { Page } from "../interfaces/Page";
+import type { Ref } from 'vue';
+import { Page } from '../interfaces/Page';
 
 const props = defineProps<{
   page: Page;
 }>();
 
-const activeSection = inject<Ref<string>>("activeSection");
-const navigateToSection = inject<(id: string, behavior?: ScrollBehavior) => void>("navigateToSection");
+const activeSection = inject<Ref<string>>('activeSection');
+const navigateToSection =
+  inject<(id: string, behavior?: ScrollBehavior) => void>('navigateToSection');
 
 const sectionId = computed(() => {
-  if (props.page.link === "/") return "home";
-  return props.page.link.replace(/^\//, "");
+  if (props.page.link === '/') return 'home';
+  return props.page.link.replace(/^\//, '');
 });
 
 const isActive = computed(() => {
@@ -68,12 +65,16 @@ function handleClick() {
   border-radius: 1px;
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transform: translateX(-50%);
-  box-shadow: 0 0 8px #00ffcc, 0 0 16px rgba(0, 255, 204, 0.4);
+  box-shadow:
+    0 0 8px #00ffcc,
+    0 0 16px rgba(0, 255, 204, 0.4);
 }
 
 .can-hover .menu-item a:hover {
   background: rgba(0, 255, 204, 0.08);
-  box-shadow: 0 0 16px rgba(0, 255, 204, 0.12), inset 0 0 12px rgba(0, 255, 204, 0.03);
+  box-shadow:
+    0 0 16px rgba(0, 255, 204, 0.12),
+    inset 0 0 12px rgba(0, 255, 204, 0.03);
   transform: translateY(-1px);
   border-color: rgba(0, 255, 204, 0.2);
 }

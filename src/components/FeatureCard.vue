@@ -13,8 +13,6 @@
 </template>
 
 <script setup lang="ts">
-
-
 const props = defineProps<{
   icon: string;
   title: string;
@@ -25,18 +23,19 @@ const props = defineProps<{
 }>();
 
 const router = useRouter();
-const navigateToSection = inject<(id: string, behavior?: ScrollBehavior) => void>("navigateToSection");
+const navigateToSection =
+  inject<(id: string, behavior?: ScrollBehavior) => void>('navigateToSection');
 
 function handleClick() {
   if (!props.link) return;
 
   if (props.isHash && navigateToSection) {
-    const sectionId = props.link.replace(/^#/, "");
+    const sectionId = props.link.replace(/^#/, '');
     navigateToSection(sectionId);
-  } else if (props.link.startsWith("/")) {
+  } else if (props.link.startsWith('/')) {
     router.push(props.link);
-  } else if (props.link.startsWith("http")) {
-    window.open(props.link, "_blank", "noopener noreferrer");
+  } else if (props.link.startsWith('http')) {
+    window.open(props.link, '_blank', 'noopener noreferrer');
   }
 }
 </script>
@@ -109,7 +108,9 @@ function handleClick() {
   font-size: 1.25rem;
   color: #00ffcc;
   opacity: 0.6;
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
 }
 
 .can-hover .feature-card[link]:hover .feature-arrow {

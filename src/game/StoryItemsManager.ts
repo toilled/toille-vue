@@ -9,34 +9,34 @@ import {
   TorusGeometry,
   AdditiveBlending,
   Object3D,
-} from "three";
-import { getHeight } from "../utils/HeightMap";
+} from 'three';
+import { getHeight } from '../utils/HeightMap';
 
 export const STORY_TRIGGER_POSITION = { x: -760, z: 380 };
 
 interface ObjectivePosition {
   missionIdx: number;
   objIdx: number;
-  type: "goto" | "collect" | "interact";
+  type: 'goto' | 'collect' | 'interact';
   x: number;
   z: number;
 }
 
 const OBJECTIVE_POSITIONS: ObjectivePosition[] = [
   // Mission 0: FIRST CONTACT
-  { missionIdx: 0, objIdx: 0, type: "goto", x: -600, z: -400 },
+  { missionIdx: 0, objIdx: 0, type: 'goto', x: -600, z: -400 },
   // Mission 1: DATA HEIST
-  { missionIdx: 1, objIdx: 0, type: "goto", x: 400, z: -600 },
-  { missionIdx: 1, objIdx: 1, type: "goto", x: 400, z: -620 },
+  { missionIdx: 1, objIdx: 0, type: 'goto', x: 400, z: -600 },
+  { missionIdx: 1, objIdx: 1, type: 'goto', x: 400, z: -620 },
   // Mission 2: GHOST PROTOCOL
-  { missionIdx: 2, objIdx: 0, type: "collect", x: -300, z: 500 },
-  { missionIdx: 2, objIdx: 1, type: "collect", x: 500, z: 300 },
-  { missionIdx: 2, objIdx: 2, type: "collect", x: -500, z: -200 },
+  { missionIdx: 2, objIdx: 0, type: 'collect', x: -300, z: 500 },
+  { missionIdx: 2, objIdx: 1, type: 'collect', x: 500, z: 300 },
+  { missionIdx: 2, objIdx: 2, type: 'collect', x: -500, z: -200 },
   // Mission 3: THE EXCHANGE
-  { missionIdx: 3, objIdx: 0, type: "goto", x: 0, z: 700 },
+  { missionIdx: 3, objIdx: 0, type: 'goto', x: 0, z: 700 },
   // Mission 4: REBOOT
-  { missionIdx: 4, objIdx: 0, type: "goto", x: 0, z: 0 },
-  { missionIdx: 4, objIdx: 1, type: "interact", x: 0, z: 20 },
+  { missionIdx: 4, objIdx: 0, type: 'goto', x: 0, z: 0 },
+  { missionIdx: 4, objIdx: 1, type: 'interact', x: 0, z: 20 },
 ];
 
 function createGlowMaterial(color: number, opacity = 0.6): MeshBasicMaterial {
@@ -133,7 +133,7 @@ export class StoryItemsManager {
   private createObjectiveMarker(type: string, x: number, z: number): Group {
     const group = new Group();
 
-    if (type === "goto") {
+    if (type === 'goto') {
       const pillarGeo = new CylinderGeometry(0.5, 0.5, 6, 8);
       const pillarMat = new MeshBasicMaterial({ color: 0x00ffcc });
       const pillar = new Mesh(pillarGeo, pillarMat);
@@ -152,7 +152,7 @@ export class StoryItemsManager {
       ring.position.y = 6;
       ring.rotation.x = Math.PI / 2;
       group.add(ring);
-    } else if (type === "collect") {
+    } else if (type === 'collect') {
       const shardGeo = new BoxGeometry(1.5, 3, 1.5);
       const shardMat = new MeshBasicMaterial({ color: 0xffcc00 });
       const shard = new Mesh(shardGeo, shardMat);
@@ -165,7 +165,7 @@ export class StoryItemsManager {
       const glow = new Mesh(glowGeo, glowMat);
       glow.position.y = 2;
       group.add(glow);
-    } else if (type === "interact") {
+    } else if (type === 'interact') {
       const panelGeo = new BoxGeometry(2, 3, 0.3);
       const panelMat = new MeshBasicMaterial({ color: 0xff00cc });
       const panel = new Mesh(panelGeo, panelMat);

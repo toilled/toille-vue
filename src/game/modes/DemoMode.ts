@@ -1,9 +1,9 @@
-import { GameMode, GameContext } from "../types";
-import { Vector3, MathUtils, Mesh, Object3D, BoxGeometry } from "three";
-import { cyberpunkAudio } from "../../utils/CyberpunkAudio";
-import { audioManager } from "../../utils/AudioManager";
-import { AfterimagePass } from "three/examples/jsm/postprocessing/AfterimagePass.js";
-import { GlitchPass } from "three/examples/jsm/postprocessing/GlitchPass.js";
+import { GameMode, GameContext } from '../types';
+import { Vector3, MathUtils, Mesh, Object3D, BoxGeometry } from 'three';
+import { cyberpunkAudio } from '../../utils/CyberpunkAudio';
+import { audioManager } from '../../utils/AudioManager';
+import { AfterimagePass } from 'three/examples/jsm/postprocessing/AfterimagePass.js';
+import { GlitchPass } from 'three/examples/jsm/postprocessing/GlitchPass.js';
 
 interface BloomPass {
   strength: number;
@@ -13,11 +13,11 @@ interface BloomPass {
 
 function isBloomPass(pass: unknown): pass is BloomPass {
   return (
-    typeof pass === "object" &&
+    typeof pass === 'object' &&
     pass !== null &&
-    "strength" in pass &&
-    "radius" in pass &&
-    "threshold" in pass
+    'strength' in pass &&
+    'radius' in pass &&
+    'threshold' in pass
   );
 }
 
@@ -61,8 +61,7 @@ export class DemoMode implements GameMode {
   // Per-scene accumulators
   private streetDist: number = 0;
 
-  private onAudioNoteBound = (type: string, data?: number) =>
-    this.onAudioNote(type, data);
+  private onAudioNoteBound = (type: string, data?: number) => this.onAudioNote(type, data);
 
   // ----- Lifecycle -----------------------------------------------------------
 
@@ -86,7 +85,7 @@ export class DemoMode implements GameMode {
       }
 
       this.afterimagePass = new AfterimagePass();
-      this.afterimagePass.uniforms["damp"].value = 0.8;
+      this.afterimagePass.uniforms['damp'].value = 0.8;
       this.afterimagePass.enabled = false;
       this.context.composer.addPass(this.afterimagePass);
 
@@ -126,31 +125,18 @@ export class DemoMode implements GameMode {
 
     // ---- Camera ---------------------------------------------------------
     if (this.transitioning) {
-      this.transitionProgress = Math.min(
-        1,
-        this.transitionProgress + dt / TRANSITION_DURATION,
-      );
+      this.transitionProgress = Math.min(1, this.transitionProgress + dt / TRANSITION_DURATION);
       const t = this.smoothstep(this.transitionProgress);
 
-      this._blendPos.lerpVectors(
-        this.transitionFromPos,
-        this.cameraBasePosition,
-        t,
-      );
+      this._blendPos.lerpVectors(this.transitionFromPos, this.cameraBasePosition, t);
       this.context.camera.position.copy(this._blendPos).add(this.cameraShake);
 
-      this._blendTarget.lerpVectors(
-        this.transitionFromTarget,
-        this.currentLookTarget,
-        t,
-      );
+      this._blendTarget.lerpVectors(this.transitionFromTarget, this.currentLookTarget, t);
       this.context.camera.lookAt(this._blendTarget);
 
       if (this.transitionProgress >= 1) this.transitioning = false;
     } else {
-      this.context.camera.position
-        .copy(this.cameraBasePosition)
-        .add(this.cameraShake);
+      this.context.camera.position.copy(this.cameraBasePosition).add(this.cameraShake);
       this.context.camera.lookAt(this.currentLookTarget);
     }
 
@@ -165,7 +151,7 @@ export class DemoMode implements GameMode {
       this.bloomPass.strength = MathUtils.lerp(
         this.bloomPass.strength,
         this.originalBloomStrength,
-        dt * 4,
+        dt * 4
       );
     }
 
@@ -181,8 +167,7 @@ export class DemoMode implements GameMode {
     if (this.bloomPass) this.bloomPass.strength = this.originalBloomStrength;
 
     if (this.context.composer) {
-      if (this.afterimagePass)
-        this.context.composer.removePass(this.afterimagePass);
+      if (this.afterimagePass) this.context.composer.removePass(this.afterimagePass);
       if (this.glitchPass) this.context.composer.removePass(this.glitchPass);
     }
   }
@@ -197,23 +182,19 @@ export class DemoMode implements GameMode {
   // ==========================================================================
 
   private onAudioNote(type: string, _data?: number) {
-    if (type === "kick") {
+    if (type === 'kick') {
       if (this.bloomPass) this.bloomPass.strength = 3.0;
       this.cameraShake.y += (Math.random() - 0.5) * 6;
-      if (this.glitchPass && Math.random() < 0.3)
-        this.glitchPass.enabled = true;
+      if (this.glitchPass && Math.random() < 0.3) this.glitchPass.enabled = true;
     }
 
-    if (type === "snare") {
+    if (type === 'snare') {
       if (this.bloomPass) this.bloomPass.strength = 2.5;
       this.cameraShake.x += (Math.random() - 0.5) * 5;
 
       if (this.sparkTargets.length > 0) {
         for (let k = 0; k < 3; k++) {
-          const target =
-            this.sparkTargets[
-              Math.floor(Math.random() * this.sparkTargets.length)
-            ];
+          const target = this.sparkTargets[Math.floor(Math.random() * this.sparkTargets.length)];
           for (let i = 0; i < 5; i++) {
             this.context.spawnSparks(target.clone());
           }
@@ -221,7 +202,7 @@ export class DemoMode implements GameMode {
       }
     }
 
-    if (type === "hihat") {
+    if (type === 'hihat') {
       this.cameraShake.z += (Math.random() - 0.5) * 2;
     }
   }
@@ -283,9 +264,7 @@ export class DemoMode implements GameMode {
   }
 
   private applyCamera() {
-    this.context.camera.position
-      .copy(this.cameraBasePosition)
-      .add(this.cameraShake);
+    this.context.camera.position.copy(this.cameraBasePosition).add(this.cameraShake);
     this.context.camera.lookAt(this.currentLookTarget);
   }
 
@@ -323,21 +302,14 @@ export class DemoMode implements GameMode {
 
     // Fly above building bodies (40-160 tall) — skim the rooftops
     const weaveAmp = 120 + Math.sin(time * 1.2) * 40;
-    this.cameraBasePosition.x =
-      Math.sin(this.streetDist * 0.004 + time * 0.5) * weaveAmp;
+    this.cameraBasePosition.x = Math.sin(this.streetDist * 0.004 + time * 0.5) * weaveAmp;
 
     this.cameraBasePosition.y = 220 + Math.sin(time * 2.5) * 20;
 
     const lookDist = 350;
     const lookX =
-      Math.sin((this.streetDist + lookDist * 2) * 0.004 + (time + 0.3) * 0.5) *
-      weaveAmp *
-      0.6;
-    this.currentLookTarget.set(
-      lookX,
-      100,
-      this.cameraBasePosition.z - lookDist,
-    );
+      Math.sin((this.streetDist + lookDist * 2) * 0.004 + (time + 0.3) * 0.5) * weaveAmp * 0.6;
+    this.currentLookTarget.set(lookX, 100, this.cameraBasePosition.z - lookDist);
 
     if (this.cameraBasePosition.z < -2000) {
       this.cameraBasePosition.z = 2000;
@@ -347,7 +319,7 @@ export class DemoMode implements GameMode {
 
     if (this.afterimagePass) {
       this.afterimagePass.enabled = true;
-      this.afterimagePass.uniforms["damp"].value = 0.82;
+      this.afterimagePass.uniforms['damp'].value = 0.82;
     }
   }
 
@@ -366,14 +338,13 @@ export class DemoMode implements GameMode {
 
     this.cameraBasePosition.x = Math.sin(angle) * radius;
     this.cameraBasePosition.z = Math.cos(angle) * radius;
-    this.cameraBasePosition.y =
-      550 - progress * 400 + Math.sin(time * 1.8) * 40;
+    this.cameraBasePosition.y = 550 - progress * 400 + Math.sin(time * 1.8) * 40;
 
     this.currentLookTarget.set(0, 0, 0);
 
     if (this.afterimagePass) {
       this.afterimagePass.enabled = true;
-      this.afterimagePass.uniforms["damp"].value = 0.72;
+      this.afterimagePass.uniforms['damp'].value = 0.72;
     }
   }
 
@@ -398,7 +369,7 @@ export class DemoMode implements GameMode {
 
     if (this.afterimagePass) {
       this.afterimagePass.enabled = true;
-      this.afterimagePass.uniforms["damp"].value = 0.75;
+      this.afterimagePass.uniforms['damp'].value = 0.75;
     }
 
     if (this.glitchPass) this.glitchPass.enabled = false;
@@ -422,15 +393,14 @@ export class DemoMode implements GameMode {
   private isSpire(child: Mesh): boolean {
     return !!(
       child.geometry &&
-      (child.geometry.type === "ConeGeometry" ||
-        child.geometry.constructor.name === "ConeGeometry")
+      (child.geometry.type === 'ConeGeometry' || child.geometry.constructor.name === 'ConeGeometry')
     );
   }
 
   private isAntenna(child: Mesh): boolean {
     return !!(
       child.geometry &&
-      child.geometry.type === "BoxGeometry" &&
+      child.geometry.type === 'BoxGeometry' &&
       child.scale.x < 5 &&
       child.scale.z < 5 &&
       child.scale.y > 20
@@ -438,7 +408,7 @@ export class DemoMode implements GameMode {
   }
 
   private getBuildingHighestPoint(
-    buildingGroup: Object3D,
+    buildingGroup: Object3D
   ): { point: Vector3; maxY: number } | null {
     const highestPoint = new Vector3();
     let maxY = -Infinity;
@@ -485,8 +455,8 @@ export class DemoMode implements GameMode {
           new Vector3(
             (Math.random() - 0.5) * 2000,
             300 + Math.random() * 200,
-            (Math.random() - 0.5) * 2000,
-          ),
+            (Math.random() - 0.5) * 2000
+          )
         );
       }
     }

@@ -6,19 +6,23 @@
       @click="toggle"
       :title="t('language.label')"
     >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon globe-icon">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        class="icon globe-icon"
+      >
         <circle cx="12" cy="12" r="10" />
         <ellipse cx="12" cy="12" rx="4" ry="10" />
-        <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+        <path
+          d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+        />
       </svg>
     </div>
     <Teleport to="body">
       <Transition name="lang-fade">
-        <div
-          v-if="open && mounted"
-          class="lang-dropdown"
-          :style="dropdownStyle"
-        >
+        <div v-if="open && mounted" class="lang-dropdown" :style="dropdownStyle">
           <button
             v-for="loc in locales"
             :key="loc.code"
@@ -35,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from "vue-i18n";
+import { useI18n } from 'vue-i18n';
 
 const { locale, t } = useI18n();
 
@@ -47,19 +51,19 @@ const dropdownStyle = ref<Record<string, string>>({});
 const currentLocale = computed(() => locale.value);
 
 const locales = [
-  { code: "en", label: "English" },
-  { code: "es", label: "Español" },
-  { code: "fr", label: "Français" },
-  { code: "de", label: "Deutsch" },
-  { code: "it", label: "Italiano" },
-  { code: "pt", label: "Português" },
-  { code: "ru", label: "Русский" },
-  { code: "ar", label: "العربية" },
-  { code: "zh-CN", label: "简体中文" },
-  { code: "ja", label: "日本語" },
-  { code: "ko", label: "한국어" },
-  { code: "hi", label: "हिन्दी" },
-  { code: "nl", label: "Nederlands" },
+  { code: 'en', label: 'English' },
+  { code: 'es', label: 'Español' },
+  { code: 'fr', label: 'Français' },
+  { code: 'de', label: 'Deutsch' },
+  { code: 'it', label: 'Italiano' },
+  { code: 'pt', label: 'Português' },
+  { code: 'ru', label: 'Русский' },
+  { code: 'ar', label: 'العربية' },
+  { code: 'zh-CN', label: '简体中文' },
+  { code: 'ja', label: '日本語' },
+  { code: 'ko', label: '한국어' },
+  { code: 'hi', label: 'हिन्दी' },
+  { code: 'nl', label: 'Nederlands' },
 ];
 
 function toggle() {
@@ -77,13 +81,13 @@ function positionDropdown() {
 
   if (spaceBelow < dropdownHeight && rect.top > spaceBelow) {
     dropdownStyle.value = {
-      position: "fixed",
+      position: 'fixed',
       bottom: `${window.innerHeight - rect.top + 6}px`,
       right: `${window.innerWidth - rect.right}px`,
     };
   } else {
     dropdownStyle.value = {
-      position: "fixed",
+      position: 'fixed',
       top: `${rect.bottom + 6}px`,
       right: `${window.innerWidth - rect.right}px`,
     };
@@ -92,15 +96,15 @@ function positionDropdown() {
 
 function select(code: string) {
   locale.value = code;
-  if (typeof localStorage !== "undefined") {
-    localStorage.setItem("locale", code);
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('locale', code);
   }
   open.value = false;
 }
 
 function handleClickOutside(e: MouseEvent) {
   if (wrapperRef.value && !wrapperRef.value.contains(e.target as Node)) {
-    const dropdown = document.querySelector(".lang-dropdown");
+    const dropdown = document.querySelector('.lang-dropdown');
     if (dropdown && !dropdown.contains(e.target as Node)) {
       open.value = false;
     }
@@ -115,15 +119,15 @@ function handleScroll() {
 
 onMounted(() => {
   mounted.value = true;
-  document.addEventListener("click", handleClickOutside);
-  window.addEventListener("scroll", handleScroll, { passive: true });
-  window.addEventListener("resize", handleScroll, { passive: true });
+  document.addEventListener('click', handleClickOutside);
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  window.addEventListener('resize', handleScroll, { passive: true });
 });
 
 onUnmounted(() => {
-  document.removeEventListener("click", handleClickOutside);
-  window.removeEventListener("scroll", handleScroll);
-  window.removeEventListener("resize", handleScroll);
+  document.removeEventListener('click', handleClickOutside);
+  window.removeEventListener('scroll', handleScroll);
+  window.removeEventListener('resize', handleScroll);
 });
 </script>
 
@@ -147,7 +151,9 @@ onUnmounted(() => {
 
 .can-hover .lang-trigger:hover {
   background: rgba(0, 255, 204, 0.1);
-  box-shadow: 0 0 12px rgba(0, 255, 204, 0.2), inset 0 0 8px rgba(0, 255, 204, 0.05);
+  box-shadow:
+    0 0 12px rgba(0, 255, 204, 0.2),
+    inset 0 0 8px rgba(0, 255, 204, 0.05);
 }
 
 .lang-trigger.open {
@@ -172,7 +178,9 @@ onUnmounted(() => {
   z-index: 10000;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 255, 204, 0.08);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    0 0 20px rgba(0, 255, 204, 0.08);
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 255, 204, 0.3) transparent;
 }
@@ -218,7 +226,9 @@ onUnmounted(() => {
 
 .lang-fade-enter-active,
 .lang-fade-leave-active {
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 
 .lang-fade-enter-from,

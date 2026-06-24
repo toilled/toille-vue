@@ -1,12 +1,10 @@
 <template>
-  <div id="content-wrapper" :class="{ 'fade-out': gameMode }">
+  <div id="content-wrapper" :class="{ 'fade-out': gameMode }" v-show="!desktopMode">
     <header ref="headerRef" class="app-header">
       <nav class="container header-nav">
         <Title
           :title="titles.title"
           :subtitle="t('site.subtitle')"
-          :activity="activity"
-          :joke="joke"
           @activity="toggleActivity"
           @joke="toggleJoke"
         />
@@ -18,6 +16,7 @@
           @demo="startDemoMode"
           @toggle-content="toggleContent"
           @toggle-terminal="toggleTerminal"
+          @toggle-desktop="toggleDesktop"
         />
       </nav>
     </header>
@@ -25,11 +24,7 @@
     <main id="main-content" tabindex="-1" class="app-main">
       <div class="container">
         <Transition name="cyberpunk-glitch">
-          <div
-            class="router-view-container"
-
-            v-show="isContentVisible"
-          >
+          <div class="router-view-container" v-show="isContentVisible">
             <router-view v-slot="{ Component, route }">
               <ErrorBoundary>
                 <component :is="Component" :key="route.path" />
@@ -54,17 +49,17 @@
     </Transition>
 
     <Transition name="slide-fade">
-      <div class="container" style="min-width:0" v-if="checker">
+      <div class="container" style="min-width: 0" v-if="checker">
         <Checker :class="{ 'fade-out': gameMode }" />
       </div>
     </Transition>
     <Transition name="slide-fade">
-      <div class="container" style="min-width:0" v-show="activity">
+      <div class="container" style="min-width: 0" v-show="activity">
         <Activity :class="{ 'fade-out': gameMode }" />
       </div>
     </Transition>
     <Transition name="slide-fade">
-      <div class="container" style="min-width:0" v-show="joke">
+      <div class="container" style="min-width: 0" v-show="joke">
         <Suggestion
           :class="{ 'fade-out': gameMode }"
           url="https://icanhazdadjoke.com/"
@@ -73,10 +68,11 @@
         />
       </div>
     </Transition>
-    <Transition name="fade">
-      <Terminal v-if="terminal" @close="terminal = false" />
-    </Transition>
   </div>
+
+  <Transition name="fade">
+    <Terminal v-if="terminal" @close="terminal = false" />
+  </Transition>
 
   <CyberpunkCity
     v-if="showCity"
@@ -86,11 +82,12 @@
     @fallback="cityFallback = true"
   />
   <EpilepsyWarning />
+  <Desktop v-if="desktopMode" @shutdown="toggleDesktop" @terminal="toggleTerminal" />
 </template>
 
 <script setup lang="ts">
-import { useI18n } from "vue-i18n";
-import { useTranslatedPages } from "./composables/useTranslatedPages";
+import { useI18n } from 'vue-i18n';
+import { useTranslatedPages } from './composables/useTranslatedPages';
 
 const { t } = useI18n();
 const { translatedPages } = useTranslatedPages();
@@ -99,14 +96,15 @@ const CyberpunkCity = defineAsyncComponent(() => {
   if (import.meta.env.SSR) {
     return { render: () => null } as any;
   }
-  return import("./components/CyberpunkCity.vue") as any;
+  return import('./components/CyberpunkCity.vue') as any;
 });
-import { cityBackground } from "./utils/CityBackgroundManager";
-import titles from "./configs/titles.json";
-import { Page } from "./interfaces/Page";
-import Terminal from "./components/Terminal.vue";
-import EpilepsyWarning from "./components/EpilepsyWarning.vue";
-import { useScrollSpy } from "./composables/useScrollSpy";
+import { cityBackground } from './utils/CityBackgroundManager';
+import titles from './configs/titles.json';
+import { Page } from './interfaces/Page';
+import Terminal from './components/Terminal.vue';
+import EpilepsyWarning from './components/EpilepsyWarning.vue';
+import Desktop from './components/Desktop.vue';
+import { useScrollSpy } from './composables/useScrollSpy';
 
 const visiblePages = computed(() => {
   return translatedPages.value.filter((page: Page) => !page.hidden);
@@ -118,11 +116,15 @@ const gameMode = ref(false);
 const cityFallback = ref(false);
 const isContentVisible = ref(true);
 const isClient = ref(false);
-const showCity = computed(() => isClient.value && cityBackground.isEnabled.value);
+const showCity = computed(
+  () => isClient.value && cityBackground.isEnabled.value && !desktopMode.value
+);
 const checker = ref(false);
 const activity = ref(false);
 const joke = ref(false);
 const terminal = ref(false);
+const desktopMode = ref(false);
+const desktopRunner = ref<((component: string, title: string) => void) | null>(null);
 
 const headerRef = ref<HTMLElement | null>(null);
 
@@ -139,14 +141,17 @@ const {
   cleanup: cleanupScrollSpy,
 } = useScrollSpy(visiblePages, headerRef);
 
-provide("activeSection", activeSection);
-provide("navigateToSection", scrollToSection);
+provide('activeSection', activeSection);
+provide('navigateToSection', scrollToSection);
+provide('desktopRunner', desktopRunner);
 
 function toggleContent() {
   isContentVisible.value = !isContentVisible.value;
 }
 
-const cyberpunkCityRef = ref<InstanceType<typeof import("./components/CyberpunkCity.vue").default> | null>(null);
+const cyberpunkCityRef = ref<InstanceType<
+  typeof import('./components/CyberpunkCity.vue').default
+> | null>(null);
 
 function startExploration() {
   if (cyberpunkCityRef.value && cyberpunkCityRef.value.startExplorationMode) {
@@ -173,27 +178,27 @@ function handleTouchEnd(e: TouchEvent) {
   const deltaX = e.changedTouches[0].clientX - touchStartX;
   const deltaY = e.changedTouches[0].clientY - touchStartY;
   if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
-    navigatePage(deltaX < 0 ? "next" : "prev");
+    navigatePage(deltaX < 0 ? 'next' : 'prev');
   }
 }
 
 function handleKeydown(e: KeyboardEvent) {
   if (gameMode.value) return;
 
-  if (e.key === "Escape") {
-    const gameRoutes = ["/noughts-and-crosses", "/checker", "/ask"];
+  if (e.key === 'Escape') {
+    const gameRoutes = ['/noughts-and-crosses', '/checker', '/ask'];
     if (gameRoutes.includes(route.path)) {
-      router.push("/");
+      router.push('/');
     }
   }
 
-  if (route.path === "/" || route.path === "") {
+  if (route.path === '/' || route.path === '') {
     switch (e.key) {
-      case "ArrowRight":
-        navigatePage("next");
+      case 'ArrowRight':
+        navigatePage('next');
         break;
-      case "ArrowLeft":
-        navigatePage("prev");
+      case 'ArrowLeft':
+        navigatePage('prev');
         break;
     }
   }
@@ -215,71 +220,81 @@ function toggleTerminal() {
   terminal.value = !terminal.value;
 }
 
+function toggleDesktop() {
+  desktopMode.value = !desktopMode.value;
+  if (desktopMode.value) {
+    terminal.value = false;
+  }
+}
+
 onMounted(() => {
   isClient.value = true;
 
-  history.scrollRestoration = "manual";
+  history.scrollRestoration = 'manual';
 
   let lastTouchTime = 0;
 
-  document.body.addEventListener("touchstart", () => {
+  document.body.addEventListener('touchstart', () => {
     lastTouchTime = Date.now();
-    document.body.classList.remove("can-hover");
+    document.body.classList.remove('can-hover');
   });
 
-  document.body.addEventListener("mousemove", () => {
+  document.body.addEventListener('mousemove', () => {
     if (Date.now() - lastTouchTime > 500) {
-      document.body.classList.add("can-hover");
+      document.body.classList.add('can-hover');
     }
   });
 
-  window.addEventListener("keydown", handleKeydown);
+  window.addEventListener('keydown', handleKeydown);
 
-  const contentEl = document.getElementById("content-wrapper");
+  const contentEl = document.getElementById('content-wrapper');
   if (contentEl) {
-    contentEl.addEventListener("touchstart", handleTouchStart, { passive: true });
-    contentEl.addEventListener("touchend", handleTouchEnd, { passive: true });
+    contentEl.addEventListener('touchstart', handleTouchStart, { passive: true });
+    contentEl.addEventListener('touchend', handleTouchEnd, { passive: true });
   }
 
-  window.addEventListener("scroll", handleScroll, { passive: true });
+  window.addEventListener('scroll', handleScroll, { passive: true });
   handleInitialHash();
   updateActiveSection();
 });
 
-watch(() => route.hash, (newHash) => {
-  if (route.path !== "/") return;
-  scrollToHash(newHash);
-});
+watch(
+  () => route.hash,
+  (newHash) => {
+    if (route.path !== '/') return;
+    scrollToHash(newHash);
+  }
+);
 
 onErrorCaptured((err) => {
-  console.error("App Error Captured:", err);
+  console.error('App Error Captured:', err);
   return true;
 });
 
 onUnmounted(() => {
-  window.removeEventListener("keydown", handleKeydown);
-  window.removeEventListener("scroll", handleScroll);
-  const contentEl = document.getElementById("content-wrapper");
+  window.removeEventListener('keydown', handleKeydown);
+  window.removeEventListener('scroll', handleScroll);
+  const contentEl = document.getElementById('content-wrapper');
   if (contentEl) {
-    contentEl.removeEventListener("touchstart", handleTouchStart);
-    contentEl.removeEventListener("touchend", handleTouchEnd);
+    contentEl.removeEventListener('touchstart', handleTouchStart);
+    contentEl.removeEventListener('touchend', handleTouchEnd);
   }
   cleanupScrollSpy();
 });
 
 function getTitleForPath(path: string): string {
   switch (path) {
-    case "/noughts-and-crosses":
-      return t("app.titleNoughtsAndCrosses");
-    case "/checker":
-      return t("app.titleChecker");
-    case "/ask":
-      return t("app.titleAsk");
+    case '/noughts-and-crosses':
+      return t('app.titleNoughtsAndCrosses');
+    case '/checker':
+      return t('app.titleChecker');
+    case '/ask':
+      return t('app.titleAsk');
     default: {
       const page = visiblePages.value.find(
         (p: Page) => getSectionIdFromPage(p) === activeSection.value
       );
-      return page ? page.title : t("site.title");
+      return page ? page.title : t('site.title');
     }
   }
 }
@@ -288,19 +303,23 @@ watch(
   () => route.path,
   (newPath) => {
     const pageTitle = getTitleForPath(newPath);
-    if (typeof document !== "undefined") {
-      document.title = t("site.titlePrefix") + pageTitle;
+    if (typeof document !== 'undefined') {
+      document.title = t('site.titlePrefix') + pageTitle;
     }
   },
-  { immediate: true },
+  { immediate: true }
 );
 
-watch(activeSection, () => {
-  const pageTitle = getTitleForPath(route.path);
-  if (typeof document !== "undefined") {
-    document.title = t("site.titlePrefix") + pageTitle;
-  }
-}, { immediate: true });
+watch(
+  activeSection,
+  () => {
+    const pageTitle = getTitleForPath(route.path);
+    if (typeof document !== 'undefined') {
+      document.title = t('site.titlePrefix') + pageTitle;
+    }
+  },
+  { immediate: true }
+);
 
 watch(showCity, (val) => {
   if (val) {
@@ -343,7 +362,13 @@ html.fx .app-header {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0, 255, 204, 0.4), rgba(255, 0, 204, 0.4), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 255, 204, 0.4),
+    rgba(255, 0, 204, 0.4),
+    transparent
+  );
 }
 
 .header-nav {
@@ -380,10 +405,11 @@ html.fx .app-header {
 
 .slide-fade-enter-active,
 .slide-fade-leave-active {
-  transition: opacity 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-              max-height 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-              margin 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-              padding 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition:
+    opacity 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    max-height 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    margin 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    padding 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   overflow: hidden;
   max-height: 300px;
 }

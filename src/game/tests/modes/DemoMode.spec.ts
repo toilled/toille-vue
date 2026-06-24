@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { DemoMode } from "../../modes/DemoMode";
-import { Scene, PerspectiveCamera, WebGLRenderer } from "three";
-import { ref } from "vue";
-import type { GameContext } from "../../types";
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { DemoMode } from '../../modes/DemoMode';
+import { Scene, PerspectiveCamera, WebGLRenderer } from 'three';
+import { ref } from 'vue';
+import type { GameContext } from '../../types';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 
-vi.mock("../../utils/CyberpunkAudio", () => ({
+vi.mock('../../utils/CyberpunkAudio', () => ({
   cyberpunkAudio: {
     play: vi.fn(),
     pause: vi.fn(),
@@ -15,13 +15,13 @@ vi.mock("../../utils/CyberpunkAudio", () => ({
   },
 }));
 
-vi.mock("../../utils/AudioManager", () => ({
+vi.mock('../../utils/AudioManager', () => ({
   audioManager: {
     isSoundEnabled: ref(false),
   },
 }));
 
-vi.mock("three/examples/jsm/postprocessing/AfterimagePass", () => ({
+vi.mock('three/examples/jsm/postprocessing/AfterimagePass', () => ({
   AfterimagePass: class {
     enabled = false;
     uniforms = { damp: { value: 0.96 } };
@@ -29,7 +29,7 @@ vi.mock("three/examples/jsm/postprocessing/AfterimagePass", () => ({
   },
 }));
 
-vi.mock("three/examples/jsm/postprocessing/GlitchPass", () => ({
+vi.mock('three/examples/jsm/postprocessing/GlitchPass', () => ({
   GlitchPass: class {
     enabled = false;
     goWild = false;
@@ -37,7 +37,7 @@ vi.mock("three/examples/jsm/postprocessing/GlitchPass", () => ({
   },
 }));
 
-describe("DemoMode", () => {
+describe('DemoMode', () => {
   let mode: DemoMode;
   let context: GameContext;
   let composer: EffectComposer;
@@ -47,7 +47,7 @@ describe("DemoMode", () => {
     composer = new EffectComposer(new WebGLRenderer());
     composer.passes = [
       { strength: 1.5, radius: 0.4, threshold: 0.85, render: vi.fn() },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ] as any;
     context = {
       scene: new Scene(),
@@ -76,41 +76,41 @@ describe("DemoMode", () => {
     };
   });
 
-  it("init sets context and adds audio listener", () => {
+  it('init sets context and adds audio listener', () => {
     mode.init(context);
     expect(context.composer?.addPass).toHaveBeenCalled();
   });
 
-  it("update cycles through 4 scenes", () => {
+  it('update cycles through 4 scenes', () => {
     mode.init(context);
     mode.update(0.1, 0);
-    expect(mode["sceneIndex"]).toBe(0);
+    expect(mode['sceneIndex']).toBe(0);
   });
 
-  it("transitions to next scene after duration", () => {
+  it('transitions to next scene after duration', () => {
     mode.init(context);
     mode.update(8.1, 0);
-    expect(mode["sceneIndex"]).toBe(1);
+    expect(mode['sceneIndex']).toBe(1);
   });
 
-  it("wraps back to scene 0 after scene 3", () => {
+  it('wraps back to scene 0 after scene 3', () => {
     mode.init(context);
-    mode["sceneIndex"] = 3;
+    mode['sceneIndex'] = 3;
     mode.update(8.1, 0);
-    expect(mode["sceneIndex"]).toBe(0);
+    expect(mode['sceneIndex']).toBe(0);
   });
 
-  it("cleanup removes audio listener and restores bloom", () => {
+  it('cleanup removes audio listener and restores bloom', () => {
     mode.init(context);
     mode.cleanup();
     expect(() => mode.cleanup()).not.toThrow();
   });
 
-  it("event handlers do not throw", () => {
+  it('event handlers do not throw', () => {
     mode.init(context);
-    expect(() => mode.onKeyDown(new KeyboardEvent("keydown"))).not.toThrow();
-    expect(() => mode.onKeyUp(new KeyboardEvent("keyup"))).not.toThrow();
-    expect(() => mode.onClick(new MouseEvent("click"))).not.toThrow();
-    expect(() => mode.onMouseMove(new MouseEvent("mousemove"))).not.toThrow();
+    expect(() => mode.onKeyDown(new KeyboardEvent('keydown'))).not.toThrow();
+    expect(() => mode.onKeyUp(new KeyboardEvent('keyup'))).not.toThrow();
+    expect(() => mode.onClick(new MouseEvent('click'))).not.toThrow();
+    expect(() => mode.onMouseMove(new MouseEvent('mousemove'))).not.toThrow();
   });
 });

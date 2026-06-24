@@ -18,30 +18,26 @@
 </template>
 
 <script setup lang="ts">
-
-
 defineProps<{
   title: string;
   subtitle: string;
-  activity: boolean;
-  joke: boolean;
 }>();
 
 const emit = defineEmits<{
-  (e: "activity"): void;
-  (e: "joke"): void;
+  (e: 'activity'): void;
+  (e: 'joke'): void;
 }>();
 
 const animatingTitle = ref(false);
 const animatingSubtitle = ref(false);
 
 function handleTitleClick() {
-  emit("activity");
+  emit('activity');
   triggerAnimation(animatingTitle);
 }
 
 function handleSubtitleClick() {
-  emit("joke");
+  emit('joke');
   triggerAnimation(animatingSubtitle);
 }
 

@@ -146,5 +146,12 @@
       "body2": "<ul><li>Alcohol Checker - Calculate when you'll be sober enough to drive</li><li>Noughts and Crosses - Classic tic-tac-toe against a bot</li><li>Ask Me - Chat with an automated assistant about my background</li></ul>",
       "body3": "Enjoy exploring these little experiments!"
     }
+  },
+  "desktop": {
+    "toggleDesktop": "Toggle Desktop Mode",
+    "launchTerminal": "Launch Terminal",
+    "launchExplorer": "Open File Explorer",
+    "startMenu": "Start Menu",
+    "shutdown": "Shut Down"
   }
 }

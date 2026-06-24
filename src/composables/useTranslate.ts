@@ -1,11 +1,11 @@
-import { useI18n } from "vue-i18n";
+import { useI18n } from 'vue-i18n';
 
 const cache = new Map<string, string>();
 
 export function useTranslate() {
   const { locale } = useI18n();
 
-  async function translate(text: string, source = "en"): Promise<string> {
+  async function translate(text: string, source = 'en'): Promise<string> {
     if (!text) return text;
     const target = locale.value;
     if (target === source) return text;
@@ -17,11 +17,13 @@ export function useTranslate() {
     if (import.meta.env.SSR) return text;
 
     try {
-      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.slice(0, 500))}&langpair=${source}|${target}`;
+      const baseUrl =
+        import.meta.env.VITE_TRANSLATE_API_URL || 'https://api.mymemory.translated.net/get';
+      const url = `${baseUrl}?q=${encodeURIComponent(text.slice(0, 500))}&langpair=${source}|${target}`;
       const response = await fetch(url);
       const data = await response.json();
       const result = data?.responseData?.translatedText;
-      if (result && typeof result === "string") {
+      if (result && typeof result === 'string') {
         cache.set(cacheKey, result);
         return result;
       }

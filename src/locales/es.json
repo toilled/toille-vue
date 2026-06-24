@@ -146,5 +146,12 @@
       "body2": "<ul><li>Alcohol Checker - Calcula cuándo estarás sobrio para conducir</li><li>Noughts and Crosses - Tres en raya clásico contra un bot</li><li>Ask Me - Chatea con un asistente automatizado sobre mi trayectoria</li></ul>",
       "body3": "¡Disfruta explorando estos pequeños experimentos!"
     }
+  },
+  "desktop": {
+    "toggleDesktop": "Toggle Desktop Mode",
+    "launchTerminal": "Launch Terminal",
+    "launchExplorer": "Open File Explorer",
+    "startMenu": "Start Menu",
+    "shutdown": "Shut Down"
   }
 }

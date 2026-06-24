@@ -146,5 +146,12 @@
       "body2": "<ul><li>Alcohol Checker - Рассчитайте, когда вы протрезвеете для вождения</li><li>Noughts and Crosses - Классические крестики-нолики против бота</li><li>Ask Me - Пообщайтесь с автоматизированным помощником о моём опыте</li></ul>",
       "body3": "Наслаждайтесь изучением этих маленьких экспериментов!"
     }
+  },
+  "desktop": {
+    "toggleDesktop": "Toggle Desktop Mode",
+    "launchTerminal": "Launch Terminal",
+    "launchExplorer": "Open File Explorer",
+    "startMenu": "Start Menu",
+    "shutdown": "Shut Down"
   }
 }

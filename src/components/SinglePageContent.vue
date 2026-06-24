@@ -26,61 +26,52 @@
 
         <SectionDivider v-if="getSectionId(page) === 'home'" icon="🛠️" />
         <template v-if="getSectionId(page) === 'home'">
-          <h3 class="sub-heading">{{ t("home.whatIDo") }}</h3>
+          <h3 class="sub-heading">{{ t('home.whatIDo') }}</h3>
           <div class="what-i-do-grid">
             <div class="do-card">
               <div class="do-card-accent fullstack"></div>
               <div class="do-card-icon">🌐</div>
-              <h4 class="do-card-title">{{ t("home.fullStack") }}</h4>
-              <p class="do-card-desc">{{ t("home.fullStackDesc") }}</p>
+              <h4 class="do-card-title">{{ t('home.fullStack') }}</h4>
+              <p class="do-card-desc">{{ t('home.fullStackDesc') }}</p>
             </div>
             <div class="do-card">
               <div class="do-card-accent ux"></div>
               <div class="do-card-icon">🎨</div>
-              <h4 class="do-card-title">{{ t("home.creativeUI") }}</h4>
-              <p class="do-card-desc">{{ t("home.creativeUIDesc") }}</p>
+              <h4 class="do-card-title">{{ t('home.creativeUI') }}</h4>
+              <p class="do-card-desc">{{ t('home.creativeUIDesc') }}</p>
             </div>
             <div class="do-card">
               <div class="do-card-accent interactive"></div>
               <div class="do-card-icon">⚡</div>
-              <h4 class="do-card-title">{{ t("home.interactive3D") }}</h4>
-              <p class="do-card-desc">{{ t("home.interactive3DDesc") }}</p>
+              <h4 class="do-card-title">{{ t('home.interactive3D') }}</h4>
+              <p class="do-card-desc">{{ t('home.interactive3DDesc') }}</p>
             </div>
           </div>
         </template>
 
         <SectionDivider v-if="getSectionId(page) === 'about'" icon="⚡" />
         <template v-if="getSectionId(page) === 'about'">
-          <h3 class="sub-heading">{{ t("about.technicalSkills") }}</h3>
-          <SkillCard
-            :skills="backendSkills"
-            :category="t('about.backend')"
-          />
-          <SkillCard
-            :skills="frontendSkills"
-            :category="t('about.frontend')"
-          />
-          <SkillCard
-            :skills="toolsSkills"
-            :category="t('about.tools')"
-          />
+          <h3 class="sub-heading">{{ t('about.technicalSkills') }}</h3>
+          <SkillCard :skills="backendSkills" :category="t('about.backend')" />
+          <SkillCard :skills="frontendSkills" :category="t('about.frontend')" />
+          <SkillCard :skills="toolsSkills" :category="t('about.tools')" />
         </template>
 
         <SectionDivider v-if="getSectionId(page) === 'interests'" icon="✨" />
         <template v-if="getSectionId(page) === 'interests'">
-          <h3 class="sub-heading">{{ t("interests.musicCreative") }}</h3>
+          <h3 class="sub-heading">{{ t('interests.musicCreative') }}</h3>
           <div class="music-card">
             <div class="music-icon">🎸</div>
             <div class="music-content">
-              <h4>{{ t("interests.guitarCompositions") }}</h4>
-              <p>{{ t("interests.guitarDesc") }}</p>
+              <h4>{{ t('interests.guitarCompositions') }}</h4>
+              <p>{{ t('interests.guitarDesc') }}</p>
               <a
                 href="https://www.youtube.com/@toilled"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="music-link"
               >
-                {{ t("interests.visitYouTube") }}
+                {{ t('interests.visitYouTube') }}
               </a>
             </div>
           </div>
@@ -88,19 +79,19 @@
           <div class="interest-grid">
             <div class="interest-item">
               <span class="interest-icon">🕹️</span>
-              <span>{{ t("interests.3dGraphics") }}</span>
+              <span>{{ t('interests.3dGraphics') }}</span>
             </div>
             <div class="interest-item">
               <span class="interest-icon">🧪</span>
-              <span>{{ t("interests.experimentation") }}</span>
+              <span>{{ t('interests.experimentation') }}</span>
             </div>
             <div class="interest-item">
               <span class="interest-icon">🎹</span>
-              <span>{{ t("interests.multiInstrumentalist") }}</span>
+              <span>{{ t('interests.multiInstrumentalist') }}</span>
             </div>
             <div class="interest-item">
               <span class="interest-icon">📡</span>
-              <span>{{ t("interests.techDiscovery") }}</span>
+              <span>{{ t('interests.techDiscovery') }}</span>
             </div>
           </div>
         </template>
@@ -110,41 +101,45 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from "vue-i18n";
-import { Page } from "../interfaces/Page";
-import { useTranslatedPages } from "../composables/useTranslatedPages";
+import { useI18n } from 'vue-i18n';
+import { Page } from '../interfaces/Page';
+import { useTranslatedPages } from '../composables/useTranslatedPages';
 
 const { t } = useI18n();
 const { translatedPages } = useTranslatedPages();
 
 const backendSkills = [
-  { name: "Laravel", icon: "/laravel-icon.svg", link: "https://laravel.com/" },
-  { name: "MySQL", icon: "/mysql-icon.svg", link: "https://www.mysql.com/" },
-  { name: "PHP", icon: "🐘", link: "https://www.php.net/" },
-  { name: "Symfony", icon: "/symfony-icon.svg", link: "https://symfony.com/" },
-  { name: "Yii", icon: "/yii-icon.svg", link: "https://www.yiiframework.com/" },
+  { name: 'Laravel', icon: '/laravel-icon.svg', link: 'https://laravel.com/' },
+  { name: 'MySQL', icon: '/mysql-icon.svg', link: 'https://www.mysql.com/' },
+  { name: 'PHP', icon: '🐘', link: 'https://www.php.net/' },
+  { name: 'Symfony', icon: '/symfony-icon.svg', link: 'https://symfony.com/' },
+  { name: 'Yii', icon: '/yii-icon.svg', link: 'https://www.yiiframework.com/' },
 ];
 
 const frontendSkills = [
-  { name: "JavaScript", icon: "/javascript-icon.svg", link: "https://developer.mozilla.org/en-US/docs/Web/JavaScript" },
-  { name: "React", icon: "⚛️", link: "https://react.dev/" },
-  { name: "SolidJS", icon: "/solidjs-icon.svg", link: "https://www.solidjs.com/" },
-  { name: "Three.js", icon: "/threejs-icon.svg", link: "https://threejs.org/" },
-  { name: "TypeScript", icon: "/typescript-icon.svg", link: "https://www.typescriptlang.org/" },
-  { name: "Vue.js", icon: "/vuejs-icon.svg", link: "https://vuejs.org/" },
+  {
+    name: 'JavaScript',
+    icon: '/javascript-icon.svg',
+    link: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript',
+  },
+  { name: 'React', icon: '⚛️', link: 'https://react.dev/' },
+  { name: 'SolidJS', icon: '/solidjs-icon.svg', link: 'https://www.solidjs.com/' },
+  { name: 'Three.js', icon: '/threejs-icon.svg', link: 'https://threejs.org/' },
+  { name: 'TypeScript', icon: '/typescript-icon.svg', link: 'https://www.typescriptlang.org/' },
+  { name: 'Vue.js', icon: '/vuejs-icon.svg', link: 'https://vuejs.org/' },
 ];
 
 const toolsSkills = [
-  { name: "Cloudflare", icon: "/cloudflare-icon.svg", link: "https://www.cloudflare.com/" },
-  { name: "Docker", icon: "🐳", link: "https://www.docker.com/" },
-  { name: "Git", icon: "/git-icon.svg", link: "https://git-scm.com/" },
-  { name: "Linux", icon: "🐧", link: "https://www.kernel.org/" },
-  { name: "MQTT", icon: "/mqtt-icon.svg", link: "https://mqtt.org/" },
+  { name: 'Cloudflare', icon: '/cloudflare-icon.svg', link: 'https://www.cloudflare.com/' },
+  { name: 'Docker', icon: '🐳', link: 'https://www.docker.com/' },
+  { name: 'Git', icon: '/git-icon.svg', link: 'https://git-scm.com/' },
+  { name: 'Linux', icon: '🐧', link: 'https://www.kernel.org/' },
+  { name: 'MQTT', icon: '/mqtt-icon.svg', link: 'https://mqtt.org/' },
 ];
 
 function getSectionId(page: Page): string {
-  if (page.link === "/") return "home";
-  return page.link.replace(/^\//, "");
+  if (page.link === '/') return 'home';
+  return page.link.replace(/^\//, '');
 }
 
 const displayPages = computed(() => {
@@ -174,7 +169,8 @@ const displayPages = computed(() => {
   max-width: 120px;
   height: 1px;
   margin: 2.5rem auto 0;
-  background: linear-gradient(90deg,
+  background: linear-gradient(
+    90deg,
     transparent,
     rgba(0, 255, 204, 0.4),
     rgba(255, 0, 204, 0.3),

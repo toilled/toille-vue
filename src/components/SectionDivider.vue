@@ -31,12 +31,7 @@ defineProps<{
   flex: 1;
   max-width: 120px;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(0, 255, 204, 0.3),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 204, 0.3), transparent);
 }
 
 .divider-icon {

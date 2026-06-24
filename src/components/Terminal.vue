@@ -30,28 +30,28 @@
 
 <script setup lang="ts">
 const emit = defineEmits<{
-  (e: "close"): void;
+  (e: 'close'): void;
 }>();
 
 const terminalRef = ref<HTMLElement | null>(null);
 const bodyRef = ref<HTMLElement | null>(null);
 const lines = ref<{ text: string; pre?: boolean; class?: string }[]>([]);
-const currentInput = ref("");
+const currentInput = ref('');
 const commandHistory = ref<string[]>([]);
 const historyIndex = ref(-1);
 const animating = ref(true);
-const bootText = ref("");
+const bootText = ref('');
 const startTime = ref(Date.now());
 const matrixInterval = ref<ReturnType<typeof setInterval> | null>(null);
 
-const prompt = "guest@toille:~$ ";
+const prompt = 'guest@toille:~$ ';
 
 function close() {
   if (matrixInterval.value) {
     clearInterval(matrixInterval.value);
     matrixInterval.value = null;
   }
-  emit("close");
+  emit('close');
 }
 
 function scrollToBottom() {
@@ -79,7 +79,7 @@ function addPre(text: string, cls?: string) {
 }
 
 const virtualFS: Record<string, string> = {
-  "/home/guest/readme.txt": `TOILLE-OS v3.0.1 - Personal Portfolio Terminal
+  '/home/guest/readme.txt': `TOILLE-OS v3.0.1 - Personal Portfolio Terminal
 ==============================================
 Welcome, user. This system provides access to
 Elliot Dickerson's cyberpunk portfolio.
@@ -88,13 +88,13 @@ Type 'help' for available commands.
 Type 'neofetch' for system info.
 Type 'story' to learn the city's secrets.`,
 
-  "/home/guest/notes.txt": `- Personal Notes -
+  '/home/guest/notes.txt': `- Personal Notes -
 - Refactor city rendering pipeline (LOD system)
 - Add more story missions
 - Optimize MQTT multiplayer sync
 - The neon flows through everything.`,
 
-  "/home/guest/.secret/hack.txt": `ACCESS GRANTED
+  '/home/guest/.secret/hack.txt': `ACCESS GRANTED
 ================
 Deep Net Access: Level 5
 Node: TOILLE-CORE
@@ -103,7 +103,7 @@ Signal: encrypted (AES-256)
 "The city wasn't built. It was grown.
 Like crystals in silicon soup."`,
 
-  "/home/guest/.secret/lore.txt": `== CYBERPUNK CITY LORE ==
+  '/home/guest/.secret/lore.txt': `== CYBERPUNK CITY LORE ==
 
 In 2084, TOILLE-CITY rose from the ashes
 of the old internet. A digital metropolis
@@ -121,14 +121,14 @@ The Resistance operates from the Undercity.
 They say TOILLE himself still watches over
 the network.`,
 
-  "/etc/motd": `Welcome to TOILLE-OS v3.0.1
+  '/etc/motd': `Welcome to TOILLE-OS v3.0.1
 
   "In the neon-lit shadows of tomorrow,
    every pixel tells a story."
 
 Type 'help' to begin.`,
 
-  "/etc/config": `# TOILLE-OS Configuration
+  '/etc/config': `# TOILLE-OS Configuration
 HOSTNAME=toille-city
 KERNEL=cyberpunk-v3.0.1
 SHELL=/bin/toille-sh
@@ -138,13 +138,13 @@ FONT=monospace
 AUDIO=procedural
 BACKEND=cloudflare-edge`,
 
-  "/var/log/access.log": `[${new Date().toISOString()}] CONNECTION ESTABLISHED: guest@toille-city
+  '/var/log/access.log': `[${new Date().toISOString()}] CONNECTION ESTABLISHED: guest@toille-city
 [${new Date(Date.now() - 60000).toISOString()}] AUTH: guest (anonymous)
 [${new Date(Date.now() - 120000).toISOString()}] PORT SCAN DETECTED: 192.168.1.1
 [${new Date(Date.now() - 300000).toISOString()}] CITY STATUS: NOMINAL
 [${new Date(Date.now() - 3600000).toISOString()}] NEON GRID: STABLE`,
 
-  "/var/log/city.log": `[CITY MONITOR]
+  '/var/log/city.log': `[CITY MONITOR]
 Status: ONLINE
 Population: 4,873,291 simulated
 Traffic: 73% capacity
@@ -152,7 +152,7 @@ Neon levels: 88%
 Crime rate: 12.4%
 Story progress: ${Math.floor(Math.random() * 100)}%`,
 
-  "/data/skills.db": `=== SKILL DATABASE ===
+  '/data/skills.db': `=== SKILL DATABASE ===
 >> Backend: PHP, Laravel, Symfony, Node.js, Python, Rust
 >> Frontend: Vue 3, React, SolidJS, TypeScript, Tailwind
 >> 3D: Three.js, WebGL, procedural generation
@@ -160,7 +160,7 @@ Story progress: ${Math.floor(Math.random() * 100)}%`,
 >> DB: MySQL, PostgreSQL, SQLite, D1
 >> Audio: Web Audio API, procedural generation`,
 
-  "/data/contacts.db": `=== CONTACTS ===
+  '/data/contacts.db': `=== CONTACTS ===
 Name: Elliot Dickerson
 Role: Software Engineer @ RM
 Web: https://toille.uk
@@ -177,56 +177,64 @@ const asciiBanner = `
 `;
 
 const fortunes = [
-  "The best way to predict the future is to create it. - Alan Kay",
-  "In the neon city, even shadows have RGB values.",
-  "A cyberpunk is just a romantic who learned to code.",
-  "The blade runner walks alone, but the network connects all.",
+  'The best way to predict the future is to create it. - Alan Kay',
+  'In the neon city, even shadows have RGB values.',
+  'A cyberpunk is just a romantic who learned to code.',
+  'The blade runner walks alone, but the network connects all.',
   "There is no cloud - it's just someone else's computer.",
-  "Null pointers are the least of your problems in this city.",
-  "The street finds its own uses for technology.",
-  "All that is solid melts into data.",
-  "In 2084, your thoughts are just another API call.",
+  'Null pointers are the least of your problems in this city.',
+  'The street finds its own uses for technology.',
+  'All that is solid melts into data.',
+  'In 2084, your thoughts are just another API call.',
   "The future is already here - it's just not evenly distributed.",
   "There are 10 types of people in the world: those who understand binary and those who don't.",
   "Debugging: removing the parts of the code that don't match reality.",
-  "The light at the end of the tunnel is probably a train. Or neon.",
+  'The light at the end of the tunnel is probably a train. Or neon.',
   "I'm not saying I have a problem with JavaScript, but I have 14 npm packages for it.",
   "The city doesn't sleep. Neither does your database.",
 ];
 
 const passwordList = [
-  "admin", "password", "123456", "qwerty", "letmein",
-  "toille", "cyberpunk", "neon", "shadow", "root",
+  'admin',
+  'password',
+  '123456',
+  'qwerty',
+  'letmein',
+  'toille',
+  'cyberpunk',
+  'neon',
+  'shadow',
+  'root',
 ];
 
 const hackSteps = [
-  "INITIALIZING EXPLOIT FRAMEWORK...",
-  "SCANNING TARGET PORTS...",
-  "  Port 22: OPEN (SSH)",
-  "  Port 80: OPEN (HTTP)",
-  "  Port 443: OPEN (HTTPS)",
-  "  Port 8080: OPEN (PROXY)",
-  "  Port 1337: OPEN (??? )",
-  "IDENTIFYING VULNERABILITIES...",
-  "  [OK] CVE-2084-1337: Buffer overflow in neon-grid",
-  "  [OK] CVE-2084-0001: SQL injection in data-core",
-  "  [OK] CVE-2084-0069: Race condition in traffic AI",
-  "DEPLOYING PAYLOAD...",
-  "  [====================] 100%",
-  "ESTABLISHING BACKDOOR...",
-  "  Connection encrypted (4096-bit RSA)",
-  "  Tunnel: secure",
-  "ESCALATING PRIVILEGES...",
-  "  [+] Access level: ADMIN",
-  "  [+] User: root",
-  "DOWNLOADING DATA...",
-  "  [====================] 100%",
-  "COVERING TRACKS...",
-  "  Logs: cleared",
-  "  Audit trail: deleted",
-  "MISSION COMPLETE.",
-  "",
-  "> Data packet saved to /home/guest/.secret/hack.txt",
+  'INITIALIZING EXPLOIT FRAMEWORK...',
+  'SCANNING TARGET PORTS...',
+  '  Port 22: OPEN (SSH)',
+  '  Port 80: OPEN (HTTP)',
+  '  Port 443: OPEN (HTTPS)',
+  '  Port 8080: OPEN (PROXY)',
+  '  Port 1337: OPEN (??? )',
+  'IDENTIFYING VULNERABILITIES...',
+  '  [OK] CVE-2084-1337: Buffer overflow in neon-grid',
+  '  [OK] CVE-2084-0001: SQL injection in data-core',
+  '  [OK] CVE-2084-0069: Race condition in traffic AI',
+  'DEPLOYING PAYLOAD...',
+  '  [====================] 100%',
+  'ESTABLISHING BACKDOOR...',
+  '  Connection encrypted (4096-bit RSA)',
+  '  Tunnel: secure',
+  'ESCALATING PRIVILEGES...',
+  '  [+] Access level: ADMIN',
+  '  [+] User: root',
+  'DOWNLOADING DATA...',
+  '  [====================] 100%',
+  'COVERING TRACKS...',
+  '  Logs: cleared',
+  '  Audit trail: deleted',
+  'MISSION COMPLETE.',
+  '',
+  '> Data packet saved to /home/guest/.secret/hack.txt',
 ];
 
 const scanResult = `
@@ -262,21 +270,21 @@ const cityInfo = `
 
 function bootSequence() {
   const bootLines = [
-    { text: "sys: TOILLE-OS v3.0.1 booting...", delay: 200 },
-    { text: "sys: kernel loaded (cyberpunk-neon 6.6.0-cyber)", delay: 150 },
-    { text: "sys: memory check... 64TB OK", delay: 120 },
-    { text: "sys: neon-grid init... OK", delay: 180 },
-    { text: "sys: quantum entropy pool seeded", delay: 100 },
-    { text: "sys: network interfaces up (10.0.0.42)", delay: 250 },
-    { text: "sys: city data-link established", delay: 200 },
-    { text: "sys: audio system ready", delay: 150 },
-    { text: "sec: firewall active (1327 rules)", delay: 100 },
-    { text: "sec: intrusion detection online", delay: 150 },
-    { text: "sys: login prompt ready", delay: 100 },
-    { text: "", delay: 100 },
-    { text: "TOILLE-OS v3.0.1 (cyberpunk-neon 6.6.0-cyber)", delay: 50 },
+    { text: 'sys: TOILLE-OS v3.0.1 booting...', delay: 200 },
+    { text: 'sys: kernel loaded (cyberpunk-neon 6.6.0-cyber)', delay: 150 },
+    { text: 'sys: memory check... 64TB OK', delay: 120 },
+    { text: 'sys: neon-grid init... OK', delay: 180 },
+    { text: 'sys: quantum entropy pool seeded', delay: 100 },
+    { text: 'sys: network interfaces up (10.0.0.42)', delay: 250 },
+    { text: 'sys: city data-link established', delay: 200 },
+    { text: 'sys: audio system ready', delay: 150 },
+    { text: 'sec: firewall active (1327 rules)', delay: 100 },
+    { text: 'sec: intrusion detection online', delay: 150 },
+    { text: 'sys: login prompt ready', delay: 100 },
+    { text: '', delay: 100 },
+    { text: 'TOILLE-OS v3.0.1 (cyberpunk-neon 6.6.0-cyber)', delay: 50 },
     { text: "Type 'help' for available commands.", delay: 50 },
-    { text: "", delay: 50 },
+    { text: '', delay: 50 },
   ];
   let i = 0;
   function nextBoot() {
@@ -287,7 +295,7 @@ function bootSequence() {
       setTimeout(nextBoot, bootLines[i - 1].delay);
     } else {
       animating.value = false;
-      bootText.value = "";
+      bootText.value = '';
       terminalRef.value?.focus();
       scrollToBottom();
     }
@@ -358,98 +366,154 @@ const helpText = `
 \u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557`;
 
 const commandAliases: Record<string, string> = {
-  shutdown: "exit",
+  shutdown: 'exit',
 };
 
 const commands: Record<string, (args: string[]) => void> = {
-  help() { addPre(helpText, "help"); },
-  clear() { lines.value = []; },
-  whoami() { addLine("guest - anonymous user on TOILLE-CITY network"); },
-  neofetch() { addPre(systemInfo(), "neofetch"); },
-  uname() { addLine("TOILLE-OS v3.0.1 cyberpunk-neon 6.6.0-cyber x86_64"); },
-  uptime() { showUptime(); },
-  date() { addLine(new Date().toLocaleString()); },
-  echo(args: string[]) { addLine(args.join(" ") || ""); },
-  ls(args: string[]) { doLs(args); },
-  cat(args: string[]) { doCat(args); },
-  banner() { addPre(asciiBanner, "banner"); },
-  fortune() { addLine(fortunes[Math.floor(Math.random() * fortunes.length)], "fortune"); },
-  hack() { simulateHack(); },
-  matrix() { startMatrix(); },
-  scan() { addPre(scanResult, "scan"); },
-  crack(args: string[]) { doCrack(args); },
-  ping(args: string[]) { doPing(args); },
+  help() {
+    addPre(helpText, 'help');
+  },
+  clear() {
+    lines.value = [];
+  },
+  whoami() {
+    addLine('guest - anonymous user on TOILLE-CITY network');
+  },
+  neofetch() {
+    addPre(systemInfo(), 'neofetch');
+  },
+  uname() {
+    addLine('TOILLE-OS v3.0.1 cyberpunk-neon 6.6.0-cyber x86_64');
+  },
+  uptime() {
+    showUptime();
+  },
+  date() {
+    addLine(new Date().toLocaleString());
+  },
+  echo(args: string[]) {
+    addLine(args.join(' ') || '');
+  },
+  ls(args: string[]) {
+    doLs(args);
+  },
+  cat(args: string[]) {
+    doCat(args);
+  },
+  banner() {
+    addPre(asciiBanner, 'banner');
+  },
+  fortune() {
+    addLine(fortunes[Math.floor(Math.random() * fortunes.length)], 'fortune');
+  },
+  hack() {
+    simulateHack();
+  },
+  matrix() {
+    startMatrix();
+  },
+  scan() {
+    addPre(scanResult, 'scan');
+  },
+  crack(args: string[]) {
+    doCrack(args);
+  },
+  ping(args: string[]) {
+    doPing(args);
+  },
   sudo() {
-    addLine("sudo: PERMISSION DENIED. This incident has been logged.", "error");
-    addLine("sudo: Nice try, skid. Come back with admin credentials.", "error");
+    addLine('sudo: PERMISSION DENIED. This incident has been logged.', 'error');
+    addLine('sudo: Nice try, skid. Come back with admin credentials.', 'error');
   },
-  story() { addPre(virtualFS["/home/guest/.secret/lore.txt"], "story"); },
-  whois(args: string[]) { doWhois(args); },
-  skills() { addPre(virtualFS["/data/skills.db"], "skills"); },
+  story() {
+    addPre(virtualFS['/home/guest/.secret/lore.txt'], 'story');
+  },
+  whois(args: string[]) {
+    doWhois(args);
+  },
+  skills() {
+    addPre(virtualFS['/data/skills.db'], 'skills');
+  },
   music() {
-    addLine("Elliot writes original guitar compositions.", "info");
-    addLine("Check out: https://www.youtube.com/@toilled", "info");
-    addLine("The cyberpunk audio you hear is procedurally generated in real-time using Web Audio API.");
+    addLine('Elliot writes original guitar compositions.', 'info');
+    addLine('Check out: https://www.youtube.com/@toilled', 'info');
+    addLine(
+      'The cyberpunk audio you hear is procedurally generated in real-time using Web Audio API.'
+    );
   },
-  city() { addPre(cityInfo, "city"); },
+  city() {
+    addPre(cityInfo, 'city');
+  },
   glitch() {
-    addLine("INITIATING GLITCH SEQUENCE...", "error");
-    addLine("SYSTEM CORRUPTION DETECTED", "error");
-    addLine("jk. The glitch effect is purely cosmetic. This city loves its style.", "info");
+    addLine('INITIATING GLITCH SEQUENCE...', 'error');
+    addLine('SYSTEM CORRUPTION DETECTED', 'error');
+    addLine('jk. The glitch effect is purely cosmetic. This city loves its style.', 'info');
   },
   theme() {
-    addLine("Available themes: neon-dark (current)", "info");
-    addLine("The theme manager is currently under construction. Come back in 2085.");
+    addLine('Available themes: neon-dark (current)', 'info');
+    addLine('The theme manager is currently under construction. Come back in 2085.');
   },
   reboot() {
-    addLine("REBOOTING...");
+    addLine('REBOOTING...');
     lines.value = [];
     bootSequence();
   },
   exit() {
-    addLine("Shutting down... Goodbye, choom.");
+    addLine('Shutting down... Goodbye, choom.');
     setTimeout(() => close(), 800);
   },
   roll(args: string[]) {
     const sides = parseInt(args[0]) || 6;
     addLine(`d${sides}: ${Math.floor(Math.random() * sides) + 1}`);
   },
-  coinflip() { addLine(Math.random() > 0.5 ? "Heads" : "Tails"); },
+  coinflip() {
+    addLine(Math.random() > 0.5 ? 'Heads' : 'Tails');
+  },
   weather() {
-    addLine("Fetching weather data...", "info");
-    addLine("Temp: 18C | Condition: Neon drizzle | Humidity: 67%");
-    addLine("Forecast: Glitchy with a chance of cyberpunk.");
+    addLine('Fetching weather data...', 'info');
+    addLine('Temp: 18C | Condition: Neon drizzle | Humidity: 67%');
+    addLine('Forecast: Glitchy with a chance of cyberpunk.');
   },
   rainbow(args: string[]) {
-    addLine(args.join(" ") || "The neon flows through everything.", "rainbow");
+    addLine(args.join(' ') || 'The neon flows through everything.', 'rainbow');
   },
-  yes() { addLine("y"); },
+  yes() {
+    addLine('y');
+  },
   env() {
-    addLine("SHELL=/bin/toille-sh");
-    addLine("USER=guest");
-    addLine("HOSTNAME=toille-city");
-    addLine("TERM=xterm-256color");
-    addLine("HOME=/home/guest");
-    addLine("PATH=/usr/local/bin:/usr/bin:/bin");
-    addLine("THEME=neon-dark");
+    addLine('SHELL=/bin/toille-sh');
+    addLine('USER=guest');
+    addLine('HOSTNAME=toille-city');
+    addLine('TERM=xterm-256color');
+    addLine('HOME=/home/guest');
+    addLine('PATH=/usr/local/bin:/usr/bin:/bin');
+    addLine('THEME=neon-dark');
   },
-  id() { addLine("uid=1337(guest) gid=42(users) groups=42(users),69(cyberpunk),420(neon)"); },
+  id() {
+    addLine('uid=1337(guest) gid=42(users) groups=42(users),69(cyberpunk),420(neon)');
+  },
   ps() {
-    addLine("  PID TTY          TIME CMD");
-    addLine("    1 ?        00:00:42 init");
-    addLine("   42 ?        00:06:09 neongrid");
-    addLine("   69 ?        00:01:33 audio-daemon");
-    addLine("  420 ?        00:00:01 terminal");
-    addLine(" 1337 ?        00:00:00 ps");
+    addLine('  PID TTY          TIME CMD');
+    addLine('    1 ?        00:00:42 init');
+    addLine('   42 ?        00:06:09 neongrid');
+    addLine('   69 ?        00:01:33 audio-daemon');
+    addLine('  420 ?        00:00:01 terminal');
+    addLine(' 1337 ?        00:00:00 ps');
   },
   top() {
-    addLine("top - task manager not available in this terminal.");
-    addLine("However, I can tell you that nothing is running.");
-    addLine("Except the neon. The neon is always running.");
+    addLine('top - task manager not available in this terminal.');
+    addLine('However, I can tell you that nothing is running.');
+    addLine('Except the neon. The neon is always running.');
   },
-  kill() { addLine("kill: usage: don't. We're all friends here."); },
-  find() { addLine("find: You're the one who's lost, aren't you?"); },
-  grep() { addLine("grep: searching... nope, couldn't find what you're looking for."); },
+  kill() {
+    addLine("kill: usage: don't. We're all friends here.");
+  },
+  find() {
+    addLine("find: You're the one who's lost, aren't you?");
+  },
+  grep() {
+    addLine("grep: searching... nope, couldn't find what you're looking for.");
+  },
   curl(args: string[]) {
     if (args[0]) {
       addLine(`curl ${args[0]}...`);
@@ -459,97 +523,137 @@ const commands: Record<string, (args: string[]) => void> = {
     }
   },
   ssh(args: string[]) {
-    addLine("ssh: Connecting to " + (args[0] || "unknown") + "...");
-    addLine("The connection was refused. The city guards its secrets.");
+    addLine('ssh: Connecting to ' + (args[0] || 'unknown') + '...');
+    addLine('The connection was refused. The city guards its secrets.');
   },
   traceroute(args: string[]) {
-    addLine("traceroute to " + (args[0] || "target") + ":");
-    addLine(" 1  gateway.toille-city (10.0.0.1)  2.3ms");
-    addLine(" 2  neon-core-01 (10.0.1.1)  4.2ms");
-    addLine(" 3  data-vortex-02 (10.0.2.1)  6.9ms");
-    addLine(" 4  * * *");
-    addLine(" 5  * * *");
-    addLine(" 6  ^C");
+    addLine('traceroute to ' + (args[0] || 'target') + ':');
+    addLine(' 1  gateway.toille-city (10.0.0.1)  2.3ms');
+    addLine(' 2  neon-core-01 (10.0.1.1)  4.2ms');
+    addLine(' 3  data-vortex-02 (10.0.2.1)  6.9ms');
+    addLine(' 4  * * *');
+    addLine(' 5  * * *');
+    addLine(' 6  ^C');
   },
   history() {
-    commandHistory.value.forEach((c, i) => { addLine(`  ${i + 1}  ${c}`); });
+    commandHistory.value.forEach((c, i) => {
+      addLine(`  ${i + 1}  ${c}`);
+    });
   },
-  nmap() { addLine("nmap: Use 'scan' for a quick scan, or type 'nmap -A target' (jk, this isn't real)"); },
-  vim() { addLine("vim: You can't escape vim. But also, this is not vim. Type 'help'."); },
-  emacs() { addLine("emacs: It's just a text editor. Or an OS. We can't tell anymore."); },
-  nano() { addLine("nano: ^X to exit. Oh wait, this isn't nano either."); },
+  nmap() {
+    addLine("nmap: Use 'scan' for a quick scan, or type 'nmap -A target' (jk, this isn't real)");
+  },
+  vim() {
+    addLine("vim: You can't escape vim. But also, this is not vim. Type 'help'.");
+  },
+  emacs() {
+    addLine("emacs: It's just a text editor. Or an OS. We can't tell anymore.");
+  },
+  nano() {
+    addLine("nano: ^X to exit. Oh wait, this isn't nano either.");
+  },
   python() {
-    addLine("Python 3.13.0 (default, Oct 2024, 12:00:00)");
-    addLine("[GCC 14.2.0] on linux");
+    addLine('Python 3.13.0 (default, Oct 2024, 12:00:00)');
+    addLine('[GCC 14.2.0] on linux');
     addLine('Type "help", "copyright", "credits" or "license" for more information.');
     addLine(">>>  (Python REPL not available in this terminal. Try 'node' instead.)");
   },
   node() {
-    addLine("> Welcome to Node.js v23.0.0");
-    addLine("> (Not really, but the real site is built with Vue 3 + Vite!)");
+    addLine('> Welcome to Node.js v23.0.0');
+    addLine('> (Not really, but the real site is built with Vue 3 + Vite!)');
   },
   man() {
-    addLine("What manual page do you want?");
+    addLine('What manual page do you want?');
     addLine("(This isn't a real man page system. Try 'help' instead.)");
   },
   su() {
-    addLine("su: Authentication failure");
+    addLine('su: Authentication failure');
     addLine("(You can't become root that easily. Try harder.)");
   },
-  apt() { addLine("apt: Command not found. Try building from source."); },
-  "apt-get"() { addLine("apt-get: Command not found. Try building from source."); },
-  brew() { addLine("brew: Command not found. Try building from source."); },
-  npm() { addLine("npm: Command not found. Try building from source."); },
-  docker() { addLine("Docker is running. Containers: 4 (neon-grid, city-db, traffic-ai, audio-srv)"); },
-  make() { addLine("make: Nothing to be done for 'all'."); },
-  pwd() { addLine("/home/guest"); },
-  cd() { addLine("(This terminal has a fixed filesystem. 'ls' and 'cat' still work.)"); },
-  chmod() { addLine("chmod: changing permissions of files is not supported in this simulation."); },
+  apt() {
+    addLine('apt: Command not found. Try building from source.');
+  },
+  'apt-get'() {
+    addLine('apt-get: Command not found. Try building from source.');
+  },
+  brew() {
+    addLine('brew: Command not found. Try building from source.');
+  },
+  npm() {
+    addLine('npm: Command not found. Try building from source.');
+  },
+  docker() {
+    addLine('Docker is running. Containers: 4 (neon-grid, city-db, traffic-ai, audio-srv)');
+  },
+  make() {
+    addLine("make: Nothing to be done for 'all'.");
+  },
+  pwd() {
+    addLine('/home/guest');
+  },
+  cd() {
+    addLine("(This terminal has a fixed filesystem. 'ls' and 'cat' still work.)");
+  },
+  chmod() {
+    addLine('chmod: changing permissions of files is not supported in this simulation.');
+  },
   df() {
-    addLine("Filesystem       Size  Used Avail Use% Mounted on");
-    addLine("/dev/neon        1.2PB 342GB 858GB  28% /");
-    addLine("tmpfs            64TB   12GB  64TB   1% /tmp");
+    addLine('Filesystem       Size  Used Avail Use% Mounted on');
+    addLine('/dev/neon        1.2PB 342GB 858GB  28% /');
+    addLine('tmpfs            64TB   12GB  64TB   1% /tmp');
   },
   free() {
-    addLine("              total        used        free      shared  buff/cache");
-    addLine("Mem:          64TB       42TB        18TB        2TB       2TB");
-    addLine("Swap:         128TB       0B        128TB");
+    addLine('              total        used        free      shared  buff/cache');
+    addLine('Mem:          64TB       42TB        18TB        2TB       2TB');
+    addLine('Swap:         128TB       0B        128TB');
   },
   lolcat(args: string[]) {
-    addLine(args.join(" ") || "Close enough. The command doesn't exist but the spirit is there.", "rainbow");
+    addLine(
+      args.join(' ') || "Close enough. The command doesn't exist but the spirit is there.",
+      'rainbow'
+    );
   },
   sl() {
-    addPre(`
+    addPre(
+      `
    CHOO CHOO!
 
    === TOILLE EXPRESS ===
    |${'='.repeat(40)}|
    O${' '.repeat(40)}O
-  `, "rainbow");
+  `,
+      'rainbow'
+    );
   },
-  cowsay(args: string[]) { cowsayCmd(args.join(" ") || "Moo."); },
-  figlet() { addPre(asciiBanner); },
-  "phone-home"() {
-    addLine("Calling home...");
-    addLine("Signal detected. TOILLE-CITY is listening.");
-    addLine("All systems nominal. Continue your mission.");
+  cowsay(args: string[]) {
+    cowsayCmd(args.join(' ') || 'Moo.');
+  },
+  figlet() {
+    addPre(asciiBanner);
+  },
+  'phone-home'() {
+    addLine('Calling home...');
+    addLine('Signal detected. TOILLE-CITY is listening.');
+    addLine('All systems nominal. Continue your mission.');
   },
   connect() {
-    addLine("Establishing quantum link...");
-    addLine("Searching for peers...");
-    addLine("No peers found. You are alone in the net.");
+    addLine('Establishing quantum link...');
+    addLine('Searching for peers...');
+    addLine('No peers found. You are alone in the net.');
   },
   decrypt() {
-    addLine("Decrypting data...");
-    addLine("[====================] 100%");
-    addLine("Decrypted: \"The password is always 'toille'.\"");
+    addLine('Decrypting data...');
+    addLine('[====================] 100%');
+    addLine('Decrypted: "The password is always \'toille\'."');
   },
   encrypt() {
-    addLine("Encrypting data with AES-256...");
-    addLine("[====================] 100%");
-    addLine("Data secured. Key stored in quantum vault.");
+    addLine('Encrypting data with AES-256...');
+    addLine('[====================] 100%');
+    addLine('Data secured. Key stored in quantum vault.');
   },
-  ascii() { addPre(getRandomAscii()); },
+  ascii() {
+    addPre(getRandomAscii());
+  },
 };
 
 function executeCommand(cmd: string) {
@@ -568,42 +672,42 @@ function executeCommand(cmd: string) {
   if (commands[resolved]) {
     commands[resolved](args);
   } else {
-    addLine(`command not found: ${command}`, "error");
-    addLine("Type 'help' for a list of available commands.", "info");
+    addLine(`command not found: ${command}`, 'error');
+    addLine("Type 'help' for a list of available commands.", 'info');
   }
 
   scrollToBottom();
 }
 
 const dirListing: Record<string, string[]> = {
-  "/": ["guest/"],
-  "/home": ["guest/"],
-  "/home/guest": [".secret/", "readme.txt", "notes.txt"],
-  "~": [".secret/", "readme.txt", "notes.txt"],
-  "/home/guest/.secret": ["hack.txt", "lore.txt"],
-  ".secret": ["hack.txt", "lore.txt"],
-  "/etc": ["motd", "config"],
-  "/var": ["log/"],
-  "/var/log": ["access.log", "city.log"],
-  "/data": ["skills.db", "contacts.db"],
-  "/usr": ["toille-sh", "neon-grid", "city-builder"],
-  "/usr/local": ["toille-sh", "neon-grid", "city-builder"],
-  "/usr/local/bin": ["toille-sh", "neon-grid", "city-builder"],
+  '/': ['guest/'],
+  '/home': ['guest/'],
+  '/home/guest': ['.secret/', 'readme.txt', 'notes.txt'],
+  '~': ['.secret/', 'readme.txt', 'notes.txt'],
+  '/home/guest/.secret': ['hack.txt', 'lore.txt'],
+  '.secret': ['hack.txt', 'lore.txt'],
+  '/etc': ['motd', 'config'],
+  '/var': ['log/'],
+  '/var/log': ['access.log', 'city.log'],
+  '/data': ['skills.db', 'contacts.db'],
+  '/usr': ['toille-sh', 'neon-grid', 'city-builder'],
+  '/usr/local': ['toille-sh', 'neon-grid', 'city-builder'],
+  '/usr/local/bin': ['toille-sh', 'neon-grid', 'city-builder'],
 };
 
 function doLs(args: string[]) {
-  const path = args[0] || "/home/guest";
+  const path = args[0] || '/home/guest';
   const entries = dirListing[path];
   if (entries) {
-    entries.forEach(entry => addLine(entry));
+    entries.forEach((entry) => addLine(entry));
   } else {
-    addLine(`ls: cannot access '${path}': No such file or directory`, "error");
+    addLine(`ls: cannot access '${path}': No such file or directory`, 'error');
   }
 }
 
 function doCat(args: string[]) {
   if (args.length === 0) {
-    addLine("cat: missing operand", "error");
+    addLine('cat: missing operand', 'error');
     return;
   }
   const filePath = args[0];
@@ -611,23 +715,23 @@ function doCat(args: string[]) {
   if (virtualFS[resolved]) {
     addPre(virtualFS[resolved]);
   } else {
-    addLine(`cat: ${filePath}: No such file or directory`, "error");
+    addLine(`cat: ${filePath}: No such file or directory`, 'error');
   }
 }
 
 function resolvePath(p: string): string {
-  if (p.startsWith("/")) return p;
+  if (p.startsWith('/')) return p;
   const map: Record<string, string> = {
-    "readme.txt": "/home/guest/readme.txt",
-    "notes.txt": "/home/guest/notes.txt",
-    "hack.txt": "/home/guest/.secret/hack.txt",
-    "lore.txt": "/home/guest/.secret/lore.txt",
-    "motd": "/etc/motd",
-    "config": "/etc/config",
-    "access.log": "/var/log/access.log",
-    "city.log": "/var/log/city.log",
-    "skills.db": "/data/skills.db",
-    "contacts.db": "/data/contacts.db",
+    'readme.txt': '/home/guest/readme.txt',
+    'notes.txt': '/home/guest/notes.txt',
+    'hack.txt': '/home/guest/.secret/hack.txt',
+    'lore.txt': '/home/guest/.secret/lore.txt',
+    motd: '/etc/motd',
+    config: '/etc/config',
+    'access.log': '/var/log/access.log',
+    'city.log': '/var/log/city.log',
+    'skills.db': '/data/skills.db',
+    'contacts.db': '/data/contacts.db',
   };
   return map[p] || `/home/guest/${p}`;
 }
@@ -647,9 +751,10 @@ function simulateHack() {
 
 function startMatrix() {
   if (matrixInterval.value) return;
-  addLine("INITIALIZING MATRIX... (it will run for 5 seconds)");
+  addLine('INITIALIZING MATRIX... (it will run for 5 seconds)');
   scrollToBottom();
-  const chars = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF";
+  const chars =
+    'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF';
   let frame = 0;
   matrixInterval.value = setInterval(() => {
     if (frame > 20) {
@@ -657,24 +762,26 @@ function startMatrix() {
         clearInterval(matrixInterval.value);
         matrixInterval.value = null;
       }
-      addLine("Matrix sequence ended. The neon flows on.");
+      addLine('Matrix sequence ended. The neon flows on.');
       scrollToBottom();
       return;
     }
-    let line = "";
+    let line = '';
     for (let i = 0; i < 60; i++) {
-      line += Math.random() > 0.6 ? chars[Math.floor(Math.random() * chars.length)] : " ";
+      line += Math.random() > 0.6 ? chars[Math.floor(Math.random() * chars.length)] : ' ';
     }
-    addLine(line, "matrix");
+    addLine(line, 'matrix');
     scrollToBottom();
     frame++;
   }, 80);
 }
 
 function doCrack(args: string[]) {
-  const target = args[0] || "admin";
+  const target = args[0] || 'admin';
   addLine(`CRACKING PASSWORD FOR: ${target}...`);
-  addLine(`Target hash: ${Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join("")}`);
+  addLine(
+    `Target hash: ${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`
+  );
   let found = false;
   for (const pw of passwordList) {
     if (Math.random() > 0.7) {
@@ -686,38 +793,42 @@ function doCrack(args: string[]) {
     }
   }
   if (found) {
-    addLine("");
-    addLine(`PASSWORD CRACKED: ${target}:${passwordList[Math.floor(Math.random() * passwordList.length)]}`);
-    addLine("Access granted. Welcome to the undernet.");
+    addLine('');
+    addLine(
+      `PASSWORD CRACKED: ${target}:${passwordList[Math.floor(Math.random() * passwordList.length)]}`
+    );
+    addLine('Access granted. Welcome to the undernet.');
   } else {
-    addLine("");
-    addLine("Password not found in dictionary. Try a longer wordlist.");
-    addLine("(Hint: the password is usually something obvious.)");
+    addLine('');
+    addLine('Password not found in dictionary. Try a longer wordlist.');
+    addLine('(Hint: the password is usually something obvious.)');
   }
 }
 
 function doPing(args: string[]) {
-  const host = args[0] || "localhost";
+  const host = args[0] || 'localhost';
   addLine(`PING ${host} (127.0.0.1) 56(84) bytes of data.`);
   let i = 0;
   function nextPing() {
     if (i < 4) {
       const ms = Math.floor(Math.random() * 50 + 5);
-      addLine(`64 bytes from ${host} (127.0.0.1): icmp_seq=${i+1} ttl=64 time=${ms}.${Math.floor(Math.random()*9)}ms`);
+      addLine(
+        `64 bytes from ${host} (127.0.0.1): icmp_seq=${i + 1} ttl=64 time=${ms}.${Math.floor(Math.random() * 9)}ms`
+      );
       i++;
       setTimeout(nextPing, 500);
     } else {
-      addLine("");
+      addLine('');
       addLine(`--- ${host} ping statistics ---`);
-      addLine("4 packets transmitted, 4 received, 0% packet loss, time 3004ms");
+      addLine('4 packets transmitted, 4 received, 0% packet loss, time 3004ms');
     }
   }
   nextPing();
 }
 
 function doWhois(args: string[]) {
-  const target = (args[0] || "elliot").toLowerCase();
-  if (target === "elliot" || target === "toille") {
+  const target = (args[0] || 'elliot').toLowerCase();
+  if (target === 'elliot' || target === 'toille') {
     addPre(`
 \u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557
 \u2551         WHOIS: ELLIOT DICKERSON      \u2551
@@ -740,7 +851,9 @@ function showUptime() {
   const secs = Math.floor((Date.now() - startTime.value) / 1000);
   const mins = Math.floor(secs / 60);
   const hrs = Math.floor(mins / 60);
-  addLine(`up ${hrs > 0 ? `${hrs}h ` : ""}${mins % 60}m ${secs % 60}s, 1 user, load: 0.42 0.69 1.33`);
+  addLine(
+    `up ${hrs > 0 ? `${hrs}h ` : ''}${mins % 60}m ${secs % 60}s, 1 user, load: 0.42 0.69 1.33`
+  );
 }
 
 function systemInfo(): string {
@@ -764,15 +877,15 @@ function systemInfo(): string {
 }
 
 function cowsayCmd(msg: string) {
-  const border = "-".repeat(msg.length + 2);
+  const border = '-'.repeat(msg.length + 2);
   addLine(` ${border}`);
   addLine(`< ${msg} >`);
   addLine(` ${border}`);
-  addLine("        \\   ^__^");
-  addLine("         \\  (oo)\\_______");
-  addLine("            (__)\\       )\\/\\");
-  addLine("                ||----w |");
-  addLine("                ||     ||");
+  addLine('        \\   ^__^');
+  addLine('         \\  (oo)\\_______');
+  addLine('            (__)\\       )\\/\\');
+  addLine('                ||----w |');
+  addLine('                ||     ||');
 }
 
 function getRandomAscii(): string {
@@ -809,7 +922,7 @@ function handleKeydown(e: KeyboardEvent) {
     Enter(ev) {
       ev.preventDefault();
       executeCommand(currentInput.value);
-      currentInput.value = "";
+      currentInput.value = '';
     },
     Backspace(ev) {
       ev.preventDefault();
@@ -829,11 +942,15 @@ function handleKeydown(e: KeyboardEvent) {
         currentInput.value = commandHistory.value[historyIndex.value];
       } else {
         historyIndex.value = commandHistory.value.length;
-        currentInput.value = "";
+        currentInput.value = '';
       }
     },
-    Tab(ev) { ev.preventDefault(); },
-    Delete(ev) { ev.preventDefault(); },
+    Tab(ev) {
+      ev.preventDefault();
+    },
+    Delete(ev) {
+      ev.preventDefault();
+    },
   };
 
   if (actions[e.key]) {
@@ -841,13 +958,13 @@ function handleKeydown(e: KeyboardEvent) {
     return;
   }
 
-  if (e.key === "l" && e.ctrlKey) {
+  if (e.key === 'l' && e.ctrlKey) {
     e.preventDefault();
     lines.value = [];
     return;
   }
 
-  if (e.key === "d" && e.ctrlKey) {
+  if (e.key === 'd' && e.ctrlKey) {
     e.preventDefault();
     commands.exit([]);
     return;
@@ -888,7 +1005,7 @@ function handleKeydown(e: KeyboardEvent) {
     inset 0 0 40px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 0.85rem;
   line-height: 1.5;
   outline: none;
@@ -1066,8 +1183,13 @@ function handleKeydown(e: KeyboardEvent) {
 }
 
 @keyframes blink-anim {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }
 
 .terminal-overlay:not(:focus-within) .cursor {

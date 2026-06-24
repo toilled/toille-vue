@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { useEpilepsyWarning } from "../composables/useEpilepsyWarning";
+import { useEpilepsyWarning } from '../composables/useEpilepsyWarning';
 
 const { showWarning, warningMessage, resolveConfirm } = useEpilepsyWarning();
 
@@ -54,7 +54,7 @@ function cancel() {
   padding: 2rem;
   max-width: 520px;
   width: 100%;
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   color: #ff5f56;
 }
 

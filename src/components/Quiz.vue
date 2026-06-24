@@ -1,7 +1,7 @@
 <template>
   <article>
     <header>
-      <h2>{{ t("quiz.title") }}</h2>
+      <h2>{{ t('quiz.title') }}</h2>
     </header>
 
     <div v-if="currentQuestion">
@@ -21,37 +21,39 @@
       </div>
 
       <div v-if="hasAnswered" class="result" :class="{ correct: isCorrect, wrong: !isCorrect }">
-        <p v-if="isCorrect">{{ t("quiz.correct") }}</p>
-        <p v-else>{{ t("quiz.wrong", { answer: translatedOptions[currentQuestion.correctIndex] }) }}</p>
+        <p v-if="isCorrect">{{ t('quiz.correct') }}</p>
+        <p v-else>
+          {{ t('quiz.wrong', { answer: translatedOptions[currentQuestion.correctIndex] }) }}
+        </p>
 
-        <button @click.stop="nextQuestion">{{ t("quiz.nextQuestion") }}</button>
+        <button @click.stop="nextQuestion">{{ t('quiz.nextQuestion') }}</button>
       </div>
     </div>
     <div v-else-if="isLoading">
-      <p>{{ t("quiz.loading") }}</p>
+      <p>{{ t('quiz.loading') }}</p>
     </div>
     <div v-else-if="error">
       <p class="error">{{ error }}</p>
-      <button @click.stop="nextQuestion">{{ t("quiz.tryAgain") }}</button>
+      <button @click.stop="nextQuestion">{{ t('quiz.tryAgain') }}</button>
     </div>
   </article>
 </template>
 
 <script setup lang="ts">
-import { useI18n } from "vue-i18n";
-import { useHead } from "@vueuse/head";
-import { useTranslate } from "../composables/useTranslate";
-import DOMPurify from "dompurify";
+import { useI18n } from 'vue-i18n';
+import { useHead } from '@unhead/vue';
+import { useTranslate } from '../composables/useTranslate';
+import DOMPurify from 'dompurify';
 
 const { t } = useI18n();
 const { translate, locale } = useTranslate();
 
 useHead({
-  title: t("quiz.title"),
+  title: t('quiz.title'),
   meta: [
     {
-      name: "description",
-      content: t("quiz.description"),
+      name: 'description',
+      content: t('quiz.description'),
     },
   ],
 });
@@ -68,11 +70,11 @@ const hasAnswered = ref(false);
 const isCorrect = ref(false);
 const error = ref<string | null>(null);
 const isLoading = ref(true);
-const translatedQuestion = ref("");
+const translatedQuestion = ref('');
 const translatedOptions = ref<string[]>([]);
 
 const decodeHTML = (html: string) => {
-  const txt = document.createElement("textarea");
+  const txt = document.createElement('textarea');
   txt.innerHTML = DOMPurify.sanitize(html);
   return txt.value;
 };
@@ -83,7 +85,7 @@ const fetchQuestion = async () => {
   currentQuestion.value = null;
 
   try {
-    const response = await fetch("https://opentdb.com/api.php?amount=1&type=multiple");
+    const response = await fetch('https://opentdb.com/api.php?amount=1&type=multiple');
     if (!response.ok) {
       throw new Error(`Failed to fetch question: ${response.status} ${response.statusText}`);
     }
@@ -107,21 +109,24 @@ const fetchQuestion = async () => {
       currentQuestion.value = {
         question: decodedQuestion,
         options: allOptions,
-        correctIndex
+        correctIndex,
       };
       translatedQuestion.value = decodedQuestion;
       translatedOptions.value = [...allOptions];
-      translate(decodedQuestion).then(t => translatedQuestion.value = t);
+      translate(decodedQuestion).then((t) => (translatedQuestion.value = t));
       allOptions.forEach((opt, i) => {
-        translate(opt).then(t => { translatedOptions.value[i] = t; });
+        translate(opt).then((t) => {
+          translatedOptions.value[i] = t;
+        });
       });
-    } else if (data.response_code === 5) { // Rate limit usually
-      throw new Error("Rate limit exceeded. Please try again in a moment.");
+    } else if (data.response_code === 5) {
+      // Rate limit usually
+      throw new Error('Rate limit exceeded. Please try again in a moment.');
     } else {
-      throw new Error("Invalid response from API");
+      throw new Error('Invalid response from API');
     }
   } catch (err: any) {
-    error.value = err.message || "An error occurred while fetching the question.";
+    error.value = err.message || 'An error occurred while fetching the question.';
   } finally {
     isLoading.value = false;
     selectedOptionIndex.value = null;
@@ -138,9 +143,11 @@ watch(locale, () => {
   if (currentQuestion.value) {
     translatedQuestion.value = currentQuestion.value.question;
     translatedOptions.value = [...currentQuestion.value.options];
-    translate(currentQuestion.value.question).then(t => translatedQuestion.value = t);
+    translate(currentQuestion.value.question).then((t) => (translatedQuestion.value = t));
     currentQuestion.value.options.forEach((opt, i) => {
-      translate(opt).then(t => { translatedOptions.value[i] = t; });
+      translate(opt).then((t) => {
+        translatedOptions.value[i] = t;
+      });
     });
   }
 });

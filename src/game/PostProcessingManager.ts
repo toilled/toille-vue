@@ -9,26 +9,31 @@ export function setupPostProcessing(
   scene: Scene,
   camera: PerspectiveCamera,
   renderer: WebGLRenderer,
-  quality: BrowserQuality,
+  quality: BrowserQuality
 ): EffectComposer {
-    const renderScene = new RenderPass(scene, camera);
-    const size = renderer.getSize(new Vector2());
+  const renderScene = new RenderPass(scene, camera);
+  const size = renderer.getSize(new Vector2());
 
-    const bloomPass = new UnrealBloomPass(size, quality.bloomStrength, quality.bloomRadius, quality.bloomThreshold);
-    bloomPass.threshold = quality.bloomThreshold;
-    bloomPass.strength = quality.bloomStrength;
-    bloomPass.radius = quality.bloomRadius;
+  const bloomPass = new UnrealBloomPass(
+    size,
+    quality.bloomStrength,
+    quality.bloomRadius,
+    quality.bloomThreshold
+  );
+  bloomPass.threshold = quality.bloomThreshold;
+  bloomPass.strength = quality.bloomStrength;
+  bloomPass.radius = quality.bloomRadius;
 
-    const outputPass = new OutputPass();
+  const outputPass = new OutputPass();
 
-    const renderTarget = new WebGLRenderTarget(size.width, size.height, {
-        samples: quality.msaaSamples
-    });
+  const renderTarget = new WebGLRenderTarget(size.width, size.height, {
+    samples: quality.msaaSamples,
+  });
 
-    const composer = new EffectComposer(renderer, renderTarget);
-    composer.addPass(renderScene);
-    composer.addPass(bloomPass);
-    composer.addPass(outputPass);
+  const composer = new EffectComposer(renderer, renderTarget);
+  composer.addPass(renderScene);
+  composer.addPass(bloomPass);
+  composer.addPass(outputPass);
 
-    return composer;
+  return composer;
 }

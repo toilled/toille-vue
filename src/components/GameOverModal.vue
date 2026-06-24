@@ -26,8 +26,8 @@
 </template>
 
 <script setup lang="ts">
-import { PropType } from "vue";
-import { ScoreService, type ScoreEntry } from "../utils/ScoreService";
+import { PropType } from 'vue';
+import { ScoreService, type ScoreEntry } from '../utils/ScoreService';
 
 const props = defineProps({
   isGameOver: Boolean,
@@ -40,9 +40,9 @@ const props = defineProps({
   gameSessionId: { type: String as PropType<string | null>, default: null },
 });
 
-const emit = defineEmits(["update-leaderboard"]);
+const emit = defineEmits(['update-leaderboard']);
 
-const playerName = ref("");
+const playerName = ref('');
 const isScoreSubmitted = ref(false);
 
 watch(
@@ -51,10 +51,10 @@ watch(
     if (val && props.isDrivingMode) {
       isScoreSubmitted.value = false;
       const scores = await ScoreService.getTopScores();
-      emit("update-leaderboard", scores);
+      emit('update-leaderboard', scores);
     }
   },
-  { immediate: true },
+  { immediate: true }
 );
 
 async function submitHighScore() {
@@ -63,7 +63,7 @@ async function submitHighScore() {
   const finalScore = props.drivingScore;
   const newScores = await ScoreService.submitScore(nameUpper, finalScore || 0, props.gameSessionId);
   isScoreSubmitted.value = true;
-  emit("update-leaderboard", newScores);
+  emit('update-leaderboard', newScores);
 }
 </script>
 
@@ -74,7 +74,7 @@ async function submitHighScore() {
   left: 50%;
   transform: translate(-50%, -50%);
   color: #ff0000;
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 64px;
   font-weight: bold;
   z-index: 30;

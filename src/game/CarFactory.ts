@@ -9,7 +9,7 @@ import {
   MeshStandardMaterial,
   PointLight,
   PlaneGeometry,
-} from "three";
+} from 'three';
 
 export class CarFactory {
   public carGeo: BoxGeometry;
@@ -47,10 +47,26 @@ export class CarFactory {
     this.hitboxGeo = new BoxGeometry(20, 20, 30);
     this.underglowGeo = new PlaneGeometry(5, 9);
 
-    this.carBodyMat1 = new MeshStandardMaterial({ color: 0x222222, roughness: 0.3, metalness: 0.7 });
-    this.carBodyMat2 = new MeshStandardMaterial({ color: 0x050505, roughness: 0.3, metalness: 0.7 });
-    this.carBodyMat3 = new MeshStandardMaterial({ color: 0x111111, roughness: 0.3, metalness: 0.7 });
-    this.policeBodyMat = new MeshStandardMaterial({ color: 0xeeeeee, roughness: 0.2, metalness: 0.5 });
+    this.carBodyMat1 = new MeshStandardMaterial({
+      color: 0x222222,
+      roughness: 0.3,
+      metalness: 0.7,
+    });
+    this.carBodyMat2 = new MeshStandardMaterial({
+      color: 0x050505,
+      roughness: 0.3,
+      metalness: 0.7,
+    });
+    this.carBodyMat3 = new MeshStandardMaterial({
+      color: 0x111111,
+      roughness: 0.3,
+      metalness: 0.7,
+    });
+    this.policeBodyMat = new MeshStandardMaterial({
+      color: 0xeeeeee,
+      roughness: 0.2,
+      metalness: 0.5,
+    });
     this.wheelMat = new MeshStandardMaterial({ color: 0x111111, roughness: 0.9, metalness: 0.1 });
     this.lightBarMat = new MeshBasicMaterial({ color: 0x000000 });
     this.tailLightMat = new MeshBasicMaterial({ color: 0xff0000, transparent: true });
@@ -88,13 +104,11 @@ export class CarFactory {
       bodyColor = this.policeBodyMat.color;
     } else {
       const isSpecial = Math.random() > 0.8;
-      bodyMat = (
-        isSpecial
-          ? this.carBodyMat1
-          : Math.random() > 0.5
+      bodyMat = isSpecial
+        ? this.carBodyMat1
+        : Math.random() > 0.5
           ? this.carBodyMat2
-          : this.carBodyMat3
-      );
+          : this.carBodyMat3;
       bodyColor = bodyMat.color;
     }
 
@@ -122,26 +136,29 @@ export class CarFactory {
   private createTruckGeometry(carGroup: Group, bodyMat: MeshStandardMaterial) {
     const cab = new Mesh(this.truckCabGeo, bodyMat);
     cab.position.set(0, 1.5, 5);
-    cab.userData = { ...cab.userData, originalOpacity: 1.0, partType: "cab" };
+    cab.userData = { ...cab.userData, originalOpacity: 1.0, partType: 'cab' };
     cab.castShadow = true;
     carGroup.add(cab);
 
     const trailer = new Mesh(this.truckTrailerGeo, bodyMat);
     trailer.position.set(0, 2.5, -4);
-    trailer.userData = { ...trailer.userData, originalOpacity: 1.0, partType: "trailer" };
+    trailer.userData = { ...trailer.userData, originalOpacity: 1.0, partType: 'trailer' };
     trailer.castShadow = true;
     carGroup.add(trailer);
 
     const positions = [
-      [2.5, -0.5, 7], [-2.5, -0.5, 7],
-      [2.8, -0.5, 0], [-2.8, -0.5, 0],
-      [2.8, -0.5, -8], [-2.8, -0.5, -8]
+      [2.5, -0.5, 7],
+      [-2.5, -0.5, 7],
+      [2.8, -0.5, 0],
+      [-2.8, -0.5, 0],
+      [2.8, -0.5, -8],
+      [-2.8, -0.5, -8],
     ];
 
-    positions.forEach(pos => {
+    positions.forEach((pos) => {
       const w = new Mesh(this.wheelGeo, this.wheelMat);
       w.position.set(pos[0], pos[1], pos[2]);
-      w.userData = { ...w.userData, originalOpacity: 1.0, partType: "wheel" };
+      w.userData = { ...w.userData, originalOpacity: 1.0, partType: 'wheel' };
       w.castShadow = true;
       carGroup.add(w);
     });
@@ -149,19 +166,21 @@ export class CarFactory {
 
   private createCarGeometry(carGroup: Group, bodyMat: MeshStandardMaterial) {
     const carBody = new Mesh(this.carGeo, bodyMat);
-    carBody.userData = { ...carBody.userData, originalOpacity: 1.0, partType: "body" };
+    carBody.userData = { ...carBody.userData, originalOpacity: 1.0, partType: 'body' };
     carBody.castShadow = true;
     carGroup.add(carBody);
 
     const wheels = [
-      { x: 2, z: 2.5 }, { x: -2, z: 2.5 },
-      { x: 2, z: -2.5 }, { x: -2, z: -2.5 }
+      { x: 2, z: 2.5 },
+      { x: -2, z: 2.5 },
+      { x: 2, z: -2.5 },
+      { x: -2, z: -2.5 },
     ];
 
-    wheels.forEach(pos => {
+    wheels.forEach((pos) => {
       const w = new Mesh(this.wheelGeo, this.wheelMat);
       w.position.set(pos.x, -0.5, pos.z);
-      w.userData = { ...w.userData, originalOpacity: 1.0, partType: "wheel" };
+      w.userData = { ...w.userData, originalOpacity: 1.0, partType: 'wheel' };
       w.castShadow = true;
       carGroup.add(w);
     });
@@ -170,7 +189,7 @@ export class CarFactory {
   private addPoliceAccessories(carGroup: Group) {
     const lb = new Mesh(this.lightBarGeo, this.lightBarMat);
     lb.position.set(0, 1.25, 0);
-    lb.userData = { ...lb.userData, originalOpacity: 1.0, partType: "lightbar" };
+    lb.userData = { ...lb.userData, originalOpacity: 1.0, partType: 'lightbar' };
     carGroup.add(lb);
 
     const flIntensity = 80;
@@ -188,26 +207,30 @@ export class CarFactory {
     blueLight.visible = false;
     carGroup.add(blueLight);
 
-    const redMesh = new Mesh(new BoxGeometry(0.8, 0.4, 0.4), new MeshBasicMaterial({ color: 0xff0000 }));
+    const redMesh = new Mesh(
+      new BoxGeometry(0.8, 0.4, 0.4),
+      new MeshBasicMaterial({ color: 0xff0000 })
+    );
     redMesh.position.set(-0.8, 1.5, 0);
-    redMesh.userData = { ...redMesh.userData, isPoliceFlasherMesh: true, partType: "flasher" };
+    redMesh.userData = { ...redMesh.userData, isPoliceFlasherMesh: true, partType: 'flasher' };
     redMesh.visible = false;
     carGroup.add(redMesh);
 
-    const blueMesh = new Mesh(new BoxGeometry(0.8, 0.4, 0.4), new MeshBasicMaterial({ color: 0x0000ff }));
+    const blueMesh = new Mesh(
+      new BoxGeometry(0.8, 0.4, 0.4),
+      new MeshBasicMaterial({ color: 0x0000ff })
+    );
     blueMesh.position.set(0.8, 1.5, 0);
-    blueMesh.userData = { ...blueMesh.userData, isPoliceFlasherMesh: true, partType: "flasher" };
+    blueMesh.userData = { ...blueMesh.userData, isPoliceFlasherMesh: true, partType: 'flasher' };
     blueMesh.visible = false;
     carGroup.add(blueMesh);
   }
 
   private addUnderglow(carGroup: Group) {
     if (Math.random() > 0.3) {
-      const underglowMat = (
-        Math.random() > 0.5 ? this.underglowMat1 : this.underglowMat2
-      ).clone();
+      const underglowMat = (Math.random() > 0.5 ? this.underglowMat1 : this.underglowMat2).clone();
       const underglow = new Mesh(this.underglowGeo, underglowMat);
-      underglow.userData = { ...underglow.userData, originalOpacity: 0.5, partType: "underglow" };
+      underglow.userData = { ...underglow.userData, originalOpacity: 0.5, partType: 'underglow' };
       underglow.rotation.x = Math.PI / 2;
       underglow.position.y = -0.9;
       carGroup.add(underglow);
@@ -215,36 +238,36 @@ export class CarFactory {
   }
 
   private addLights(carGroup: Group) {
-      const tlMat = this.tailLightMat.clone();
-      tlMat.transparent = true;
-      tlMat.depthWrite = false;
-      const tl1 = new Mesh(this.tailLightGeo, tlMat);
-      tl1.userData = { ...tl1.userData, originalOpacity: 1.0, partType: "taillight" };
-      tl1.position.set(1.5, 0, -4);
-      carGroup.add(tl1);
+    const tlMat = this.tailLightMat.clone();
+    tlMat.transparent = true;
+    tlMat.depthWrite = false;
+    const tl1 = new Mesh(this.tailLightGeo, tlMat);
+    tl1.userData = { ...tl1.userData, originalOpacity: 1.0, partType: 'taillight' };
+    tl1.position.set(1.5, 0, -4);
+    carGroup.add(tl1);
 
-      const tl2 = new Mesh(this.tailLightGeo, tlMat);
-      tl2.userData = { ...tl2.userData, originalOpacity: 1.0, partType: "taillight" };
-      tl2.position.set(-1.5, 0, -4);
-      carGroup.add(tl2);
+    const tl2 = new Mesh(this.tailLightGeo, tlMat);
+    tl2.userData = { ...tl2.userData, originalOpacity: 1.0, partType: 'taillight' };
+    tl2.position.set(-1.5, 0, -4);
+    carGroup.add(tl2);
 
-      const hlMat = this.headLightMat.clone();
-      hlMat.transparent = true;
-      hlMat.depthWrite = false;
-      const hl1 = new Mesh(this.headLightGeo, hlMat);
-      hl1.userData = { ...hl1.userData, originalOpacity: 1.0, partType: "headlight" };
-      hl1.position.set(1.5, 0, 4);
-      carGroup.add(hl1);
+    const hlMat = this.headLightMat.clone();
+    hlMat.transparent = true;
+    hlMat.depthWrite = false;
+    const hl1 = new Mesh(this.headLightGeo, hlMat);
+    hl1.userData = { ...hl1.userData, originalOpacity: 1.0, partType: 'headlight' };
+    hl1.position.set(1.5, 0, 4);
+    carGroup.add(hl1);
 
-      const hl2 = new Mesh(this.headLightGeo, hlMat);
-      hl2.userData = { ...hl2.userData, originalOpacity: 1.0, partType: "headlight" };
-      hl2.position.set(-1.5, 0, 4);
-      carGroup.add(hl2);
+    const hl2 = new Mesh(this.headLightGeo, hlMat);
+    hl2.userData = { ...hl2.userData, originalOpacity: 1.0, partType: 'headlight' };
+    hl2.position.set(-1.5, 0, 4);
+    carGroup.add(hl2);
   }
 
   private addHitbox(carGroup: Group) {
-      const hitbox = new Mesh(this.hitboxGeo, this.hitboxMat);
-      hitbox.userData = { ...hitbox.userData, originalOpacity: 0, partType: "hitbox" };
-      carGroup.add(hitbox);
+    const hitbox = new Mesh(this.hitboxGeo, this.hitboxMat);
+    hitbox.userData = { ...hitbox.userData, originalOpacity: 0, partType: 'hitbox' };
+    carGroup.add(hitbox);
   }
 }

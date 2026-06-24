@@ -16,12 +16,18 @@ if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
 }
 
 const head = createHead();
-const { app, router } = createApp(head);
+const appEl = document.getElementById('app');
+const hasSSRContent = !!(
+  appEl &&
+  appEl.innerHTML !== '<!--app-html-->' &&
+  appEl.children.length > 0
+);
+const { app, router } = createApp(head, hasSSRContent);
+
+if (appEl && !hasSSRContent) {
+  appEl.innerHTML = '';
+}
 
 router.isReady().then(() => {
-  const appEl = document.getElementById('app');
-  if (appEl && appEl.innerHTML === '<!--app-html-->') {
-    appEl.innerHTML = '';
-  }
   app.mount('#app');
 });

@@ -4,7 +4,7 @@ import { createHead } from '@unhead/vue/server';
 
 export async function render(url: string) {
   const head = createHead();
-  const { app, router } = createApp(head);
+  const { app, router } = createApp(head, true);
 
   await router.push(url);
   await router.isReady();

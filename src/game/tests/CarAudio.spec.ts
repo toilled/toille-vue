@@ -1,10 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { audioManager } from '../../utils/AudioManager';
 import { CarAudio } from '../audio/CarAudio';
+
+function activateAudio() {
+  audioManager.init();
+  document.dispatchEvent(new PointerEvent('pointerdown'));
+}
 
 describe('CarAudio', () => {
   let carAudio: CarAudio;
 
   beforeEach(() => {
+    (audioManager as any).setupListeners = false;
+    audioManager.ctx = null;
+    audioManager.masterGain = null;
     carAudio = new CarAudio();
   });
 
@@ -15,7 +24,7 @@ describe('CarAudio', () => {
   });
 
   it('start creates audio nodes', () => {
-    carAudio.init();
+    activateAudio();
     carAudio.start();
     expect(carAudio.isPlaying).toBe(true);
     expect(carAudio.engineOsc).not.toBeNull();
@@ -25,7 +34,7 @@ describe('CarAudio', () => {
   });
 
   it('stop cleans up audio nodes', () => {
-    carAudio.init();
+    activateAudio();
     carAudio.start();
     carAudio.stop();
     expect(carAudio.isPlaying).toBe(false);
@@ -34,7 +43,7 @@ describe('CarAudio', () => {
   });
 
   it('update changes frequency based on speed', () => {
-    carAudio.init();
+    activateAudio();
     carAudio.start();
     const freqSetTargetSpy = vi.fn();
     const lfoFreqSetTargetSpy = vi.fn();
@@ -46,6 +55,7 @@ describe('CarAudio', () => {
   });
 
   it('playCrash creates crash sound', () => {
+    activateAudio();
     carAudio.playCrash();
     expect(carAudio.ctx).not.toBeNull();
   });

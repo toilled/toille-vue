@@ -1,4 +1,4 @@
-import { createSSRApp, type Plugin } from 'vue';
+import { createSSRApp, createApp as createClientApp, type Plugin } from 'vue';
 import { createRouter, createWebHistory, createMemoryHistory } from 'vue-router';
 import App from './App.vue';
 import SinglePageContent from './components/SinglePageContent.vue';
@@ -19,13 +19,13 @@ const routes = [
   { path: '/:pathMatch(.*)*', component: PageContent },
 ];
 
-export function createApp(head?: Plugin) {
+export function createApp(head?: Plugin, hydrate?: boolean) {
   const router = createRouter({
     history: import.meta.env.SSR ? createMemoryHistory() : createWebHistory(),
     routes,
   });
 
-  const app = createSSRApp(App);
+  const app = hydrate ? createSSRApp(App) : createClientApp(App);
   if (head) {
     app.use(head);
   }

@@ -34,14 +34,14 @@ describe('main.ts', () => {
   it('creates a Vue app with the App component', async () => {
     const { createSSRApp } = await import('vue');
     const { createApp } = await import('../main');
-    createApp();
+    createApp(undefined, true);
     expect(createSSRApp).toHaveBeenCalledWith(expect.objectContaining({ __name: 'App' }));
   });
 
   it('creates a router with the correct routes', async () => {
     const { createRouter } = await import('vue-router');
     const { createApp } = await import('../main');
-    createApp();
+    createApp(undefined, true);
     expect(createRouter).toHaveBeenCalledWith({
       history: undefined,
       routes: [
@@ -57,7 +57,7 @@ describe('main.ts', () => {
 
   it('uses the router', async () => {
     const { createApp } = await import('../main');
-    createApp();
+    createApp(undefined, true);
     expect(mockApp.use).toHaveBeenCalledWith(mockRouter);
   });
 });

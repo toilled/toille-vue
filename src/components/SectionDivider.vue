@@ -37,6 +37,7 @@ defineProps<{
 .divider-icon {
   font-size: 1.2rem;
   opacity: 0.7;
+  animation: divider-pulse 3s ease-in-out infinite;
 }
 
 .divider-dots {
@@ -49,10 +50,43 @@ defineProps<{
   height: 5px;
   border-radius: 50%;
   background: rgba(0, 255, 204, 0.4);
+  animation: dot-pulse 2s ease-in-out infinite;
 }
 
+.dot:nth-child(1) {
+  animation-delay: 0s;
+}
 .dot:nth-child(2) {
   background: rgba(255, 0, 204, 0.5);
+  animation-delay: 0.3s;
+}
+.dot:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+@keyframes divider-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes dot-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.4);
+    box-shadow: 0 0 6px currentColor;
+  }
 }
 
 @media (max-width: 600px) {

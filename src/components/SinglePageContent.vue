@@ -240,6 +240,12 @@ const displayPages = computed(() => {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
+.can-hover .do-card:hover .do-card-accent {
+  height: 4px;
+  filter: brightness(1.3);
+  box-shadow: 0 0 12px currentColor;
+}
+
 .do-card-accent {
   position: absolute;
   top: 0;
@@ -247,6 +253,7 @@ const displayPages = computed(() => {
   right: 0;
   height: 3px;
   border-radius: 14px 14px 0 0;
+  transition: all 0.35s ease;
 }
 
 .do-card-accent.fullstack {

@@ -70,6 +70,9 @@
     </Transition>
   </div>
 
+  <div id="ambient-bg" aria-hidden="true"></div>
+  <div class="ambient-glow" aria-hidden="true"></div>
+
   <Transition name="fade">
     <Terminal v-if="terminal" @close="terminal = false" />
   </Transition>
@@ -369,6 +372,20 @@ html.fx .app-header {
     rgba(255, 0, 204, 0.4),
     transparent
   );
+  animation: header-glow 3s ease-in-out infinite;
+}
+
+@keyframes header-glow {
+  0%,
+  100% {
+    opacity: 0.6;
+    filter: blur(0px);
+  }
+  50% {
+    opacity: 1;
+    filter: blur(0.5px);
+    box-shadow: 0 0 8px rgba(0, 255, 204, 0.2);
+  }
 }
 
 .header-nav {

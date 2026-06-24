@@ -91,15 +91,16 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { useTranslatedPages } from './composables/useTranslatedPages';
+import type { Component } from 'vue';
 
 const { t } = useI18n();
 const { translatedPages } = useTranslatedPages();
 
 const CyberpunkCity = defineAsyncComponent(() => {
   if (import.meta.env.SSR) {
-    return { render: () => null } as any;
+    return Promise.resolve({ render: () => null } as Component);
   }
-  return import('./components/CyberpunkCity.vue') as any;
+  return import('./components/CyberpunkCity.vue').then((m) => m.default);
 });
 import { cityBackground } from './utils/CityBackgroundManager';
 import titles from './configs/titles.json';

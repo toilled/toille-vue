@@ -10,7 +10,7 @@ describe('AudioManager', () => {
     audioManager.isSoundEnabled.value = false;
     audioManager.ctx = null;
     audioManager.masterGain = null;
-    (audioManager as any).setupListeners = false;
+    (audioManager as unknown as { setupListeners: boolean }).setupListeners = false;
   });
 
   it('starts with sound disabled', () => {

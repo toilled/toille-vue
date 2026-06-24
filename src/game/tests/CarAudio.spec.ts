@@ -11,7 +11,7 @@ describe('CarAudio', () => {
   let carAudio: CarAudio;
 
   beforeEach(() => {
-    (audioManager as any).setupListeners = false;
+    (audioManager as unknown as { setupListeners: boolean }).setupListeners = false;
     audioManager.ctx = null;
     audioManager.masterGain = null;
     carAudio = new CarAudio();

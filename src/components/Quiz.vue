@@ -125,8 +125,9 @@ const fetchQuestion = async () => {
     } else {
       throw new Error('Invalid response from API');
     }
-  } catch (err: any) {
-    error.value = err.message || 'An error occurred while fetching the question.';
+  } catch (err: unknown) {
+    error.value =
+      err instanceof Error ? err.message : 'An error occurred while fetching the question.';
   } finally {
     isLoading.value = false;
     selectedOptionIndex.value = null;

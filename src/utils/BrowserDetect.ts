@@ -1,10 +1,10 @@
 export function isFirefox(): boolean {
-  if (typeof navigator === "undefined") return false;
+  if (typeof navigator === 'undefined') return false;
   return /firefox/i.test(navigator.userAgent);
 }
 
 export function isMobile(): boolean {
-  if (typeof navigator === "undefined" || typeof window === "undefined") return false;
+  if (typeof navigator === 'undefined' || typeof window === 'undefined') return false;
   return /android|iphone|ipad|ipod|webos/i.test(navigator.userAgent) || window.innerWidth <= 768;
 }
 

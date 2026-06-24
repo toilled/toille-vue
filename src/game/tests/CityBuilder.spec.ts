@@ -1,34 +1,20 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { CityBuilder } from "../CityBuilder";
-import {
-  Scene,
-  Mesh,
-  Group,
-  CanvasTexture,
-  LineSegments,
-  SpotLight,
-  Object3D,
-} from "three";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { CityBuilder } from '../CityBuilder';
+import { Scene, Mesh, Group, CanvasTexture, LineSegments, SpotLight, Object3D } from 'three';
 
 // Mock HeightMap
-vi.mock("../utils/HeightMap", () => ({
+vi.mock('../utils/HeightMap', () => ({
   getHeight: vi.fn(() => 0),
 }));
 
 // Mock TextureGenerator
-vi.mock("../utils/TextureGenerator", () => ({
-  createGroundTexture: vi.fn(
-    () => new CanvasTexture(document.createElement("canvas")),
-  ),
-  createWindowTexture: vi.fn(
-    () => new CanvasTexture(document.createElement("canvas")),
-  ),
-  createBillboardTextures: vi.fn(() => [
-    new CanvasTexture(document.createElement("canvas")),
-  ]),
+vi.mock('../utils/TextureGenerator', () => ({
+  createGroundTexture: vi.fn(() => new CanvasTexture(document.createElement('canvas'))),
+  createWindowTexture: vi.fn(() => new CanvasTexture(document.createElement('canvas'))),
+  createBillboardTextures: vi.fn(() => [new CanvasTexture(document.createElement('canvas'))]),
 }));
 
-describe("CityBuilder", () => {
+describe('CityBuilder', () => {
   let scene: Scene;
   let cityBuilder: CityBuilder;
 
@@ -40,8 +26,8 @@ describe("CityBuilder", () => {
     vi.clearAllMocks();
   });
 
-  it("should initialize and build city", () => {
-    const lbTexture = new CanvasTexture(document.createElement("canvas"));
+  it('should initialize and build city', () => {
+    const lbTexture = new CanvasTexture(document.createElement('canvas'));
 
     cityBuilder.buildCity(false, lbTexture);
 
@@ -53,8 +39,8 @@ describe("CityBuilder", () => {
     expect(scene.add).toHaveBeenCalled();
   });
 
-  it("should create different building styles", () => {
-    const lbTexture = new CanvasTexture(document.createElement("canvas"));
+  it('should create different building styles', () => {
+    const lbTexture = new CanvasTexture(document.createElement('canvas'));
     cityBuilder.buildCity(false, lbTexture);
 
     const buildings = cityBuilder.getBuildings();
@@ -73,8 +59,8 @@ describe("CityBuilder", () => {
     });
   });
 
-  it("should track occupied grids", () => {
-    const lbTexture = new CanvasTexture(document.createElement("canvas"));
+  it('should track occupied grids', () => {
+    const lbTexture = new CanvasTexture(document.createElement('canvas'));
     cityBuilder.buildCity(false, lbTexture);
 
     const grid = cityBuilder.getOccupiedGrids();

@@ -10,18 +10,11 @@ import {
   PointLight,
   Scene,
   SpotLight,
-} from "three";
-import {
-  BOUNDS,
-  CELL_SIZE,
-  CITY_SIZE,
-  GRID_SIZE,
-  ROAD_WIDTH,
-  START_OFFSET,
-} from "./config";
-import { carAudio } from "./audio/CarAudio";
-import { getHeight, applyCarOrientation } from "../utils/HeightMap";
-import { CarFactory } from "./CarFactory";
+} from 'three';
+import { BOUNDS, CELL_SIZE, CITY_SIZE, GRID_SIZE, ROAD_WIDTH, START_OFFSET } from './config';
+import { carAudio } from './audio/CarAudio';
+import { getHeight, applyCarOrientation } from '../utils/HeightMap';
+import { CarFactory } from './CarFactory';
 
 const _matrix = new Matrix4();
 const _color = new Color();
@@ -43,7 +36,7 @@ export class TrafficSystem {
   constructor(
     scene: Scene,
     carCount: number,
-    spawnSparks: (pos: { x: number; y: number; z: number }) => void,
+    spawnSparks: (pos: { x: number; y: number; z: number }) => void
   ) {
     this.scene = scene;
     this.carCount = carCount;
@@ -110,9 +103,14 @@ export class TrafficSystem {
     this.scene.add(this.headLightMesh);
   }
 
-  private static invisibleParts = new Set(["hitbox", "underglow", "lightbar", "flasher"]);
+  private static invisibleParts = new Set(['hitbox', 'underglow', 'lightbar', 'flasher']);
 
-  private processCarPart(child: Mesh, car: Group, renderAsGroup: boolean, counters: Record<string, number>) {
+  private processCarPart(
+    child: Mesh,
+    car: Group,
+    renderAsGroup: boolean,
+    counters: Record<string, number>
+  ) {
     const partType = child.userData.partType as string | undefined;
     if (!partType) return;
 
@@ -136,12 +134,27 @@ export class TrafficSystem {
   }
 
   private partDispatch: Record<string, (counters: Record<string, number>) => void> = {
-    body: (c) => { this.bodyMesh.setMatrixAt(c.bodyIdx++, _matrix); this.bodyMesh.setColorAt(c.bodyIdx - 1, _color); },
-    cab: (c) => { this.cabMesh.setMatrixAt(c.cabIdx++, _matrix); this.cabMesh.setColorAt(c.cabIdx - 1, _color); },
-    trailer: (c) => { this.trailerMesh.setMatrixAt(c.trailerIdx++, _matrix); this.trailerMesh.setColorAt(c.trailerIdx - 1, _color); },
-    wheel: (c) => { this.wheelMesh.setMatrixAt(c.wheelIdx++, _matrix); },
-    taillight: (c) => { this.tailLightMesh.setMatrixAt(c.tlIdx++, _matrix); },
-    headlight: (c) => { this.headLightMesh.setMatrixAt(c.hlIdx++, _matrix); },
+    body: (c) => {
+      this.bodyMesh.setMatrixAt(c.bodyIdx++, _matrix);
+      this.bodyMesh.setColorAt(c.bodyIdx - 1, _color);
+    },
+    cab: (c) => {
+      this.cabMesh.setMatrixAt(c.cabIdx++, _matrix);
+      this.cabMesh.setColorAt(c.cabIdx - 1, _color);
+    },
+    trailer: (c) => {
+      this.trailerMesh.setMatrixAt(c.trailerIdx++, _matrix);
+      this.trailerMesh.setColorAt(c.trailerIdx - 1, _color);
+    },
+    wheel: (c) => {
+      this.wheelMesh.setMatrixAt(c.wheelIdx++, _matrix);
+    },
+    taillight: (c) => {
+      this.tailLightMesh.setMatrixAt(c.tlIdx++, _matrix);
+    },
+    headlight: (c) => {
+      this.headLightMesh.setMatrixAt(c.hlIdx++, _matrix);
+    },
   };
 
   private updateInstanceCount(mesh: InstancedMesh, count: number) {
@@ -154,7 +167,8 @@ export class TrafficSystem {
     const counters = { bodyIdx: 0, cabIdx: 0, trailerIdx: 0, wheelIdx: 0, tlIdx: 0, hlIdx: 0 };
 
     for (const car of this.cars) {
-      const renderAsGroup = car === activeCar || car.userData.fading || car.userData.isPlayerControlled;
+      const renderAsGroup =
+        car === activeCar || car.userData.fading || car.userData.isPlayerControlled;
       car.updateWorldMatrix(true, true);
 
       car.traverse((child) => {
@@ -190,8 +204,30 @@ export class TrafficSystem {
     const hlPenumbra = 0.2;
     const hlTargetZ = 36;
 
-    this.createSpotLight(car, xOffset, yPos, zFront, hlColor, hlIntensity, hlDist, hlAngle, hlPenumbra, hlTargetZ);
-    this.createSpotLight(car, -xOffset, yPos, zFront, hlColor, hlIntensity, hlDist, hlAngle, hlPenumbra, hlTargetZ);
+    this.createSpotLight(
+      car,
+      xOffset,
+      yPos,
+      zFront,
+      hlColor,
+      hlIntensity,
+      hlDist,
+      hlAngle,
+      hlPenumbra,
+      hlTargetZ
+    );
+    this.createSpotLight(
+      car,
+      -xOffset,
+      yPos,
+      zFront,
+      hlColor,
+      hlIntensity,
+      hlDist,
+      hlAngle,
+      hlPenumbra,
+      hlTargetZ
+    );
   }
 
   private addTaillights(car: Group, xOffset: number, yPos: number, zBack: number) {
@@ -201,8 +237,30 @@ export class TrafficSystem {
     const tlAngle = Math.PI / 2.5;
     const tlTargetZ = -16;
 
-    this.createSpotLight(car, xOffset, yPos, zBack, tlColor, tlIntensity, tlDist, tlAngle, 0.5, tlTargetZ);
-    this.createSpotLight(car, -xOffset, yPos, zBack, tlColor, tlIntensity, tlDist, tlAngle, 0.5, tlTargetZ);
+    this.createSpotLight(
+      car,
+      xOffset,
+      yPos,
+      zBack,
+      tlColor,
+      tlIntensity,
+      tlDist,
+      tlAngle,
+      0.5,
+      tlTargetZ
+    );
+    this.createSpotLight(
+      car,
+      -xOffset,
+      yPos,
+      zBack,
+      tlColor,
+      tlIntensity,
+      tlDist,
+      tlAngle,
+      0.5,
+      tlTargetZ
+    );
   }
 
   private createSpotLight(
@@ -215,7 +273,7 @@ export class TrafficSystem {
     distance: number,
     angle: number,
     penumbra: number,
-    targetZOffset: number,
+    targetZOffset: number
   ) {
     const light = new SpotLight(color, intensity, distance, angle, penumbra, 1);
     light.position.set(x, y, z);
@@ -257,7 +315,7 @@ export class TrafficSystem {
     carGroup.traverse((child) => {
       if (child instanceof Mesh) {
         const mat = child.material;
-        const orig = child.userData._originalMaterial as import("three").Material | undefined;
+        const orig = child.userData._originalMaterial as import('three').Material | undefined;
         if (!Array.isArray(mat) && orig) {
           mat.dispose();
           child.material = orig;
@@ -268,15 +326,22 @@ export class TrafficSystem {
     carGroup.userData._fadeInitialized = false;
   }
 
-  private chooseRoadPosition(): { axis: string; dir: number; x: number; z: number; laneOffset: number } {
-    const axis = Math.random() > 0.5 ? "x" : "z";
+  private chooseRoadPosition(): {
+    axis: string;
+    dir: number;
+    x: number;
+    z: number;
+    laneOffset: number;
+  } {
+    const axis = Math.random() > 0.5 ? 'x' : 'z';
     const dir = Math.random() > 0.5 ? 1 : -1;
     const roadIndex = Math.floor(Math.random() * (GRID_SIZE + 1));
     const roadCoordinate = START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
     const laneOffset = (Math.random() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
 
-    let x = 0, z = 0;
-    if (axis === "x") {
+    let x = 0,
+      z = 0;
+    if (axis === 'x') {
       z = roadCoordinate + laneOffset;
       x = (Math.random() - 0.5) * CITY_SIZE;
     } else {
@@ -287,7 +352,7 @@ export class TrafficSystem {
   }
 
   private setCarHeading(carGroup: Group, axis: string, dir: number) {
-    if (axis === "x") {
+    if (axis === 'x') {
       carGroup.rotation.y = dir === 1 ? Math.PI / 2 : -Math.PI / 2;
     } else {
       carGroup.rotation.y = dir === 1 ? 0 : Math.PI;
@@ -392,7 +457,7 @@ export class TrafficSystem {
     const speed = car.userData.speed;
     const dir = car.userData.dir;
 
-    if (car.userData.axis === "x") {
+    if (car.userData.axis === 'x') {
       car.position.x += speed * dir;
       this.handlePoliceTurning(car, car.position.x);
 
@@ -419,13 +484,19 @@ export class TrafficSystem {
     const newDir = Math.random() > 0.5 ? 1 : -1;
     const laneOffset = (Math.random() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
 
-    if (car.userData.axis === "x") {
-      car.position.x = Math.round((car.position.x - (START_OFFSET - CELL_SIZE / 2)) / CELL_SIZE) * CELL_SIZE + (START_OFFSET - CELL_SIZE / 2) + laneOffset;
-      car.userData.axis = "z";
+    if (car.userData.axis === 'x') {
+      car.position.x =
+        Math.round((car.position.x - (START_OFFSET - CELL_SIZE / 2)) / CELL_SIZE) * CELL_SIZE +
+        (START_OFFSET - CELL_SIZE / 2) +
+        laneOffset;
+      car.userData.axis = 'z';
       car.userData.heading = newDir === 1 ? 0 : Math.PI;
     } else {
-      car.position.z = Math.round((car.position.z - (START_OFFSET - CELL_SIZE / 2)) / CELL_SIZE) * CELL_SIZE + (START_OFFSET - CELL_SIZE / 2) + laneOffset;
-      car.userData.axis = "x";
+      car.position.z =
+        Math.round((car.position.z - (START_OFFSET - CELL_SIZE / 2)) / CELL_SIZE) * CELL_SIZE +
+        (START_OFFSET - CELL_SIZE / 2) +
+        laneOffset;
+      car.userData.axis = 'x';
       car.userData.heading = newDir === 1 ? Math.PI / 2 : -Math.PI / 2;
     }
     car.userData.dir = newDir;
@@ -445,7 +516,11 @@ export class TrafficSystem {
       car.traverse((child) => {
         if (child instanceof Mesh) {
           const mat = child.material;
-          if (!Array.isArray(mat) && child.userData.partType && child.userData.partType !== "hitbox") {
+          if (
+            !Array.isArray(mat) &&
+            child.userData.partType &&
+            child.userData.partType !== 'hitbox'
+          ) {
             const clone = mat.clone();
             clone.transparent = true;
             clone.depthWrite = false;
@@ -457,7 +532,7 @@ export class TrafficSystem {
       car.userData._fadeInitialized = true;
     }
 
-    if (car.userData.axis === "x") {
+    if (car.userData.axis === 'x') {
       car.position.x += car.userData.speed * 0.5 * car.userData.dir;
     } else {
       car.position.z += car.userData.speed * 0.5 * car.userData.dir;
@@ -474,9 +549,7 @@ export class TrafficSystem {
           const mat = child.material;
           if (!Array.isArray(mat)) {
             const original =
-              child.userData.originalOpacity !== undefined
-                ? child.userData.originalOpacity
-                : 1.0;
+              child.userData.originalOpacity !== undefined ? child.userData.originalOpacity : 1.0;
             mat.opacity = original * car.userData.opacity;
           }
         }
@@ -522,7 +595,13 @@ export class TrafficSystem {
     }
   }
 
-  private checkNeighborCells(carA: Group, grid: Map<string, Group[]>, gridX: number, gridZ: number, distSqThreshold: number) {
+  private checkNeighborCells(
+    carA: Group,
+    grid: Map<string, Group[]>,
+    gridX: number,
+    gridZ: number,
+    distSqThreshold: number
+  ) {
     for (let dx = -1; dx <= 1; dx++) {
       for (let dz = -1; dz <= 1; dz++) {
         const neighbors = grid.get(`${gridX + dx},${gridZ + dz}`);

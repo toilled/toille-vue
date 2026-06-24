@@ -1,14 +1,6 @@
-import {
-  Scene,
-  PerspectiveCamera,
-  WebGLRenderer,
-  Group,
-  Vector3,
-  Mesh,
-  Object3D,
-} from "three";
-import { Ref } from "vue";
-import type { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { Scene, PerspectiveCamera, WebGLRenderer, Group, Vector3, Mesh, Object3D } from 'three';
+import { Ref } from 'vue';
+import type { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 
 export interface Controls {
   left: boolean;
@@ -32,10 +24,7 @@ export interface GameContext {
 
   cars: Group[];
   buildings: Object3D[];
-  occupiedGrids: Map<
-    string,
-    { halfW: number; halfD: number; isRound?: boolean }
-  >;
+  occupiedGrids: Map<string, { halfW: number; halfD: number; isRound?: boolean }>;
 
   score: Ref<number>;
   drivingScore: Ref<number>;
@@ -68,7 +57,7 @@ export interface GameContext {
 
 export interface StoryObjective {
   id: string;
-  type: "goto" | "collect" | "interact";
+  type: 'goto' | 'collect' | 'interact';
   label: string;
   x: number;
   z: number;
@@ -103,7 +92,7 @@ export interface MinimapData {
   currentMissionId: string;
 }
 
-export type GameModeType = "driving" | "exploration" | "cinematic" | "demo" | null;
+export type GameModeType = 'driving' | 'exploration' | 'cinematic' | 'demo' | null;
 
 export interface GameMode {
   init(context: GameContext): void;

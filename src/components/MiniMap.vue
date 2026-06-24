@@ -6,19 +6,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount } from "vue";
-import { BOUNDS, CELL_SIZE, START_OFFSET, GRID_SIZE } from "../game/config";
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import { BOUNDS, CELL_SIZE, START_OFFSET, GRID_SIZE } from '../game/config';
 
 const props = defineProps({
   playerX: { type: Number, default: 0 },
   playerZ: { type: Number, default: 0 },
   playerRotation: { type: Number, default: 0 },
   objectives: {
-    type: Array as () => { x: number; z: number; completed: boolean; label: string; type: string }[],
+    type: Array as () => {
+      x: number;
+      z: number;
+      completed: boolean;
+      label: string;
+      type: string;
+    }[],
     default: () => [],
   },
   visible: { type: Boolean, default: false },
-  currentMissionId: { type: String, default: "" },
+  currentMissionId: { type: String, default: '' },
 });
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
@@ -27,7 +33,7 @@ const worldSize = BOUNDS * 2;
 const scale = mapSize / worldSize;
 
 function drawGrid(ctx: CanvasRenderingContext2D, gridScale: number, halfGrid: number) {
-  ctx.strokeStyle = "rgba(0, 255, 204, 0.08)";
+  ctx.strokeStyle = 'rgba(0, 255, 204, 0.08)';
   ctx.lineWidth = 0.5;
   for (let i = 0; i <= GRID_SIZE; i++) {
     const pos = (i * CELL_SIZE - halfGrid) * gridScale;
@@ -44,7 +50,7 @@ function drawGrid(ctx: CanvasRenderingContext2D, gridScale: number, halfGrid: nu
 
 function drawRoads(ctx: CanvasRenderingContext2D, gridScale: number, halfGrid: number) {
   const roadWidth = 40;
-  ctx.fillStyle = "rgba(0, 255, 204, 0.06)";
+  ctx.fillStyle = 'rgba(0, 255, 204, 0.06)';
   for (let i = 0; i <= GRID_SIZE; i++) {
     const pos = (i * CELL_SIZE - halfGrid) * gridScale;
     const rw = roadWidth * gridScale;
@@ -55,8 +61,8 @@ function drawRoads(ctx: CanvasRenderingContext2D, gridScale: number, halfGrid: n
 
 function drawBuildings(ctx: CanvasRenderingContext2D, gridScale: number) {
   const blockSize = 150;
-  ctx.fillStyle = "rgba(0, 150, 255, 0.15)";
-  ctx.strokeStyle = "rgba(0, 150, 255, 0.08)";
+  ctx.fillStyle = 'rgba(0, 150, 255, 0.15)';
+  ctx.strokeStyle = 'rgba(0, 150, 255, 0.08)';
   ctx.lineWidth = 0.5;
   for (let gx = 0; gx < GRID_SIZE; gx++) {
     for (let gz = 0; gz < GRID_SIZE; gz++) {
@@ -71,28 +77,32 @@ function drawBuildings(ctx: CanvasRenderingContext2D, gridScale: number) {
   }
 }
 
-function drawMinimapObjective(ctx: CanvasRenderingContext2D, obj: { x: number; z: number; completed: boolean; label: string; type: string }, gridScale: number) {
+function drawMinimapObjective(
+  ctx: CanvasRenderingContext2D,
+  obj: { x: number; z: number; completed: boolean; label: string; type: string },
+  gridScale: number
+) {
   if (obj.completed) return;
   const ox = (obj.x - 0) * gridScale;
   const oz = (obj.z - 0) * gridScale;
 
-  if (obj.type === "collect") {
-    ctx.fillStyle = "#ffcc00";
-    ctx.shadowColor = "#ffcc00";
+  if (obj.type === 'collect') {
+    ctx.fillStyle = '#ffcc00';
+    ctx.shadowColor = '#ffcc00';
     ctx.shadowBlur = 6;
     ctx.beginPath();
     ctx.arc(ox, oz, 4, 0, Math.PI * 2);
     ctx.fill();
-  } else if (obj.type === "interact") {
-    ctx.fillStyle = "#ff00cc";
-    ctx.shadowColor = "#ff00cc";
+  } else if (obj.type === 'interact') {
+    ctx.fillStyle = '#ff00cc';
+    ctx.shadowColor = '#ff00cc';
     ctx.shadowBlur = 6;
     ctx.beginPath();
     ctx.arc(ox, oz, 4, 0, Math.PI * 2);
     ctx.fill();
   } else {
-    ctx.fillStyle = "#00ffcc";
-    ctx.shadowColor = "#00ffcc";
+    ctx.fillStyle = '#00ffcc';
+    ctx.shadowColor = '#00ffcc';
     ctx.shadowBlur = 6;
     ctx.beginPath();
     ctx.arc(ox, oz, 3.5, 0, Math.PI * 2);
@@ -110,9 +120,9 @@ function drawPlayer(ctx: CanvasRenderingContext2D, gridScale: number) {
   ctx.translate(px, pz);
   ctx.rotate(-rot);
 
-  ctx.shadowColor = "#00ffcc";
+  ctx.shadowColor = '#00ffcc';
   ctx.shadowBlur = 10;
-  ctx.fillStyle = "#00ffcc";
+  ctx.fillStyle = '#00ffcc';
   ctx.beginPath();
   ctx.moveTo(0, -6);
   ctx.lineTo(-4, 6);
@@ -127,7 +137,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, gridScale: number) {
 function draw() {
   const canvas = canvasRef.value;
   if (!canvas) return;
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
   ctx.clearRect(0, 0, mapSize, mapSize);
@@ -141,7 +151,7 @@ function draw() {
   const gridScale = scale;
   const halfGrid = (GRID_SIZE * CELL_SIZE) / 2;
 
-  ctx.fillStyle = "rgba(5, 5, 20, 0.85)";
+  ctx.fillStyle = 'rgba(5, 5, 20, 0.85)';
   ctx.fillRect(-cx, -cy, mapSize, mapSize);
 
   drawGrid(ctx, gridScale, halfGrid);
@@ -154,7 +164,7 @@ function draw() {
 
   drawPlayer(ctx, gridScale);
 
-  ctx.strokeStyle = "rgba(0, 255, 204, 0.4)";
+  ctx.strokeStyle = 'rgba(0, 255, 204, 0.4)';
   ctx.lineWidth = 1.5;
   ctx.strokeRect(-cx, -cy, mapSize, mapSize);
 
@@ -167,11 +177,15 @@ function renderLoop() {
   animFrame = requestAnimationFrame(renderLoop);
 }
 
-watch(() => [props.playerX, props.playerZ, props.playerRotation, props.objectives, props.visible], () => {
-  if (props.visible) {
-    draw();
-  }
-}, { deep: true });
+watch(
+  () => [props.playerX, props.playerZ, props.playerRotation, props.objectives, props.visible],
+  () => {
+    if (props.visible) {
+      draw();
+    }
+  },
+  { deep: true }
+);
 
 onMounted(() => {
   if (props.visible) {
@@ -191,7 +205,9 @@ onBeforeUnmount(() => {
   right: 12px;
   z-index: 15;
   border: 1px solid rgba(0, 255, 204, 0.3);
-  box-shadow: 0 0 20px rgba(0, 255, 204, 0.15), inset 0 0 20px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 0 20px rgba(0, 255, 204, 0.15),
+    inset 0 0 20px rgba(0, 0, 0, 0.5);
   background: rgba(5, 5, 20, 0.85);
   pointer-events: none;
 }
@@ -208,7 +224,7 @@ onBeforeUnmount(() => {
   top: 4px;
   left: 50%;
   transform: translateX(-50%);
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 8px;
   font-weight: bold;
   color: rgba(0, 255, 204, 0.5);

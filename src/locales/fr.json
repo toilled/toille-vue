@@ -146,5 +146,12 @@
       "body2": "<ul><li>Alcohol Checker - Calculez quand vous serez sobre pour conduire</li><li>Noughts and Crosses - Morpion classique contre un bot</li><li>Ask Me - Discutez avec un assistant automatisé de mon parcours</li></ul>",
       "body3": "Amusez-vous à explorer ces petites expériences !"
     }
+  },
+  "desktop": {
+    "toggleDesktop": "Toggle Desktop Mode",
+    "launchTerminal": "Launch Terminal",
+    "launchExplorer": "Open File Explorer",
+    "startMenu": "Start Menu",
+    "shutdown": "Shut Down"
   }
 }

@@ -146,5 +146,12 @@
       "body2": "<ul><li>Alcohol Checker - 운전하기에 충분히 술이 깰 시간 계산</li><li>Noughts and Crosses - 봇과 대결하는 클래식 틱택토</li><li>Ask Me - 자동화된 비서와 제 배경에 대해 채팅</li></ul>",
       "body3": "이 작은 실험들을 탐험하며 즐거운 시간 보내세요!"
     }
+  },
+  "desktop": {
+    "toggleDesktop": "Toggle Desktop Mode",
+    "launchTerminal": "Launch Terminal",
+    "launchExplorer": "Open File Explorer",
+    "startMenu": "Start Menu",
+    "shutdown": "Shut Down"
   }
 }

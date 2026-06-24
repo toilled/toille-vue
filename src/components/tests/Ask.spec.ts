@@ -7,7 +7,7 @@ describe('Ask.vue', () => {
     vi.useFakeTimers();
     localStorage.clear();
   });
-  
+
   afterEach(() => {
     vi.useRealTimers();
     localStorage.clear();
@@ -16,8 +16,8 @@ describe('Ask.vue', () => {
   it('renders correctly', async () => {
     const wrapper = mount(Ask, {
       global: {
-        stubs: ['router-link']
-      }
+        stubs: ['router-link'],
+      },
     });
     await wrapper.vm.$nextTick();
     expect(wrapper.find('h2').text()).toBe('Ask Me');
@@ -28,8 +28,8 @@ describe('Ask.vue', () => {
   it('adds user message and bot response', async () => {
     const wrapper = mount(Ask, {
       global: {
-        stubs: ['router-link']
-      }
+        stubs: ['router-link'],
+      },
     });
     await wrapper.vm.$nextTick();
 
@@ -47,12 +47,12 @@ describe('Ask.vue', () => {
     // Verify user message is added
     // If isTyping is true, there is a .message.bot with "Typing..."
     // So messages: Initial + User + Typing = 3
-    
+
     expect(wrapper.findAll('.message').length).toBe(3);
     expect(wrapper.findAll('.message')[1].text()).toBe('What is your name?');
     expect(wrapper.findAll('.message')[2].text()).toContain('Typing');
     expect(input.element.value).toBe('');
-    
+
     // Fast forward time
     await vi.advanceTimersByTimeAsync(1000);
     await wrapper.vm.$nextTick();
@@ -61,7 +61,7 @@ describe('Ask.vue', () => {
     const messages = wrapper.findAll('.message');
     // Typing indicator should be gone.
     // Messages: Initial + User + Answer = 3
-    
+
     expect(messages.length).toBe(3);
     const lastMessage = messages[messages.length - 1];
     expect(lastMessage.classes()).toContain('bot');
@@ -72,8 +72,8 @@ describe('Ask.vue', () => {
   it('disables input while typing', async () => {
     const wrapper = mount(Ask, {
       global: {
-        stubs: ['router-link']
-      }
+        stubs: ['router-link'],
+      },
     });
     await wrapper.vm.$nextTick();
 

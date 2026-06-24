@@ -11,7 +11,12 @@
         :target="skill.link ? '_blank' : undefined"
         :rel="skill.link ? 'noopener noreferrer' : undefined"
       >
-        <img v-if="skill.icon && skill.icon.includes('/')" :src="skill.icon" alt="" class="skill-icon-img" />
+        <img
+          v-if="skill.icon && skill.icon.includes('/')"
+          :src="skill.icon"
+          alt=""
+          class="skill-icon-img"
+        />
         <span v-else-if="skill.icon" class="skill-icon">{{ skill.icon }}</span>
         <span class="skill-name">{{ skill.name }}</span>
       </component>
@@ -20,7 +25,6 @@
 </template>
 
 <script setup lang="ts">
-
 interface Skill {
   name: string;
   icon?: string;

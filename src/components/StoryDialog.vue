@@ -5,19 +5,17 @@
       <div v-if="showingBriefing" id="story-briefing" @click="dismiss">
         <div id="briefing-header">
           <span class="briefing-tag">MISSION</span>
-          <span class="briefing-id">{{ currentMission?.id?.toUpperCase().replace(/-/g, " ") }}</span>
+          <span class="briefing-id">{{
+            currentMission?.id?.toUpperCase().replace(/-/g, ' ')
+          }}</span>
         </div>
         <div id="briefing-title">{{ currentMission?.title }}</div>
         <div id="briefing-divider">▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀</div>
         <div id="briefing-text">{{ currentMission?.brief }}</div>
         <div id="briefing-objectives" v-if="currentMission">
           <div class="objective-header">OBJECTIVES:</div>
-          <div
-            v-for="(obj, idx) in currentMission.objectives"
-            :key="idx"
-            class="objective-item"
-          >
-            <span class="obj-marker">{{ obj.completed ? "█" : "▣" }}</span>
+          <div v-for="(obj, idx) in currentMission.objectives" :key="idx" class="objective-item">
+            <span class="obj-marker">{{ obj.completed ? '█' : '▣' }}</span>
             <span :class="{ completed: obj.completed }">{{ obj.label }}</span>
           </div>
         </div>
@@ -29,17 +27,22 @@
         <div id="dialogue-window">
           <div id="dialogue-header">
             <span class="dialogue-tag">INCOMING TRANSMISSION</span>
-            <span class="dialogue-progress">{{ dialogueIndex + 1 }}/{{ currentMission?.dialogue.length }}</span>
+            <span class="dialogue-progress"
+              >{{ dialogueIndex + 1 }}/{{ currentMission?.dialogue.length }}</span
+            >
           </div>
           <div id="dialogue-divider">────────────────────────────────</div>
           <div id="dialogue-text">
-            <span v-for="(char, i) in displayedText" :key="i" :class="{ glitch: char === '[' || char === ']' }">{{ char }}</span>
+            <span
+              v-for="(char, i) in displayedText"
+              :key="i"
+              :class="{ glitch: char === '[' || char === ']' }"
+              >{{ char }}</span
+            >
             <span v-if="isTyping" class="cursor-blink">▌</span>
           </div>
           <div id="dialogue-ai-notice">[ STORY CONTENT AI-GENERATED ]</div>
-          <div id="dialogue-hint" v-if="!isTyping">
-            [ CLICK or press E to continue ]
-          </div>
+          <div id="dialogue-hint" v-if="!isTyping">[ CLICK or press E to continue ]</div>
         </div>
       </div>
 
@@ -62,9 +65,9 @@
           class="tracker-item"
           :class="{ done: obj.completed }"
         >
-          <span class="tracker-marker">{{ obj.completed ? "█" : "▣" }}</span>
+          <span class="tracker-marker">{{ obj.completed ? '█' : '▣' }}</span>
           <span>{{ obj.label }}</span>
-          <span class="tracker-status">{{ obj.completed ? "[DONE]" : "[PENDING]" }}</span>
+          <span class="tracker-status">{{ obj.completed ? '[DONE]' : '[PENDING]' }}</span>
         </div>
       </div>
     </div>
@@ -72,9 +75,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onBeforeUnmount } from "vue";
-import { StoryMission } from "../game/types";
-import { speak, stopSpeech } from "../utils/SpeechSynthesizer";
+import { computed, ref, watch, onBeforeUnmount } from 'vue';
+import { StoryMission } from '../game/types';
+import { speak, stopSpeech } from '../utils/SpeechSynthesizer';
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -86,23 +89,23 @@ const props = defineProps({
   hasNextMission: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(["dismiss", "advance"]);
+const emit = defineEmits(['dismiss', 'advance']);
 
-const displayedText = ref("");
+const displayedText = ref('');
 const isTyping = ref(false);
 let typingTimer: ReturnType<typeof setInterval> | null = null;
 
 const currentDialogueLine = computed(() => {
-  if (!props.currentMission || !props.showingDialogue) return "";
-  return props.currentMission.dialogue[props.dialogueIndex] ?? "";
+  if (!props.currentMission || !props.showingDialogue) return '';
+  return props.currentMission.dialogue[props.dialogueIndex] ?? '';
 });
 
 function startTyping(text: string) {
   stopTyping();
-  displayedText.value = "";
+  displayedText.value = '';
   isTyping.value = true;
 
-  const clean = text.replace(/[[\]]/g, "").replace(/["']/g, "");
+  const clean = text.replace(/[[\]]/g, '').replace(/["']/g, '');
   speak(clean);
 
   let i = 0;
@@ -127,7 +130,7 @@ function stopTyping() {
 
 function dismiss() {
   stopSpeech();
-  emit("dismiss");
+  emit('dismiss');
 }
 
 function advance() {
@@ -140,7 +143,7 @@ function advance() {
     return;
   }
   stopSpeech();
-  emit("advance");
+  emit('advance');
 }
 
 watch(
@@ -152,14 +155,14 @@ watch(
       stopTyping();
     }
   },
-  { immediate: true },
+  { immediate: true }
 );
 
 watch(
   () => props.showingBriefing,
   (val) => {
     if (!val) stopTyping();
-  },
+  }
 );
 
 onBeforeUnmount(() => {
@@ -191,7 +194,9 @@ onBeforeUnmount(() => {
 #story-briefing {
   background: rgba(5, 5, 20, 0.92);
   border: 1px solid rgba(0, 255, 204, 0.3);
-  box-shadow: 0 0 40px rgba(0, 255, 204, 0.1), inset 0 0 40px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 0 40px rgba(0, 255, 204, 0.1),
+    inset 0 0 40px rgba(0, 0, 0, 0.5);
   padding: 30px;
   max-width: 560px;
   width: 90%;
@@ -206,7 +211,7 @@ onBeforeUnmount(() => {
 }
 
 .briefing-tag {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 11px;
   color: #ff00cc;
   letter-spacing: 3px;
@@ -214,14 +219,14 @@ onBeforeUnmount(() => {
 }
 
 .briefing-id {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 10px;
   color: rgba(0, 255, 204, 0.4);
   letter-spacing: 1px;
 }
 
 #briefing-title {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 28px;
   font-weight: bold;
   color: #00ffcc;
@@ -231,7 +236,7 @@ onBeforeUnmount(() => {
 }
 
 #briefing-divider {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 10px;
   color: rgba(0, 255, 204, 0.2);
   margin-bottom: 16px;
@@ -239,20 +244,19 @@ onBeforeUnmount(() => {
 }
 
 #briefing-text {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 13px;
   color: #c0c0e0;
   line-height: 1.6;
   margin-bottom: 20px;
 }
 
-
 #briefing-objectives {
   margin-bottom: 16px;
 }
 
 .objective-header {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 11px;
   color: #ff00cc;
   letter-spacing: 2px;
@@ -260,7 +264,7 @@ onBeforeUnmount(() => {
 }
 
 .objective-item {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 12px;
   color: #e0e0ff;
   margin: 4px 0;
@@ -278,7 +282,7 @@ onBeforeUnmount(() => {
 }
 
 #briefing-hint {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 10px;
   color: rgba(0, 255, 204, 0.4);
   letter-spacing: 1px;
@@ -310,7 +314,7 @@ onBeforeUnmount(() => {
 }
 
 .dialogue-tag {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 10px;
   color: #00ffcc;
   letter-spacing: 2px;
@@ -318,20 +322,20 @@ onBeforeUnmount(() => {
 }
 
 .dialogue-progress {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 10px;
   color: rgba(0, 255, 204, 0.3);
 }
 
 #dialogue-divider {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 10px;
   color: rgba(0, 255, 204, 0.15);
   margin-bottom: 12px;
 }
 
 #dialogue-text {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 14px;
   color: #d0d0f0;
   line-height: 1.7;
@@ -349,7 +353,7 @@ onBeforeUnmount(() => {
 }
 
 #dialogue-ai-notice {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 10px;
   color: rgba(255, 0, 204, 0.7);
   letter-spacing: 2px;
@@ -359,7 +363,7 @@ onBeforeUnmount(() => {
 }
 
 #dialogue-hint {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 10px;
   color: rgba(0, 255, 204, 0.3);
   margin-top: 12px;
@@ -377,7 +381,7 @@ onBeforeUnmount(() => {
 }
 
 #complete-header {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 24px;
   font-weight: bold;
   color: #ffcc00;
@@ -387,14 +391,14 @@ onBeforeUnmount(() => {
 }
 
 #complete-divider {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 10px;
   color: rgba(255, 204, 0, 0.2);
   margin-bottom: 16px;
 }
 
 #complete-message {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 13px;
   color: #d0d0f0;
   max-width: 400px;
@@ -402,7 +406,7 @@ onBeforeUnmount(() => {
 }
 
 #complete-hint {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 11px;
   color: #00ffcc;
   margin-top: 20px;
@@ -423,7 +427,7 @@ onBeforeUnmount(() => {
 }
 
 #tracker-header {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 11px;
   font-weight: bold;
   color: #00ffcc;
@@ -433,7 +437,7 @@ onBeforeUnmount(() => {
 }
 
 .tracker-item {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 10px;
   color: #c0c0e0;
   display: flex;
@@ -490,12 +494,19 @@ onBeforeUnmount(() => {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 @keyframes blink {
-  50% { opacity: 0; }
+  50% {
+    opacity: 0;
+  }
 }
 
 .glitch-fade-enter-active {
@@ -507,13 +518,23 @@ onBeforeUnmount(() => {
 }
 
 @keyframes glitch-fade-in {
-  0% { opacity: 0; clip-path: inset(50% 0 50% 0); }
-  100% { opacity: 1; clip-path: inset(0 0 0 0); }
+  0% {
+    opacity: 0;
+    clip-path: inset(50% 0 50% 0);
+  }
+  100% {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
 }
 
 @keyframes glitch-fade-out {
-  0% { opacity: 1; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 .fade-up-enter-active {
@@ -525,12 +546,22 @@ onBeforeUnmount(() => {
 }
 
 @keyframes fade-up-in {
-  0% { opacity: 0; transform: translate(-50%, -40%); }
-  100% { opacity: 1; transform: translate(-50%, -50%); }
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -40%);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
 }
 
 @keyframes fade-up-out {
-  0% { opacity: 1; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 </style>

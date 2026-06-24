@@ -1,7 +1,7 @@
-import { ref } from "vue";
+import { ref } from 'vue';
 
 const showWarning = ref(false);
-const warningMessage = ref("");
+const warningMessage = ref('');
 let resolver: ((value: boolean) => void) | null = null;
 
 export function useEpilepsyWarning() {
@@ -15,7 +15,7 @@ export function useEpilepsyWarning() {
 
   function resolveConfirm(value: boolean) {
     showWarning.value = false;
-    warningMessage.value = "";
+    warningMessage.value = '';
     resolver?.(value);
     resolver = null;
   }

@@ -12,8 +12,8 @@ html {
   overscroll-behavior: none;
   overflow-x: hidden;
 
-  --font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "Courier New", Courier, monospace;
+  --font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Courier New', Courier, monospace;
   --background-color: #050510;
   --text-color: #ffffff;
   --heading-color: #ff00cc;
@@ -22,19 +22,29 @@ html {
 }
 
 @media (min-width: 576px) {
-  html { font-size: 106.25%; }
+  html {
+    font-size: 106.25%;
+  }
 }
 @media (min-width: 768px) {
-  html { font-size: 112.5%; }
+  html {
+    font-size: 112.5%;
+  }
 }
 @media (min-width: 1024px) {
-  html { font-size: 118.75%; }
+  html {
+    font-size: 118.75%;
+  }
 }
 @media (min-width: 1280px) {
-  html { font-size: 125%; }
+  html {
+    font-size: 125%;
+  }
 }
 @media (min-width: 1536px) {
-  html { font-size: 131.25%; }
+  html {
+    font-size: 131.25%;
+  }
 }
 
 body {
@@ -72,18 +82,41 @@ body {
 /* ============================================
    Typography
    ============================================ */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--heading-color);
   font-weight: 700;
   font-family: var(--font-mono);
 }
 
-h1 { font-size: 2rem; line-height: 1.125; }
-h2 { font-size: 1.75rem; line-height: 1.15; }
-h3 { font-size: 1.5rem; line-height: 1.175; }
-h4 { font-size: 1.25rem; line-height: 1.2; }
-h5 { font-size: 1.125rem; line-height: 1.225; }
-h6 { font-size: 1rem; line-height: 1.25; }
+h1 {
+  font-size: 2rem;
+  line-height: 1.125;
+}
+h2 {
+  font-size: 1.75rem;
+  line-height: 1.15;
+}
+h3 {
+  font-size: 1.5rem;
+  line-height: 1.175;
+}
+h4 {
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+h5 {
+  font-size: 1.125rem;
+  line-height: 1.225;
+}
+h6 {
+  font-size: 1rem;
+  line-height: 1.25;
+}
 
 .question {
   cursor: help;
@@ -95,7 +128,9 @@ h6 { font-size: 1rem; line-height: 1.25; }
 }
 
 .title {
-  text-shadow: 2px 2px 4px #ff00cc, 0 0 10px #ff00cc;
+  text-shadow:
+    2px 2px 4px #ff00cc,
+    0 0 10px #ff00cc;
   color: #fff !important;
 }
 
@@ -119,7 +154,9 @@ a {
 
 a:hover {
   color: #fff;
-  text-shadow: 0 0 10px #fff, 0 0 20px rgba(0, 255, 204, 0.5);
+  text-shadow:
+    0 0 10px #fff,
+    0 0 20px rgba(0, 255, 204, 0.5);
 }
 
 /* ============================================
@@ -171,12 +208,12 @@ button.outline:hover {
 /* ============================================
    Inputs
    ============================================ */
-input[type="text"],
-input[type="search"],
-input[type="email"],
-input[type="url"],
-input[type="password"],
-input[type="number"],
+input[type='text'],
+input[type='search'],
+input[type='email'],
+input[type='url'],
+input[type='password'],
+input[type='number'],
 textarea,
 select {
   font-family: inherit;
@@ -234,14 +271,18 @@ kbd {
    Cards & Content
    ============================================ */
 article {
-  box-shadow: 0 0 15px rgba(0, 255, 204, 0.15),
+  box-shadow:
+    0 0 15px rgba(0, 255, 204, 0.15),
     inset 0 0 20px rgba(0, 255, 204, 0.05);
   border: 1px solid rgba(0, 255, 204, 0.2);
   background-color: rgba(5, 5, 16, 0.85);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border-radius: 12px;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
   transform: translateZ(0);
   backface-visibility: hidden;
   contain: paint layout;
@@ -254,7 +295,8 @@ html.fx article {
 
 article:hover {
   border-color: rgba(0, 255, 204, 0.35);
-  box-shadow: 0 0 24px rgba(0, 255, 204, 0.2),
+  box-shadow:
+    0 0 24px rgba(0, 255, 204, 0.2),
     inset 0 0 20px rgba(0, 255, 204, 0.06);
 }
 

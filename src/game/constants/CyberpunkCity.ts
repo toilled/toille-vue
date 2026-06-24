@@ -26,7 +26,6 @@ export const INTRO_DURATION_MS = 4000;
 export const INTRO_ORBIT_RADIUS = 200;
 export const INTRO_ORBIT_SPEED = 0.5;
 
-
 export const AUDIO_VOLUME = 0.1;
 export const AUDIO_DISTANCE_FACTOR = 50;
 export const AUDIO_OSCILLATOR_FREQ_START = 880;

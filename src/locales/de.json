@@ -146,5 +146,12 @@
       "body2": "<ul><li>Alcohol Checker - Berechnen Sie, wann Sie nüchtern genug zum Fahren sind</li><li>Noughts and Crosses - Klassisches Tic-Tac-Toe gegen einen Bot</li><li>Ask Me - Chatten Sie mit einem automatisierten Assistenten über meinen Hintergrund</li></ul>",
       "body3": "Viel Spaß beim Erkunden dieser kleinen Experimente!"
     }
+  },
+  "desktop": {
+    "toggleDesktop": "Toggle Desktop Mode",
+    "launchTerminal": "Launch Terminal",
+    "launchExplorer": "Open File Explorer",
+    "startMenu": "Start Menu",
+    "shutdown": "Shut Down"
   }
 }

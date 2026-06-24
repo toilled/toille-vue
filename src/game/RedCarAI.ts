@@ -1,7 +1,7 @@
-import { BOUNDS, CELL_SIZE, START_OFFSET, GRID_SIZE, CITY_SIZE } from "./config";
-import { Group, BoxGeometry, MeshStandardMaterial, Mesh, SpotLight, Object3D } from "three";
-import { getHeight, getNormal } from "../utils/HeightMap";
-import { GameContext } from "./types";
+import { BOUNDS, CELL_SIZE, START_OFFSET, GRID_SIZE, CITY_SIZE } from './config';
+import { Group, BoxGeometry, MeshStandardMaterial, Mesh, SpotLight, Object3D } from 'three';
+import { getHeight, getNormal } from '../utils/HeightMap';
+import { GameContext } from './types';
 
 export class RedCarAI {
   car: Group | null = null;
@@ -61,10 +61,11 @@ export class RedCarAI {
       const roadCoordinate = START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
       const otherCoord = (Math.random() - 0.5) * CITY_SIZE;
 
-      const axis = Math.random() > 0.5 ? "x" : "z";
-      let x = 0, z = 0;
+      const axis = Math.random() > 0.5 ? 'x' : 'z';
+      let x = 0,
+        z = 0;
 
-      if (axis === "x") {
+      if (axis === 'x') {
         z = roadCoordinate;
         x = otherCoord;
         this.car.userData.heading = Math.random() > 0.5 ? Math.PI / 2 : -Math.PI / 2;
@@ -74,9 +75,7 @@ export class RedCarAI {
         this.car.userData.heading = Math.random() > 0.5 ? 0 : Math.PI;
       }
 
-      const dist = Math.sqrt(
-        (x - player.position.x) ** 2 + (z - player.position.z) ** 2,
-      );
+      const dist = Math.sqrt((x - player.position.x) ** 2 + (z - player.position.z) ** 2);
       if (dist > 500) {
         const h = getHeight(x, z);
         this.car.position.set(x, h + 1, z);
@@ -117,13 +116,19 @@ export class RedCarAI {
     const maxOffset = 18;
 
     if (isZAxis) {
-      const targetX = Math.max(roadCenterX - maxOffset, Math.min(roadCenterX + maxOffset, playerCar.position.x));
+      const targetX = Math.max(
+        roadCenterX - maxOffset,
+        Math.min(roadCenterX + maxOffset, playerCar.position.x)
+      );
       const diff = targetX - this.car.position.x;
       if (Math.abs(diff) > 0.1) {
         this.car.position.x += Math.sign(diff) * Math.min(Math.abs(diff), lateralSpeed);
       }
     } else {
-      const targetZ = Math.max(roadCenterZ - maxOffset, Math.min(roadCenterZ + maxOffset, playerCar.position.z));
+      const targetZ = Math.max(
+        roadCenterZ - maxOffset,
+        Math.min(roadCenterZ + maxOffset, playerCar.position.z)
+      );
       const diff = targetZ - this.car.position.z;
       if (Math.abs(diff) > 0.1) {
         this.car.position.z += Math.sign(diff) * Math.min(Math.abs(diff), lateralSpeed);
@@ -154,8 +159,9 @@ export class RedCarAI {
       const dx = Math.sin(dir);
       const dz = Math.cos(dir);
       if (dx * curDirX + dz * curDirZ < -0.9) continue;
-      const d = ((this.car.position.x + dx * 100) - playerCar.position.x) ** 2 +
-                ((this.car.position.z + dz * 100) - playerCar.position.z) ** 2;
+      const d =
+        (this.car.position.x + dx * 100 - playerCar.position.x) ** 2 +
+        (this.car.position.z + dz * 100 - playerCar.position.z) ** 2;
       if (d < minDst) {
         minDst = d;
         bestDir = dir;
@@ -195,7 +201,7 @@ export class RedCarAI {
     const op = dist < 200 ? 1 : dist > 600 ? 0 : 1 - (dist - 200) / 400;
 
     arrow.traverse((c) => {
-      if ("material" in c && c.material) {
+      if ('material' in c && c.material) {
         (c.material as { opacity: number }).opacity = op;
       }
     });

@@ -1,20 +1,20 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { CarAudio } from "../audio/CarAudio";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { CarAudio } from '../audio/CarAudio';
 
-describe("CarAudio", () => {
+describe('CarAudio', () => {
   let carAudio: CarAudio;
 
   beforeEach(() => {
     carAudio = new CarAudio();
   });
 
-  it("initializes with stopped state", () => {
+  it('initializes with stopped state', () => {
     expect(carAudio.isPlaying).toBe(false);
     expect(carAudio.engineOsc).toBeNull();
     expect(carAudio.lfo).toBeNull();
   });
 
-  it("start creates audio nodes", () => {
+  it('start creates audio nodes', () => {
     carAudio.init();
     carAudio.start();
     expect(carAudio.isPlaying).toBe(true);
@@ -24,7 +24,7 @@ describe("CarAudio", () => {
     expect(carAudio.lfoGain).not.toBeNull();
   });
 
-  it("stop cleans up audio nodes", () => {
+  it('stop cleans up audio nodes', () => {
     carAudio.init();
     carAudio.start();
     carAudio.stop();
@@ -33,7 +33,7 @@ describe("CarAudio", () => {
     expect(carAudio.lfo).toBeNull();
   });
 
-  it("update changes frequency based on speed", () => {
+  it('update changes frequency based on speed', () => {
     carAudio.init();
     carAudio.start();
     const freqSetTargetSpy = vi.fn();
@@ -45,7 +45,7 @@ describe("CarAudio", () => {
     expect(lfoFreqSetTargetSpy).toHaveBeenCalled();
   });
 
-  it("playCrash creates crash sound", () => {
+  it('playCrash creates crash sound', () => {
     carAudio.playCrash();
     expect(carAudio.ctx).not.toBeNull();
   });

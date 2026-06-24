@@ -15,8 +15,8 @@ import {
   AdditiveBlending,
   Color,
   SphereGeometry,
-} from "three";
-import { createCloudTexture } from "../utils/TextureGenerator";
+} from 'three';
+import { createCloudTexture } from '../utils/TextureGenerator';
 
 interface SkyEffectConfig {
   cloudCount: number;
@@ -61,15 +61,15 @@ export class SkyEffects {
 
   private drawSkyGradient(ctx: CanvasRenderingContext2D) {
     const gradient = ctx.createLinearGradient(0, 0, 0, 512);
-    gradient.addColorStop(0, "#000011");
-    gradient.addColorStop(0.15, "#050020");
-    gradient.addColorStop(0.35, "#0a0028");
-    gradient.addColorStop(0.55, "#150035");
-    gradient.addColorStop(0.7, "#1a0035");
-    gradient.addColorStop(0.82, "#1a0030");
-    gradient.addColorStop(0.9, "#150025");
-    gradient.addColorStop(0.95, "#200020");
-    gradient.addColorStop(1, "#2a0015");
+    gradient.addColorStop(0, '#000011');
+    gradient.addColorStop(0.15, '#050020');
+    gradient.addColorStop(0.35, '#0a0028');
+    gradient.addColorStop(0.55, '#150035');
+    gradient.addColorStop(0.7, '#1a0035');
+    gradient.addColorStop(0.82, '#1a0030');
+    gradient.addColorStop(0.9, '#150025');
+    gradient.addColorStop(0.95, '#200020');
+    gradient.addColorStop(1, '#2a0015');
 
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 512, 512);
@@ -77,22 +77,22 @@ export class SkyEffects {
 
   private drawHorizonGlow(ctx: CanvasRenderingContext2D) {
     const glow = ctx.createRadialGradient(256, 470, 10, 256, 470, 120);
-    glow.addColorStop(0, "rgba(255, 50, 100, 0.15)");
-    glow.addColorStop(0.4, "rgba(255, 0, 100, 0.08)");
-    glow.addColorStop(0.7, "rgba(100, 0, 200, 0.04)");
-    glow.addColorStop(1, "rgba(0, 0, 0, 0)");
+    glow.addColorStop(0, 'rgba(255, 50, 100, 0.15)');
+    glow.addColorStop(0.4, 'rgba(255, 0, 100, 0.08)');
+    glow.addColorStop(0.7, 'rgba(100, 0, 200, 0.04)');
+    glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = glow;
     ctx.fillRect(0, 380, 512, 132);
 
     const glow2 = ctx.createRadialGradient(256, 470, 10, 256, 470, 100);
-    glow2.addColorStop(0, "rgba(0, 200, 255, 0.08)");
-    glow2.addColorStop(1, "rgba(0, 200, 255, 0)");
+    glow2.addColorStop(0, 'rgba(0, 200, 255, 0.08)');
+    glow2.addColorStop(1, 'rgba(0, 200, 255, 0)');
     ctx.fillStyle = glow2;
     ctx.fillRect(100, 400, 312, 112);
   }
 
   private drawNebulaPatches(ctx: CanvasRenderingContext2D) {
-    ctx.fillStyle = "rgba(255, 0, 120, 0.04)";
+    ctx.fillStyle = 'rgba(255, 0, 120, 0.04)';
     for (let i = 0; i < 8; i++) {
       const x = Math.random() * 512;
       const y = Math.random() * 350;
@@ -102,7 +102,7 @@ export class SkyEffects {
       ctx.fill();
     }
 
-    ctx.fillStyle = "rgba(0, 200, 255, 0.03)";
+    ctx.fillStyle = 'rgba(0, 200, 255, 0.03)';
     for (let i = 0; i < 5; i++) {
       const x = Math.random() * 512;
       const y = Math.random() * 300;
@@ -116,11 +116,11 @@ export class SkyEffects {
   private createSkyDome(): Mesh {
     const geometry = new SphereGeometry(2800, 32, 32);
 
-    const canvas = document.createElement("canvas");
+    const canvas = document.createElement('canvas');
     canvas.width = 512;
     canvas.height = 512;
-    const ctx = canvas.getContext("2d");
-    if (ctx && typeof ctx.createLinearGradient === "function") {
+    const ctx = canvas.getContext('2d');
+    if (ctx && typeof ctx.createLinearGradient === 'function') {
       this.drawSkyGradient(ctx);
       this.drawHorizonGlow(ctx);
       this.drawNebulaPatches(ctx);
@@ -173,9 +173,9 @@ export class SkyEffects {
       sizes[i] = 1 + Math.random() * 4;
     }
 
-    geometry.setAttribute("position", new BufferAttribute(positions, 3));
-    geometry.setAttribute("color", new BufferAttribute(colors, 3));
-    geometry.setAttribute("size", new BufferAttribute(sizes, 1));
+    geometry.setAttribute('position', new BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new BufferAttribute(colors, 3));
+    geometry.setAttribute('size', new BufferAttribute(sizes, 1));
 
     const material = new PointsMaterial({
       size: 3,
@@ -245,22 +245,17 @@ export class SkyEffects {
         phase: number;
       };
       cloud.position.x =
-        userData.baseX +
-        Math.sin(this.time * userData.speed + userData.phase) *
-          userData.amplitude;
+        userData.baseX + Math.sin(this.time * userData.speed + userData.phase) * userData.amplitude;
       cloud.position.z =
         userData.baseZ +
-        Math.cos(this.time * userData.speed * 0.7 + userData.phase) *
-          userData.amplitude *
-          0.5;
+        Math.cos(this.time * userData.speed * 0.7 + userData.phase) * userData.amplitude * 0.5;
     }
 
     if (this.stars) {
       this.starUpdateCounter++;
 
       if (this.starTwinkleEnabled && this.starUpdateCounter % this.starUpdateInterval === 0) {
-        const positions = this.stars.geometry.attributes.position
-          .array as Float32Array;
+        const positions = this.stars.geometry.attributes.position.array as Float32Array;
         const time = this.time * 0.1;
 
         for (let i = 0; i < this.config.starCount; i += 5) {
@@ -313,7 +308,7 @@ export class SkyEffects {
     if (mesh.material) {
       const mat = mesh.material as { map?: { dispose(): void }; dispose?(): void };
       if (mat.map) mat.map.dispose();
-      if (typeof mat.dispose === "function") mat.dispose();
+      if (typeof mat.dispose === 'function') mat.dispose();
     }
   }
 

@@ -1,7 +1,7 @@
 const enabled = true;
 
 export function speak(text: string) {
-  if (!enabled || typeof window === "undefined" || !window.speechSynthesis) return;
+  if (!enabled || typeof window === 'undefined' || !window.speechSynthesis) return;
 
   stopSpeech();
 
@@ -13,9 +13,9 @@ export function speak(text: string) {
   const voices = window.speechSynthesis.getVoices();
   const preferred = voices.find(
     (v) =>
-      v.name.toLowerCase().includes("female") ||
-      v.name.toLowerCase().includes("google uk") ||
-      v.name.toLowerCase().includes("samantha"),
+      v.name.toLowerCase().includes('female') ||
+      v.name.toLowerCase().includes('google uk') ||
+      v.name.toLowerCase().includes('samantha')
   );
   if (preferred) utterance.voice = preferred;
 
@@ -23,7 +23,7 @@ export function speak(text: string) {
 }
 
 export function stopSpeech() {
-  if (typeof window !== "undefined" && window.speechSynthesis) {
+  if (typeof window !== 'undefined' && window.speechSynthesis) {
     window.speechSynthesis.cancel();
   }
 }

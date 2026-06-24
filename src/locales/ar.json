@@ -146,5 +146,12 @@
       "body2": "<ul><li>Alcohol Checker - احسب متى ستكون متيقظاً كافياً للقيادة</li><li>Noughts and Crosses - لعبة إكس-أو كلاسيكية ضد بوت</li><li>Ask Me - تحدث مع مساعد آلي عن خلفيتي</li></ul>",
       "body3": "استمتع باستكشاف هذه التجارب الصغيرة!"
     }
+  },
+  "desktop": {
+    "toggleDesktop": "Toggle Desktop Mode",
+    "launchTerminal": "Launch Terminal",
+    "launchExplorer": "Open File Explorer",
+    "startMenu": "Start Menu",
+    "shutdown": "Shut Down"
   }
 }

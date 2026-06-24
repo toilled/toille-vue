@@ -7,24 +7,24 @@
     <article v-if="activity" :title="t('activity.clickForNew')" class="marginless">
       <header>
         <strong>
-          {{ t("activity.title", { type: activity.type }) }}
+          {{ t('activity.title', { type: activity.type }) }}
         </strong>
-        {{ t("activity.boredApi") }}
+        {{ t('activity.boredApi') }}
       </header>
       <p class="marginless">{{ translatedActivityText }}</p>
     </article>
     <article v-else class="marginless">
       <header>
-        <strong>{{ t("activity.tryActivity") }}</strong>
+        <strong>{{ t('activity.tryActivity') }}</strong>
       </header>
       <p class="marginless" aria-busy="true">
-        {{ t("activity.loading") }}
+        {{ t('activity.loading') }}
       </p>
     </article>
     <Transition name="slide-fade">
       <article v-if="!hideHint">
         <footer style="font-style: oblique; font-size: 0.8em; margin-top: 0">
-          {{ t("activity.clickToUpdate") }}
+          {{ t('activity.clickToUpdate') }}
         </footer>
       </article>
     </Transition>
@@ -32,8 +32,8 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from "vue-i18n";
-import { useTranslate } from "../composables/useTranslate";
+import { useI18n } from 'vue-i18n';
+import { useTranslate } from '../composables/useTranslate';
 
 const { t } = useI18n();
 const { translate, locale } = useTranslate();
@@ -61,7 +61,7 @@ const loading = ref(false);
  * @type {import('vue').Ref<string>}
  * @description A reactive reference to the translated activity text.
  */
-const translatedActivityText = ref("");
+const translatedActivityText = ref('');
 
 /**
  * @type {import('vue').Ref<boolean>}
@@ -78,10 +78,10 @@ const hideHint = ref(false);
 async function fetchActivity() {
   loading.value = true;
   try {
-    const response = await fetch("https://bored.api.lewagon.com/api/activity");
+    const response = await fetch('https://bored.api.lewagon.com/api/activity');
     activity.value = await response.json();
     translatedActivityText.value = activity.value.activity;
-    translate(activity.value.activity).then(t => translatedActivityText.value = t);
+    translate(activity.value.activity).then((t) => (translatedActivityText.value = t));
   } catch (error) {
     console.error(error);
   } finally {
@@ -107,7 +107,7 @@ onMounted(fetchActivity);
 watch(locale, () => {
   if (activity.value) {
     translatedActivityText.value = activity.value.activity;
-    translate(activity.value.activity).then(t => translatedActivityText.value = t);
+    translate(activity.value.activity).then((t) => (translatedActivityText.value = t));
   }
 });
 </script>

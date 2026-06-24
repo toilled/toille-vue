@@ -1,11 +1,11 @@
-import { GameContext, GameMode, StoryObjective, StoryState } from "../types";
-import { carAudio } from "../audio/CarAudio";
-import { BOUNDS } from "../config";
-import { STORY_TRIGGER_POSITION } from "../StoryItemsManager";
-import { Vector3, Euler, Quaternion } from "three";
-import { getHeight } from "../../utils/HeightMap";
-import { handleControlsKeyDown, handleControlsKeyUp } from "../../utils/controls";
-import { checkGridCollision } from "../../utils/GridCollision";
+import { GameContext, GameMode, StoryObjective, StoryState } from '../types';
+import { carAudio } from '../audio/CarAudio';
+import { BOUNDS } from '../config';
+import { STORY_TRIGGER_POSITION } from '../StoryItemsManager';
+import { Vector3, Euler, Quaternion } from 'three';
+import { getHeight } from '../../utils/HeightMap';
+import { handleControlsKeyDown, handleControlsKeyUp } from '../../utils/controls';
+import { checkGridCollision } from '../../utils/GridCollision';
 
 export class ExplorationMode implements GameMode {
   context: GameContext | null = null;
@@ -14,7 +14,7 @@ export class ExplorationMode implements GameMode {
   isTransitioning = false;
   isJumping = false;
   velocityY = 0;
-  playerRotation = new Euler(0, 0, 0, "YXZ");
+  playerRotation = new Euler(0, 0, 0, 'YXZ');
 
   // Story proximity cooldown
   private lastObjectiveProximityCheck = 0;
@@ -70,8 +70,16 @@ export class ExplorationMode implements GameMode {
     const { camera, controls } = this.context;
     const speed = 2.0;
 
-    const frontVector = new Vector3(0, 0, Number(controls.value.backward) - Number(controls.value.forward));
-    const sideVector = new Vector3(Number(controls.value.left) - Number(controls.value.right), 0, 0);
+    const frontVector = new Vector3(
+      0,
+      0,
+      Number(controls.value.backward) - Number(controls.value.forward)
+    );
+    const sideVector = new Vector3(
+      Number(controls.value.left) - Number(controls.value.right),
+      0,
+      0
+    );
 
     const direction = new Vector3()
       .subVectors(frontVector, sideVector)
@@ -109,7 +117,12 @@ export class ExplorationMode implements GameMode {
         this.isJumping = false;
         this.velocityY = 0;
       }
-    } else if (controls.value.forward || controls.value.backward || controls.value.left || controls.value.right) {
+    } else if (
+      controls.value.forward ||
+      controls.value.backward ||
+      controls.value.left ||
+      controls.value.right
+    ) {
       camera.position.y = currentGroundH + Math.sin(Date.now() * 0.01) * 0.1;
     } else {
       camera.position.y = currentGroundH;
@@ -163,7 +176,10 @@ export class ExplorationMode implements GameMode {
     this.updateMinimap(camera.position.x, camera.position.z);
   }
 
-  private canCheckObjective(ctx: GameContext | null | undefined, ss: StoryState | undefined): boolean {
+  private canCheckObjective(
+    ctx: GameContext | null | undefined,
+    ss: StoryState | undefined
+  ): boolean {
     if (!ctx?.updateObjective || !ctx?.storyState) return false;
     if (!ss?.active || ss.showingBriefing || ss.showingDialogue || ss.missionComplete) return false;
     return true;
@@ -207,7 +223,11 @@ export class ExplorationMode implements GameMode {
   private getMinimapObjectives(ss: StoryState) {
     if (!ss.active || !ss.missions[ss.currentMissionIndex]) return [];
     return ss.missions[ss.currentMissionIndex].objectives.map((o: StoryObjective) => ({
-      x: o.x, z: o.z, completed: o.completed, label: o.label, type: o.type,
+      x: o.x,
+      z: o.z,
+      completed: o.completed,
+      label: o.label,
+      type: o.type,
     }));
   }
 
@@ -219,9 +239,8 @@ export class ExplorationMode implements GameMode {
     mdata.playerX = px;
     mdata.playerZ = pz;
     mdata.playerRotation = ctx.camera.rotation.y;
-    mdata.currentMissionId = ss.active && !ss.missionComplete
-      ? ss.missions[ss.currentMissionIndex]?.id ?? ""
-      : "";
+    mdata.currentMissionId =
+      ss.active && !ss.missionComplete ? (ss.missions[ss.currentMissionIndex]?.id ?? '') : '';
     mdata.objectives = this.getMinimapObjectives(ss);
     ctx.minimapData.value = { ...mdata };
   }
@@ -247,7 +266,7 @@ export class ExplorationMode implements GameMode {
   }
 
   private handleStoryInteraction(event: KeyboardEvent) {
-    if (!this.context || (event.key !== "e" && event.key !== "E")) return;
+    if (!this.context || (event.key !== 'e' && event.key !== 'E')) return;
     if (this.advanceStoryFromEvent()) return;
     if (this.context.nearStoryTrigger?.value && this.context.activateStoryTrigger) {
       this.context.activateStoryTrigger();
@@ -257,7 +276,7 @@ export class ExplorationMode implements GameMode {
   onKeyDown(event: KeyboardEvent) {
     if (!this.context) return;
 
-    if (event.code === "Space" && !this.isJumping) {
+    if (event.code === 'Space' && !this.isJumping) {
       this.isJumping = true;
       this.velocityY = this.jumpStrength;
     }
@@ -288,10 +307,7 @@ export class ExplorationMode implements GameMode {
     this.playerRotation.y -= event.movementX * sensitivity;
     this.playerRotation.x -= event.movementY * sensitivity;
 
-    this.playerRotation.x = Math.max(
-      -Math.PI / 2,
-      Math.min(Math.PI / 2, this.playerRotation.x),
-    );
+    this.playerRotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.playerRotation.x));
     this.context.camera.rotation.copy(this.playerRotation);
   }
 }

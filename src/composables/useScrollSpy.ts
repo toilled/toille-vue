@@ -1,8 +1,11 @@
-import { ref, watch, type Ref, type ComputedRef } from "vue";
-import type { Page } from "../interfaces/Page";
+import { ref, watch, type Ref, type ComputedRef } from 'vue';
+import type { Page } from '../interfaces/Page';
 
-export function useScrollSpy(visiblePages: ComputedRef<Page[]>, headerRef: Ref<HTMLElement | null>) {
-  const activeSection = ref("home");
+export function useScrollSpy(
+  visiblePages: ComputedRef<Page[]>,
+  headerRef: Ref<HTMLElement | null>
+) {
+  const activeSection = ref('home');
   const showHint = ref(true);
   const hintHasBeenShown = ref(false);
 
@@ -10,15 +13,19 @@ export function useScrollSpy(visiblePages: ComputedRef<Page[]>, headerRef: Ref<H
   let scrollLockTimeout: ReturnType<typeof setTimeout>;
   let scrollRafId: number | null = null;
 
-  watch(showHint, (val) => {
-    if (val && !hintHasBeenShown.value) {
-      hintHasBeenShown.value = true;
-    }
-  }, { flush: 'post' });
+  watch(
+    showHint,
+    (val) => {
+      if (val && !hintHasBeenShown.value) {
+        hintHasBeenShown.value = true;
+      }
+    },
+    { flush: 'post' }
+  );
 
   function getSectionIdFromPage(page: Page): string {
-    if (page.link === "/") return "home";
-    return page.link.replace(/^\//, "");
+    if (page.link === '/') return 'home';
+    return page.link.replace(/^\//, '');
   }
 
   function getScrollOffset(): number {
@@ -68,7 +75,7 @@ export function useScrollSpy(visiblePages: ComputedRef<Page[]>, headerRef: Ref<H
     }
   }
 
-  function scrollToSection(sectionId: string, behavior: ScrollBehavior = "smooth") {
+  function scrollToSection(sectionId: string, behavior: ScrollBehavior = 'smooth') {
     const element = document.getElementById(sectionId);
     if (element) {
       const scrollOffset = getScrollOffset();
@@ -79,20 +86,20 @@ export function useScrollSpy(visiblePages: ComputedRef<Page[]>, headerRef: Ref<H
         top: offsetPosition,
         behavior: behavior,
       });
-      history.pushState(null, "", `#${sectionId}`);
+      history.pushState(null, '', `#${sectionId}`);
       activeSection.value = sectionId;
       lockScrollSpy(1200);
     }
   }
 
-  function navigatePage(direction: "next" | "prev") {
+  function navigatePage(direction: 'next' | 'prev') {
     const sectionIds = visiblePages.value.map(getSectionIdFromPage);
     const currentIndex = sectionIds.indexOf(activeSection.value);
     let nextIndex = currentIndex;
 
-    if (direction === "next" && currentIndex < sectionIds.length - 1) {
+    if (direction === 'next' && currentIndex < sectionIds.length - 1) {
       nextIndex = currentIndex + 1;
-    } else if (direction === "prev" && currentIndex > 0) {
+    } else if (direction === 'prev' && currentIndex > 0) {
       nextIndex = currentIndex - 1;
     }
 
@@ -105,13 +112,13 @@ export function useScrollSpy(visiblePages: ComputedRef<Page[]>, headerRef: Ref<H
     if (scrollRafId === null) {
       scrollRafId = requestAnimationFrame(() => {
         scrollRafId = null;
-    updateActiveSection();
-  });
+        updateActiveSection();
+      });
     }
   }
 
   function handleInitialHash() {
-    const hash = window.location.hash.replace(/^#/, "");
+    const hash = window.location.hash.replace(/^#/, '');
     if (hash) {
       setTimeout(() => {
         const el = document.getElementById(hash);
@@ -121,7 +128,7 @@ export function useScrollSpy(visiblePages: ComputedRef<Page[]>, headerRef: Ref<H
           const offsetPosition = elementPosition + window.pageYOffset - scrollOffset;
           window.scrollTo({
             top: offsetPosition,
-            behavior: "auto",
+            behavior: 'auto',
           });
         }
       }, 100);
@@ -130,18 +137,18 @@ export function useScrollSpy(visiblePages: ComputedRef<Page[]>, headerRef: Ref<H
 
   function scrollToHash(hash: string) {
     if (!hash) {
-      window.scrollTo({ top: 0, behavior: "auto" });
-      activeSection.value = "home";
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      activeSection.value = 'home';
       lockScrollSpy(1200);
       return;
     }
-    const sectionId = hash.replace(/^#/, "");
+    const sectionId = hash.replace(/^#/, '');
     const el = document.getElementById(sectionId);
     if (el) {
       const scrollOffset = getScrollOffset();
       const elementPosition = el.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - scrollOffset;
-      window.scrollTo({ top: offsetPosition, behavior: "auto" });
+      window.scrollTo({ top: offsetPosition, behavior: 'auto' });
       activeSection.value = sectionId;
       lockScrollSpy(1200);
     }

@@ -1,13 +1,13 @@
-import { useI18n } from "vue-i18n";
-import pages from "../configs/pages.json";
-import type { Page } from "../interfaces/Page";
+import { useI18n } from 'vue-i18n';
+import pages from '../configs/pages.json';
+import type { Page } from '../interfaces/Page';
 
 export function useTranslatedPages() {
   const { t, te } = useI18n();
 
   function getPageId(page: Page): string {
-    if (page.link === "/") return "home";
-    return page.link.replace(/^\//, "");
+    if (page.link === '/') return 'home';
+    return page.link.replace(/^\//, '');
   }
 
   function translatePage(page: Page): Page {
@@ -18,8 +18,12 @@ export function useTranslatedPages() {
       ...page,
       name: te(`${prefix}.name`) ? t(`${prefix}.name`) : page.name,
       title: te(`${prefix}.title`) ? t(`${prefix}.title`) : page.title,
-      metaDescription: te(`${prefix}.metaDescription`) ? t(`${prefix}.metaDescription`) : (page.metaDescription ?? ""),
-      metaKeywords: te(`${prefix}.metaKeywords`) ? t(`${prefix}.metaKeywords`) : (page.metaKeywords ?? ""),
+      metaDescription: te(`${prefix}.metaDescription`)
+        ? t(`${prefix}.metaDescription`)
+        : (page.metaDescription ?? ''),
+      metaKeywords: te(`${prefix}.metaKeywords`)
+        ? t(`${prefix}.metaKeywords`)
+        : (page.metaKeywords ?? ''),
       body: [],
     };
 

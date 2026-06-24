@@ -146,5 +146,12 @@
       "body2": "<ul><li>Alcohol Checker - गणना करें कि आप गाड़ी चलाने के लिए कब पर्याप्त शांत होंगे</li><li>Noughts and Crosses - बॉट के खिलाफ क्लासिक टिक-टैक-टो</li><li>Ask Me - मेरी पृष्ठभूमि के बारे में एक स्वचालित सहायक के साथ चैट करें</li></ul>",
       "body3": "इन छोटे प्रयोगों की खोज का आनंद लें!"
     }
+  },
+  "desktop": {
+    "toggleDesktop": "Toggle Desktop Mode",
+    "launchTerminal": "Launch Terminal",
+    "launchExplorer": "Open File Explorer",
+    "startMenu": "Start Menu",
+    "shutdown": "Shut Down"
   }
 }

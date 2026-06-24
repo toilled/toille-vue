@@ -1,18 +1,18 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { ExplorationMode } from "../../modes/ExplorationMode";
-import { Scene, PerspectiveCamera, WebGLRenderer, Group } from "three";
-import { ref } from "vue";
-import type { GameContext } from "../../types";
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { ExplorationMode } from '../../modes/ExplorationMode';
+import { Scene, PerspectiveCamera, WebGLRenderer, Group } from 'three';
+import { ref } from 'vue';
+import type { GameContext } from '../../types';
 
-vi.mock("../../audio/CarAudio", () => ({
+vi.mock('../../audio/CarAudio', () => ({
   carAudio: { playCrash: vi.fn() },
 }));
 
-vi.mock("../../utils/HeightMap", () => ({
+vi.mock('../../utils/HeightMap', () => ({
   getHeight: vi.fn(() => 0),
 }));
 
-describe("ExplorationMode", () => {
+describe('ExplorationMode', () => {
   let mode: ExplorationMode;
   let context: GameContext;
 
@@ -53,146 +53,169 @@ describe("ExplorationMode", () => {
     delete (document as { exitPointerLock?: unknown }).exitPointerLock;
   });
 
-  it("init sets context and starts transition", () => {
+  it('init sets context and starts transition', () => {
     mode.init(context);
     expect(mode.context).toBe(context);
     expect(mode.isTransitioning).toBe(true);
   });
 
-  it("update transitions camera to ground level", () => {
+  it('update transitions camera to ground level', () => {
     mode.init(context);
     context.camera.position.set(0, 1000, 0);
     mode.update(0.1, 0);
     expect(context.camera.position.y).toBeLessThan(1000);
   });
 
-  it("update does nothing when no context", () => {
+  it('update does nothing when no context', () => {
     mode.init(context);
     mode.context = null;
     expect(() => mode.update(0.1, 0)).not.toThrow();
   });
 
-  it("onKeyDown sets controls for WASD", () => {
+  it('onKeyDown sets controls for WASD', () => {
     mode.init(context);
-    const wEvent = new KeyboardEvent("keydown", { key: "w" });
+    const wEvent = new KeyboardEvent('keydown', { key: 'w' });
     mode.onKeyDown(wEvent);
     expect(context.controls.value.forward).toBe(true);
 
-    const aEvent = new KeyboardEvent("keydown", { key: "a" });
+    const aEvent = new KeyboardEvent('keydown', { key: 'a' });
     mode.onKeyDown(aEvent);
     expect(context.controls.value.left).toBe(true);
 
-    const sEvent = new KeyboardEvent("keydown", { key: "s" });
+    const sEvent = new KeyboardEvent('keydown', { key: 's' });
     mode.onKeyDown(sEvent);
     expect(context.controls.value.backward).toBe(true);
 
-    const dEvent = new KeyboardEvent("keydown", { key: "d" });
+    const dEvent = new KeyboardEvent('keydown', { key: 'd' });
     mode.onKeyDown(dEvent);
     expect(context.controls.value.right).toBe(true);
   });
 
-  it("onKeyDown supports arrow keys", () => {
+  it('onKeyDown supports arrow keys', () => {
     mode.init(context);
-    mode.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowUp" }));
+    mode.onKeyDown(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
     expect(context.controls.value.forward).toBe(true);
-    mode.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowDown" }));
+    mode.onKeyDown(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
     expect(context.controls.value.backward).toBe(true);
-    mode.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowLeft" }));
+    mode.onKeyDown(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
     expect(context.controls.value.left).toBe(true);
-    mode.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowRight" }));
+    mode.onKeyDown(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
     expect(context.controls.value.right).toBe(true);
   });
 
-  it("onKeyUp unsets forward control", () => {
+  it('onKeyUp unsets forward control', () => {
     mode.init(context);
     context.controls.value.forward = true;
-    mode.onKeyUp(new KeyboardEvent("keyup", { key: "w" }));
+    mode.onKeyUp(new KeyboardEvent('keyup', { key: 'w' }));
     expect(context.controls.value.forward).toBe(false);
   });
 
-  it("onKeyUp unsets all WASD controls", () => {
+  it('onKeyUp unsets all WASD controls', () => {
     mode.init(context);
     const c = context.controls.value;
     c.forward = true;
     c.backward = true;
     c.left = true;
     c.right = true;
-    mode.onKeyUp(new KeyboardEvent("keyup", { key: "w" }));
+    mode.onKeyUp(new KeyboardEvent('keyup', { key: 'w' }));
     expect(c.forward).toBe(false);
-    mode.onKeyUp(new KeyboardEvent("keyup", { key: "s" }));
+    mode.onKeyUp(new KeyboardEvent('keyup', { key: 's' }));
     expect(c.backward).toBe(false);
-    mode.onKeyUp(new KeyboardEvent("keyup", { key: "a" }));
+    mode.onKeyUp(new KeyboardEvent('keyup', { key: 'a' }));
     expect(c.left).toBe(false);
-    mode.onKeyUp(new KeyboardEvent("keyup", { key: "d" }));
+    mode.onKeyUp(new KeyboardEvent('keyup', { key: 'd' }));
     expect(c.right).toBe(false);
   });
 
-  it("onKeyUp unsets all arrow key controls", () => {
+  it('onKeyUp unsets all arrow key controls', () => {
     mode.init(context);
     const c = context.controls.value;
     c.forward = true;
     c.backward = true;
     c.left = true;
     c.right = true;
-    mode.onKeyUp(new KeyboardEvent("keyup", { key: "ArrowUp" }));
+    mode.onKeyUp(new KeyboardEvent('keyup', { key: 'ArrowUp' }));
     expect(c.forward).toBe(false);
-    mode.onKeyUp(new KeyboardEvent("keyup", { key: "ArrowDown" }));
+    mode.onKeyUp(new KeyboardEvent('keyup', { key: 'ArrowDown' }));
     expect(c.backward).toBe(false);
-    mode.onKeyUp(new KeyboardEvent("keyup", { key: "ArrowLeft" }));
+    mode.onKeyUp(new KeyboardEvent('keyup', { key: 'ArrowLeft' }));
     expect(c.left).toBe(false);
-    mode.onKeyUp(new KeyboardEvent("keyup", { key: "ArrowRight" }));
+    mode.onKeyUp(new KeyboardEvent('keyup', { key: 'ArrowRight' }));
     expect(c.right).toBe(false);
   });
 
-  it("E key dismisses briefing via handleStoryInteraction", () => {
+  it('E key dismisses briefing via handleStoryInteraction', () => {
     mode.init(context);
     const dismissBriefing = vi.fn();
     context.storyState = ref({
-      active: true, showingBriefing: true, showingDialogue: false,
-      missionComplete: false, currentMissionIndex: 0, currentDialogueIndex: 0,
+      active: true,
+      showingBriefing: true,
+      showingDialogue: false,
+      missionComplete: false,
+      currentMissionIndex: 0,
+      currentDialogueIndex: 0,
       missions: [],
     });
     context.dismissBriefing = dismissBriefing;
-    mode.onKeyDown(new KeyboardEvent("keydown", { key: "e" }));
+    mode.onKeyDown(new KeyboardEvent('keydown', { key: 'e' }));
     expect(dismissBriefing).toHaveBeenCalled();
   });
 
-  it("E key advances dialogue via handleStoryInteraction", () => {
+  it('E key advances dialogue via handleStoryInteraction', () => {
     mode.init(context);
     const advanceDialogue = vi.fn();
     context.storyState = ref({
-      active: true, showingBriefing: false, showingDialogue: true,
-      missionComplete: false, currentMissionIndex: 0, currentDialogueIndex: 0,
+      active: true,
+      showingBriefing: false,
+      showingDialogue: true,
+      missionComplete: false,
+      currentMissionIndex: 0,
+      currentDialogueIndex: 0,
       missions: [],
     });
     context.advanceDialogue = advanceDialogue;
-    mode.onKeyDown(new KeyboardEvent("keydown", { key: "e" }));
+    mode.onKeyDown(new KeyboardEvent('keydown', { key: 'e' }));
     expect(advanceDialogue).toHaveBeenCalled();
   });
 
-  it("update forwards player position and mission to minimapData", () => {
+  it('update forwards player position and mission to minimapData', () => {
     mode.init(context);
     context.minimapData = ref({
-      playerX: 0, playerZ: 0, playerRotation: 0,
-      currentMissionId: "", objectives: [],
+      playerX: 0,
+      playerZ: 0,
+      playerRotation: 0,
+      currentMissionId: '',
+      objectives: [],
     });
     context.storyState = ref({
-      active: true, showingBriefing: false, showingDialogue: false,
-      missionComplete: false, currentMissionIndex: 0, currentDialogueIndex: 0,
-      missions: [{ id: "m1", title: "", brief: "", dialogue: [],
-        objectives: [{ id: "o1", type: "goto", label: "", x: 10, z: 10, completed: false, description: "" }],
-      }],
+      active: true,
+      showingBriefing: false,
+      showingDialogue: false,
+      missionComplete: false,
+      currentMissionIndex: 0,
+      currentDialogueIndex: 0,
+      missions: [
+        {
+          id: 'm1',
+          title: '',
+          brief: '',
+          dialogue: [],
+          objectives: [
+            { id: 'o1', type: 'goto', label: '', x: 10, z: 10, completed: false, description: '' },
+          ],
+        },
+      ],
     });
     mode.isTransitioning = false;
     context.camera.position.set(42, 3, 99);
     mode.update(0.1, 0);
     expect(context.minimapData.value.playerX).toBe(42);
     expect(context.minimapData.value.playerZ).toBe(99);
-    expect(context.minimapData.value.currentMissionId).toBe("m1");
+    expect(context.minimapData.value.currentMissionId).toBe('m1');
     expect(context.minimapData.value.objectives).toHaveLength(1);
   });
 
-  it("detects car collision and plays crash sound", () => {
+  it('detects car collision and plays crash sound', () => {
     const car = new Group();
     car.position.set(0, 0, 0);
     car.userData.isPlayerHit = false;
@@ -204,15 +227,27 @@ describe("ExplorationMode", () => {
     expect(car.userData.isPlayerHit).toBe(true);
   });
 
-  it("update detects proximity to story objective", () => {
+  it('update detects proximity to story objective', () => {
     const updateObjective = vi.fn();
     context.updateObjective = updateObjective;
     context.storyState = ref({
-      active: true, showingBriefing: false, showingDialogue: false,
-      missionComplete: false, currentMissionIndex: 0, currentDialogueIndex: 0,
-      missions: [{ id: "m1", title: "", brief: "", dialogue: [],
-        objectives: [{ id: "o1", type: "goto", label: "", x: 0, z: 0, completed: false, description: "" }],
-      }],
+      active: true,
+      showingBriefing: false,
+      showingDialogue: false,
+      missionComplete: false,
+      currentMissionIndex: 0,
+      currentDialogueIndex: 0,
+      missions: [
+        {
+          id: 'm1',
+          title: '',
+          brief: '',
+          dialogue: [],
+          objectives: [
+            { id: 'o1', type: 'goto', label: '', x: 0, z: 0, completed: false, description: '' },
+          ],
+        },
+      ],
     });
     mode.init(context);
     mode.isTransitioning = false;
@@ -221,49 +256,49 @@ describe("ExplorationMode", () => {
     expect(updateObjective).toHaveBeenCalledWith(0, 0);
   });
 
-  it("Space key triggers jump", () => {
+  it('Space key triggers jump', () => {
     mode.init(context);
-    mode.onKeyDown(new KeyboardEvent("keydown", { key: " ", code: "Space" }));
+    mode.onKeyDown(new KeyboardEvent('keydown', { key: ' ', code: 'Space' }));
     expect(mode.isJumping).toBe(true);
     expect(mode.velocityY).toBe(mode.jumpStrength);
   });
 
-  it("does not double-jump", () => {
+  it('does not double-jump', () => {
     mode.init(context);
-    mode.onKeyDown(new KeyboardEvent("keydown", { code: "Space" }));
+    mode.onKeyDown(new KeyboardEvent('keydown', { code: 'Space' }));
     mode.isJumping = true;
     mode.velocityY = 0;
-    mode.onKeyDown(new KeyboardEvent("keydown", { code: "Space" }));
+    mode.onKeyDown(new KeyboardEvent('keydown', { code: 'Space' }));
     expect(mode.velocityY).toBe(0);
   });
 
-  it("cleanup attempts to exit pointer lock", () => {
+  it('cleanup attempts to exit pointer lock', () => {
     mode.init(context);
     expect(() => mode.cleanup()).not.toThrow();
   });
 
-  it("onClick requests pointer lock on desktop", () => {
+  it('onClick requests pointer lock on desktop', () => {
     mode.init(context);
-    mode.onClick(new MouseEvent("click"));
+    mode.onClick(new MouseEvent('click'));
   });
 
-  it("onMouseMove handles pointer lock rotation", () => {
+  it('onMouseMove handles pointer lock rotation', () => {
     mode.init(context);
-    mode.onMouseMove(new MouseEvent("mousemove", { movementX: 10, movementY: 5 }));
+    mode.onMouseMove(new MouseEvent('mousemove', { movementX: 10, movementY: 5 }));
   });
 
-  it("ignores input when no context", () => {
+  it('ignores input when no context', () => {
     mode.init(context);
     mode.context = null;
     expect(() => {
-      mode.onKeyDown(new KeyboardEvent("keydown", { key: "w" }));
-      mode.onKeyUp(new KeyboardEvent("keyup", { key: "w" }));
-      mode.onClick(new MouseEvent("click"));
-      mode.onMouseMove(new MouseEvent("mousemove"));
+      mode.onKeyDown(new KeyboardEvent('keydown', { key: 'w' }));
+      mode.onKeyUp(new KeyboardEvent('keyup', { key: 'w' }));
+      mode.onClick(new MouseEvent('click'));
+      mode.onMouseMove(new MouseEvent('mousemove'));
     }).not.toThrow();
   });
 
-  it("handles mobile look controls", () => {
+  it('handles mobile look controls', () => {
     context.isMobile.value = true;
     mode.init(context);
     context.camera.position.set(0, 3, 0);

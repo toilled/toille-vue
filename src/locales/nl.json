@@ -146,5 +146,12 @@
       "body2": "<ul><li>Alcohol Checker - Bereken wanneer je nuchter genoeg bent om te rijden</li><li>Noughts and Crosses - Klassiek boter-kaas-en-eieren tegen een bot</li><li>Ask Me - Chat met een geautomatiseerde assistent over mijn achtergrond</li></ul>",
       "body3": "Veel plezier met het verkennen van deze kleine experimenten!"
     }
+  },
+  "desktop": {
+    "toggleDesktop": "Toggle Desktop Mode",
+    "launchTerminal": "Launch Terminal",
+    "launchExplorer": "Open File Explorer",
+    "startMenu": "Start Menu",
+    "shutdown": "Shut Down"
   }
 }

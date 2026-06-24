@@ -1,5 +1,14 @@
-import { AdditiveBlending, BufferAttribute, BufferGeometry, Material, Points, PointsMaterial, Scene, Vector3 } from "three";
-import { getHeight } from "./HeightMap";
+import {
+  AdditiveBlending,
+  BufferAttribute,
+  BufferGeometry,
+  Material,
+  Points,
+  PointsMaterial,
+  Scene,
+  Vector3,
+} from 'three';
+import { getHeight } from './HeightMap';
 import {
   SPARK_COUNT,
   SPARK_BURST_SIZE,
@@ -8,8 +17,8 @@ import {
   SPARK_OFF_SCREEN_Y,
   SPARK_MIN_VELOCITY,
   SPARK_RANDOM_VELOCITY,
-} from "../game/constants/CyberpunkCity";
-import { checkGridCollision, OccupiedGrid } from "./GridCollision";
+} from '../game/constants/CyberpunkCity';
+import { checkGridCollision, OccupiedGrid } from './GridCollision';
 
 export class SparkSystem {
   private points: Points;
@@ -29,7 +38,7 @@ export class SparkSystem {
     this.lifetimes = new Float32Array(SPARK_COUNT);
 
     const geo = new BufferGeometry();
-    geo.setAttribute("position", new BufferAttribute(this.positions, 3));
+    geo.setAttribute('position', new BufferAttribute(this.positions, 3));
 
     const mat = new PointsMaterial({
       color: 0xffaa00,

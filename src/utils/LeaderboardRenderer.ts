@@ -1,5 +1,5 @@
-import { CanvasTexture } from "three";
-import { LEADERBOARD_CANVAS_SIZE } from "../game/constants/CyberpunkCity";
+import { CanvasTexture } from 'three';
+import { LEADERBOARD_CANVAS_SIZE } from '../game/constants/CyberpunkCity';
 
 export interface LeaderboardEntry {
   name: string;
@@ -7,7 +7,7 @@ export interface LeaderboardEntry {
 }
 
 export function createLeaderboardCanvas(): { canvas: HTMLCanvasElement; texture: CanvasTexture } {
-  const canvas = document.createElement("canvas");
+  const canvas = document.createElement('canvas');
   canvas.width = LEADERBOARD_CANVAS_SIZE;
   canvas.height = LEADERBOARD_CANVAS_SIZE;
   const texture = new CanvasTexture(canvas);
@@ -15,12 +15,16 @@ export function createLeaderboardCanvas(): { canvas: HTMLCanvasElement; texture:
   return { canvas, texture };
 }
 
-export function drawLeaderboard(canvas: HTMLCanvasElement, texture: CanvasTexture, entries: LeaderboardEntry[]) {
-  const ctx = canvas.getContext("2d");
+export function drawLeaderboard(
+  canvas: HTMLCanvasElement,
+  texture: CanvasTexture,
+  entries: LeaderboardEntry[]
+) {
+  const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.fillStyle = "#100010";
+  ctx.fillStyle = '#100010';
   ctx.fillRect(0, 0, LEADERBOARD_CANVAS_SIZE, LEADERBOARD_CANVAS_SIZE);
   ctx.scale(2, 2);
 
@@ -32,16 +36,16 @@ export function drawLeaderboard(canvas: HTMLCanvasElement, texture: CanvasTextur
 }
 
 function drawTitle(ctx: CanvasRenderingContext2D) {
-  ctx.strokeStyle = "#00ffcc";
+  ctx.strokeStyle = '#00ffcc';
   ctx.lineWidth = 8;
   ctx.strokeRect(4, 4, 504, 504);
 
-  ctx.fillStyle = "#00ffcc";
-  ctx.font = "bold 60px Arial";
-  ctx.textAlign = "center";
-  ctx.shadowColor = "#00ffcc";
+  ctx.fillStyle = '#00ffcc';
+  ctx.font = 'bold 60px Arial';
+  ctx.textAlign = 'center';
+  ctx.shadowColor = '#00ffcc';
   ctx.shadowBlur = 10;
-  ctx.fillText("LEADERBOARD", 256, 80);
+  ctx.fillText('LEADERBOARD', 256, 80);
   ctx.shadowBlur = 0;
 
   ctx.beginPath();
@@ -51,19 +55,19 @@ function drawTitle(ctx: CanvasRenderingContext2D) {
 }
 
 function drawScores(ctx: CanvasRenderingContext2D, entries: LeaderboardEntry[]) {
-  ctx.font = "bold 40px Courier New";
-  ctx.textAlign = "left";
+  ctx.font = 'bold 40px Courier New';
+  ctx.textAlign = 'left';
   let y = 160;
 
   if (entries.length === 0) {
-    ctx.textAlign = "center";
-    ctx.fillStyle = "#aaaaaa";
-    ctx.fillText("Loading...", 256, 250);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#aaaaaa';
+    ctx.fillText('Loading...', 256, 250);
     return;
   }
 
   entries.forEach((entry, idx) => {
-    const colors = ["#ffff00", "#cccccc", "#cd7f32", "#ffffff"];
+    const colors = ['#ffff00', '#cccccc', '#cd7f32', '#ffffff'];
     ctx.fillStyle = colors[idx] || colors[3];
 
     const rank = `${idx + 1}.`;
@@ -73,17 +77,17 @@ function drawScores(ctx: CanvasRenderingContext2D, entries: LeaderboardEntry[]) 
     ctx.fillText(rank, 40, y);
     ctx.fillText(name, 110, y);
 
-    ctx.textAlign = "right";
+    ctx.textAlign = 'right';
     ctx.fillText(scoreStr, 470, y);
-    ctx.textAlign = "left";
+    ctx.textAlign = 'left';
 
     y += 60;
   });
 }
 
 function drawFooter(ctx: CanvasRenderingContext2D) {
-  ctx.fillStyle = "#00ffcc";
-  ctx.font = "20px Arial";
-  ctx.textAlign = "center";
-  ctx.fillText("CRASH TO SUBMIT SCORE", 256, 480);
+  ctx.fillStyle = '#00ffcc';
+  ctx.font = '20px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('CRASH TO SUBMIT SCORE', 256, 480);
 }

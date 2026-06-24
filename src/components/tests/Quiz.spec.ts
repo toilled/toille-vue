@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import Quiz from '../Quiz.vue';
 
-vi.mock("@vueuse/head", () => ({
+vi.mock('@unhead/vue', () => ({
   useHead: vi.fn(),
 }));
 
@@ -21,16 +21,18 @@ describe('Quiz.vue', () => {
   it('renders correctly and displays a question fetched from API', async () => {
     const mockResponse = {
       response_code: 0,
-      results: [{
-        question: "What is the capital of France?",
-        correct_answer: "Paris",
-        incorrect_answers: ["Berlin", "Madrid", "Rome"]
-      }]
+      results: [
+        {
+          question: 'What is the capital of France?',
+          correct_answer: 'Paris',
+          incorrect_answers: ['Berlin', 'Madrid', 'Rome'],
+        },
+      ],
     };
 
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve(mockResponse)
+      json: () => Promise.resolve(mockResponse),
     } as Response);
 
     const wrapper = mount(Quiz);
@@ -52,16 +54,18 @@ describe('Quiz.vue', () => {
   it('handles a correct answer', async () => {
     const mockResponse = {
       response_code: 0,
-      results: [{
-        question: "What is 2+2?",
-        correct_answer: "4",
-        incorrect_answers: ["1", "2", "3"]
-      }]
+      results: [
+        {
+          question: 'What is 2+2?',
+          correct_answer: '4',
+          incorrect_answers: ['1', '2', '3'],
+        },
+      ],
     };
 
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve(mockResponse)
+      json: () => Promise.resolve(mockResponse),
     } as Response);
 
     const wrapper = mount(Quiz);
@@ -73,7 +77,7 @@ describe('Quiz.vue', () => {
     const options = wrapper.findAll('.options button');
 
     // Find the button with the correct answer
-    const correctBtn = options.find(btn => btn.text() === "4");
+    const correctBtn = options.find((btn) => btn.text() === '4');
     expect(correctBtn).toBeDefined();
 
     await correctBtn!.trigger('click');
@@ -87,16 +91,18 @@ describe('Quiz.vue', () => {
   it('handles a wrong answer', async () => {
     const mockResponse = {
       response_code: 0,
-      results: [{
-        question: "What is 2+2?",
-        correct_answer: "4",
-        incorrect_answers: ["1", "2", "3"]
-      }]
+      results: [
+        {
+          question: 'What is 2+2?',
+          correct_answer: '4',
+          incorrect_answers: ['1', '2', '3'],
+        },
+      ],
     };
 
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve(mockResponse)
+      json: () => Promise.resolve(mockResponse),
     } as Response);
 
     const wrapper = mount(Quiz);
@@ -108,7 +114,7 @@ describe('Quiz.vue', () => {
     const options = wrapper.findAll('.options button');
 
     // Find a button with an incorrect answer
-    const wrongBtn = options.find(btn => btn.text() === "1");
+    const wrongBtn = options.find((btn) => btn.text() === '1');
     expect(wrongBtn).toBeDefined();
 
     await wrongBtn!.trigger('click');
@@ -134,30 +140,35 @@ describe('Quiz.vue', () => {
   it('loads next question when button is clicked', async () => {
     const firstResponse = {
       response_code: 0,
-      results: [{
-        question: "First Question?",
-        correct_answer: "Yes",
-        incorrect_answers: ["No"]
-      }]
+      results: [
+        {
+          question: 'First Question?',
+          correct_answer: 'Yes',
+          incorrect_answers: ['No'],
+        },
+      ],
     };
 
     const secondResponse = {
       response_code: 0,
-      results: [{
-        question: "Second Question?",
-        correct_answer: "Yes",
-        incorrect_answers: ["No"]
-      }]
+      results: [
+        {
+          question: 'Second Question?',
+          correct_answer: 'Yes',
+          incorrect_answers: ['No'],
+        },
+      ],
     };
 
-    const fetchMock = vi.fn()
+    const fetchMock = vi
+      .fn()
       .mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve(firstResponse)
+        json: () => Promise.resolve(firstResponse),
       } as Response)
       .mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve(secondResponse)
+        json: () => Promise.resolve(secondResponse),
       } as Response);
 
     global.fetch = fetchMock;
@@ -168,7 +179,7 @@ describe('Quiz.vue', () => {
       expect(wrapper.find('.question').exists()).toBe(true);
     });
 
-    expect(wrapper.find('.question').text()).toBe("First Question?");
+    expect(wrapper.find('.question').text()).toBe('First Question?');
 
     // Answer the question
     await wrapper.findAll('.options button')[0].trigger('click');
@@ -179,7 +190,7 @@ describe('Quiz.vue', () => {
     await nextBtn.trigger('click');
 
     await vi.waitFor(() => {
-      expect(wrapper.find('.question').text()).toBe("Second Question?");
+      expect(wrapper.find('.question').text()).toBe('Second Question?');
     });
 
     expect(fetchMock).toHaveBeenCalledTimes(2);

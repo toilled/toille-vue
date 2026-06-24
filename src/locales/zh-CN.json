@@ -146,5 +146,12 @@
       "body2": "<ul><li>酒精检测器 - 计算你何时足够清醒可以开车</li><li>井字游戏 - 经典井字棋对战机器人</li><li>问我 - 与自动助手聊天了解我的背景</li></ul>",
       "body3": "享受探索这些小实验吧！"
     }
+  },
+  "desktop": {
+    "toggleDesktop": "Toggle Desktop Mode",
+    "launchTerminal": "Launch Terminal",
+    "launchExplorer": "Open File Explorer",
+    "startMenu": "Start Menu",
+    "shutdown": "Shut Down"
   }
 }

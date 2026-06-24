@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { TrafficSystem } from "../TrafficSystem";
-import { Scene, Mesh } from "three";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { TrafficSystem } from '../TrafficSystem';
+import { Scene, Mesh } from 'three';
 
-describe("TrafficSystem", () => {
+describe('TrafficSystem', () => {
   let scene: Scene;
   let trafficSystem: TrafficSystem;
   let spawnSparks: (pos: { x: number; y: number; z: number }) => void;
@@ -13,7 +13,7 @@ describe("TrafficSystem", () => {
     trafficSystem = new TrafficSystem(scene, 10, spawnSparks);
   });
 
-  it("should initialize cars including police cars", () => {
+  it('should initialize cars including police cars', () => {
     const cars = trafficSystem.getCars();
     // 10 cars + 3 police cars = 13
     expect(cars.length).toBe(13);
@@ -39,13 +39,13 @@ describe("TrafficSystem", () => {
     expect(hasBlueLight).toBe(true);
   });
 
-  it("should update and flash lights", () => {
+  it('should update and flash lights', () => {
     const policeCar = trafficSystem.getCars().find((c) => c.userData.isPolice);
     expect(policeCar).toBeDefined();
 
     // Mock Date.now to control flashing
     const initialTime = 1000;
-    vi.spyOn(Date, "now").mockReturnValue(initialTime);
+    vi.spyOn(Date, 'now').mockReturnValue(initialTime);
 
     trafficSystem.update();
 
@@ -72,7 +72,7 @@ describe("TrafficSystem", () => {
 
     // Advance time to toggle
     // 1000 + 150 = 1150. 1150/150 = 7.66 -> 7 % 2 = 1 -> isRedOn = false
-    vi.spyOn(Date, "now").mockReturnValue(initialTime + 155);
+    vi.spyOn(Date, 'now').mockReturnValue(initialTime + 155);
 
     trafficSystem.update();
 
@@ -80,7 +80,7 @@ describe("TrafficSystem", () => {
     expect(blueLight!.visible).toBe(true);
   });
 
-  it("should execute update without errors", () => {
+  it('should execute update without errors', () => {
     expect(() => trafficSystem.update()).not.toThrow();
   });
 });

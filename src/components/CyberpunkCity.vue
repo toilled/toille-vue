@@ -70,9 +70,7 @@ import {
   AdditiveBlending,
   CanvasTexture,
   PerspectiveCamera,
-  Raycaster,
   Scene,
-  Vector2,
   Vector3,
   WebGLRenderer,
   CylinderGeometry,
@@ -90,7 +88,6 @@ import {
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { GameModeManager } from '../game/GameModeManager';
 import { setupPostProcessing } from '../game/PostProcessingManager';
-import { DrivingMode } from '../game/modes/DrivingMode';
 import { ExplorationMode } from '../game/modes/ExplorationMode';
 import { DemoMode } from '../game/modes/DemoMode';
 import { GameContext, StoryState, MinimapData } from '../game/types';
@@ -149,13 +146,14 @@ import { useEpilepsyWarning } from '../composables/useEpilepsyWarning';
 const { t } = useI18n();
 const { confirm: epilepsyConfirm } = useEpilepsyWarning();
 import { useHdrDisplay } from '../composables/useHdrDisplay';
+import { useCyberpunkClick } from '../composables/useCyberpunkClick';
 
 const GameUI = defineAsyncComponent(() => import('./GameUI.vue'));
 
 const canvasContainer = ref<HTMLDivElement | null>(null);
 
-let scene: Scene;
-let camera: PerspectiveCamera;
+let scene!: Scene;
+let camera!: PerspectiveCamera;
 let renderer: WebGLRenderer;
 let composer: EffectComposer;
 let animationId: number;
@@ -323,9 +321,6 @@ let lowFpsCount = 0;
 let lastFpsCheckTime = 0;
 
 const currentLookAt = new Vector3(0, 0, 0);
-
-const raycaster = new Raycaster();
-const pointer = new Vector2();
 
 // Sparks system
 let sparkSystem: SparkSystem;
@@ -698,77 +693,42 @@ function onResize() {
   isMobile.value = checkMobile();
 }
 
-function collectCarMeshes(): Object3D[] {
-  const meshes: Object3D[] = [];
-  (cars as Group[]).forEach((c) =>
-    (c as Group).traverse((child) => {
-      if (child instanceof Mesh) meshes.push(child);
-    })
-  );
-  return meshes;
-}
-
-function handleFightMarkerClick(): boolean {
-  if (!gangWarManager || gangWarManager.fightMarkers.length === 0) return false;
-  const intersects = raycaster.intersectObjects(gangWarManager.fightMarkers);
-  if (intersects.length === 0) return false;
-  const hit = intersects[0].object;
-  if (hit.userData.isFightMarker && hit.userData.target) {
-    isCinematicMode.value = true;
-    isGameMode.value = true;
-    cinematicTarget.copy(hit.userData.target);
-    emit('game-start');
-    return true;
-  }
-  return false;
-}
-
-function handleCarClick(): boolean {
-  const carMeshes = collectCarMeshes();
-  const intersects = raycaster.intersectObjects(carMeshes);
-  if (intersects.length === 0) return false;
-  const hit = intersects[0].object;
-  let target: Object3D = hit;
-  while (target.parent && target.parent.type !== 'Scene') {
-    target = target.parent;
-  }
-  if (target instanceof Group && target.userData.speed !== undefined) {
-    activeCar.value = target;
-    target.userData.isPlayerControlled = true;
-    target.userData.currentSpeed = target.userData.speed;
-    ScoreService.createSession()
-      .then((id) => {
-        gameSessionId.value = id;
-      })
-      .catch(() => {
-        // Session creation failed, game can still continue
-      });
-    gameModeManager.setMode(new DrivingMode(), 'driving');
-    return true;
-  }
-  return false;
-}
-
-function handleLeaderboardClick(): boolean {
-  if (leaderboardMeshes.length === 0) return false;
-  const intersects = raycaster.intersectObjects(leaderboardMeshes);
-  if (intersects.length === 0) return false;
-  showLeaderboard.value = true;
-  return true;
-}
+const cyberpunkClick = useCyberpunkClick({
+  get camera() {
+    return camera;
+  },
+  get scene() {
+    return scene;
+  },
+  get cars() {
+    return cars;
+  },
+  get gangWarManager() {
+    return gangWarManager!;
+  },
+  get gameModeManager() {
+    return gameModeManager!;
+  },
+  get leaderboardMeshes() {
+    return leaderboardMeshes;
+  },
+  isGameMode,
+  isDrivingMode,
+  isCinematicMode,
+  cinematicTarget,
+  emit: (e: string, ...args: unknown[]) => emit(e as 'game-start', ...args),
+  gameSessionId,
+  activeCar,
+});
 
 function onClick(event: MouseEvent) {
   if (!camera) return;
   gameModeManager.onClick(event);
   if (isGameMode.value || isDrivingMode.value) return;
-
-  pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-  pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
-  raycaster.setFromCamera(pointer, camera);
-
-  if (handleFightMarkerClick()) return;
-  if (handleCarClick()) return;
-  handleLeaderboardClick();
+  const result = cyberpunkClick.handleClick(event);
+  if (result.hitLeaderboard) {
+    showLeaderboard.value = true;
+  }
 }
 
 function onMouseMove(event: MouseEvent) {

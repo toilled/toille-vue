@@ -75,17 +75,20 @@ export function useScrollSpy(
     }
   }
 
+  function getScrollToPosition(element: HTMLElement): number {
+    const scrollOffset = getScrollOffset();
+    const elementPosition = element.getBoundingClientRect().top;
+    return elementPosition + window.pageYOffset - scrollOffset;
+  }
+
+  function scrollToElement(element: HTMLElement, behavior: ScrollBehavior = 'smooth') {
+    window.scrollTo({ top: getScrollToPosition(element), behavior });
+  }
+
   function scrollToSection(sectionId: string, behavior: ScrollBehavior = 'smooth') {
     const element = document.getElementById(sectionId);
     if (element) {
-      const scrollOffset = getScrollOffset();
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - scrollOffset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: behavior,
-      });
+      scrollToElement(element, behavior);
       history.pushState(null, '', `#${sectionId}`);
       activeSection.value = sectionId;
       lockScrollSpy(1200);
@@ -123,13 +126,7 @@ export function useScrollSpy(
       setTimeout(() => {
         const el = document.getElementById(hash);
         if (el) {
-          const scrollOffset = getScrollOffset();
-          const elementPosition = el.getBoundingClientRect().top;
-          const offsetPosition = elementPosition + window.pageYOffset - scrollOffset;
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: 'auto',
-          });
+          scrollToElement(el, 'auto');
         }
       }, 100);
     }
@@ -145,10 +142,7 @@ export function useScrollSpy(
     const sectionId = hash.replace(/^#/, '');
     const el = document.getElementById(sectionId);
     if (el) {
-      const scrollOffset = getScrollOffset();
-      const elementPosition = el.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - scrollOffset;
-      window.scrollTo({ top: offsetPosition, behavior: 'auto' });
+      scrollToElement(el, 'auto');
       activeSection.value = sectionId;
       lockScrollSpy(1200);
     }

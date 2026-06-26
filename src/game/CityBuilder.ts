@@ -132,26 +132,52 @@ export class CityBuilder {
       return;
     }
 
-    let h = 40 + Math.random() * 120;
-    let w = BLOCK_SIZE - 10 - Math.random() * 20;
-    let d = BLOCK_SIZE - 10 - Math.random() * 20;
-
-    if (isLeaderboardBuilding) {
-      h = 250;
-      w = BLOCK_SIZE - 10;
-      d = BLOCK_SIZE - 10;
-    }
-
+    const dims = this.computeBuildingDimensions(isLeaderboardBuilding);
     const style = this.determineStyle(isLeaderboardBuilding);
+
+    this.recordGridOccupancy(x, z, dims.w, dims.d, style);
+
+    const minH = this.calculateGroundHeight(xPos, zPos, dims.w, dims.d);
+    const buildingGroup = this.constructBuilding(
+      xPos,
+      zPos,
+      minH,
+      style,
+      dims,
+      isLeaderboardBuilding,
+      lbTexture
+    );
+
+    this.scene.add(buildingGroup);
+    this.buildings.push(buildingGroup);
+  }
+
+  private computeBuildingDimensions(isLeaderboard: boolean): { h: number; w: number; d: number } {
+    if (isLeaderboard) {
+      return { h: 250, w: BLOCK_SIZE - 10, d: BLOCK_SIZE - 10 };
+    }
+    return {
+      h: 40 + Math.random() * 120,
+      w: BLOCK_SIZE - 10 - Math.random() * 20,
+      d: BLOCK_SIZE - 10 - Math.random() * 20,
+    };
+  }
+
+  private recordGridOccupancy(x: number, z: number, w: number, d: number, style: string) {
     const isRound = style === 'CYLINDRICAL' || style === 'SPIRE';
+    this.occupiedGrids.set(`${x},${z}`, { halfW: w / 2, halfD: d / 2, isRound });
+  }
 
-    this.occupiedGrids.set(`${x},${z}`, {
-      halfW: w / 2,
-      halfD: d / 2,
-      isRound,
-    });
-
-    const minH = this.calculateGroundHeight(xPos, zPos, w, d);
+  private constructBuilding(
+    xPos: number,
+    zPos: number,
+    minH: number,
+    style: string,
+    dims: { h: number; w: number; d: number },
+    isLeaderboardBuilding: boolean,
+    lbTexture: Texture
+  ): Group {
+    const { h, w, d } = dims;
     const buildingGroup = new Group();
     buildingGroup.position.set(xPos, minH, zPos);
 
@@ -182,8 +208,7 @@ export class CityBuilder {
       this.addLeaderboard(buildingGroup, w, h, d, lbTexture);
     }
 
-    this.scene.add(buildingGroup);
-    this.buildings.push(buildingGroup);
+    return buildingGroup;
   }
 
   private determineStyle(isLeaderboardBuilding: boolean): string {

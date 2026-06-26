@@ -114,16 +114,23 @@ export class DemoMode implements GameMode {
     this.sceneTime += dt;
 
     if (this.sceneTime > SCENE_DURATION) {
-      this.sceneTime = 0;
-      const next = (this.sceneIndex + 1) % TOTAL_SCENES;
-      this.beginTransition(next);
-      this.sceneIndex = next;
-      this.setSceneDefaults(this.sceneIndex);
+      this.advanceToNextScene();
     }
 
     this.updateScene(dt, time);
+    this.updateCamera(dt);
+    this.decayEffects(dt);
+  }
 
-    // ---- Camera ---------------------------------------------------------
+  private advanceToNextScene() {
+    this.sceneTime = 0;
+    const next = (this.sceneIndex + 1) % TOTAL_SCENES;
+    this.beginTransition(next);
+    this.sceneIndex = next;
+    this.setSceneDefaults(this.sceneIndex);
+  }
+
+  private updateCamera(dt: number) {
     if (this.transitioning) {
       this.transitionProgress = Math.min(1, this.transitionProgress + dt / TRANSITION_DURATION);
       const t = this.smoothstep(this.transitionProgress);
@@ -143,8 +150,9 @@ export class DemoMode implements GameMode {
     if (this.cameraRoll !== 0) {
       this.context.camera.rotation.z = this.cameraRoll;
     }
+  }
 
-    // ---- Effects decay --------------------------------------------------
+  private decayEffects(dt: number) {
     this.cameraShake.lerp(new Vector3(0, 0, 0), dt * 6);
 
     if (this.bloomPass) {

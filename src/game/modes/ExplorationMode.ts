@@ -157,23 +157,31 @@ export class ExplorationMode implements GameMode {
 
     this.handleMobileLook();
 
-    const movement = this.computeMovement();
-    if (movement) {
-      const nextX = camera.position.x + movement.dx;
-      const nextZ = camera.position.z + movement.dz;
-
-      if (!this.checkGridCollision(nextX, nextZ)) {
-        camera.position.x = nextX;
-        camera.position.z = nextZ;
-      }
-    }
+    this.processMovement();
 
     this.enforceCameraBounds();
     this.updateJumpAndBob();
     this.checkCarCollisions();
-    this.checkStoryTriggerProximity(camera.position.x, camera.position.z);
-    this.updateStoryObjectives(camera.position.x, camera.position.z);
+    this.updateProximityAndNavigation(camera.position.x, camera.position.z);
     this.updateMinimap(camera.position.x, camera.position.z);
+  }
+
+  private processMovement() {
+    if (!this.context) return;
+    const { camera } = this.context;
+    const movement = this.computeMovement();
+    if (!movement) return;
+    const nextX = camera.position.x + movement.dx;
+    const nextZ = camera.position.z + movement.dz;
+    if (!this.checkGridCollision(nextX, nextZ)) {
+      camera.position.x = nextX;
+      camera.position.z = nextZ;
+    }
+  }
+
+  private updateProximityAndNavigation(px: number, pz: number) {
+    this.checkStoryTriggerProximity(px, pz);
+    this.updateStoryObjectives(px, pz);
   }
 
   private canCheckObjective(

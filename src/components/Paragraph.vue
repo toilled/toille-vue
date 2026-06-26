@@ -25,5 +25,8 @@ const props = defineProps<{
  * @type {import('vue').ComputedRef<string>}
  * @description A computed property that sanitizes the paragraph HTML using DOMPurify.
  */
-const sanitizedParagraph = computed(() => DOMPurify.sanitize(props.paragraph));
+const sanitizedParagraph = computed(() => {
+  if (import.meta.env.SSR) return props.paragraph;
+  return DOMPurify.sanitize(props.paragraph);
+});
 </script>

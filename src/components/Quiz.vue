@@ -74,6 +74,7 @@ const translatedQuestion = ref('');
 const translatedOptions = ref<string[]>([]);
 
 const decodeHTML = (html: string) => {
+  if (import.meta.env.SSR) return html;
   const txt = document.createElement('textarea');
   txt.innerHTML = DOMPurify.sanitize(html);
   return txt.value;

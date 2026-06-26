@@ -86,25 +86,8 @@ export class CarAudio {
   }
 
   playCrash() {
-    if (!this.ctx) this.init();
-    if (!this.ctx || !this.dest) return;
-
-    const t = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(100, t);
-    osc.frequency.exponentialRampToValueAtTime(10, t + 0.3);
-
-    gain.gain.setValueAtTime(0.5, t);
-    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
-
-    osc.connect(gain);
-    gain.connect(this.dest);
-
-    osc.start(t);
-    osc.stop(t + 0.3);
+    audioManager.init();
+    audioManager.playTone(100, 10, 0.3, 0.5, 'sawtooth');
   }
 }
 

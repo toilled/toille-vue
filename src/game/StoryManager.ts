@@ -217,7 +217,6 @@ export class StoryManager {
     }
   }
 
-  // fallow-ignore-next-line unused-class-member
   getState(): StoryState {
     return this.state.value;
   }
@@ -287,7 +286,6 @@ export class StoryManager {
     return mission;
   }
 
-  // fallow-ignore-next-line unused-class-member
   getPlayerObjective(
     playerX: number,
     playerZ: number,
@@ -308,7 +306,6 @@ export class StoryManager {
     return null;
   }
 
-  // fallow-ignore-next-line unused-class-member
   getCurrentObjectivePosition(): { x: number; z: number } | null {
     const mission = this.getCurrentMission();
     if (!mission) return null;

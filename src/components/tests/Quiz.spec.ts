@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import Quiz from '../Quiz.vue';
 
@@ -6,20 +6,30 @@ vi.mock('@unhead/vue', () => ({
   useHead: vi.fn(),
 }));
 
-// Mock window.fetch
-const globalFetch = global.fetch;
-
 describe('Quiz.vue', () => {
-  beforeEach(() => {
-    vi.restoreAllMocks();
-  });
+  function stubFetch(mockResponse: {
+    response_code: number;
+    results: Array<{
+      question: string;
+      correct_answer: string;
+      incorrect_answers: string[];
+    }>;
+  }) {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      } as Response)
+    );
+  }
 
   afterEach(() => {
-    global.fetch = globalFetch;
+    vi.unstubAllGlobals();
   });
 
   it('renders correctly and displays a question fetched from API', async () => {
-    const mockResponse = {
+    stubFetch({
       response_code: 0,
       results: [
         {
@@ -28,12 +38,7 @@ describe('Quiz.vue', () => {
           incorrect_answers: ['Berlin', 'Madrid', 'Rome'],
         },
       ],
-    };
-
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(mockResponse),
-    } as Response);
+    });
 
     const wrapper = mount(Quiz);
 
@@ -52,7 +57,7 @@ describe('Quiz.vue', () => {
   });
 
   it('handles a correct answer', async () => {
-    const mockResponse = {
+    stubFetch({
       response_code: 0,
       results: [
         {
@@ -61,12 +66,7 @@ describe('Quiz.vue', () => {
           incorrect_answers: ['1', '2', '3'],
         },
       ],
-    };
-
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(mockResponse),
-    } as Response);
+    });
 
     const wrapper = mount(Quiz);
 
@@ -89,7 +89,7 @@ describe('Quiz.vue', () => {
   });
 
   it('handles a wrong answer', async () => {
-    const mockResponse = {
+    stubFetch({
       response_code: 0,
       results: [
         {
@@ -98,12 +98,7 @@ describe('Quiz.vue', () => {
           incorrect_answers: ['1', '2', '3'],
         },
       ],
-    };
-
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(mockResponse),
-    } as Response);
+    });
 
     const wrapper = mount(Quiz);
 
@@ -126,7 +121,7 @@ describe('Quiz.vue', () => {
   });
 
   it('handles API errors', async () => {
-    global.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network error')));
 
     const wrapper = mount(Quiz);
 
@@ -171,7 +166,7 @@ describe('Quiz.vue', () => {
         json: () => Promise.resolve(secondResponse),
       } as Response);
 
-    global.fetch = fetchMock;
+    vi.stubGlobal('fetch', fetchMock);
 
     const wrapper = mount(Quiz);
 

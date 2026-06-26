@@ -6,17 +6,17 @@ const mockSuggestion = {
   joke: "Why don't scientists trust atoms? Because they make up everything!",
 };
 
-beforeEach(() => {
-  vi.spyOn(globalThis, 'fetch').mockResolvedValue({
-    json: () => Promise.resolve(mockSuggestion),
-  } as Response);
-});
-
-afterEach(() => {
-  vi.restoreAllMocks();
-});
-
 describe('Suggestion.vue', () => {
+  beforeEach(() => {
+    vi.mocked(globalThis.fetch).mockResolvedValue({
+      json: () => Promise.resolve(mockSuggestion),
+    } as Response);
+  });
+
+  afterEach(() => {
+    vi.mocked(globalThis.fetch).mockReset();
+  });
+
   it('fetches and displays a suggestion on mount', async () => {
     const wrapper = mount(Suggestion, {
       props: {
@@ -93,6 +93,7 @@ describe('Suggestion.vue', () => {
     expect(wrapper.text()).toContain('https://icanhazdadjoke.com/ suggestionDown');
     expect(consoleErrorSpy).toHaveBeenCalledWith(new Error('API is down'));
     consoleErrorSpy.mockRestore();
+    vi.mocked(globalThis.fetch).mockReset();
   });
 
   it('displays the correct hover hint', async () => {

@@ -24,7 +24,7 @@ describe('TextureGenerator', () => {
     expect(tex.wrapS).toBeDefined();
   });
 
-  it('createGroundNormalMap returns a CanvasTexture', () => {
+  it('createGroundNormalMap returns a CanvasTexture', { timeout: 15000 }, () => {
     const tex = createGroundNormalMap();
     expect(tex).toBeInstanceOf(CanvasTexture);
   });

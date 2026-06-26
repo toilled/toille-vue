@@ -7,17 +7,17 @@ const mockActivity = {
   type: 'education',
 };
 
-beforeEach(() => {
-  vi.spyOn(globalThis, 'fetch').mockResolvedValue({
-    json: () => Promise.resolve(mockActivity),
-  } as Response);
-});
-
-afterEach(() => {
-  vi.restoreAllMocks();
-});
-
 describe('Activity.vue', () => {
+  beforeEach(() => {
+    vi.mocked(globalThis.fetch).mockResolvedValue({
+      json: () => Promise.resolve(mockActivity),
+    } as Response);
+  });
+
+  afterEach(() => {
+    vi.mocked(globalThis.fetch).mockReset();
+  });
+
   it('fetches and displays an activity on mount', async () => {
     const wrapper = mount(Activity);
     expect(wrapper.text()).toContain('activity.loading');
@@ -66,5 +66,6 @@ describe('Activity.vue', () => {
     expect(wrapper.text()).toContain('activity.loading');
     expect(consoleErrorSpy).toHaveBeenCalledWith(new Error('API is down'));
     consoleErrorSpy.mockRestore();
+    vi.mocked(globalThis.fetch).mockReset();
   });
 });

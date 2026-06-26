@@ -480,9 +480,14 @@ export class GangWarManager {
   }
 
   dispose() {
-    // Cleanup meshes
-    this.warriors.forEach((w) => this.scene.remove(w.group));
+    this.warriors.forEach((w) => {
+      w.clearFlashTimer();
+      this.scene.remove(w.group);
+    });
     this.projectiles.forEach((p) => this.scene.remove(p.mesh));
     this.fightMarkers.forEach((m) => this.scene.remove(m));
+    this.warriors = [];
+    this.projectiles = [];
+    this.fightMarkers = [];
   }
 }

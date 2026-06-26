@@ -10,68 +10,9 @@ import {
 } from 'three';
 import { CELL_SIZE, START_OFFSET, GRID_SIZE, BLOCK_SIZE } from './config';
 import { getHeight } from '../utils/HeightMap';
-
-interface GangConfig {
-  id: number;
-  color: number;
-  name: string;
-}
-
-const GANGS: GangConfig[] = [
-  { id: 0, color: 0x00ff00, name: 'Neon Vipers' }, // Green
-  { id: 1, color: 0xff00ff, name: 'Cyber Punks' }, // Magenta
-  { id: 2, color: 0x00ffff, name: 'Data Ghosts' }, // Cyan
-  { id: 3, color: 0xff0000, name: 'Red Dragons' }, // Red
-];
-
-class Projectile {
-  mesh: Mesh;
-  velocity: Vector3;
-  life: number;
-  shooterId: number;
-  damage: number = 1;
-
-  constructor(mesh: Mesh, velocity: Vector3, shooterId: number) {
-    this.mesh = mesh;
-    this.velocity = velocity;
-    this.life = 2.0; // Seconds
-    this.shooterId = shooterId;
-  }
-}
-
-class Warrior {
-  group: Group;
-  gangId: number;
-  hp: number = 3;
-  state: 'IDLE' | 'COMBAT' | 'DEAD' = 'IDLE';
-  target: Warrior | null = null;
-  cooldown: number = 0;
-  speed: number = 5 + Math.random() * 5;
-  accuracy: number = 0.1; // rad error
-
-  // Visuals
-  head: Mesh;
-  body: Mesh;
-  gun: Mesh;
-
-  // Timer for damage flash effect
-  flashTimerId: ReturnType<typeof setTimeout> | null = null;
-
-  constructor(group: Group, gangId: number, head: Mesh, body: Mesh, gun: Mesh) {
-    this.group = group;
-    this.gangId = gangId;
-    this.head = head;
-    this.body = body;
-    this.gun = gun;
-  }
-
-  clearFlashTimer() {
-    if (this.flashTimerId !== null) {
-      clearTimeout(this.flashTimerId);
-      this.flashTimerId = null;
-    }
-  }
-}
+import { GangWarCombat } from './GangWarCombat';
+import { GangWarMarkers } from './GangWarMarkers';
+import { Warrior, Projectile, type GangConfig, GANGS } from './GangWarTypes';
 
 export class GangWarManager {
   scene: Scene;
@@ -80,19 +21,19 @@ export class GangWarManager {
   fightMarkers: Mesh[] = [];
   spawnSparks: (pos: Vector3) => void;
   playPewSound: (pos?: Vector3) => void;
-  lastMarkerUpdate: number = 0;
 
-  // Reusable Geometries
   bodyGeo = new CylinderGeometry(0.5, 0.5, 2.5);
   headGeo = new SphereGeometry(0.6);
   gunGeo = new BoxGeometry(0.2, 0.2, 1);
   projectileGeo = new BoxGeometry(0.2, 0.2, 2);
 
-  // Fight Marker
   arrowGeo: CylinderGeometry;
   arrowMat: MeshBasicMaterial;
 
   occupiedGrids: Map<string, { halfW: number; halfD: number; isRound?: boolean }>;
+
+  combat: GangWarCombat;
+  markers: GangWarMarkers;
 
   constructor(
     scene: Scene,
@@ -105,20 +46,36 @@ export class GangWarManager {
     this.spawnSparks = spawnSparks;
     this.playPewSound = playPewSound;
 
-    // Create arrow geometry
     this.arrowGeo = new CylinderGeometry(0, 4, 10, 8);
-    this.arrowGeo.rotateX(Math.PI); // Point down
+    this.arrowGeo.rotateX(Math.PI);
     this.arrowMat = new MeshBasicMaterial({
       color: 0xff0000,
       transparent: true,
       opacity: 0.8,
     });
 
+    this.combat = new GangWarCombat(
+      scene,
+      this.warriors,
+      this.projectiles,
+      spawnSparks,
+      playPewSound,
+      this.projectileGeo,
+      (gang, count) => this.spawnGangBatch(gang, count)
+    );
+
+    this.markers = new GangWarMarkers(
+      scene,
+      this.warriors,
+      this.fightMarkers,
+      this.arrowGeo,
+      this.arrowMat
+    );
+
     this.initWarriors();
   }
 
   initWarriors() {
-    // Spawn warriors for each gang
     const warriorsPerGang = 20;
 
     GANGS.forEach((gang) => {
@@ -127,45 +84,38 @@ export class GangWarManager {
   }
 
   spawnGangBatch(gang: GangConfig, count: number) {
-    // Pick a random block for this gang's base/spawn area to cluster them slightly
     const blockX = Math.floor(Math.random() * GRID_SIZE);
     const blockZ = Math.floor(Math.random() * GRID_SIZE);
 
-    // Get building size for this block
     const key = `${blockX},${blockZ}`;
     const building = this.occupiedGrids.get(key);
-    // If no building recorded, assume standard block size
     const halfW = building ? building.halfW : BLOCK_SIZE * 0.45;
     const halfD = building ? building.halfD : BLOCK_SIZE * 0.45;
 
-    // Cell center
     const cx = START_OFFSET + blockX * CELL_SIZE;
     const cz = START_OFFSET + blockZ * CELL_SIZE;
 
     for (let i = 0; i < count; i++) {
-      // Pick a side of the building (North, South, East, West)
       const side = Math.floor(Math.random() * 4);
       let x = cx;
       let z = cz;
 
-      const margin = 5; // Distance away from wall
+      const margin = 5;
 
-      // Random position along the street for that side
       switch (side) {
-        case 0: // North (-Z)
-          // z needs to be < cz - halfD
+        case 0:
           z = cz - halfD - margin - Math.random() * 15;
           x = cx + (Math.random() - 0.5) * CELL_SIZE;
           break;
-        case 1: // South (+Z)
+        case 1:
           z = cz + halfD + margin + Math.random() * 15;
           x = cx + (Math.random() - 0.5) * CELL_SIZE;
           break;
-        case 2: // East (+X)
+        case 2:
           x = cx + halfW + margin + Math.random() * 15;
           z = cz + (Math.random() - 0.5) * CELL_SIZE;
           break;
-        case 3: // West (-X)
+        case 3:
           x = cx - halfW - margin - Math.random() * 15;
           z = cz + (Math.random() - 0.5) * CELL_SIZE;
           break;
@@ -178,7 +128,7 @@ export class GangWarManager {
   spawnWarrior(x: number, z: number, gang: GangConfig) {
     const group = new Group();
     const y = getHeight(x, z);
-    group.position.set(x, y + 1.25, z); // 1.25y (half height)
+    group.position.set(x, y + 1.25, z);
 
     const mat = new MeshBasicMaterial({ color: gang.color });
     const blackMat = new MeshBasicMaterial({ color: 0x111111 });
@@ -200,283 +150,38 @@ export class GangWarManager {
     this.warriors.push(warrior);
   }
 
-  private updateWarrior(warrior: Warrior, dt: number) {
-    if (warrior.state === 'DEAD') return;
-
-    if (warrior.target) {
-      if (warrior.target.state === 'DEAD') {
-        warrior.target = null;
-        warrior.state = 'IDLE';
-      } else if (!this.isValidTarget(warrior, warrior.target)) {
-        warrior.target = null;
-        warrior.state = 'IDLE';
-      }
-    }
-
-    if (!warrior.target) {
-      this.findTarget(warrior);
-    }
-
-    if (warrior.target) {
-      warrior.state = 'COMBAT';
-      this.updateCombat(warrior, dt);
-    } else {
-      this.updateIdle(warrior, dt);
-    }
-
-    if (warrior.cooldown > 0) warrior.cooldown -= dt;
-  }
-
-  private updateProjectile(i: number, dt: number) {
-    const proj = this.projectiles[i];
-    proj.life -= dt;
-    proj.mesh.position.add(proj.velocity.clone().multiplyScalar(dt));
-
-    let hit = false;
-    for (const warrior of this.warriors) {
-      if (warrior.state === 'DEAD' || warrior.gangId === proj.shooterId) continue;
-      const distSq = warrior.group.position.distanceToSquared(proj.mesh.position);
-      if (distSq < 4) {
-        this.damageWarrior(warrior, proj.damage);
-        this.spawnSparks(proj.mesh.position);
-        hit = true;
-        break;
-      }
-    }
-
-    if (proj.mesh.position.y < 0) hit = true;
-
-    if (hit || proj.life <= 0) {
-      this.scene.remove(proj.mesh);
-      this.projectiles.splice(i, 1);
-    }
-  }
-
   update(dt: number) {
-    this.checkReinforcements();
-    this.updateFightMarkers(dt);
-
-    for (const warrior of this.warriors) {
-      this.updateWarrior(warrior, dt);
-    }
-
-    for (let i = this.projectiles.length - 1; i >= 0; i--) {
-      this.updateProjectile(i, dt);
-    }
-  }
-
-  isValidTarget(w: Warrior, target: Warrior): boolean {
-    const range = 150; // Increased range
-    return w.group.position.distanceToSquared(target.group.position) < range * range;
-  }
-
-  findTarget(w: Warrior) {
-    let minDist = Infinity;
-    let closest: Warrior | null = null;
-    const searchRange = 500; // Search far for enemies to move towards
-
-    for (const other of this.warriors) {
-      if (other.gangId === w.gangId) continue;
-      if (other.state === 'DEAD') continue;
-
-      const d = w.group.position.distanceToSquared(other.group.position);
-      if (d < searchRange * searchRange && d < minDist) {
-        minDist = d;
-        closest = other;
-      }
-    }
-
-    if (closest) {
-      w.target = closest;
-    }
-  }
-
-  updateCombat(w: Warrior, dt: number) {
-    if (!w.target) return;
-
-    // Distance check
-    const distSq = w.group.position.distanceToSquared(w.target.group.position);
-    const shootRange = 150;
-
-    // Face target
-    const targetPos = w.target.group.position.clone();
-    w.group.lookAt(targetPos.x, w.group.position.y, targetPos.z);
-
-    if (distSq > shootRange * shootRange) {
-      // Chase
-      const dir = targetPos.sub(w.group.position).normalize();
-      w.group.position.add(dir.multiplyScalar(w.speed * dt));
-
-      // Update Y
-      const h = getHeight(w.group.position.x, w.group.position.z);
-      w.group.position.y = h + 1.25;
-    } else {
-      // Shoot
-      if (w.cooldown <= 0) {
-        this.shoot(w, w.target);
-        w.cooldown = 0.5 + Math.random() * 1.0; // Fire rate
-      }
-    }
-  }
-
-  updateIdle(w: Warrior, dt: number) {
-    // If no target found (no one within 500), just wander or rotate.
-    w.group.rotation.y += dt * 0.5;
-  }
-
-  shoot(shooter: Warrior, target: Warrior) {
-    const startPos = shooter.group.position.clone();
-    startPos.y += 0.8; // Gun height
-
-    // Direction to target
-    const dir = target.group.position.clone().sub(startPos).normalize();
-
-    // Add inaccuracy
-    dir.x += (Math.random() - 0.5) * shooter.accuracy;
-    dir.y += (Math.random() - 0.5) * shooter.accuracy;
-    dir.z += (Math.random() - 0.5) * shooter.accuracy;
-    dir.normalize();
-
-    const speed = 80;
-    const velocity = dir.multiplyScalar(speed);
-
-    // Create Mesh
-    const mat = new MeshBasicMaterial({ color: 0xffff00 }); // Yellow tracers
-    const mesh = new Mesh(this.projectileGeo, mat);
-    mesh.position.copy(startPos);
-    mesh.lookAt(startPos.clone().add(dir));
-
-    this.scene.add(mesh);
-    this.projectiles.push(new Projectile(mesh, velocity, shooter.gangId));
-
-    if (Math.random() > 0.7) {
-      this.playPewSound(startPos);
-    }
-  }
-
-  damageWarrior(w: Warrior, dmg: number) {
-    w.hp -= dmg;
-    if (w.hp <= 0) {
-      this.killWarrior(w);
-    } else {
-      // Clear any existing flash timer
-      w.clearFlashTimer();
-      // Flash red
-      (w.body.material as MeshBasicMaterial).color.setHex(0xff0000);
-      w.flashTimerId = setTimeout(() => {
-        if (w.state !== 'DEAD') (w.body.material as MeshBasicMaterial).color.setHex(0x111111);
-      }, 100);
-    }
-  }
-
-  killWarrior(w: Warrior) {
-    w.state = 'DEAD';
-    w.clearFlashTimer();
-    w.group.rotation.x = Math.PI / 2; // Fall over
-    const h = getHeight(w.group.position.x, w.group.position.z);
-    w.group.position.y = h + 0.5;
-
-    // We remove them from scene after a while to save memory, or reuse them.
-    // For now, let's just leave them as corpses or sink them.
-    // The checkReinforcements will handle spawning NEW ones.
+    this.combat.checkReinforcements();
+    this.markers.updateFightMarkers(dt);
+    this.combat.updateWarriors(dt);
   }
 
   checkReinforcements() {
-    // Count living members per gang
-    const counts = new Map<number, number>();
-    GANGS.forEach((g) => counts.set(g.id, 0));
-
-    this.warriors.forEach((w) => {
-      if (w.state !== 'DEAD') {
-        counts.set(w.gangId, (counts.get(w.gangId) || 0) + 1);
-      }
-    });
-
-    const threshold = 5;
-    const reinforceCount = 10;
-
-    counts.forEach((count, gangId) => {
-      if (count < threshold) {
-        const gang = GANGS.find((g) => g.id === gangId);
-        if (gang) {
-          this.spawnGangBatch(gang, reinforceCount);
-        }
-      }
-    });
+    this.combat.checkReinforcements();
   }
 
-  private animateExistingMarkers(dt: number) {
-    const time = Date.now() * 0.003;
-    this.fightMarkers.forEach((m) => {
-      m.position.y = 80 + Math.sin(time) * 5;
-      m.rotation.y += dt;
-    });
+  updateCombat(w: Warrior, dt: number) {
+    this.combat.updateCombat(w, dt);
   }
 
-  private findCombatantClusters(): Vector3[] {
-    const combatants = this.warriors.filter((w) => w.state === 'COMBAT' && w.hp > 0);
-    if (combatants.length === 0) return [];
-
-    const clusters: Vector3[] = [];
-    const visited = new Set<number>();
-    const clusterRangeSq = 100 * 100;
-
-    for (let i = 0; i < combatants.length; i++) {
-      if (visited.has(i)) continue;
-
-      const center = combatants[i].group.position.clone();
-      let count = 1;
-      visited.add(i);
-
-      for (let j = i + 1; j < combatants.length; j++) {
-        if (visited.has(j)) continue;
-        if (
-          combatants[i].group.position.distanceToSquared(combatants[j].group.position) <
-          clusterRangeSq
-        ) {
-          center.add(combatants[j].group.position);
-          count++;
-          visited.add(j);
-        }
-      }
-
-      if (count >= 4) {
-        center.divideScalar(count);
-        clusters.push(center);
-      }
-    }
-
-    return clusters;
+  shoot(shooter: Warrior, target: Warrior) {
+    this.combat.shoot(shooter, target);
   }
 
-  private createFightMarkerArrows(clusters: Vector3[]) {
-    clusters.forEach((pos) => {
-      const arrow = new Mesh(this.arrowGeo, this.arrowMat);
-      arrow.position.set(pos.x, 80, pos.z);
-      arrow.userData.isFightMarker = true;
-      arrow.userData.target = pos;
-      this.scene.add(arrow);
-      this.fightMarkers.push(arrow);
-    });
-  }
-
-  private clearFightMarkers() {
-    this.fightMarkers.forEach((m) => this.scene.remove(m));
-    this.fightMarkers = [];
+  damageWarrior(w: Warrior, dmg: number) {
+    this.combat.damageWarrior(w, dmg);
   }
 
   updateFightMarkers(dt: number) {
-    this.lastMarkerUpdate += dt;
-    if (this.lastMarkerUpdate < 1.0) {
-      this.animateExistingMarkers(dt);
-      return;
-    }
-    this.lastMarkerUpdate = 0;
+    this.markers.updateFightMarkers(dt);
+  }
 
-    this.clearFightMarkers();
+  get lastMarkerUpdate() {
+    return this.markers.lastMarkerUpdate;
+  }
 
-    const clusters = this.findCombatantClusters();
-    this.createFightMarkerArrows(clusters);
+  set lastMarkerUpdate(v: number) {
+    this.markers.lastMarkerUpdate = v;
   }
 
   dispose() {
@@ -485,9 +190,8 @@ export class GangWarManager {
       this.scene.remove(w.group);
     });
     this.projectiles.forEach((p) => this.scene.remove(p.mesh));
-    this.fightMarkers.forEach((m) => this.scene.remove(m));
+    this.markers.clearFightMarkers();
     this.warriors = [];
     this.projectiles = [];
-    this.fightMarkers = [];
   }
 }

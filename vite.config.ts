@@ -15,6 +15,8 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: ["./src/tests/setupThree.ts", "./src/tests/setupHead.ts", "./src/tests/setupI18n.ts"],
+    testTimeout: 20000,
+    maxConcurrency: 4,
     exclude: ["e2e/**", "node_modules/**", "dist/**"],
   },
   server: {

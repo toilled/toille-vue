@@ -1,17 +1,5 @@
 import { createI18n } from 'vue-i18n';
 import en from './locales/en.json';
-import es from './locales/es.json';
-import fr from './locales/fr.json';
-import de from './locales/de.json';
-import it from './locales/it.json';
-import pt from './locales/pt.json';
-import ru from './locales/ru.json';
-import ar from './locales/ar.json';
-import zhCN from './locales/zh-CN.json';
-import ja from './locales/ja.json';
-import ko from './locales/ko.json';
-import hi from './locales/hi.json';
-import nl from './locales/nl.json';
 
 type MessageSchema = typeof en;
 
@@ -45,27 +33,38 @@ function getInitialLocale(): string {
   return 'en';
 }
 
-export default createI18n<
-  [MessageSchema],
-  'en' | 'es' | 'fr' | 'de' | 'it' | 'pt' | 'ru' | 'ar' | 'zh-CN' | 'ja' | 'ko' | 'hi' | 'nl'
->({
+const i18n = createI18n<[MessageSchema], string>({
   legacy: false,
   locale: getInitialLocale(),
   fallbackLocale: 'en',
   warnHtmlMessage: false,
-  messages: {
-    en,
-    es,
-    fr,
-    de,
-    it,
-    pt,
-    ru,
-    ar,
-    'zh-CN': zhCN,
-    ja,
-    ko,
-    hi,
-    nl,
-  },
+  messages: { en },
 });
+
+function loadLocale(locale: string) {
+  const loaders: Record<string, () => Promise<{ default: MessageSchema }>> = {
+    es: () => import('./locales/es.json'),
+    fr: () => import('./locales/fr.json'),
+    de: () => import('./locales/de.json'),
+    it: () => import('./locales/it.json'),
+    pt: () => import('./locales/pt.json'),
+    ru: () => import('./locales/ru.json'),
+    ar: () => import('./locales/ar.json'),
+    'zh-CN': () => import('./locales/zh-CN.json'),
+    ja: () => import('./locales/ja.json'),
+    ko: () => import('./locales/ko.json'),
+    hi: () => import('./locales/hi.json'),
+    nl: () => import('./locales/nl.json'),
+  };
+  if (loaders[locale] && locale !== 'en') {
+    loaders[locale]().then((msgs) => {
+      i18n.global.setLocaleMessage(locale, msgs.default);
+    });
+  }
+}
+
+if (typeof window !== 'undefined') {
+  loadLocale(getInitialLocale());
+}
+
+export default i18n;

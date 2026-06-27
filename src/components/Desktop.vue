@@ -52,13 +52,6 @@ import type { Component } from 'vue';
 import DesktopWindow from './DesktopWindow.vue';
 import Taskbar from './Taskbar.vue';
 import DesktopShortcut from './DesktopShortcut.vue';
-import Checker from './Checker.vue';
-import NoughtsAndCrosses from './NoughtsAndCrosses.vue';
-import Quiz from './Quiz.vue';
-import Ask from './Ask.vue';
-import Activity from './Activity.vue';
-import Suggestion from './Suggestion.vue';
-import DesktopFileExplorer from './DesktopFileExplorer.vue';
 
 const emit = defineEmits<{
   (e: 'shutdown'): void;
@@ -100,13 +93,13 @@ interface Shortcut {
 }
 
 const componentMap: Record<string, Component> = {
-  Checker,
-  NoughtsAndCrosses,
-  Quiz,
-  Ask,
-  Activity,
-  Suggestion,
-  DesktopFileExplorer,
+  Checker: defineAsyncComponent(() => import('./Checker.vue')),
+  NoughtsAndCrosses: defineAsyncComponent(() => import('./NoughtsAndCrosses.vue')),
+  Quiz: defineAsyncComponent(() => import('./Quiz.vue')),
+  Ask: defineAsyncComponent(() => import('./Ask.vue')),
+  Activity: defineAsyncComponent(() => import('./Activity.vue')),
+  Suggestion: defineAsyncComponent(() => import('./Suggestion.vue')),
+  DesktopFileExplorer: defineAsyncComponent(() => import('./DesktopFileExplorer.vue')),
 };
 
 const shortcuts: Shortcut[] = [

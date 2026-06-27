@@ -132,7 +132,7 @@ describe('App.vue', () => {
     const footer = wrapper.find('footer');
     await footer.trigger('click');
     await new Promise((resolve) => setTimeout(resolve));
-    expect(wrapper.findComponent({ name: 'Checker' }).exists()).toBe(true);
+    expect(wrapper.vm.checker).toBe(true);
   });
 
   it('shows the hint always', async () => {

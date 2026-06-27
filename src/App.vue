@@ -105,6 +105,7 @@ const CyberpunkCity = defineAsyncComponent(() => {
 import { cityBackground } from './utils/CityBackgroundManager';
 import titles from './configs/titles.json';
 import { Page } from './interfaces/Page';
+const Checker = defineAsyncComponent(() => import('./components/Checker.vue'));
 import Terminal from './components/Terminal.vue';
 import EpilepsyWarning from './components/EpilepsyWarning.vue';
 import Desktop from './components/Desktop.vue';

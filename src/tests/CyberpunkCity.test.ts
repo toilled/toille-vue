@@ -478,7 +478,8 @@ vi.mock('three', () => {
       params: { Points: { threshold: 1 } },
     })),
     AdditiveBlending: 2000,
-    PCFSoftShadowMap: 1,
+    PCFSoftShadowMap: 2,
+    PCFShadowMap: 1,
     ACESFilmicToneMapping: 1,
     Euler: vi.fn(() => ({
       set: vi.fn(),
@@ -562,6 +563,7 @@ describe('CyberpunkCity.vue', () => {
   it('initializes spark positions off-screen', () => {
     vi.useFakeTimers();
     wrapper = mount(CyberpunkCity);
+    vi.advanceTimersByTime(200);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const calls = (THREE.BufferAttribute as any).mock.calls;
@@ -571,18 +573,11 @@ describe('CyberpunkCity.vue', () => {
       const array = call[0];
       const itemSize = call[1];
 
-      // Check if this is the sparks array (length 6000)
-      // sparkCount is 2000, so array length is 6000
-      if (array.length === 6000 && itemSize === 3) {
+      if (array.length === 3000 && itemSize === 3) {
         sparksCallFound = true;
-        // Verify Y coordinate is off-screen
-        // x, y, z. So index 1 is y.
-        // Check first particle
         expect(array[1]).toBeLessThan(-9000);
-        // Check second particle
         expect(array[4]).toBeLessThan(-9000);
-        // Check last particle
-        expect(array[5998]).toBeLessThan(-9000);
+        expect(array[2998]).toBeLessThan(-9000);
       }
     }
 

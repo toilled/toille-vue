@@ -26,6 +26,7 @@ export class SparkSystem {
   private velocities: Float32Array;
   private lifetimes: Float32Array;
   private scene: Scene;
+  private frameCounter = 0;
 
   constructor(scene: Scene) {
     this.scene = scene;
@@ -90,6 +91,7 @@ export class SparkSystem {
   update(occupiedGrids: OccupiedGrid) {
     const positions = this.points.geometry.attributes.position.array as Float32Array;
     let needsUpdate = false;
+    this.frameCounter++;
 
     for (let i = 0; i < SPARK_COUNT; i++) {
       if (this.lifetimes[i] <= 0) continue;
@@ -99,14 +101,18 @@ export class SparkSystem {
       positions[i * 3 + 1] += this.velocities[i * 3 + 1];
       positions[i * 3 + 2] += this.velocities[i * 3 + 2];
 
-      const h = getHeight(positions[i * 3], positions[i * 3 + 2]);
-      if (positions[i * 3 + 1] < h) {
-        positions[i * 3 + 1] = h;
-        this.velocities[i * 3 + 1] *= -0.5;
+      if ((i + this.frameCounter) % 3 === 0) {
+        const h = getHeight(positions[i * 3], positions[i * 3 + 2]);
+        if (positions[i * 3 + 1] < h) {
+          positions[i * 3 + 1] = h;
+          this.velocities[i * 3 + 1] *= -0.5;
+        }
       }
 
-      if (checkGridCollision(positions[i * 3], positions[i * 3 + 2], occupiedGrids, 0)) {
-        this.lifetimes[i] = 0;
+      if ((i + this.frameCounter) % 4 === 0) {
+        if (checkGridCollision(positions[i * 3], positions[i * 3 + 2], occupiedGrids, 0)) {
+          this.lifetimes[i] = 0;
+        }
       }
 
       this.lifetimes[i] -= SPARK_LIFETIME_DECAY;

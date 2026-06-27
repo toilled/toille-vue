@@ -1,6 +1,6 @@
 export const LEADERBOARD_CANVAS_SIZE = 1024;
 
-export const SPARK_COUNT = 2000;
+export const SPARK_COUNT = 1000;
 export const SPARK_BURST_SIZE = 30;
 export const SPARK_GRAVITY = 0.1;
 export const SPARK_LIFETIME_DECAY = 0.02;
@@ -8,7 +8,7 @@ export const SPARK_OFF_SCREEN_Y = -99999;
 export const SPARK_MIN_VELOCITY = 2;
 export const SPARK_RANDOM_VELOCITY = 5;
 
-export const CAR_COUNT = 150;
+export const CAR_COUNT = 80;
 
 export const CAMERA_FOV = 60;
 export const CAMERA_FAR = 3000;

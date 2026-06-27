@@ -149,6 +149,7 @@ let renderer: WebGLRenderer;
 let composer: EffectComposer;
 let animationId: number;
 let isActive = false;
+let deferredInitCancelled = false;
 let lastWidth = typeof window !== 'undefined' ? window.innerWidth : 0;
 
 let buildings: Object3D[] = [];
@@ -479,7 +480,6 @@ function initGameManagers() {
   gangWarManager = new GangWarManager(scene, occupiedGrids, spawnSparks, playPewSound);
 
   multiplayerManager = new MultiplayerManager(scene, onlineCount);
-  multiplayerManager.connect();
 
   createCheckpoint();
   createNavArrow();
@@ -544,6 +544,9 @@ function initStoryAndMode() {
     isCinematicMode.value = type === 'cinematic';
     if (type !== null) {
       emit('game-start');
+      if (multiplayerManager) {
+        multiplayerManager.connect();
+      }
     }
   });
 
@@ -561,26 +564,36 @@ onMounted(() => {
 
   initScene(width, height);
   initRenderer(width, height);
-  initGameWorld();
-  skyEffects.setStarTwinkleEnabled(browserQuality.starTwinkleEnabled);
-  initTrafficAndSparks();
-  initGameManagers();
-  initEventListeners();
-  initStoryAndMode();
 
-  ScoreService.getTopScores()
-    .then((scores) => {
-      leaderboard.value = scores;
-      if (leaderboardCanvas && leaderboardTexture) {
-        drawLeaderboard(leaderboardCanvas, leaderboardTexture, leaderboard.value);
-      }
-    })
-    .catch(() => {
-      // Scores failed to load, leaderboard stays empty
-    });
+  const doDeferredInit = () => {
+    if (deferredInitCancelled) return;
+    initGameWorld();
+    skyEffects.setStarTwinkleEnabled(browserQuality.starTwinkleEnabled);
+    initTrafficAndSparks();
+    initGameManagers();
+    initEventListeners();
+    initStoryAndMode();
 
-  cyberpunkAudio.addListener(onAudioNote);
-  showSplash.value = false;
+    ScoreService.getTopScores()
+      .then((scores) => {
+        leaderboard.value = scores;
+        if (leaderboardCanvas && leaderboardTexture) {
+          drawLeaderboard(leaderboardCanvas, leaderboardTexture, leaderboard.value);
+        }
+      })
+      .catch(() => {
+        // Scores failed to load, leaderboard stays empty
+      });
+
+    cyberpunkAudio.addListener(onAudioNote);
+    showSplash.value = false;
+  };
+
+  if (typeof requestIdleCallback !== 'undefined') {
+    requestIdleCallback(doDeferredInit, { timeout: 3000 });
+  } else {
+    setTimeout(doDeferredInit, 100);
+  }
 });
 
 function onKeyDown(event: KeyboardEvent) {
@@ -646,6 +659,10 @@ function exitGameMode() {
 
   if (storyManager) {
     storyManager.stop();
+  }
+
+  if (multiplayerManager) {
+    multiplayerManager.disconnect();
   }
 
   isGameOver.value = false;
@@ -865,6 +882,8 @@ function renderFrame() {
   }
 }
 
+let tickCounter = 0;
+
 function animate() {
   if (!isActive) return;
   animationId = requestAnimationFrame(animate);
@@ -875,6 +894,7 @@ function animate() {
   lastTime.value = now;
 
   if (checkLowFps(now)) return;
+  tickCounter++;
 
   konamiManager.update(dt);
   gangWarManager.update(dt);
@@ -882,17 +902,25 @@ function animate() {
   gameModeManager.update(dt, time);
   trafficSystem.update(activeCar.value);
   storyItemsManager?.updateTriggerAnimation(time * 1000);
-  updateSignalStrength();
-  updateMultiplayer(dt);
-  updateCityMaterials();
-  updateSparks();
+
   updateCamera(time, now);
   renderFrame();
+
+  if (tickCounter % 3 === 0) {
+    updateMultiplayer(dt);
+    updateCityMaterials();
+  }
+
+  if (tickCounter % 2 === 0) {
+    updateSignalStrength();
+    updateSparks();
+  }
 }
 
 onBeforeUnmount(() => {
   cyberpunkAudio.removeListener(onAudioNote);
   isActive = false;
+  deferredInitCancelled = true;
   window.removeEventListener('resize', onResize);
   window.removeEventListener('click', onClick);
   window.removeEventListener('keydown', onKeyDown);

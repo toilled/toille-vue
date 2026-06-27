@@ -163,15 +163,20 @@ export class MultiplayerManager {
     }
   }
 
-  public dispose() {
+  public disconnect() {
     if (this.client) {
-      this.client.end();
+      this.client.end(true);
+      this.client = null;
     }
     for (const player of this.players.values()) {
       this.removePlayerGroup(player.group);
     }
     this.players.clear();
     this.updateOnlineCount();
+  }
+
+  public dispose() {
+    this.disconnect();
   }
 
   private removePlayerGroup(group: Group) {

@@ -588,6 +588,7 @@ vi.mock('three', async () => {
       dispose() {}
     },
     PCFSoftShadowMap: 2,
+    PCFShadowMap: 1,
     ACESFilmicToneMapping: 4,
   };
 });

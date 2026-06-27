@@ -19,7 +19,6 @@ export interface BrowserQuality {
 }
 
 export function getBrowserQuality(): BrowserQuality {
-  const ff = isFirefox();
   const mobile = isMobile();
   if (mobile) {
     return {
@@ -33,12 +32,12 @@ export function getBrowserQuality(): BrowserQuality {
     };
   }
   return {
-    pixelRatioCap: ff ? 1 : Math.min(window.devicePixelRatio, 2),
-    shadowMapType: ff ? 1 : 2,
-    msaaSamples: ff ? 0 : 4,
-    bloomStrength: ff ? 0.8 : 1.2,
-    bloomRadius: 0.6,
+    pixelRatioCap: Math.min(window.devicePixelRatio, 1.5),
+    shadowMapType: 1,
+    msaaSamples: 0,
+    bloomStrength: 0.4,
+    bloomRadius: 0.3,
     bloomThreshold: 0.3,
-    starTwinkleEnabled: true,
+    starTwinkleEnabled: false,
   };
 }

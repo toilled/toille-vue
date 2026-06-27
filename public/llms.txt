@@ -1,0 +1,14 @@
+# toille.uk — Elliot Dickerson's portfolio and playground
+
+Elliot Dickerson (toille) is a full-stack developer and systems administrator from Cheltenham, UK. This site is a Vue 3 / TypeScript cyberpunk-themed portfolio with an interactive 3D city game (Three.js), multiple mini-games, SSR on Cloudflare Pages, and i18n in 13 languages.
+
+## Key pages
+
+- [Home](https://toille.uk/) — Landing page with scrollable sections: Home, About, Interests.
+- [About](https://toille.uk/about) — Professional background, skills, and bio.
+- [Interests](https://toille.uk/interests) — Personal interests, music, and creative projects.
+- [Pub Quiz](https://toille.uk/quiz) — Random trivia quiz game.
+
+## Tech stack
+
+Vue 3, TypeScript, Vite, Three.js, Cloudflare Pages (SSR), D1 database, vue-i18n (13 locales), MQTT (multiplayer).

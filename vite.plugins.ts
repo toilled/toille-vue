@@ -12,7 +12,7 @@ export function sharedPlugins(): Plugin[] {
       dirs: ["src/components"],
       extensions: ["vue"],
       dts: true,
-      exclude: ["**/CyberpunkCity.vue", "**/Checker.vue"],
+      exclude: ["**/CyberpunkCity.vue", "**/Checker.vue", "**/Activity.vue", "**/Suggestion.vue"],
     }),
   ];
 }

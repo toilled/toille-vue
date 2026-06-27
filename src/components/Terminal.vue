@@ -1,5 +1,5 @@
 <template>
-  <aside class="terminal-overlay" @click.self="close">
+  <aside v-if="overlay" class="terminal-overlay" @click.self="close">
     <div class="terminal" ref="terminalRef" @keydown="handleKeydown" tabindex="0">
       <div class="terminal-header">
         <span class="terminal-title">TOILLE://TERMINAL</span>
@@ -26,16 +26,49 @@
       </div>
     </div>
   </aside>
+  <div
+    v-else
+    class="terminal terminal-inline"
+    ref="terminalRef"
+    @keydown="handleKeydown"
+    tabindex="0"
+  >
+    <div class="terminal-body" ref="bodyRef">
+      <div v-for="(line, i) in lines" :key="i" class="terminal-line" :class="line.class">
+        <pre v-if="line.pre">{{ line.text }}</pre>
+        <span v-else-if="!line.pre">{{ line.text }}</span>
+      </div>
+      <div v-if="!animating" class="terminal-input-line">
+        <span class="prompt">{{ prompt }}</span>
+        <span class="input-text">{{ currentInput }}</span>
+        <span class="cursor" :class="{ blink: !animating }">&#9608;</span>
+      </div>
+      <div v-if="animating" class="terminal-line boot-line">
+        <span>{{ bootText }}</span>
+        <span class="cursor blink">&#9608;</span>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, nextTick, inject } from 'vue';
 import { createCommands, commandAliases } from './terminal/terminalCommands';
 import type { TerminalContext } from './terminal/terminalCommands';
+
+const props = withDefaults(
+  defineProps<{
+    overlay?: boolean;
+  }>(),
+  { overlay: true }
+);
 
 const emit = defineEmits<{
   (e: 'close'): void;
 }>();
+
+const desktopCloseWindow = inject<((id: string) => void) | null>('desktopCloseWindow', null);
+const currentWindowId = inject<string | null>('currentWindowId', null);
 
 const terminalRef = ref<HTMLElement | null>(null);
 const bodyRef = ref<HTMLElement | null>(null);
@@ -55,7 +88,11 @@ function close() {
     clearInterval(matrixInterval.value);
     matrixInterval.value = null;
   }
-  emit('close');
+  if (!props.overlay && desktopCloseWindow != null && currentWindowId != null) {
+    desktopCloseWindow(currentWindowId);
+  } else {
+    emit('close');
+  }
 }
 
 function scrollToBottom() {
@@ -441,6 +478,30 @@ function handleKeydown(e: KeyboardEvent) {
 .terminal-overlay:not(:focus-within) .cursor {
   animation: none;
   opacity: 0.4;
+}
+
+.terminal-inline {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  outline: none;
+  color: #00ffcc;
+}
+
+.terminal-inline .terminal-body {
+  min-height: auto;
+  max-height: none;
+  padding: 0.5rem;
 }
 
 @media (max-width: 600px) {

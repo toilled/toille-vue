@@ -55,7 +55,6 @@ import DesktopShortcut from './DesktopShortcut.vue';
 
 const emit = defineEmits<{
   (e: 'shutdown'): void;
-  (e: 'terminal'): void;
 }>();
 
 const {
@@ -76,6 +75,7 @@ if (desktopRunner) {
     openWindow({ title, component, width: 700, height: 500 });
   };
 }
+provide('desktopCloseWindow', (id: string) => closeWindow(id));
 const selectedShortcut = ref<string | null>(null);
 const soundOn = computed(() => audioManager.isSoundEnabled.value);
 const cityOn = computed(() => cityBackground.isEnabled.value);
@@ -93,6 +93,7 @@ interface Shortcut {
 }
 
 const componentMap: Record<string, Component> = {
+  Terminal: defineAsyncComponent(() => import('./Terminal.vue')),
   Checker: defineAsyncComponent(() => import('./Checker.vue')),
   NoughtsAndCrosses: defineAsyncComponent(() => import('./NoughtsAndCrosses.vue')),
   Quiz: defineAsyncComponent(() => import('./Quiz.vue')),
@@ -103,7 +104,17 @@ const componentMap: Record<string, Component> = {
 };
 
 const shortcuts: Shortcut[] = [
-  { id: 'terminal', label: 'Terminal', icon: '⬛', width: 700, height: 500 },
+  {
+    id: 'terminal',
+    label: 'Terminal',
+    icon: '⬛',
+    component: 'Terminal',
+    props: { overlay: false },
+    width: 700,
+    height: 500,
+    minWidth: 320,
+    minHeight: 240,
+  },
   {
     id: 'explorer',
     label: 'File Explorer',
@@ -186,10 +197,6 @@ const startApps = shortcuts.map((s) => ({
 function onShortcutOpen(id: string) {
   const sc = shortcuts.find((s) => s.id === id);
   if (!sc) return;
-  if (id === 'terminal') {
-    emit('terminal');
-    return;
-  }
   const opts: {
     title: string;
     component: string;

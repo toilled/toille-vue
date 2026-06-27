@@ -39,6 +39,8 @@ const emit = defineEmits<{
   (e: 'resize', w: number, h: number): void;
 }>();
 
+provide('currentWindowId', props.win.id);
+
 const resolvedProps = computed(() => props.win.props ?? {});
 
 const windowStyle = computed(() => {

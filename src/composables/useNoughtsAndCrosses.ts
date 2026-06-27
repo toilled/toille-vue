@@ -109,14 +109,6 @@ export function useNoughtsAndCrosses() {
     winner.value = null;
   };
 
-  if (typeof onBeforeUnmount !== 'undefined') {
-    onBeforeUnmount(() => {
-      if (moveTimeout !== null) {
-        clearTimeout(moveTimeout);
-      }
-    });
-  }
-
   return {
     board,
     winner,

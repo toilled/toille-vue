@@ -28,8 +28,8 @@ interface SkyEffectConfig {
 }
 
 const DEFAULT_CONFIG: SkyEffectConfig = {
-  cloudCount: 80,
-  starCount: 800,
+  cloudCount: 40,
+  starCount: 400,
   fogDensity: 0.0007,
   fogColor: 0x0a0015,
   skyTopColor: 0x000011,
@@ -226,7 +226,7 @@ export class SkyEffects {
   }
 
   private starUpdateCounter = 0;
-  private starUpdateInterval = 4;
+  private starUpdateInterval = 8;
   private starTwinkleEnabled = true;
 
   setStarTwinkleEnabled(enabled: boolean) {

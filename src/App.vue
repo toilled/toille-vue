@@ -375,18 +375,16 @@ html.fx .app-header {
     transparent
   );
   animation: header-glow 3s ease-in-out infinite;
+  will-change: opacity;
 }
 
 @keyframes header-glow {
   0%,
   100% {
     opacity: 0.6;
-    filter: blur(0px);
   }
   50% {
     opacity: 1;
-    filter: blur(0.5px);
-    box-shadow: 0 0 8px rgba(0, 255, 204, 0.2);
   }
 }
 

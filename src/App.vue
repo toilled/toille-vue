@@ -85,7 +85,7 @@
     @fallback="cityFallback = true"
   />
   <EpilepsyWarning />
-  <Desktop v-if="desktopMode" @shutdown="toggleDesktop" @terminal="toggleTerminal" />
+  <Desktop v-if="desktopMode" @shutdown="toggleDesktop" />
 </template>
 
 <script setup lang="ts">

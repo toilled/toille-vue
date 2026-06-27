@@ -98,7 +98,7 @@ function close() {
 function scrollToBottom() {
   nextTick(() => {
     if (bodyRef.value) {
-      bodyRef.value.scrollTop = bodyRef.value.scrollHeight;
+      bodyRef.value.scrollTop = 999999;
     }
   });
 }

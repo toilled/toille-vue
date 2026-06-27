@@ -54,12 +54,12 @@
       </div>
     </Transition>
     <Transition name="slide-fade">
-      <div class="container" style="min-width: 0" v-show="activity">
+      <div class="container" style="min-width: 0" v-if="activity">
         <Activity :class="{ 'fade-out': gameMode }" />
       </div>
     </Transition>
     <Transition name="slide-fade">
-      <div class="container" style="min-width: 0" v-show="joke">
+      <div class="container" style="min-width: 0" v-if="joke">
         <Suggestion
           :class="{ 'fade-out': gameMode }"
           url="https://icanhazdadjoke.com/"
@@ -106,9 +106,11 @@ import { cityBackground } from './utils/CityBackgroundManager';
 import titles from './configs/titles.json';
 import { Page } from './interfaces/Page';
 const Checker = defineAsyncComponent(() => import('./components/Checker.vue'));
-import Terminal from './components/Terminal.vue';
+const Terminal = defineAsyncComponent(() => import('./components/Terminal.vue'));
+const Desktop = defineAsyncComponent(() => import('./components/Desktop.vue'));
+const Activity = defineAsyncComponent(() => import('./components/Activity.vue'));
+const Suggestion = defineAsyncComponent(() => import('./components/Suggestion.vue'));
 import EpilepsyWarning from './components/EpilepsyWarning.vue';
-import Desktop from './components/Desktop.vue';
 import { useScrollSpy } from './composables/useScrollSpy';
 
 const visiblePages = computed(() => {

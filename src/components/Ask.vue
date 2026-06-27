@@ -237,7 +237,7 @@ function clearChat() {
 function scrollToBottom() {
   nextTick(() => {
     if (chatWindow.value) {
-      chatWindow.value.scrollTop = chatWindow.value.scrollHeight;
+      chatWindow.value.scrollTop = 999999;
     }
   });
 }

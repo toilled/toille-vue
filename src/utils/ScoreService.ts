@@ -7,6 +7,13 @@ const LOCAL_KEY = 'cyberpunk_city_scores';
 const MAX_NAME_LENGTH = 20;
 const MIN_SCORE = 0;
 const MAX_SCORE = Number.MAX_SAFE_INTEGER;
+const FETCH_TIMEOUT_MS = 5000;
+
+function fetchWithTimeout(url: string, options?: RequestInit): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
+}
 
 function sanitizeName(name: string): string {
   return name.trim().substring(0, MAX_NAME_LENGTH);
@@ -33,7 +40,7 @@ async function handleResponse(res: Response): Promise<ScoreEntry[] | null> {
 export const ScoreService = {
   async getTopScores(): Promise<ScoreEntry[]> {
     try {
-      const res = await fetch('/api/scores');
+      const res = await fetchWithTimeout('/api/scores');
       const data = await handleResponse(res);
       if (data) return data;
 
@@ -52,7 +59,7 @@ export const ScoreService = {
 
   async createSession(): Promise<string | null> {
     try {
-      const res = await fetch('/api/scores', {
+      const res = await fetchWithTimeout('/api/scores', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'create' }),
@@ -69,7 +76,7 @@ export const ScoreService = {
 
   async recordCheckpoint(gameId: string): Promise<void> {
     try {
-      await fetch('/api/scores', {
+      await fetchWithTimeout('/api/scores', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'checkpoint', game_id: gameId }),
@@ -89,7 +96,7 @@ export const ScoreService = {
 
     if (gameId) {
       try {
-        const res = await fetch('/api/scores', {
+        const res = await fetchWithTimeout('/api/scores', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

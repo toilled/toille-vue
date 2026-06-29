@@ -389,7 +389,7 @@ const toggleCityBackground = () => {
   }
 }
 
-@media (min-width: 1024px) and (orientation: landscape) {
+@media (min-width: 1024px) and (orientation: landscape) and (hover: hover) and (pointer: fine) {
   .nav-wrapper {
     flex: 1;
     flex-direction: column;

@@ -541,7 +541,7 @@ html {
   display: none;
 }
 
-@media (min-width: 1024px) and (orientation: landscape) {
+@media (min-width: 1024px) and (orientation: landscape) and (hover: hover) and (pointer: fine) {
   #content-wrapper {
     margin-left: 220px;
   }

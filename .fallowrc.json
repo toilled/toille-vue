@@ -22,7 +22,8 @@
     "../utils/TextureGenerator",
     "../../utils/CyberpunkAudio",
     "../../utils/AudioManager",
-    "../../utils/HeightMap"
+    "../../utils/HeightMap",
+    "./ssr-app.js"
   ],
   "ignorePatterns": [
     "**/tests/setupHead.ts",

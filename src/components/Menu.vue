@@ -371,4 +371,31 @@ const toggleCityBackground = () => {
     height: 18px;
   }
 }
+
+@media (min-width: 1024px) and (orientation: landscape) {
+  .nav-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .nav-links {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.1rem;
+  }
+
+  .tools-toggle {
+    display: none;
+  }
+
+  .nav-tools {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 0.25rem;
+  }
+}
 </style>

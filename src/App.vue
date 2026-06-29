@@ -529,4 +529,56 @@ html {
     scroll-padding-top: 180px;
   }
 }
+
+@media (min-width: 1024px) and (orientation: landscape) {
+  #content-wrapper {
+    margin-left: 220px;
+  }
+
+  .app-header {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 220px;
+    height: 100vh;
+    overflow-y: auto;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+  }
+
+  .app-header::after {
+    top: 0;
+    bottom: 0;
+    left: auto;
+    right: 0;
+    width: 1px;
+    height: auto;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      rgba(0, 255, 204, 0.4),
+      rgba(255, 0, 204, 0.4),
+      transparent
+    );
+  }
+
+  .header-nav {
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
+  .app-main {
+    padding: 2rem;
+    min-height: 100vh;
+  }
+
+  html {
+    scroll-padding-top: 0;
+  }
+}
 </style>

@@ -167,8 +167,8 @@
       <div class="icon-wrapper" data-label="Weather" @click="weatherRef?.toggleModal()">
         <WeatherIcon ref="weatherRef" />
       </div>
-      <div class="icon-wrapper" data-label="Lang">
-        <LanguageSelector />
+      <div class="icon-wrapper" data-label="Lang" @click.stop="langRef?.toggle()">
+        <LanguageSelector ref="langRef" />
       </div>
     </div>
   </div>
@@ -203,6 +203,7 @@ defineEmits<{
 
 const showTools = ref(false);
 const weatherRef = ref<{ toggleModal: () => void } | null>(null);
+const langRef = ref<{ toggle: () => void } | null>(null);
 
 const soundOn = computed(() => audioManager.isSoundEnabled.value);
 const cityOn = computed(() => cityBackground.isEnabled.value);

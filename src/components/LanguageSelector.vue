@@ -40,6 +40,7 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
+import { loadLocale } from '../i18n';
 
 const { locale, t } = useI18n();
 
@@ -79,22 +80,31 @@ function positionDropdown() {
   const spaceBelow = window.innerHeight - rect.bottom;
   const dropdownHeight = Math.min(280, locales.length * 38 + 16);
 
+  const dropdownWidth = 200;
+  const horizontalPos: Record<string, string> =
+    rect.left + dropdownWidth < window.innerWidth
+      ? { left: `${rect.left}px` }
+      : { right: `${window.innerWidth - rect.right}px` };
+
   if (spaceBelow < dropdownHeight && rect.top > spaceBelow) {
     dropdownStyle.value = {
       position: 'fixed',
       bottom: `${window.innerHeight - rect.top + 6}px`,
-      right: `${window.innerWidth - rect.right}px`,
+      ...horizontalPos,
     };
   } else {
     dropdownStyle.value = {
       position: 'fixed',
       top: `${rect.bottom + 6}px`,
-      right: `${window.innerWidth - rect.right}px`,
+      ...horizontalPos,
     };
   }
 }
 
-function select(code: string) {
+async function select(code: string) {
+  if (code !== 'en') {
+    await loadLocale(code);
+  }
   locale.value = code;
   if (typeof localStorage !== 'undefined') {
     localStorage.setItem('locale', code);
@@ -129,6 +139,8 @@ onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll);
   window.removeEventListener('resize', handleScroll);
 });
+
+defineExpose({ toggle });
 </script>
 
 <style scoped>
@@ -143,7 +155,6 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.3rem;
   border-radius: 6px;
   transition: all 0.2s ease;
   color: #00ffcc;
@@ -161,8 +172,8 @@ onUnmounted(() => {
 }
 
 .globe-icon {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
 }
 </style>
 

@@ -164,8 +164,8 @@
           <line x1="12" y1="17" x2="12" y2="21" />
         </svg>
       </div>
-      <div class="icon-wrapper" :title="t('weather.forecast')" data-label="Weather">
-        <WeatherIcon />
+      <div class="icon-wrapper" data-label="Weather" @click="weatherRef?.toggleModal()">
+        <WeatherIcon ref="weatherRef" />
       </div>
       <div class="icon-wrapper" data-label="Lang">
         <LanguageSelector />
@@ -202,6 +202,7 @@ defineEmits<{
 }>();
 
 const showTools = ref(false);
+const weatherRef = ref<{ toggleModal: () => void } | null>(null);
 
 const soundOn = computed(() => audioManager.isSoundEnabled.value);
 const cityOn = computed(() => cityBackground.isEnabled.value);

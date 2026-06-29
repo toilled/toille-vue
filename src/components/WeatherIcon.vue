@@ -1,185 +1,201 @@
 <template>
-  <div class="icon-wrapper" :title="description" @click="toggleModal">
-    <!-- Sun / Clear -->
-    <svg
-      v-if="iconType === 'sun'"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="black"
-      class="icon"
-    >
-      <circle cx="12" cy="12" r="5" />
-      <path
-        d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
-        stroke="black"
-        stroke-width="2"
-        stroke-linecap="round"
-      />
-    </svg>
+  <!-- Sun / Clear -->
+  <svg
+    v-if="iconType === 'sun'"
+    :title="description"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="black"
+    class="icon"
+    @click="toggleModal"
+  >
+    <circle cx="12" cy="12" r="5" />
+    <path
+      d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+      stroke="black"
+      stroke-width="2"
+      stroke-linecap="round"
+    />
+  </svg>
 
-    <!-- Cloud / Overcast / Fog -->
-    <svg
-      v-else-if="iconType === 'cloud'"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="black"
-      class="icon"
-    >
-      <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
-    </svg>
+  <!-- Cloud / Overcast / Fog -->
+  <svg
+    v-else-if="iconType === 'cloud'"
+    :title="description"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="black"
+    class="icon"
+    @click="toggleModal"
+  >
+    <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
+  </svg>
 
-    <!-- Rain / Drizzle -->
-    <svg
-      v-else-if="iconType === 'rain'"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="black"
-      class="icon"
-    >
-      <path
-        d="M16 13c.8 0 1.5.2 2.1.6 1.1 0 2.2 1.3 1.9 2.4-.2 1.1-1.3 1.6-2.4 1.6H7c-1.8 0-3.3-1.2-3.8-2.9-.5-1.7.3-3.6 1.9-4.3.4-2.8 2.8-5 5.7-5 2.1 0 4 .1 5.3 1.7"
-        fill="none"
-        stroke="black"
-        stroke-width="2"
-      />
-      <path d="M8 19v2m4-2v2m4-2v2" stroke="black" stroke-width="2" stroke-linecap="round" />
-    </svg>
+  <!-- Rain / Drizzle -->
+  <svg
+    v-else-if="iconType === 'rain'"
+    :title="description"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="black"
+    class="icon"
+    @click="toggleModal"
+  >
+    <path
+      d="M16 13c.8 0 1.5.2 2.1.6 1.1 0 2.2 1.3 1.9 2.4-.2 1.1-1.3 1.6-2.4 1.6H7c-1.8 0-3.3-1.2-3.8-2.9-.5-1.7.3-3.6 1.9-4.3.4-2.8 2.8-5 5.7-5 2.1 0 4 .1 5.3 1.7"
+      fill="none"
+      stroke="black"
+      stroke-width="2"
+    />
+    <path d="M8 19v2m4-2v2m4-2v2" stroke="black" stroke-width="2" stroke-linecap="round" />
+  </svg>
 
-    <!-- Snow -->
-    <svg
-      v-else-if="iconType === 'snow'"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="black"
-      class="icon"
-    >
-      <path
-        d="M12 2v20m-8-6 16-8m-16 8 16-8"
-        stroke="black"
-        stroke-width="2"
-        stroke-linecap="round"
-      />
-      <path
-        d="M12 2l-2 3m2-3l2 3m-2 17l-2-3m2 3l2-3M4 16l3 1m-3-1l2-3m14 2l-3 1m3-1l-2-3M4 8l3-1m-3 1l2 3m14-2l-3-1m3 1l-2 3"
-        stroke="black"
-        stroke-width="2"
-        stroke-linecap="round"
-      />
-    </svg>
+  <!-- Snow -->
+  <svg
+    v-else-if="iconType === 'snow'"
+    :title="description"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="black"
+    class="icon"
+    @click="toggleModal"
+  >
+    <path
+      d="M12 2v20m-8-6 16-8m-16 8 16-8"
+      stroke="black"
+      stroke-width="2"
+      stroke-linecap="round"
+    />
+    <path
+      d="M12 2l-2 3m2-3l2 3m-2 17l-2-3m2 3l2-3M4 16l3 1m-3-1l2-3m14 2l-3 1m3-1l-2-3M4 8l3-1m-3 1l2 3m14-2l-3-1m3 1l-2 3"
+      stroke="black"
+      stroke-width="2"
+      stroke-linecap="round"
+    />
+  </svg>
 
-    <!-- Thunder -->
-    <svg
-      v-else-if="iconType === 'thunder'"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="black"
-      class="icon"
-    >
-      <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
-      <path
-        d="M13 14l-2 4h3l-1 4"
-        stroke="black"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-    </svg>
+  <!-- Thunder -->
+  <svg
+    v-else-if="iconType === 'thunder'"
+    :title="description"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="black"
+    class="icon"
+    @click="toggleModal"
+  >
+    <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
+    <path
+      d="M13 14l-2 4h3l-1 4"
+      stroke="black"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
 
-    <!-- Question Mark (Loading/Error) -->
-    <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="icon">
-      <text x="50%" y="75%" text-anchor="middle" font-size="20" font-weight="bold" fill="black">
-        ?
-      </text>
-    </svg>
+  <!-- Question Mark (Loading/Error) -->
+  <svg
+    v-else
+    :title="description"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="black"
+    class="icon"
+    @click="toggleModal"
+  >
+    <text x="50%" y="75%" text-anchor="middle" font-size="20" font-weight="bold" fill="black">
+      ?
+    </text>
+  </svg>
 
-    <!-- Modal -->
-    <Teleport to="body" v-if="isMounted">
-      <div v-if="showModal" class="weather-modal-overlay" @click.self="showModal = false">
-        <article class="weather-modal">
-          <header class="modal-header">
-            <h2>{{ t('weather.forecast') }}</h2>
-            <button class="close-btn" @click="showModal = false" :aria-label="t('weather.close')">
-              &times;
-            </button>
-          </header>
-          <div class="chart-container">
-            <svg viewBox="0 0 300 150" class="weather-chart">
-              <!-- Grid lines -->
-              <line x1="0" y1="135" x2="300" y2="135" stroke="#444" stroke-width="1" />
+  <!-- Modal -->
+  <Teleport to="body" v-if="isMounted">
+    <div v-if="showModal" class="weather-modal-overlay" @click.self="showModal = false">
+      <article class="weather-modal">
+        <header class="modal-header">
+          <h2>{{ t('weather.forecast') }}</h2>
+          <button class="close-btn" @click="showModal = false" :aria-label="t('weather.close')">
+            &times;
+          </button>
+        </header>
+        <div class="chart-container">
+          <svg viewBox="0 0 300 150" class="weather-chart">
+            <!-- Grid lines -->
+            <line x1="0" y1="135" x2="300" y2="135" stroke="#444" stroke-width="1" />
 
-              <!-- Rain Bars -->
-              <g v-for="(point, index) in computedPoints" :key="'rain-' + index">
-                <rect
-                  :x="point.x - 5"
-                  :y="point.rainY"
-                  width="10"
-                  :height="point.rainHeight"
-                  fill="rgba(0, 100, 255, 0.4)"
-                  class="rain-bar"
-                />
-                <text
-                  v-if="point.rain > 0"
-                  :x="point.x"
-                  :y="point.rainY - 4"
-                  text-anchor="middle"
-                  fill="#3399ff"
-                  font-size="9"
-                >
-                  {{ point.rain }}mm
-                </text>
-              </g>
-
-              <!-- Graph Line (Temp) -->
-              <polyline
-                :points="graphPoints"
-                fill="none"
-                stroke="#00ff9d"
-                stroke-width="3"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+            <!-- Rain Bars -->
+            <g v-for="(point, index) in computedPoints" :key="'rain-' + index">
+              <rect
+                :x="point.x - 5"
+                :y="point.rainY"
+                width="10"
+                :height="point.rainHeight"
+                fill="rgba(0, 100, 255, 0.4)"
+                class="rain-bar"
               />
-
-              <!-- Data Points (Temp) -->
-              <g v-for="(point, index) in computedPoints" :key="'temp-' + index">
-                <circle
-                  :cx="point.x"
-                  :cy="point.y"
-                  r="4"
-                  fill="#111"
-                  stroke="#00ff9d"
-                  stroke-width="2"
-                  class="data-point"
-                />
-                <!-- Labels -->
-                <text :x="point.x" y="148" text-anchor="middle" fill="#ccc" font-size="10">
-                  {{ point.time }}
-                </text>
-                <text
-                  :x="point.x"
-                  :y="point.y - 10"
-                  text-anchor="middle"
-                  fill="#fff"
-                  font-size="12"
-                  font-weight="bold"
-                >
-                  {{ point.temp }}°
-                </text>
-              </g>
-            </svg>
-          </div>
-          <footer class="modal-footer">
-            <small>{{ t('weather.nextHours') }}</small>
-            <div class="legend">
-              <span class="legend-item"><span class="dot temp"></span>{{ t('weather.temp') }}</span>
-              <span class="legend-item"
-                ><span class="dot rain"></span>{{ t('weather.rainLabel') }}</span
+              <text
+                v-if="point.rain > 0"
+                :x="point.x"
+                :y="point.rainY - 4"
+                text-anchor="middle"
+                fill="#3399ff"
+                font-size="9"
               >
-            </div>
-          </footer>
-        </article>
-      </div>
-    </Teleport>
-  </div>
+                {{ point.rain }}mm
+              </text>
+            </g>
+
+            <!-- Graph Line (Temp) -->
+            <polyline
+              :points="graphPoints"
+              fill="none"
+              stroke="#00ff9d"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+
+            <!-- Data Points (Temp) -->
+            <g v-for="(point, index) in computedPoints" :key="'temp-' + index">
+              <circle
+                :cx="point.x"
+                :cy="point.y"
+                r="4"
+                fill="#111"
+                stroke="#00ff9d"
+                stroke-width="2"
+                class="data-point"
+              />
+              <!-- Labels -->
+              <text :x="point.x" y="148" text-anchor="middle" fill="#ccc" font-size="10">
+                {{ point.time }}
+              </text>
+              <text
+                :x="point.x"
+                :y="point.y - 10"
+                text-anchor="middle"
+                fill="#fff"
+                font-size="12"
+                font-weight="bold"
+              >
+                {{ point.temp }}°
+              </text>
+            </g>
+          </svg>
+        </div>
+        <footer class="modal-footer">
+          <small>{{ t('weather.nextHours') }}</small>
+          <div class="legend">
+            <span class="legend-item"><span class="dot temp"></span>{{ t('weather.temp') }}</span>
+            <span class="legend-item"
+              ><span class="dot rain"></span>{{ t('weather.rainLabel') }}</span
+            >
+          </div>
+        </footer>
+      </article>
+    </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -352,19 +368,17 @@ onMounted(() => {
   description.value = t('weather.loading');
   fetchWeather();
 });
+
+defineExpose({ toggleModal });
 </script>
 
 <style scoped>
-.icon-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
 .icon {
   width: 24px;
   height: 24px;
   filter: invert(1);
+  cursor: pointer;
+  pointer-events: bounding-box;
 }
 
 /* Modal Styles */

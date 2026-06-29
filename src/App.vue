@@ -23,13 +23,14 @@
 
     <main id="main-content" tabindex="-1" class="app-main">
       <div class="container">
-        <Title
-          class="title-above-main"
-          :title="titles.title"
-          :subtitle="t('site.subtitle')"
-          @activity="toggleActivity"
-          @joke="toggleJoke"
-        />
+        <div class="title-above-main">
+          <Title
+            :title="titles.title"
+            :subtitle="t('site.subtitle')"
+            @activity="toggleActivity"
+            @joke="toggleJoke"
+          />
+        </div>
         <Transition name="cyberpunk-glitch">
           <div class="router-view-container" v-show="isContentVisible">
             <router-view v-slot="{ Component, route }">
@@ -602,6 +603,10 @@ html {
 
   .title-above-main h1.title {
     font-size: 3.5rem;
+  }
+
+  .title-above-main .site-title {
+    align-items: center;
   }
 
   .title-above-main h2.subtitle {

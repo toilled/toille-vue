@@ -581,8 +581,7 @@ html {
     flex-direction: column;
     justify-content: flex-start;
     align-items: stretch;
-    gap: 1.5rem;
-    padding: 1.5rem;
+    padding: 1rem 1.5rem;
     height: 100%;
     box-sizing: border-box;
   }

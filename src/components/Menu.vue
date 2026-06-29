@@ -26,6 +26,7 @@
         class="icon-wrapper"
         :class="{ disabled: !cityOn || cityFallback }"
         :title="t('menu.exploreCity')"
+        data-label="Explore"
       >
         <img src="/person-icon.svg" :alt="t('menu.exploreCity')" class="icon" />
       </div>
@@ -35,10 +36,16 @@
         class="icon-wrapper"
         :class="{ disabled: !cityOn || cityFallback }"
         :title="t('menu.demo')"
+        data-label="Demo"
       >
         <img src="/64k-icon.svg" :alt="t('menu.demo')" class="icon" />
       </div>
-      <div @click="toggleSound" class="icon-wrapper" :title="t('menu.toggleSound')">
+      <div
+        @click="toggleSound"
+        class="icon-wrapper"
+        :title="t('menu.toggleSound')"
+        data-label="Sound"
+      >
         <img v-if="soundOn" src="/sound-icon.svg" :alt="t('menu.toggleSound')" class="icon" />
         <img v-else src="/mute-icon.svg" :alt="t('menu.toggleSound')" class="icon" />
       </div>
@@ -46,6 +53,7 @@
         @click="$emit('toggle-content')"
         class="icon-wrapper"
         :title="t('menu.toggleVisibility')"
+        data-label="View"
       >
         <svg
           v-if="contentVisible"
@@ -79,7 +87,12 @@
           />
         </svg>
       </div>
-      <div @click="toggleCityBackground" class="icon-wrapper" :title="t('menu.toggleCity')">
+      <div
+        @click="toggleCityBackground"
+        class="icon-wrapper"
+        :title="t('menu.toggleCity')"
+        data-label="City"
+      >
         <svg
           v-if="cityOn"
           xmlns="http://www.w3.org/2000/svg"
@@ -114,6 +127,7 @@
         class="icon-wrapper terminal-icon"
         @click="$emit('toggle-terminal')"
         :title="t('menu.openTerminal')"
+        data-label="Terminal"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -133,6 +147,7 @@
         class="icon-wrapper"
         @click="$emit('toggle-desktop')"
         :title="t('desktop.toggleDesktop')"
+        data-label="Desktop"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -149,10 +164,12 @@
           <line x1="12" y1="17" x2="12" y2="21" />
         </svg>
       </div>
-      <div class="icon-wrapper">
+      <div class="icon-wrapper" :title="t('weather.forecast')" data-label="Weather">
         <WeatherIcon />
       </div>
-      <LanguageSelector />
+      <div class="icon-wrapper" data-label="Lang">
+        <LanguageSelector />
+      </div>
     </div>
   </div>
 </template>
@@ -374,9 +391,9 @@ const toggleCityBackground = () => {
 
 @media (min-width: 1024px) and (orientation: landscape) {
   .nav-wrapper {
+    flex: 1;
     flex-direction: column;
     align-items: stretch;
-    gap: 0.75rem;
   }
 
   .nav-links {
@@ -390,12 +407,34 @@ const toggleCityBackground = () => {
   }
 
   .nav-tools {
+    margin-top: auto;
     margin-left: 0;
-    padding-left: 0;
+    padding: 0.75rem 16px 0;
     border-left: none;
+    border-top: 1px solid rgba(0, 255, 204, 0.15);
+    flex-direction: row;
     flex-wrap: wrap;
+    gap: 0.15rem;
+    overflow-x: hidden;
+  }
+
+  .nav-tools > .icon-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.4rem;
     justify-content: flex-start;
-    gap: 0.25rem;
+    border-radius: 4px;
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .nav-tools > .icon-wrapper::after {
+    content: attr(data-label);
+    font-size: 0.78rem;
+    opacity: 0.85;
+    white-space: nowrap;
   }
 }
 </style>

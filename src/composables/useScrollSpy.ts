@@ -31,7 +31,9 @@ export function useScrollSpy(
   function getScrollOffset(): number {
     if (
       typeof window.matchMedia === 'function' &&
-      window.matchMedia('(min-width: 1024px) and (orientation: landscape) and (hover: hover) and (pointer: fine)').matches
+      window.matchMedia(
+        '(min-width: 1024px) and (orientation: landscape) and (hover: hover) and (pointer: fine)'
+      ).matches
     ) {
       return 16;
     }

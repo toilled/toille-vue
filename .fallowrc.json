@@ -23,7 +23,7 @@
     "../../utils/CyberpunkAudio",
     "../../utils/AudioManager",
     "../../utils/HeightMap",
-    "./ssr-app.js"
+    "**/ssr-app.js"
   ],
   "ignorePatterns": [
     "**/tests/setupHead.ts",

@@ -23,6 +23,13 @@
 
     <main id="main-content" tabindex="-1" class="app-main">
       <div class="container">
+        <Title
+          class="title-above-main"
+          :title="titles.title"
+          :subtitle="t('site.subtitle')"
+          @activity="toggleActivity"
+          @joke="toggleJoke"
+        />
         <Transition name="cyberpunk-glitch">
           <div class="router-view-container" v-show="isContentVisible">
             <router-view v-slot="{ Component, route }">
@@ -530,6 +537,10 @@ html {
   }
 }
 
+.title-above-main {
+  display: none;
+}
+
 @media (min-width: 1024px) and (orientation: landscape) {
   #content-wrapper {
     margin-left: 220px;
@@ -562,6 +573,10 @@ html {
     );
   }
 
+  .app-header .site-title {
+    display: none;
+  }
+
   .header-nav {
     flex-direction: column;
     justify-content: flex-start;
@@ -575,6 +590,23 @@ html {
   .app-main {
     padding: 2rem;
     min-height: 100vh;
+  }
+
+  .title-above-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(0, 255, 204, 0.15);
+  }
+
+  .title-above-main h1.title {
+    font-size: 3.5rem;
+  }
+
+  .title-above-main h2.subtitle {
+    font-size: 1.35rem;
   }
 
   html {

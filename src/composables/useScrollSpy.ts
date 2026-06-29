@@ -29,7 +29,10 @@ export function useScrollSpy(
   }
 
   function getScrollOffset(): number {
-    if (typeof window.matchMedia === 'function' && window.matchMedia('(min-width: 1024px) and (orientation: landscape)').matches) {
+    if (
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(min-width: 1024px) and (orientation: landscape)').matches
+    ) {
       return 16;
     }
     if (!headerRef.value) {

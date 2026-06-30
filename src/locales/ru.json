@@ -148,10 +148,10 @@
     }
   },
   "desktop": {
-    "toggleDesktop": "Toggle Desktop Mode",
-    "launchTerminal": "Launch Terminal",
-    "launchExplorer": "Open File Explorer",
-    "startMenu": "Start Menu",
-    "shutdown": "Shut Down"
+    "toggleDesktop": "Переключить режим рабочего стола",
+    "launchTerminal": "Открыть терминал",
+    "launchExplorer": "Открыть проводник",
+    "startMenu": "Пуск",
+    "shutdown": "Выключить"
   }
 }

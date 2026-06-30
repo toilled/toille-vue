@@ -6,6 +6,7 @@
       :id="getSectionId(page)"
       class="page-section"
       :class="`page-section--${getSectionId(page)}`"
+      :style="page.accent ? pageStyleVars(page.accent) : undefined"
       :data-section="getSectionId(page)"
     >
       <article class="marginless page-content-card">
@@ -25,76 +26,62 @@
           />
         </div>
 
-        <SectionDivider v-if="getSectionId(page) === 'home'" icon="🛠️" />
-        <template v-if="getSectionId(page) === 'home'">
-          <h3 class="sub-heading">{{ t('home.whatIDo') }}</h3>
-          <div class="what-i-do-grid">
-            <div class="do-card">
-              <div class="do-card-accent fullstack"></div>
-              <div class="do-card-icon">🌐</div>
-              <h4 class="do-card-title">{{ t('home.fullStack') }}</h4>
-              <p class="do-card-desc">{{ t('home.fullStackDesc') }}</p>
-            </div>
-            <div class="do-card">
-              <div class="do-card-accent ux"></div>
-              <div class="do-card-icon">🎨</div>
-              <h4 class="do-card-title">{{ t('home.creativeUI') }}</h4>
-              <p class="do-card-desc">{{ t('home.creativeUIDesc') }}</p>
-            </div>
-            <div class="do-card">
-              <div class="do-card-accent interactive"></div>
-              <div class="do-card-icon">⚡</div>
-              <h4 class="do-card-title">{{ t('home.interactive3D') }}</h4>
-              <p class="do-card-desc">{{ t('home.interactive3DDesc') }}</p>
-            </div>
-          </div>
-        </template>
+        <template v-for="(section, index) in page.sections" :key="index">
+          <SectionDivider
+            v-if="section.type === 'divider'"
+            v-bind="section.icon ? { icon: section.icon } : {}"
+          />
 
-        <SectionDivider v-if="getSectionId(page) === 'about'" icon="⚡" />
-        <template v-if="getSectionId(page) === 'about'">
-          <h3 class="sub-heading">{{ t('about.technicalSkills') }}</h3>
-          <SkillCard :skills="backendSkills" :category="t('about.backend')" />
-          <SkillCard :skills="frontendSkills" :category="t('about.frontend')" />
-          <SkillCard :skills="toolsSkills" :category="t('about.tools')" />
-        </template>
+          <template v-if="section.type === 'cards'">
+            <h3 v-if="section.heading" class="sub-heading">{{ section.heading }}</h3>
+            <div class="what-i-do-grid" :style="{ '--columns': section.columns || 3 }">
+              <div v-for="(item, i) in section.items" :key="i" class="do-card">
+                <div class="do-card-accent" :class="accentClass(i)"></div>
+                <div class="do-card-icon">{{ item.icon }}</div>
+                <h4 class="do-card-title">{{ item.title }}</h4>
+                <p class="do-card-desc">{{ item.description }}</p>
+              </div>
+            </div>
+          </template>
 
-        <SectionDivider v-if="getSectionId(page) === 'interests'" icon="✨" />
-        <template v-if="getSectionId(page) === 'interests'">
-          <h3 class="sub-heading">{{ t('interests.musicCreative') }}</h3>
-          <div class="music-card">
-            <div class="music-icon">🎸</div>
-            <div class="music-content">
-              <h4>{{ t('interests.guitarCompositions') }}</h4>
-              <p>{{ t('interests.guitarDesc') }}</p>
-              <a
-                href="https://www.youtube.com/@toilled"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="music-link"
-              >
-                {{ t('interests.visitYouTube') }}
-              </a>
-            </div>
-          </div>
+          <template v-if="section.type === 'skills'">
+            <h3 v-if="section.heading" class="sub-heading">{{ section.heading }}</h3>
+            <SkillCard
+              v-for="(group, i) in section.groups"
+              :key="i"
+              :skills="group.skills ?? []"
+              v-bind="group.category ? { category: group.category } : {}"
+            />
+          </template>
 
-          <div class="interest-grid">
-            <div class="interest-item">
-              <span class="interest-icon">🕹️</span>
-              <span>{{ t('interests.3dGraphics') }}</span>
+          <template v-if="section.type === 'musicCard'">
+            <h3 v-if="section.heading" class="sub-heading">{{ section.heading }}</h3>
+            <div class="music-card">
+              <div v-if="section.icon" class="music-icon">{{ section.icon }}</div>
+              <div class="music-content">
+                <h4>{{ section.title }}</h4>
+                <p>{{ section.description }}</p>
+                <a
+                  v-if="section.linkUrl"
+                  :href="section.linkUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="music-link"
+                >
+                  {{ section.linkText }}
+                </a>
+              </div>
             </div>
-            <div class="interest-item">
-              <span class="interest-icon">🧪</span>
-              <span>{{ t('interests.experimentation') }}</span>
+          </template>
+
+          <template v-if="section.type === 'interestGrid'">
+            <div class="interest-grid">
+              <div v-for="(item, i) in section.items" :key="i" class="interest-item">
+                <span class="interest-icon">{{ item.icon }}</span>
+                <span>{{ item.text }}</span>
+              </div>
             </div>
-            <div class="interest-item">
-              <span class="interest-icon">🎹</span>
-              <span>{{ t('interests.multiInstrumentalist') }}</span>
-            </div>
-            <div class="interest-item">
-              <span class="interest-icon">📡</span>
-              <span>{{ t('interests.techDiscovery') }}</span>
-            </div>
-          </div>
+          </template>
         </template>
       </article>
     </section>
@@ -102,41 +89,10 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n';
 import { Page } from '../interfaces/Page';
 import { useTranslatedPages } from '../composables/useTranslatedPages';
 
-const { t } = useI18n();
 const { translatedPages } = useTranslatedPages();
-
-const backendSkills = [
-  { name: 'Laravel', icon: '/laravel-icon.svg', link: 'https://laravel.com/' },
-  { name: 'MySQL', icon: '/mysql-icon.svg', link: 'https://www.mysql.com/' },
-  { name: 'PHP', icon: '🐘', link: 'https://www.php.net/' },
-  { name: 'Symfony', icon: '/symfony-icon.svg', link: 'https://symfony.com/' },
-  { name: 'Yii', icon: '/yii-icon.svg', link: 'https://www.yiiframework.com/' },
-];
-
-const frontendSkills = [
-  {
-    name: 'JavaScript',
-    icon: '/javascript-icon.svg',
-    link: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript',
-  },
-  { name: 'React', icon: '⚛️', link: 'https://react.dev/' },
-  { name: 'SolidJS', icon: '/solidjs-icon.svg', link: 'https://www.solidjs.com/' },
-  { name: 'Three.js', icon: '/threejs-icon.svg', link: 'https://threejs.org/' },
-  { name: 'TypeScript', icon: '/typescript-icon.svg', link: 'https://www.typescriptlang.org/' },
-  { name: 'Vue.js', icon: '/vuejs-icon.svg', link: 'https://vuejs.org/' },
-];
-
-const toolsSkills = [
-  { name: 'Cloudflare', icon: '/cloudflare-icon.svg', link: 'https://www.cloudflare.com/' },
-  { name: 'Docker', icon: '🐳', link: 'https://www.docker.com/' },
-  { name: 'Git', icon: '/git-icon.svg', link: 'https://git-scm.com/' },
-  { name: 'Linux', icon: '🐧', link: 'https://www.kernel.org/' },
-  { name: 'MQTT', icon: '/mqtt-icon.svg', link: 'https://mqtt.org/' },
-];
 
 function getSectionId(page: Page): string {
   if (page.link === '/') return 'home';
@@ -146,6 +102,25 @@ function getSectionId(page: Page): string {
 const displayPages = computed(() => {
   return translatedPages.value.filter((page: Page) => !page.hidden);
 });
+
+function hexToRgb(hex: string): string {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
+    : '0, 255, 204';
+}
+
+function pageStyleVars(accent: string): Record<string, string> {
+  return {
+    '--page-accent': accent,
+    '--page-accent-rgb': hexToRgb(accent),
+  };
+}
+
+function accentClass(index: number): string {
+  const classes = ['fullstack', 'ux', 'interactive'];
+  return classes[index % classes.length];
+}
 </script>
 
 <style scoped>
@@ -177,6 +152,12 @@ const displayPages = computed(() => {
     rgba(255, 0, 204, 0.3),
     transparent
   );
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--page-accent-rgb, 0, 255, 204), 0.4),
+    transparent
+  );
 }
 
 .page-section:last-child::after {
@@ -203,6 +184,7 @@ const displayPages = computed(() => {
   right: 1.5rem;
   height: 2px;
   border-radius: 0 0 2px 2px;
+  background: linear-gradient(90deg, transparent, var(--page-accent, #00ffcc), transparent);
   transition: all 0.4s ease;
 }
 
@@ -230,47 +212,9 @@ const displayPages = computed(() => {
   letter-spacing: 0.02em;
 }
 
-/* section accent bars */
-.page-section--home .page-content-card::before {
-  background: linear-gradient(90deg, rgba(0, 255, 204, 0.1), #00ffcc, rgba(0, 255, 204, 0.1));
-}
-
-.page-section--about .page-content-card::before {
-  background: linear-gradient(90deg, rgba(180, 0, 255, 0.1), #bb66ff, rgba(180, 0, 255, 0.1));
-}
-
-.page-section--interests .page-content-card::before {
-  background: linear-gradient(90deg, rgba(255, 0, 204, 0.1), #ff44dd, rgba(255, 0, 204, 0.1));
-}
-
-.can-hover .page-section--home .page-content-card:hover::before {
-  box-shadow: 0 0 12px rgba(0, 255, 204, 0.4);
-}
-
-.can-hover .page-section--about .page-content-card:hover::before {
-  box-shadow: 0 0 12px rgba(180, 0, 255, 0.4);
-}
-
-.can-hover .page-section--interests .page-content-card:hover::before {
-  box-shadow: 0 0 12px rgba(255, 0, 204, 0.4);
-}
-
-/* section divider colors */
-.page-section--home::after {
-  background: linear-gradient(90deg, transparent, rgba(0, 255, 204, 0.4), transparent);
-}
-
-.page-section--about::after {
-  background: linear-gradient(90deg, transparent, rgba(180, 0, 255, 0.4), transparent);
-}
-
-.page-section--interests::after {
-  background: linear-gradient(90deg, transparent, rgba(255, 0, 204, 0.4), transparent);
-}
-
 .what-i-do-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(var(--columns, 3), 1fr);
   gap: 1rem;
   margin: 1.25rem 0;
 }
@@ -338,51 +282,6 @@ const displayPages = computed(() => {
   font-size: 0.82rem;
   color: #9999bb;
   line-height: 1.55;
-}
-
-.timeline {
-  margin: 1rem 0;
-  padding-left: 1rem;
-  border-left: 2px solid rgba(0, 255, 204, 0.2);
-}
-
-.timeline-item {
-  position: relative;
-  padding-left: 1.5rem;
-  padding-bottom: 1.5rem;
-}
-
-.timeline-item:last-child {
-  padding-bottom: 0;
-}
-
-.timeline-marker {
-  position: absolute;
-  left: -1.5rem;
-  top: 0.4rem;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #00ffcc;
-  box-shadow: 0 0 8px rgba(0, 255, 204, 0.5);
-}
-
-.timeline-content h5 {
-  margin: 0 0 0.25rem 0;
-  font-size: 0.95rem;
-  color: #fff;
-}
-
-.timeline-company {
-  margin: 0 0 0.25rem 0;
-  font-size: 0.85rem;
-  color: #00ffcc;
-}
-
-.timeline-period {
-  margin: 0;
-  font-size: 0.75rem;
-  color: #9999bb;
 }
 
 .music-card {

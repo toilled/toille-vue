@@ -94,7 +94,10 @@ function positionDropdown() {
   }
 }
 
+import { loadLocale } from '../i18n';
+
 function select(code: string) {
+  loadLocale(code);
   locale.value = code;
   if (typeof localStorage !== 'undefined') {
     localStorage.setItem('locale', code);

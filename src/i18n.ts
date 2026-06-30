@@ -41,7 +41,7 @@ const i18n = createI18n<[MessageSchema], string>({
   messages: { en },
 });
 
-function loadLocale(locale: string) {
+export function loadLocale(locale: string) {
   const loaders: Record<string, () => Promise<{ default: MessageSchema }>> = {
     es: () => import('./locales/es.json'),
     fr: () => import('./locales/fr.json'),

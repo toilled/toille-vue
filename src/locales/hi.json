@@ -148,10 +148,10 @@
     }
   },
   "desktop": {
-    "toggleDesktop": "Toggle Desktop Mode",
-    "launchTerminal": "Launch Terminal",
-    "launchExplorer": "Open File Explorer",
-    "startMenu": "Start Menu",
-    "shutdown": "Shut Down"
+    "toggleDesktop": "डेस्कटॉप मोड टॉगल करें",
+    "launchTerminal": "टर्मिनल लॉन्च करें",
+    "launchExplorer": "फ़ाइल एक्सप्लोरर खोलें",
+    "startMenu": "स्टार्ट मेनू",
+    "shutdown": "शट डाउन"
   }
 }

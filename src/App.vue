@@ -23,6 +23,14 @@
 
     <main id="main-content" tabindex="-1" class="app-main">
       <div class="container">
+        <div class="title-above-main">
+          <Title
+            :title="titles.title"
+            :subtitle="t('site.subtitle')"
+            @activity="toggleActivity"
+            @joke="toggleJoke"
+          />
+        </div>
         <Transition name="cyberpunk-glitch">
           <div class="router-view-container" v-show="isContentVisible">
             <router-view v-slot="{ Component, route }">
@@ -527,6 +535,86 @@ html {
 @media (max-width: 768px) {
   html {
     scroll-padding-top: 180px;
+  }
+}
+
+.title-above-main {
+  display: none;
+}
+
+@media (min-width: 1024px) and (orientation: landscape) and (hover: hover) and (pointer: fine) {
+  #content-wrapper {
+    margin-left: 220px;
+  }
+
+  .app-header {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 220px;
+    height: 100vh;
+    overflow-y: auto;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+  }
+
+  .app-header::after {
+    top: 0;
+    bottom: 0;
+    left: auto;
+    right: 0;
+    width: 1px;
+    height: auto;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      rgba(0, 255, 204, 0.4),
+      rgba(255, 0, 204, 0.4),
+      transparent
+    );
+  }
+
+  .app-header .site-title {
+    display: none;
+  }
+
+  .header-nav {
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    padding: 1rem 1.5rem;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
+  .app-main {
+    padding: 2rem;
+    min-height: 100vh;
+  }
+
+  .title-above-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(0, 255, 204, 0.15);
+  }
+
+  .title-above-main h1.title {
+    font-size: 3.5rem;
+  }
+
+  .title-above-main .site-title {
+    align-items: center;
+  }
+
+  .title-above-main h2.subtitle {
+    font-size: 1.35rem;
+  }
+
+  html {
+    scroll-padding-top: 0;
   }
 }
 </style>

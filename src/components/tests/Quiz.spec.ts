@@ -82,10 +82,12 @@ describe('Quiz.vue', () => {
 
     await correctBtn!.trigger('click');
 
-    const result = wrapper.find('.result');
-    expect(result.exists()).toBe(true);
-    expect(result.classes()).toContain('correct');
-    expect(result.text()).toContain('quiz.correct');
+    await vi.waitFor(() => {
+      const result = wrapper.find('.result');
+      expect(result.exists()).toBe(true);
+      expect(result.classes()).toContain('correct');
+      expect(result.text()).toContain('quiz.correct');
+    });
   });
 
   it('handles a wrong answer', async () => {
@@ -114,10 +116,12 @@ describe('Quiz.vue', () => {
 
     await wrongBtn!.trigger('click');
 
-    const result = wrapper.find('.result');
-    expect(result.exists()).toBe(true);
-    expect(result.classes()).toContain('wrong');
-    expect(result.text()).toContain('quiz.wrong');
+    await vi.waitFor(() => {
+      const result = wrapper.find('.result');
+      expect(result.exists()).toBe(true);
+      expect(result.classes()).toContain('wrong');
+      expect(result.text()).toContain('quiz.wrong');
+    });
   });
 
   it('handles API errors', async () => {

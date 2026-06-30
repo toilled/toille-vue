@@ -10,7 +10,7 @@
   },
   "site": {
     "title": "Elliot Dickerson",
-    "subtitle": "Software Engineer",
+    "subtitle": "Softwareontwikkelaar",
     "titlePrefix": "Elliot > "
   },
   "home": {
@@ -26,14 +26,14 @@
     "technicalSkills": "Technische Vaardigheden",
     "backend": "Backend Ontwikkeling",
     "frontend": "Frontend Ontwikkeling",
-    "tools": "Tools & Platforms"
+    "tools": "Gereedschappen & platforms"
   },
   "interests": {
     "musicCreative": "Muziek & Creativiteit",
     "guitarCompositions": "Gitaarcomposities",
     "guitarDesc": "Originele muziek gedeeld op mijn YouTube-kanaal",
     "visitYouTube": "Bezoek YouTube-kanaal →",
-    "3dGraphics": "3D Graphics",
+    "3dGraphics": "3D-graphics",
     "experimentation": "Experimentatie",
     "multiInstrumentalist": "Multi-instrumentalist",
     "techDiscovery": "Technologie Ontdekking"
@@ -117,8 +117,8 @@
   },
   "pages": {
     "home": {
-      "name": "Home",
-      "title": "Home",
+      "name": "Startpagina",
+      "title": "Startpagina",
       "body0": "Welkom bij mijn persoonlijke portfolio en experimentele speeltuin. Dit platform dient als een ruimte om opkomende webtechnologieën te verkennen, nieuwe functies te prototypen en technische projecten te tonen.",
       "body1": "Momenteel werk ik als Software Engineer bij RM, waar ik mijn expertise inzet om teamsucces te stimuleren en hoogwaardige softwareoplossingen te leveren. Ik ben gepassioneerd over continu leren en professionele ontwikkeling.",
       "body2": "Deze site is volledig gebouwd met Vue 3, TypeScript en moderne tools — en fungeert zowel als portfolio als speeltuin."
@@ -148,10 +148,10 @@
     }
   },
   "desktop": {
-    "toggleDesktop": "Toggle Desktop Mode",
-    "launchTerminal": "Launch Terminal",
-    "launchExplorer": "Open File Explorer",
-    "startMenu": "Start Menu",
-    "shutdown": "Shut Down"
+    "toggleDesktop": "Desktopmodus aan/uit",
+    "launchTerminal": "Terminal starten",
+    "launchExplorer": "Verkenner openen",
+    "startMenu": "Startmenu",
+    "shutdown": "Afsluiten"
   }
 }

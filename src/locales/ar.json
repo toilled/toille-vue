@@ -148,10 +148,10 @@
     }
   },
   "desktop": {
-    "toggleDesktop": "Toggle Desktop Mode",
-    "launchTerminal": "Launch Terminal",
-    "launchExplorer": "Open File Explorer",
-    "startMenu": "Start Menu",
-    "shutdown": "Shut Down"
+    "toggleDesktop": "تبديل وضع سطح المكتب",
+    "launchTerminal": "تشغيل الطرفية",
+    "launchExplorer": "فتح مستكشف الملفات",
+    "startMenu": "قائمة ابدأ",
+    "shutdown": "إيقاف التشغيل"
   }
 }

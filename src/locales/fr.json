@@ -148,10 +148,10 @@
     }
   },
   "desktop": {
-    "toggleDesktop": "Toggle Desktop Mode",
-    "launchTerminal": "Launch Terminal",
-    "launchExplorer": "Open File Explorer",
-    "startMenu": "Start Menu",
-    "shutdown": "Shut Down"
+    "toggleDesktop": "Activer le mode bureau",
+    "launchTerminal": "Lancer le terminal",
+    "launchExplorer": "Ouvrir l'explorateur de fichiers",
+    "startMenu": "Menu démarrer",
+    "shutdown": "Éteindre"
   }
 }

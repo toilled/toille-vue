@@ -148,10 +148,10 @@
     }
   },
   "desktop": {
-    "toggleDesktop": "Toggle Desktop Mode",
-    "launchTerminal": "Launch Terminal",
-    "launchExplorer": "Open File Explorer",
-    "startMenu": "Start Menu",
-    "shutdown": "Shut Down"
+    "toggleDesktop": "切换桌面模式",
+    "launchTerminal": "启动终端",
+    "launchExplorer": "打开文件资源管理器",
+    "startMenu": "开始菜单",
+    "shutdown": "关机"
   }
 }

@@ -148,10 +148,10 @@
     }
   },
   "desktop": {
-    "toggleDesktop": "Toggle Desktop Mode",
-    "launchTerminal": "Launch Terminal",
-    "launchExplorer": "Open File Explorer",
-    "startMenu": "Start Menu",
-    "shutdown": "Shut Down"
+    "toggleDesktop": "デスクトップモードを切り替え",
+    "launchTerminal": "ターミナルを起動",
+    "launchExplorer": "エクスプローラーを開く",
+    "startMenu": "スタートメニュー",
+    "shutdown": "シャットダウン"
   }
 }

@@ -148,10 +148,10 @@
     }
   },
   "desktop": {
-    "toggleDesktop": "Toggle Desktop Mode",
-    "launchTerminal": "Launch Terminal",
-    "launchExplorer": "Open File Explorer",
-    "startMenu": "Start Menu",
-    "shutdown": "Shut Down"
+    "toggleDesktop": "데스크톱 모드 전환",
+    "launchTerminal": "터미널 실행",
+    "launchExplorer": "파일 탐색기 열기",
+    "startMenu": "시작 메뉴",
+    "shutdown": "종료"
   }
 }

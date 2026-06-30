@@ -51,8 +51,9 @@ describe('WeatherIcon.vue', () => {
     await flushPromises();
 
     expect(fetch).toHaveBeenCalledWith(expect.stringContaining('api.open-meteo.com'));
-    expect(wrapper.find('.icon-wrapper').attributes('title')).toBe('weather.location');
-    expect(wrapper.find('svg').exists()).toBe(true);
+    const svg = wrapper.find('svg');
+    expect(svg.attributes('title')).toBe('weather.location');
+    expect(svg.exists()).toBe(true);
   });
 
   it('opens modal on click and displays rain data', async () => {
@@ -64,7 +65,7 @@ describe('WeatherIcon.vue', () => {
     expect(document.querySelector('.weather-modal-overlay')).toBeNull();
 
     // Click icon
-    await wrapper.find('.icon-wrapper').trigger('click');
+    await wrapper.find('svg').trigger('click');
     await wrapper.vm.$nextTick();
 
     // Modal should be visible

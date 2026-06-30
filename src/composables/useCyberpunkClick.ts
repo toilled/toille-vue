@@ -7,8 +7,6 @@ import {
   Group,
   Mesh,
 } from 'three';
-import { DrivingMode } from '../game/modes/DrivingMode';
-import { GameModeManager } from '../game/GameModeManager';
 import { ScoreService } from '../utils/ScoreService';
 import type { Ref } from 'vue';
 
@@ -21,7 +19,7 @@ export interface CyberpunkClickContext {
   scene: Object3D;
   cars: Group[];
   gangWarManager: GangWarManagerLike;
-  gameModeManager: GameModeManager;
+  startDrivingMode: () => void;
   leaderboardMeshes: Mesh[];
   isGameMode: Ref<boolean>;
   isDrivingMode: Ref<boolean>;
@@ -79,7 +77,7 @@ export function useCyberpunkClick(ctx: CyberpunkClickContext) {
           ctx.gameSessionId.value = id;
         })
         .catch(() => {});
-      ctx.gameModeManager.setMode(new DrivingMode(), 'driving');
+      ctx.startDrivingMode();
       return true;
     }
     return false;

@@ -88,6 +88,7 @@ import {
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { GameModeManager } from '../game/GameModeManager';
 import { setupPostProcessing } from '../game/PostProcessingManager';
+import { DrivingMode } from '../game/modes/DrivingMode';
 import { ExplorationMode } from '../game/modes/ExplorationMode';
 import { DemoMode } from '../game/modes/DemoMode';
 import { GameContext, StoryState, MinimapData } from '../game/types';
@@ -710,9 +711,7 @@ const cyberpunkClick = useCyberpunkClick({
   get gangWarManager() {
     return gangWarManager!;
   },
-  get gameModeManager() {
-    return gameModeManager!;
-  },
+  startDrivingMode: () => gameModeManager!.setMode(new DrivingMode(), 'driving'),
   get leaderboardMeshes() {
     return leaderboardMeshes;
   },

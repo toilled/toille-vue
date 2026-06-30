@@ -5,6 +5,7 @@
       :key="page.link"
       :id="getSectionId(page)"
       class="page-section"
+      :class="`page-section--${getSectionId(page)}`"
       :data-section="getSectionId(page)"
     >
       <article class="marginless page-content-card">
@@ -190,6 +191,19 @@ const displayPages = computed(() => {
 
 .page-content-card {
   padding: 2.5rem 3rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.page-content-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 1.5rem;
+  right: 1.5rem;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+  transition: all 0.4s ease;
 }
 
 .page-content-card > header {
@@ -214,6 +228,44 @@ const displayPages = computed(() => {
   font-size: 1.1rem;
   color: #ff00cc;
   letter-spacing: 0.02em;
+}
+
+/* section accent bars */
+.page-section--home .page-content-card::before {
+  background: linear-gradient(90deg, rgba(0, 255, 204, 0.1), #00ffcc, rgba(0, 255, 204, 0.1));
+}
+
+.page-section--about .page-content-card::before {
+  background: linear-gradient(90deg, rgba(180, 0, 255, 0.1), #bb66ff, rgba(180, 0, 255, 0.1));
+}
+
+.page-section--interests .page-content-card::before {
+  background: linear-gradient(90deg, rgba(255, 0, 204, 0.1), #ff44dd, rgba(255, 0, 204, 0.1));
+}
+
+.can-hover .page-section--home .page-content-card:hover::before {
+  box-shadow: 0 0 12px rgba(0, 255, 204, 0.4);
+}
+
+.can-hover .page-section--about .page-content-card:hover::before {
+  box-shadow: 0 0 12px rgba(180, 0, 255, 0.4);
+}
+
+.can-hover .page-section--interests .page-content-card:hover::before {
+  box-shadow: 0 0 12px rgba(255, 0, 204, 0.4);
+}
+
+/* section divider colors */
+.page-section--home::after {
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 204, 0.4), transparent);
+}
+
+.page-section--about::after {
+  background: linear-gradient(90deg, transparent, rgba(180, 0, 255, 0.4), transparent);
+}
+
+.page-section--interests::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 0, 204, 0.4), transparent);
 }
 
 .what-i-do-grid {
@@ -357,7 +409,7 @@ const displayPages = computed(() => {
   flex-shrink: 0;
 }
 
-.music-content h5 {
+.music-content h4 {
   margin: 0 0 0.4rem 0;
   font-size: 1rem;
   color: #fff;

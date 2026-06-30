@@ -3,7 +3,7 @@
     <div
       class="lang-trigger icon-wrapper"
       :class="{ open: open }"
-      @click="toggle"
+      @click.stop="toggle"
       :title="t('language.label')"
     >
       <svg

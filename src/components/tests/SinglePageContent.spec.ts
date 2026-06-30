@@ -3,9 +3,70 @@ import { mount } from '@vue/test-utils';
 
 vi.mock('../../configs/pages.json', () => ({
   default: [
-    { name: 'Home', link: '/', title: 'Home Page', body: ['Welcome paragraph.'], icon: '🏠' },
-    { name: 'About', link: '/about', title: 'About Me', body: ['About paragraph.'] },
-    { name: 'Interests', link: '/interests', title: 'Interests', body: ['Interests content.'] },
+    {
+      name: 'Home',
+      link: '/',
+      title: 'Home Page',
+      body: ['Welcome paragraph.'],
+      icon: '🏠',
+      accent: '#00ffcc',
+      sections: [
+        {
+          type: 'cards',
+          heading: 'What I Do',
+          columns: 3,
+          items: [
+            { icon: '🌐', title: 'Full-Stack Dev', description: 'Build things.' },
+            { icon: '🎨', title: 'Creative UI', description: 'Design things.' },
+            { icon: '⚡', title: 'Interactive 3D', description: 'Render things.' },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'About',
+      link: '/about',
+      title: 'About Me',
+      body: ['About paragraph.'],
+      accent: '#bb66ff',
+      sections: [
+        {
+          type: 'skills',
+          heading: 'Technical Skills',
+          groups: [
+            {
+              category: 'Backend',
+              skills: [{ name: 'PHP', icon: '🐘' }],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'Interests',
+      link: '/interests',
+      title: 'Interests',
+      body: ['Interests content.'],
+      accent: '#ff44dd',
+      sections: [
+        {
+          type: 'musicCard',
+          heading: 'Music & Creative',
+          icon: '🎸',
+          title: 'Guitar',
+          description: 'Original music',
+          linkUrl: 'https://youtube.com',
+          linkText: 'Visit →',
+        },
+        {
+          type: 'interestGrid',
+          items: [
+            { icon: '🕹️', text: '3D Graphics' },
+            { icon: '🧪', text: 'Experiments' },
+          ],
+        },
+      ],
+    },
     { name: 'Hidden', link: '/hidden', title: 'Hidden', body: ['Hidden content.'], hidden: true },
   ],
 }));
@@ -55,25 +116,30 @@ describe('SinglePageContent.vue', () => {
     expect(wrapper.find('#hidden').exists()).toBe(false);
   });
 
-  it('renders home section with special content', () => {
+  it('renders cards section from config', () => {
     const wrapper = mount(SinglePageContent, {
       global: { stubs: getStubs() },
     });
-    expect(wrapper.text()).toContain('home.whatIDo');
-    expect(wrapper.text()).toContain('home.fullStack');
+    expect(wrapper.text()).toContain('What I Do');
+    expect(wrapper.text()).toContain('Full-Stack Dev');
+    expect(wrapper.text()).toContain('Creative UI');
   });
 
-  it('renders about section with skills', () => {
+  it('renders skills section from config', () => {
     const wrapper = mount(SinglePageContent, {
       global: { stubs: getStubs() },
     });
-    expect(wrapper.find('#about').exists()).toBe(true);
+    const skills = wrapper.findAll('.skill-card-stub');
+    expect(skills.length).toBe(1);
   });
 
-  it('renders interests section with music', () => {
+  it('renders music card and interest grid from config', () => {
     const wrapper = mount(SinglePageContent, {
       global: { stubs: getStubs() },
     });
-    expect(wrapper.text()).toContain('interests.musicCreative');
+    expect(wrapper.text()).toContain('Music & Creative');
+    expect(wrapper.text()).toContain('Visit →');
+    expect(wrapper.text()).toContain('3D Graphics');
+    expect(wrapper.text()).toContain('Experiments');
   });
 });

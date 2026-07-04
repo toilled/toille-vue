@@ -132,9 +132,12 @@ import { drawLeaderboard, createLeaderboardCanvas } from '../utils/LeaderboardRe
 import { SparkSystem } from '../utils/SparkSystem';
 import { useI18n } from 'vue-i18n';
 import { useEpilepsyWarning } from '../composables/useEpilepsyWarning';
+import { PagePanelRenderer } from '../game/PagePanelRenderer';
+import { useTranslatedPages } from '../composables/useTranslatedPages';
 
 const { t } = useI18n();
 const { confirm: epilepsyConfirm } = useEpilepsyWarning();
+const { translatedPages } = useTranslatedPages();
 import { useHdrDisplay } from '../composables/useHdrDisplay';
 import { useCyberpunkClick } from '../composables/useCyberpunkClick';
 import { useGameAudio } from '../composables/useGameAudio';
@@ -157,6 +160,8 @@ let buildings: Object3D[] = [];
 let occupiedGrids = new Map<string, { halfW: number; halfD: number; isRound?: boolean }>();
 let cars: Group[] = [];
 let leaderboardMeshes: Mesh[] = [];
+let pagePanelRenderer: PagePanelRenderer;
+let pageMeshes: Mesh[] = [];
 
 const score = ref(0);
 const drivingScore = ref(0);
@@ -290,7 +295,7 @@ const lookControls = ref({
 
 const _props = defineProps({});
 
-const emit = defineEmits(['game-start', 'game-end', 'fallback']);
+const emit = defineEmits(['game-start', 'game-end', 'fallback', 'navigate']);
 const showSplash = ref(true);
 
 const { hdrSupported, checkHdr } = useHdrDisplay();
@@ -466,6 +471,11 @@ function initGameWorld() {
       }
     });
   });
+
+  pagePanelRenderer = new PagePanelRenderer(scene);
+  const displayPages = translatedPages.value.filter((p) => !p.hidden);
+  pagePanelRenderer.createPanels(displayPages);
+  pageMeshes = pagePanelRenderer.getPageMeshes();
 }
 
 function initTrafficAndSparks() {
@@ -715,6 +725,9 @@ const cyberpunkClick = useCyberpunkClick({
   get leaderboardMeshes() {
     return leaderboardMeshes;
   },
+  get pageMeshes() {
+    return pageMeshes;
+  },
   isGameMode,
   isDrivingMode,
   isCinematicMode,
@@ -731,6 +744,9 @@ function onClick(event: MouseEvent) {
   const result = cyberpunkClick.handleClick(event);
   if (result.hitLeaderboard) {
     showLeaderboard.value = true;
+  }
+  if (result.hitPagePanel && result.pageLink) {
+    emit('navigate', result.pageLink);
   }
 }
 
@@ -767,6 +783,7 @@ const { checkLowFps } = useFallbackMode({
     cyberpunkAudio.dispose();
     sparkSystem.dispose();
     if (cityBuilder) cityBuilder.dispose();
+    pagePanelRenderer?.dispose();
     window.removeEventListener('resize', onResize);
     window.removeEventListener('click', onClick);
     window.removeEventListener('keydown', onKeyDown);
@@ -901,6 +918,7 @@ function animate() {
   gameModeManager.update(dt, time);
   trafficSystem.update(activeCar.value);
   storyItemsManager?.updateTriggerAnimation(time * 1000);
+  pagePanelRenderer?.update(now);
 
   updateCamera(time, now);
   renderFrame();
@@ -948,6 +966,7 @@ onBeforeUnmount(() => {
     storyItemsManager = null;
   }
   if (cityBuilder) cityBuilder.dispose();
+  pagePanelRenderer?.dispose();
 });
 </script>
 

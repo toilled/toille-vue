@@ -15,6 +15,8 @@ const props = defineProps<{
   page: Page;
 }>();
 
+const router = useRouter();
+const route = useRoute();
 const activeSection = inject<Ref<string>>('activeSection');
 const navigateToSection =
   inject<(id: string, behavior?: ScrollBehavior) => void>('navigateToSection');
@@ -29,8 +31,12 @@ const isActive = computed(() => {
 });
 
 function handleClick() {
-  if (navigateToSection) {
-    navigateToSection(sectionId.value);
+  if (route.path === '/') {
+    if (navigateToSection) {
+      navigateToSection(sectionId.value);
+    }
+  } else {
+    router.push(props.page.link);
   }
 }
 </script>

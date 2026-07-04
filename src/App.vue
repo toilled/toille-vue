@@ -96,6 +96,7 @@
     @game-start="gameMode = true"
     @game-end="gameMode = false"
     @fallback="cityFallback = true"
+    @navigate="handleNavigate"
   />
   <EpilepsyWarning />
   <Desktop v-if="desktopMode" @shutdown="toggleDesktop" />
@@ -182,6 +183,21 @@ function startExploration() {
 function startDemoMode() {
   if (cyberpunkCityRef.value && cyberpunkCityRef.value.startDemoMode) {
     cyberpunkCityRef.value.startDemoMode();
+  }
+}
+
+function handleNavigate(path: string) {
+  if (gameMode.value) return;
+  isContentVisible.value = true;
+  if (path === '/') {
+    router.push('/');
+    return;
+  }
+  if (route.path === '/') {
+    const section = path.replace(/^\//, '');
+    scrollToSection(section);
+  } else {
+    router.push(path);
   }
 }
 

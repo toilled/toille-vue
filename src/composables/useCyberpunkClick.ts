@@ -21,6 +21,7 @@ export interface CyberpunkClickContext {
   gangWarManager: GangWarManagerLike;
   startDrivingMode: () => void;
   leaderboardMeshes: Mesh[];
+  pageMeshes: Mesh[];
   isGameMode: Ref<boolean>;
   isDrivingMode: Ref<boolean>;
   isCinematicMode: Ref<boolean>;
@@ -83,6 +84,18 @@ export function useCyberpunkClick(ctx: CyberpunkClickContext) {
     return false;
   }
 
+  function handlePagePanelClick(): { hit: boolean; pageLink: string | null } {
+    if (ctx.pageMeshes.length === 0) return { hit: false, pageLink: null };
+    const intersects = raycaster.intersectObjects(ctx.pageMeshes);
+    if (intersects.length === 0) return { hit: false, pageLink: null };
+    const hit = intersects[0].object;
+    const link = hit.userData.pageLink;
+    if (link) {
+      return { hit: true, pageLink: link };
+    }
+    return { hit: false, pageLink: null };
+  }
+
   function handleLeaderboardClick(): boolean {
     if (ctx.leaderboardMeshes.length === 0) return false;
     const intersects = raycaster.intersectObjects(ctx.leaderboardMeshes);
@@ -94,17 +107,48 @@ export function useCyberpunkClick(ctx: CyberpunkClickContext) {
     hitFight: boolean;
     hitCar: boolean;
     hitLeaderboard: boolean;
+    hitPagePanel: boolean;
+    pageLink: string | null;
   } {
     pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
     pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
     raycaster.setFromCamera(pointer, ctx.camera);
 
     const hitFight = handleFightMarkerClick();
-    if (hitFight) return { hitFight: true, hitCar: false, hitLeaderboard: false };
+    if (hitFight)
+      return {
+        hitFight: true,
+        hitCar: false,
+        hitLeaderboard: false,
+        hitPagePanel: false,
+        pageLink: null,
+      };
     const hitCar = handleCarClick();
-    if (hitCar) return { hitFight: false, hitCar: true, hitLeaderboard: false };
+    if (hitCar)
+      return {
+        hitFight: false,
+        hitCar: true,
+        hitLeaderboard: false,
+        hitPagePanel: false,
+        pageLink: null,
+      };
+    const { hit: hitPagePanel, pageLink } = handlePagePanelClick();
+    if (hitPagePanel)
+      return {
+        hitFight: false,
+        hitCar: false,
+        hitLeaderboard: false,
+        hitPagePanel: true,
+        pageLink,
+      };
     const hitLeaderboard = handleLeaderboardClick();
-    return { hitFight: false, hitCar: false, hitLeaderboard: hitLeaderboard };
+    return {
+      hitFight: false,
+      hitCar: false,
+      hitLeaderboard: hitLeaderboard,
+      hitPagePanel: false,
+      pageLink: null,
+    };
   }
 
   return {

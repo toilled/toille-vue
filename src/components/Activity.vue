@@ -4,7 +4,7 @@
     :style="{ cursor: loading ? 'progress' : '' }"
     class="content-container"
   >
-    <article v-if="activity" :title="t('activity.clickForNew')" class="marginless">
+    <article v-if="activity" :title="t('activity.clickForNew')" class="marginless panel-3d">
       <header>
         <strong>
           {{ t('activity.title', { type: activity.type }) }}
@@ -13,7 +13,7 @@
       </header>
       <p class="marginless">{{ translatedActivityText }}</p>
     </article>
-    <article v-else class="marginless">
+    <article v-else class="marginless panel-3d">
       <header>
         <strong>{{ t('activity.tryActivity') }}</strong>
       </header>

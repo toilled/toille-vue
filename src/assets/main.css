@@ -409,6 +409,64 @@ h2 > a {
   box-sizing: border-box;
 }
 
+.panel-3d {
+  padding: 2.5rem 3rem;
+  position: relative;
+  overflow: hidden;
+  transform: rotateX(2deg) translateZ(20px);
+  transform-style: preserve-3d;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: linear-gradient(135deg, rgba(10, 10, 30, 0.75), rgba(20, 5, 40, 0.6));
+  border: 1px solid rgba(0, 255, 204, 0.2);
+  box-shadow:
+    0 0 20px rgba(0, 255, 204, 0.08),
+    0 8px 32px rgba(0, 0, 0, 0.4);
+  animation: panel-float 6s ease-in-out infinite;
+}
+
+@keyframes panel-float {
+  0%,
+  100% {
+    transform: rotateX(2deg) translateZ(20px) translateY(0);
+  }
+  50% {
+    transform: rotateX(2deg) translateZ(20px) translateY(-4px);
+  }
+}
+
+.panel-3d::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 1.5rem;
+  right: 1.5rem;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+  background: linear-gradient(90deg, transparent, #00ffcc, transparent);
+}
+
+.panel-3d::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #00ffcc, transparent 50%, #00ffcc);
+  opacity: 0.06;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.panel-3d > header {
+  display: flex;
+  align-items: center;
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
 section p,
 .content-container p,
 .text-paragraph {
@@ -573,10 +631,14 @@ section p:last-child,
    Router View Transitions
    ============================================ */
 .router-view-container {
-  perspective: 1000px;
+  perspective: 800px;
   position: relative;
   transition: height 0.5s ease;
   overflow: hidden;
+}
+
+.router-view-container > :deep(*) {
+  transform-style: preserve-3d;
 }
 
 /* ============================================

@@ -174,6 +174,26 @@ function accentClass(index: number): string {
   padding: 2.5rem 3rem;
   position: relative;
   overflow: hidden;
+  transform: rotateX(2deg) translateZ(20px);
+  transform-style: preserve-3d;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: linear-gradient(135deg, rgba(10, 10, 30, 0.75), rgba(20, 5, 40, 0.6));
+  border: 1px solid rgba(var(--page-accent-rgb, 0, 255, 204), 0.2);
+  box-shadow:
+    0 0 20px rgba(var(--page-accent-rgb, 0, 255, 204), 0.08),
+    0 8px 32px rgba(0, 0, 0, 0.4);
+  animation: page-float 6s ease-in-out infinite;
+}
+
+@keyframes page-float {
+  0%,
+  100% {
+    transform: rotateX(2deg) translateZ(20px) translateY(0);
+  }
+  50% {
+    transform: rotateX(2deg) translateZ(20px) translateY(-4px);
+  }
 }
 
 .page-content-card::before {
@@ -186,6 +206,25 @@ function accentClass(index: number): string {
   border-radius: 0 0 2px 2px;
   background: linear-gradient(90deg, transparent, var(--page-accent, #00ffcc), transparent);
   transition: all 0.4s ease;
+}
+
+.page-content-card::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    var(--page-accent, #00ffcc),
+    transparent 50%,
+    var(--page-accent, #00ffcc)
+  );
+  opacity: 0.06;
+  pointer-events: none;
+  z-index: -1;
 }
 
 .page-content-card > header {

@@ -20,9 +20,6 @@
       </div>
     </div>
     <div class="taskbar-right">
-      <button class="tray-button" @click="onToggleCity" :title="cityOn ? 'Hide City' : 'Show City'">
-        🏙
-      </button>
       <button class="tray-button" @click="onToggleSound" :title="soundOn ? 'Mute' : 'Unmute'">
         {{ soundOn ? '🔊' : '🔇' }}
       </button>
@@ -46,13 +43,11 @@ let timeInterval: ReturnType<typeof setInterval> | undefined;
 
 defineProps<{
   soundOn: boolean;
-  cityOn: boolean;
   startApps: { id: string; name: string; icon: string }[];
 }>();
 
 const emit = defineEmits<{
   (e: 'launch', id: string): void;
-  (e: 'toggle-city'): void;
   (e: 'toggle-sound'): void;
   (e: 'shutdown'): void;
 }>();
@@ -82,10 +77,6 @@ function onLaunchApp(id: string) {
 function onShutdown() {
   showStart.value = false;
   emit('shutdown');
-}
-
-function onToggleCity() {
-  emit('toggle-city');
 }
 
 function onToggleSound() {

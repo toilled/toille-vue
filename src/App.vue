@@ -21,7 +21,12 @@
       </nav>
     </header>
 
-    <main id="main-content" tabindex="-1" class="app-main">
+    <main
+      id="main-content"
+      tabindex="-1"
+      class="app-main"
+      :class="{ 'content-collapsed': !isContentVisible }"
+    >
       <div class="container">
         <div class="title-above-main">
           <Title
@@ -412,6 +417,10 @@ html.fx .app-header {
   min-height: 60vh;
 }
 
+.app-main.content-collapsed {
+  min-height: 0;
+}
+
 .app-footer {
   padding: 1.5rem 0;
   text-align: center;
@@ -590,6 +599,10 @@ html {
   .app-main {
     padding: 2rem;
     min-height: 100vh;
+  }
+
+  .app-main.content-collapsed {
+    min-height: 0;
   }
 
   .title-above-main {

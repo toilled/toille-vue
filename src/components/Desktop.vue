@@ -33,10 +33,8 @@
 
     <Taskbar
       :sound-on="soundOn"
-      :city-on="cityOn"
       :start-apps="startApps"
       @launch="onLaunchApp"
-      @toggle-city="onToggleCity"
       @toggle-sound="onToggleSound"
       @shutdown="onShutdown"
     />
@@ -46,7 +44,6 @@
 <script setup lang="ts">
 import { useWindowManager } from '../composables/useWindowManager';
 import { audioManager } from '../utils/AudioManager';
-import { cityBackground } from '../utils/CityBackgroundManager';
 import { cyberpunkAudio } from '../utils/CyberpunkAudio';
 import type { Component } from 'vue';
 import DesktopWindow from './DesktopWindow.vue';
@@ -78,7 +75,6 @@ if (desktopRunner) {
 provide('desktopCloseWindow', (id: string) => closeWindow(id));
 const selectedShortcut = ref<string | null>(null);
 const soundOn = computed(() => audioManager.isSoundEnabled.value);
-const cityOn = computed(() => cityBackground.isEnabled.value);
 
 interface Shortcut {
   id: string;
@@ -221,10 +217,6 @@ function onShortcutOpen(id: string) {
 
 function onLaunchApp(id: string) {
   onShortcutOpen(id);
-}
-
-function onToggleCity() {
-  cityBackground.toggle();
 }
 
 function onToggleSound() {

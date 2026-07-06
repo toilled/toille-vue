@@ -503,6 +503,7 @@ function initEventListeners() {
   window.addEventListener('keydown', onKeyDown);
   window.addEventListener('keyup', onKeyUp);
   window.addEventListener('mousemove', onMouseMove);
+  window.addEventListener('scroll', onScroll, { passive: true });
 }
 
 function initStoryAndMode() {
@@ -789,6 +790,7 @@ const { checkLowFps } = useFallbackMode({
     window.removeEventListener('keydown', onKeyDown);
     window.removeEventListener('keyup', onKeyUp);
     window.removeEventListener('mousemove', onMouseMove);
+    window.removeEventListener('scroll', onScroll);
   },
 });
 
@@ -899,10 +901,22 @@ function renderFrame() {
 }
 
 let tickCounter = 0;
+const isScrolling = shallowRef(false);
+let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function onScroll() {
+  if (scrollTimeout) clearTimeout(scrollTimeout);
+  isScrolling.value = true;
+  scrollTimeout = setTimeout(() => {
+    isScrolling.value = false;
+  }, 200);
+}
 
 function animate() {
   if (!isActive) return;
   animationId = requestAnimationFrame(animate);
+
+  const skipThisFrame = isScrolling.value && tickCounter % 2 === 0;
 
   const now = Date.now();
   const time = now * 0.0005;
@@ -912,16 +926,18 @@ function animate() {
   if (checkLowFps(now)) return;
   tickCounter++;
 
-  konamiManager.update(dt);
-  gangWarManager.update(dt);
-  skyEffects.update(dt);
-  gameModeManager.update(dt, time);
-  trafficSystem.update(activeCar.value);
-  storyItemsManager?.updateTriggerAnimation(time * 1000);
-  pagePanelRenderer?.update(now);
+  if (!skipThisFrame) {
+    konamiManager.update(dt);
+    gangWarManager.update(dt);
+    skyEffects.update(dt);
+    gameModeManager.update(dt, time);
+    trafficSystem.update(activeCar.value);
+    storyItemsManager?.updateTriggerAnimation(time * 1000);
+    pagePanelRenderer?.update(now);
 
-  updateCamera(time, now);
-  renderFrame();
+    updateCamera(time, now);
+    renderFrame();
+  }
 
   if (tickCounter % 3 === 0) {
     updateMultiplayer(dt);
@@ -943,6 +959,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('keydown', onKeyDown);
   window.removeEventListener('keyup', onKeyUp);
   window.removeEventListener('mousemove', onMouseMove);
+  window.removeEventListener('scroll', onScroll);
 
   cancelAnimationFrame(animationId);
   if (renderer) {

@@ -4,9 +4,9 @@ import App from './App.vue';
 import SinglePageContent from './components/SinglePageContent.vue';
 import i18n from './i18n';
 
-import './assets/main.css';
+export { default as i18n } from './i18n';
 
-const routes = [
+const APP_ROUTES = [
   { path: '/', component: SinglePageContent },
   { path: '/checker', component: () => import('./components/Checker.vue') },
   {
@@ -18,10 +18,12 @@ const routes = [
   { path: '/:pathMatch(.*)*', component: () => import('./components/PageContent.vue') },
 ];
 
+export const routes = APP_ROUTES;
+
 export function createApp(head?: Plugin, hydrate?: boolean) {
   const router = createRouter({
     history: import.meta.env.SSR ? createMemoryHistory() : createWebHistory(),
-    routes,
+    routes: APP_ROUTES,
   });
 
   const app = hydrate ? createSSRApp(App) : createClientApp(App);

@@ -12,5 +12,6 @@ auto-imports.d.ts
 components.d.ts
 .fallow/
 .wrangler
+.astro
 .env
 .env.*

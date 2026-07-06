@@ -1,18 +1,23 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title = 'Elliot Dickerson', description = "The experimental website of Elliot Dickerson." } = Astro.props;
+---
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="description"
-      content="The experimental website of Elliot Dickerson made in Vue."
-    />
+    <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="mobile-web-app-capable" content="yes" />
-<meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="dark" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Elliot Dickerson</title>
+    <title>{title}</title>
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
@@ -20,7 +25,7 @@
     <link rel="preconnect" href="https://opentdb.com" />
     <link rel="preconnect" href="https://api.mymemory.translated.net" />
     <link rel="preconnect" href="wss://broker.emqx.io" />
-    <style>
+    <style is:global>
       .skip-link {
         position: absolute;
         top: 0;
@@ -42,7 +47,6 @@
 
   <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
-    <div id="app"><!--app-html--></div>
-    <script type="module" src="/src/entry-client.ts"></script>
+    <slot />
   </body>
 </html>

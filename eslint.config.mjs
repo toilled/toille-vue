@@ -13,6 +13,7 @@ export default [
       "coverage/",
       "vue-legacy/",
       "functions/ssr-app.js",
+      ".astro/",
     ],
   },
   {
@@ -20,6 +21,7 @@ export default [
       globals: {
         ...globals.browser,
         global: "readonly",
+        process: "readonly",
       },
     },
   },

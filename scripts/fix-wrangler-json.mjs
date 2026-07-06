@@ -10,10 +10,13 @@ const config = JSON.parse(readFileSync(wranglerPath, 'utf-8'));
 // Remove auto-injected session KV binding
 delete config.kv_namespaces;
 
-// Keep only fields compatible with Cloudflare Pages
+// Keep only fields compatible with Cloudflare Pages.
+// "main" tells Pages where the SSR function entry point is.
+// "pages_build_output_dir" is already in the user's wrangler.toml
+// and would conflict with "main" in the generated config.
 const pagesAllowed = new Set([
   'name',
-  'pages_build_output_dir',
+  'main',
   'compatibility_date',
   'compatibility_flags',
   'vars',

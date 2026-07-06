@@ -8,7 +8,9 @@ const isAdapterEnabled = process.argv.some(a => a === 'build');
 
 export default defineConfig({
   output: 'server',
-  adapter: isAdapterEnabled ? cloudflare({ mode: 'directory' }) : undefined,
+  adapter: isAdapterEnabled
+    ? cloudflare({ mode: 'directory', imageService: 'passthrough' })
+    : undefined,
   integrations: [vue()],
   vite: {
     ssr: {

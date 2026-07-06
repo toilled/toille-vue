@@ -4,7 +4,7 @@
   "description": "A test website for Elliot Dickerson",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node scripts/fix-wrangler-json.mjs",
     "preview": "astro build && wrangler pages dev dist",
     "pages:dev": "astro dev",
     "db:init": "wrangler d1 execute toille-vue-db --local --file=./schema.sql",

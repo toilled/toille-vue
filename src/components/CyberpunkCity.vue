@@ -739,6 +739,8 @@ const cyberpunkClick = useCyberpunkClick({
 
 function onClick(event: MouseEvent) {
   if (!camera) return;
+  const target = event.target as HTMLElement;
+  if (target.closest('.app-header')) return;
   gameModeManager.onClick(event);
   if (isGameMode.value || isDrivingMode.value) return;
   const result = cyberpunkClick.handleClick(event);

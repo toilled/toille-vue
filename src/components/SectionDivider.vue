@@ -1,5 +1,5 @@
 <template>
-  <div class="section-divider">
+  <div class="section-divider" role="separator" aria-hidden="true">
     <div class="divider-line"></div>
     <div v-if="icon" class="divider-icon">{{ icon }}</div>
     <div v-else class="divider-dots">

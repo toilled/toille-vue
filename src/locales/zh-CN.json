@@ -6,7 +6,9 @@
     "toggleVisibility": "切换可见性",
     "toggleCity": "切换城市背景",
     "openTerminal": "打开终端",
-    "toggleTools": "切换工具"
+    "toggleTools": "切换工具",
+    "weather": "天气",
+    "language": "语言"
   },
   "site": {
     "title": "Elliot Dickerson",

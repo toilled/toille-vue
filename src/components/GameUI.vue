@@ -1,8 +1,14 @@
 <template>
   <template v-if="isDrivingMode">
-    <div v-if="drivingScore > 0" id="score-counter">SCORE: {{ drivingScore }}</div>
-    <div id="timer-counter">TIME: {{ Math.ceil(timeLeft) }}</div>
-    <div id="dist-counter">DIST: {{ Math.ceil(distToTarget) }}m</div>
+    <div v-if="drivingScore > 0" id="score-counter" role="status" aria-live="polite">
+      SCORE: {{ drivingScore }}
+    </div>
+    <div id="timer-counter" role="timer" aria-live="polite" aria-atomic="true">
+      TIME: {{ Math.ceil(timeLeft) }}
+    </div>
+    <div id="dist-counter" role="status" aria-live="polite">
+      DIST: {{ Math.ceil(distToTarget) }}m
+    </div>
 
     <GameOverModal
       v-if="showGameOver"

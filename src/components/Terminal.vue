@@ -1,10 +1,17 @@
 <template>
   <aside v-if="overlay" class="terminal-overlay" @click.self="close">
-    <div class="terminal" ref="terminalRef" @keydown="handleKeydown" tabindex="0">
+    <div
+      class="terminal"
+      ref="terminalRef"
+      @keydown="handleKeydown"
+      tabindex="0"
+      role="dialog"
+      aria-label="Terminal"
+    >
       <div class="terminal-header">
         <span class="terminal-title">TOILLE://TERMINAL</span>
         <div class="terminal-controls">
-          <span class="dot close" @click.stop="close" title="Close" />
+          <button class="dot close" @click.stop="close" aria-label="Close terminal" type="button" />
           <span class="dot min" />
           <span class="dot max" />
         </div>
@@ -184,6 +191,12 @@ function executeCommand(cmd: string) {
 function handleKeydown(e: KeyboardEvent) {
   if (animating.value) return;
 
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    close();
+    return;
+  }
+
   const actions: Record<string, (ev: KeyboardEvent) => void> = {
     Enter(ev) {
       ev.preventDefault();
@@ -312,6 +325,11 @@ function handleKeydown(e: KeyboardEvent) {
   background: #ff5f56;
   cursor: pointer;
   transition: all 0.2s ease;
+  border: none;
+  padding: 0;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .can-hover .dot.close:hover {

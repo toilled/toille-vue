@@ -7,7 +7,7 @@
     <div v-if="currentQuestion">
       <p class="question">{{ translatedQuestion }}</p>
 
-      <div class="options">
+      <div class="options" role="group" aria-label="Answer options">
         <button
           v-for="(_, index) in currentQuestion.options"
           :key="index"
@@ -15,7 +15,20 @@
           :class="getOptionClass(index)"
           :disabled="hasAnswered"
           class="outline answer-option"
+          :aria-label="getAnswerLabel(index)"
         >
+          <span
+            v-if="hasAnswered && index === currentQuestion.correctIndex"
+            class="answer-indicator correct-indicator"
+            aria-hidden="true"
+            >✓</span
+          >
+          <span
+            v-else-if="hasAnswered && index === selectedOptionIndex && !isCorrect"
+            class="answer-indicator wrong-indicator"
+            aria-hidden="true"
+            >✗</span
+          >
           {{ translatedOptions[index] }}
         </button>
       </div>
@@ -174,6 +187,20 @@ const getOptionClass = (index: number) => {
   return '';
 };
 
+const getAnswerLabel = (index: number) => {
+  if (!hasAnswered.value || !currentQuestion.value) {
+    return translatedOptions.value[index];
+  }
+  const optionText = translatedOptions.value[index];
+  if (index === currentQuestion.value.correctIndex) {
+    return `${optionText}, correct answer`;
+  }
+  if (index === selectedOptionIndex.value && !isCorrect.value) {
+    return `${optionText}, your answer, incorrect`;
+  }
+  return optionText;
+};
+
 const nextQuestion = () => {
   fetchQuestion();
 };
@@ -230,6 +257,19 @@ button.outline.answer-option.wrong-option {
 button.outline.answer-option.wrong-option:disabled {
   opacity: 1;
   box-shadow: 0 0 12px rgba(255, 0, 204, 0.3);
+}
+
+.answer-indicator {
+  margin-right: 0.5rem;
+  font-weight: bold;
+}
+
+.correct-indicator {
+  color: #00ffcc;
+}
+
+.wrong-indicator {
+  color: #ff00cc;
 }
 
 .result {

@@ -1,6 +1,15 @@
 <template>
-  <div class="feature-card" @click="handleClick">
-    <div class="feature-icon">{{ icon }}</div>
+  <component
+    :is="link ? 'a' : 'div'"
+    class="feature-card"
+    :href="link && !isHash ? link : undefined"
+    :target="link && link.startsWith('http') ? '_blank' : undefined"
+    :rel="link && link.startsWith('http') ? 'noopener noreferrer' : undefined"
+    @click="handleClick"
+    :tabindex="link ? 0 : undefined"
+    :role="link && isHash ? 'link' : undefined"
+  >
+    <div class="feature-icon" aria-hidden="true">{{ icon }}</div>
     <div class="feature-content">
       <h4 class="feature-title">{{ title }}</h4>
       <p class="feature-description">{{ description }}</p>
@@ -8,8 +17,8 @@
         <span v-for="tag in tags" :key="tag" class="feature-tag">{{ tag }}</span>
       </div>
     </div>
-    <div v-if="link" class="feature-arrow">→</div>
-  </div>
+    <div v-if="link" class="feature-arrow" aria-hidden="true">→</div>
+  </component>
 </template>
 
 <script setup lang="ts">
@@ -52,6 +61,11 @@ function handleClick() {
   margin: 0.75rem 0;
   cursor: default;
   transition: all 0.3s ease;
+  text-decoration: none;
+  color: inherit;
+  font: inherit;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .feature-card[link] {
@@ -84,7 +98,7 @@ function handleClick() {
 .feature-description {
   margin: 0;
   font-size: 0.85rem;
-  color: #9999bb;
+  color: #b0b0cc;
   line-height: 1.4;
 }
 

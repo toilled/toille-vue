@@ -6,7 +6,9 @@
     "toggleVisibility": "Zichtbaarheid aan/uit",
     "toggleCity": "Stadsachtergrond aan/uit",
     "openTerminal": "Terminal openen",
-    "toggleTools": "Gereedschap aan/uit"
+    "toggleTools": "Gereedschap aan/uit",
+    "weather": "Weer",
+    "language": "Taal"
   },
   "site": {
     "title": "Elliot Dickerson",

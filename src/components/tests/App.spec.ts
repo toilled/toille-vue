@@ -163,18 +163,18 @@ describe('App.vue', () => {
       },
     });
     await new Promise((resolve) => setTimeout(resolve));
-    expect(document.title).toBe('site.titlePrefixHome');
+    expect(document.title).toBe('Home | Elliot Dickerson');
 
     await router.push('/checker');
     await new Promise((resolve) => setTimeout(resolve));
-    expect(document.title).toBe('site.titlePrefixapp.titleChecker');
+    expect(document.title).toBe('app.titleChecker | Elliot Dickerson');
 
     await router.push('/ask');
     await new Promise((resolve) => setTimeout(resolve));
-    expect(document.title).toBe('site.titlePrefixapp.titleAsk');
+    expect(document.title).toBe('app.titleAsk | Elliot Dickerson');
 
     await router.push('/about');
     await new Promise((resolve) => setTimeout(resolve));
-    expect(document.title).toBe('site.titlePrefixHome');
+    expect(document.title).toBe('Home | Elliot Dickerson');
   });
 });

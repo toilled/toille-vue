@@ -6,12 +6,14 @@
     "toggleVisibility": "Toggle Visibility",
     "toggleCity": "Toggle City Background",
     "openTerminal": "Open Terminal",
-    "toggleTools": "Toggle tools"
+    "toggleTools": "Toggle tools",
+    "weather": "Weather",
+    "language": "Language"
   },
   "site": {
     "title": "Elliot Dickerson",
     "subtitle": "Software Engineer",
-    "titlePrefix": "Elliot > "
+    "titlePrefix": ""
   },
   "home": {
     "whatIDo": "What I Do",

@@ -10,7 +10,6 @@ interface Env {
 interface ScoreContext {
   env: Env;
   request: Request;
-  waitUntil: (promise: Promise<unknown>) => void;
 }
 
 interface ScoreEntry {
@@ -79,15 +78,6 @@ async function validateSession(
   return { checkpoints: (session.checkpoints as number) || 0 };
 }
 
-async function invalidateScoresCache(): Promise<void> {
-  try {
-    const cache = caches.default;
-    await cache.delete(SCORES_CACHE_KEY);
-  } catch {
-    // Cache deletion is non-critical
-  }
-}
-
 async function handleSubmitAction(
   db: Env["DB"],
   body: Record<string, unknown>,
@@ -115,8 +105,6 @@ async function handleSubmitAction(
     .bind(name, finalScore, new Date().toISOString())
     .run();
 
-  await invalidateScoresCache();
-
   const { results } = (await db
     .prepare("SELECT name, score FROM scores ORDER BY score DESC LIMIT 5")
     .all()) as { results: ScoreEntry[] };
@@ -128,17 +116,8 @@ async function handleError(err: unknown): Promise<Response> {
   return errorResponse(message);
 }
 
-const SCORES_CACHE_KEY = 'scores:top5';
-const SCORES_CACHE_TTL = 5 * 60;
-
 export const onRequestGet = async (context: ScoreContext) => {
   try {
-    const cache = caches.default;
-    const cached = await cache.match(SCORES_CACHE_KEY);
-    if (cached) {
-      return cached;
-    }
-
     const db = getDB(context.env);
     if (!db) {
       return json([]);
@@ -146,12 +125,7 @@ export const onRequestGet = async (context: ScoreContext) => {
     const { results } = (await db
       .prepare("SELECT name, score FROM scores ORDER BY score DESC LIMIT 5")
       .all()) as { results: ScoreEntry[] };
-
-    const response = json(results);
-    response.headers.set('Cache-Control', `public, max-age=${SCORES_CACHE_TTL}`);
-    context.waitUntil(cache.put(SCORES_CACHE_KEY, response.clone()));
-
-    return response;
+    return json(results);
   } catch (err) {
     return handleError(err);
   }

@@ -222,7 +222,7 @@ function handleKeydown(e: KeyboardEvent) {
   if (gameMode.value) return;
 
   if (e.key === 'Escape') {
-    const gameRoutes = ['/noughts-and-crosses', '/checker', '/ask'];
+    const gameRoutes = ['/noughts-and-crosses', '/checker'];
     if (gameRoutes.includes(route.path)) {
       router.push('/');
     }
@@ -324,8 +324,6 @@ function getTitleForPath(path: string): string {
       return t('app.titleNoughtsAndCrosses');
     case '/checker':
       return t('app.titleChecker');
-    case '/ask':
-      return t('app.titleAsk');
     default: {
       const page = visiblePages.value.find(
         (p: Page) => getSectionIdFromPage(p) === activeSection.value

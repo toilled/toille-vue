@@ -9,7 +9,7 @@
       :style="page.accent ? pageStyleVars(page.accent) : undefined"
       :data-section="getSectionId(page)"
     >
-      <article class="marginless page-content-card">
+      <article class="marginless page-content-card" :aria-label="page.title">
         <header>
           <h2 class="title">
             <template v-if="page">
@@ -89,9 +89,12 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { useHead } from '@unhead/vue';
 import { Page } from '../interfaces/Page';
 import { useTranslatedPages } from '../composables/useTranslatedPages';
 
+const { t } = useI18n();
 const { translatedPages } = useTranslatedPages();
 
 function getSectionId(page: Page): string {
@@ -121,6 +124,43 @@ function accentClass(index: number): string {
   const classes = ['fullstack', 'ux', 'interactive'];
   return classes[index % classes.length];
 }
+
+const siteTitle = computed(() => t('site.title'));
+
+useHead({
+  title: siteTitle,
+  meta: [
+    { name: 'description', content: t('meta.defaultDescription') },
+    { property: 'og:title', content: 'Elliot Dickerson' },
+    { property: 'og:description', content: t('meta.defaultDescription') },
+    { property: 'og:type', content: 'website' },
+    { property: 'og:url', content: 'https://toille.uk/' },
+    { property: 'og:image', content: 'https://toille.uk/og-image.png' },
+    { name: 'twitter:card', content: 'summary_large_image' },
+    { name: 'twitter:title', content: 'Elliot Dickerson' },
+    { name: 'twitter:description', content: t('meta.defaultDescription') },
+    { name: 'twitter:image', content: 'https://toille.uk/og-image.png' },
+  ],
+  link: [
+    {
+      rel: 'canonical',
+      href: 'https://toille.uk/',
+    },
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Person',
+        name: 'Elliot Dickerson',
+        jobTitle: 'Software Engineer',
+        url: 'https://toille.uk',
+        sameAs: [],
+      }),
+    },
+  ],
+});
 </script>
 
 <style scoped>
@@ -319,7 +359,7 @@ function accentClass(index: number): string {
 .do-card-desc {
   margin: 0;
   font-size: 0.82rem;
-  color: #9999bb;
+  color: #b0b0cc;
   line-height: 1.55;
 }
 
@@ -356,7 +396,7 @@ function accentClass(index: number): string {
 .music-content p {
   margin: 0 0 0.75rem 0;
   font-size: 0.85rem;
-  color: #9999bb;
+  color: #b0b0cc;
 }
 
 .music-link {

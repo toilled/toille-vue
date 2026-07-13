@@ -4,6 +4,7 @@
       <article
         class="marginless page-content-card"
         :style="page?.accent ? pageStyleVars(page.accent) : undefined"
+        :aria-label="page?.title || t('notFound.pageNotFound')"
       >
         <header>
           <h2 class="title">
@@ -161,19 +162,19 @@ const availablePages = computed(() => {
  */
 const pageTitle = computed(() => {
   const t = page.value?.title || '404';
-  return `Elliot > ${t}`;
+  return `${t} | Elliot Dickerson`;
 });
 
 const description = computed(() => page.value?.metaDescription || t('meta.defaultDescription'));
 
 const pageMeta = computed(() => {
-  const tags: { name: string; content: string }[] = [
+  const tags = [
     { name: 'description', content: description.value },
-    { name: 'og:title', content: page.value?.title || 'Elliot Dickerson' },
-    { name: 'og:description', content: description.value },
-    { name: 'og:type', content: 'website' },
-    { name: 'og:url', content: `https://toille.uk${route.path}` },
-    { name: 'og:image', content: 'https://toille.uk/og-image.png' },
+    { property: 'og:title', content: page.value?.title || 'Elliot Dickerson' },
+    { property: 'og:description', content: description.value },
+    { property: 'og:type', content: 'website' },
+    { property: 'og:url', content: `https://toille.uk${route.path}` },
+    { property: 'og:image', content: 'https://toille.uk/og-image.png' },
     { name: 'twitter:card', content: 'summary_large_image' },
     { name: 'twitter:title', content: page.value?.title || 'Elliot Dickerson' },
     { name: 'twitter:description', content: description.value },
@@ -191,6 +192,25 @@ const pageMeta = computed(() => {
 useHead({
   title: pageTitle,
   meta: pageMeta,
+  link: [
+    {
+      rel: 'canonical',
+      href: `https://toille.uk${route.path}`,
+    },
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Person',
+        name: 'Elliot Dickerson',
+        jobTitle: 'Software Engineer',
+        url: 'https://toille.uk',
+        sameAs: [],
+      }),
+    },
+  ],
 });
 </script>
 
@@ -343,7 +363,7 @@ useHead({
 .do-card-desc {
   margin: 0;
   font-size: 0.82rem;
-  color: #9999bb;
+  color: #b0b0cc;
   line-height: 1.55;
 }
 
@@ -380,7 +400,7 @@ useHead({
 .music-content p {
   margin: 0 0 0.75rem 0;
   font-size: 0.85rem;
-  color: #9999bb;
+  color: #b0b0cc;
 }
 
 .music-link {

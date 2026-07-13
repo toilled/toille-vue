@@ -1,8 +1,12 @@
 <template>
-  <footer
+  <button
     @click="newSuggestion"
+    @keydown.enter="newSuggestion"
+    @keydown.space.prevent="newSuggestion"
     :style="{ cursor: loading ? 'progress' : '' }"
-    class="content-container"
+    class="content-container suggestion-button"
+    type="button"
+    :aria-label="t('suggestion.clickToUpdate')"
   >
     <article v-if="suggestion" :title="hoverHintText" class="marginless panel-3d">
       <header>
@@ -23,7 +27,7 @@
         </footer>
       </article>
     </Transition>
-  </footer>
+  </button>
 </template>
 
 <script setup lang="ts">

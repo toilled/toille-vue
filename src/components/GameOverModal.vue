@@ -4,7 +4,9 @@
     <div class="final-score">SCORE: {{ drivingScore }}</div>
 
     <div v-if="!isScoreSubmitted" class="score-form">
+      <label for="player-name" class="visually-hidden">Enter your name</label>
       <input
+        id="player-name"
         v-model="playerName"
         placeholder="ENTER NAME"
         maxlength="8"
@@ -150,5 +152,16 @@ async function submitHighScore() {
   color: #fff;
   margin-bottom: 5px;
   text-transform: uppercase;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 </style>

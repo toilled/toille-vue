@@ -39,6 +39,7 @@
             :class="{ active: loc.code === currentLocale }"
             role="option"
             :aria-selected="loc.code === currentLocale"
+            :lang="loc.code"
             @click="select(loc.code)"
           >
             {{ loc.label }}

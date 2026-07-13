@@ -4,7 +4,7 @@
       :href="'#' + sectionId"
       @click.prevent="handleClick"
       :class="{ active: isActive }"
-      :aria-current="isActive ? 'true' : undefined"
+      :aria-current="isActive ? 'page' : undefined"
     >
       <span v-if="page.icon" class="nav-icon">{{ page.icon }}</span>
       <span class="nav-label">{{ page.name }}</span>

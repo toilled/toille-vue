@@ -1,5 +1,5 @@
 <template>
-  <footer class="content-container" role="main" aria-label="Alcohol Checker Tool">
+  <section class="content-container" aria-label="Alcohol Checker Tool">
     <article class="marginless panel-3d">
       <header>Alcohol Checker</header>
       <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 1rem">
@@ -32,7 +32,7 @@
         </tbody>
       </table>
     </article>
-  </footer>
+  </section>
 </template>
 
 <script setup lang="ts">

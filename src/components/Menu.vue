@@ -8,6 +8,7 @@
       @click="showTools = !showTools"
       :class="{ expanded: showTools }"
       :aria-label="t('menu.toggleTools')"
+      :aria-expanded="showTools"
     >
       <svg
         viewBox="0 0 24 24"

@@ -21,38 +21,38 @@
       </svg>
     </button>
     <div class="nav-tools" :class="{ show: showTools }">
-      <div
+      <button
         @click="$emit('explore')"
         class="icon-wrapper"
         :class="{ disabled: !cityOn || cityFallback }"
-        :title="t('menu.exploreCity')"
+        :aria-label="t('menu.exploreCity')"
         data-label="Explore"
       >
         <img src="/person-icon.svg" :alt="t('menu.exploreCity')" class="icon" />
-      </div>
+      </button>
 
-      <div
+      <button
         @click="$emit('demo')"
         class="icon-wrapper"
         :class="{ disabled: !cityOn || cityFallback }"
-        :title="t('menu.demo')"
+        :aria-label="t('menu.demo')"
         data-label="Demo"
       >
         <img src="/64k-icon.svg" :alt="t('menu.demo')" class="icon" />
-      </div>
-      <div
+      </button>
+      <button
         @click="toggleSound"
         class="icon-wrapper"
-        :title="t('menu.toggleSound')"
+        :aria-label="t('menu.toggleSound')"
         data-label="Sound"
       >
         <img v-if="soundOn" src="/sound-icon.svg" :alt="t('menu.toggleSound')" class="icon" />
         <img v-else src="/mute-icon.svg" :alt="t('menu.toggleSound')" class="icon" />
-      </div>
-      <div
+      </button>
+      <button
         @click="$emit('toggle-content')"
         class="icon-wrapper"
-        :title="t('menu.toggleVisibility')"
+        :aria-label="t('menu.toggleVisibility')"
         data-label="View"
       >
         <svg
@@ -86,11 +86,11 @@
             d="M6.75 12c0-.619.107-1.215.304-1.764l-3.1-3.1a11.25 11.25 0 00-2.63 4.31c-.12.362-.12.752 0 1.114 1.489 4.467 5.704 7.69 10.675 7.69 1.5 0 2.933-.294 4.242-.827l-2.477-2.477A5.25 5.25 0 016.75 12z"
           />
         </svg>
-      </div>
-      <div
+      </button>
+      <button
         @click="toggleCityBackground"
         class="icon-wrapper"
-        :title="t('menu.toggleCity')"
+        :aria-label="t('menu.toggleCity')"
         data-label="City"
       >
         <svg
@@ -122,11 +122,11 @@
           <path d="M2 22l5-8 4 5 4-7 5 10" />
           <line x1="3" y1="3" x2="21" y2="21" />
         </svg>
-      </div>
-      <div
+      </button>
+      <button
         class="icon-wrapper terminal-icon"
         @click="$emit('toggle-terminal')"
-        :title="t('menu.openTerminal')"
+        :aria-label="t('menu.openTerminal')"
         data-label="Terminal"
       >
         <svg
@@ -142,11 +142,11 @@
           <polyline points="4 17 10 11 4 5" />
           <line x1="12" y1="19" x2="20" y2="19" />
         </svg>
-      </div>
-      <div
+      </button>
+      <button
         class="icon-wrapper"
         @click="$emit('toggle-desktop')"
-        :title="t('desktop.toggleDesktop')"
+        :aria-label="t('desktop.toggleDesktop')"
         data-label="Desktop"
       >
         <svg
@@ -163,13 +163,23 @@
           <line x1="8" y1="21" x2="16" y2="21" />
           <line x1="12" y1="17" x2="12" y2="21" />
         </svg>
-      </div>
-      <div class="icon-wrapper" data-label="Weather" @click="weatherRef?.toggleModal()">
+      </button>
+      <button
+        class="icon-wrapper"
+        :aria-label="t('menu.weather')"
+        data-label="Weather"
+        @click="weatherRef?.toggleModal()"
+      >
         <WeatherIcon ref="weatherRef" />
-      </div>
-      <div class="icon-wrapper" data-label="Lang" @click.stop="langRef?.toggle()">
+      </button>
+      <button
+        class="icon-wrapper"
+        :aria-label="t('menu.language')"
+        data-label="Lang"
+        @click.stop="langRef?.toggle()"
+      >
         <LanguageSelector ref="langRef" />
-      </div>
+      </button>
     </div>
   </div>
 </template>
@@ -291,6 +301,13 @@ const toggleCityBackground = () => {
   border-radius: 6px;
   transition: all 0.2s ease;
   position: relative;
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .can-hover .icon-wrapper:hover {

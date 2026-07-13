@@ -47,7 +47,7 @@ async function handleSsrRequest(url: URL, context: RequestContext) {
 export const onRequest = async (context: RequestContext) => {
   const url = new URL(context.request.url);
 
-  if (/\.[a-zA-Z0-9]+$/.test(url.pathname)) {
+  if (/\.[a-zA-Z0-9]+$/.test(url.pathname) || url.pathname.startsWith('/api/')) {
     return context.next();
   }
 

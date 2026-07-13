@@ -50,7 +50,7 @@ describe('WeatherIcon.vue', () => {
 
     await flushPromises();
 
-    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('api.open-meteo.com'));
+    expect(fetch).toHaveBeenCalledWith('/api/weather');
     const svg = wrapper.find('svg');
     expect(svg.attributes('title')).toBe('weather.location');
     expect(svg.exists()).toBe(true);

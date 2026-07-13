@@ -1,10 +1,12 @@
 <template>
   <div class="lang-wrapper" ref="wrapperRef">
-    <div
+    <button
       class="lang-trigger icon-wrapper"
       :class="{ open: open }"
       @click.stop="toggle"
-      :title="t('language.label')"
+      :aria-label="t('language.label')"
+      :aria-expanded="open"
+      aria-haspopup="listbox"
     >
       <svg
         viewBox="0 0 24 24"
@@ -19,15 +21,24 @@
           d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
         />
       </svg>
-    </div>
+    </button>
     <Teleport to="body">
       <Transition name="lang-fade">
-        <div v-if="open && mounted" class="lang-dropdown" :style="dropdownStyle">
+        <div
+          v-if="open && mounted"
+          class="lang-dropdown"
+          :style="dropdownStyle"
+          role="listbox"
+          :aria-label="t('language.label')"
+          @keydown.escape="open = false"
+        >
           <button
             v-for="loc in locales"
             :key="loc.code"
             class="lang-option"
             :class="{ active: loc.code === currentLocale }"
+            role="option"
+            :aria-selected="loc.code === currentLocale"
             @click="select(loc.code)"
           >
             {{ loc.label }}
@@ -158,6 +169,13 @@ defineExpose({ toggle });
   border-radius: 6px;
   transition: all 0.2s ease;
   color: #00ffcc;
+  background: none;
+  border: none;
+  font: inherit;
+  padding: 0;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .can-hover .lang-trigger:hover {

@@ -558,7 +558,7 @@ html.fx .app-header {
   }
 }
 
-#main-content:focus {
+#main-content:focus-visible {
   outline: 2px solid #00ffcc;
   outline-offset: -2px;
 }

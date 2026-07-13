@@ -325,6 +325,11 @@ function handleKeydown(e: KeyboardEvent) {
   background: #ff5f56;
   cursor: pointer;
   transition: all 0.2s ease;
+  border: none;
+  padding: 0;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .can-hover .dot.close:hover {

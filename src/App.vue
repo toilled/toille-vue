@@ -107,7 +107,7 @@ import { useI18n } from 'vue-i18n';
 import { useTranslatedPages } from './composables/useTranslatedPages';
 import type { Component } from 'vue';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const { translatedPages } = useTranslatedPages();
 
 const CyberpunkCity = defineAsyncComponent(() => {
@@ -340,7 +340,7 @@ watch(
   (newPath) => {
     const pageTitle = getTitleForPath(newPath);
     if (typeof document !== 'undefined') {
-      document.title = t('site.titlePrefix') + pageTitle;
+      document.title = `${pageTitle} | Elliot Dickerson`;
     }
   },
   { immediate: true }
@@ -351,7 +351,7 @@ watch(
   () => {
     const pageTitle = getTitleForPath(route.path);
     if (typeof document !== 'undefined') {
-      document.title = t('site.titlePrefix') + pageTitle;
+      document.title = `${pageTitle} | Elliot Dickerson`;
     }
   },
   { immediate: true }
@@ -362,6 +362,16 @@ watch(showCity, (val) => {
     cityFallback.value = false;
   }
 });
+
+watch(
+  locale,
+  (newLocale) => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = newLocale;
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <style>
@@ -441,7 +451,7 @@ html.fx .app-header {
   padding: 1.5rem 0;
   text-align: center;
   border-top: 1px solid rgba(0, 255, 204, 0.1);
-  opacity: 0.6;
+  color: rgba(255, 255, 255, 0.6);
   font-size: 0.85rem;
 }
 
@@ -549,7 +559,8 @@ html.fx .app-header {
 }
 
 #main-content:focus {
-  outline: none;
+  outline: 2px solid #00ffcc;
+  outline-offset: -2px;
 }
 
 html {

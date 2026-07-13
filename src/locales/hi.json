@@ -6,7 +6,9 @@
     "toggleVisibility": "दृश्यता बदलें",
     "toggleCity": "शहर की पृष्ठभूमि बदलें",
     "openTerminal": "टर्मिनल खोलें",
-    "toggleTools": "उपकरण बदलें"
+    "toggleTools": "उपकरण बदलें",
+    "weather": "मौसम",
+    "language": "भाषा"
   },
   "site": {
     "title": "एलियट डिकरसन",

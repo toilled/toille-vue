@@ -6,7 +6,9 @@
     "toggleVisibility": "Sichtbarkeit umschalten",
     "toggleCity": "Stadthintergrund umschalten",
     "openTerminal": "Terminal öffnen",
-    "toggleTools": "Werkzeuge umschalten"
+    "toggleTools": "Werkzeuge umschalten",
+    "weather": "Wetter",
+    "language": "Sprache"
   },
   "site": {
     "title": "Elliot Dickerson",

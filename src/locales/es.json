@@ -6,7 +6,9 @@
     "toggleVisibility": "Alternar visibilidad",
     "toggleCity": "Alternar fondo ciudad",
     "openTerminal": "Abrir terminal",
-    "toggleTools": "Alternar herramientas"
+    "toggleTools": "Alternar herramientas",
+    "weather": "Clima",
+    "language": "Idioma"
   },
   "site": {
     "title": "Elliot Dickerson",

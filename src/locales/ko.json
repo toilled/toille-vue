@@ -6,7 +6,9 @@
     "toggleVisibility": "가시성 전환",
     "toggleCity": "도시 배경 전환",
     "openTerminal": "터미널 열기",
-    "toggleTools": "도구 전환"
+    "toggleTools": "도구 전환",
+    "weather": "날씨",
+    "language": "언어"
   },
   "site": {
     "title": "Elliot Dickerson",

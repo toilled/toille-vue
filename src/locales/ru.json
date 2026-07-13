@@ -6,7 +6,9 @@
     "toggleVisibility": "Переключить видимость",
     "toggleCity": "Переключить фон города",
     "openTerminal": "Открыть терминал",
-    "toggleTools": "Переключить инструменты"
+    "toggleTools": "Переключить инструменты",
+    "weather": "Погода",
+    "language": "Язык"
   },
   "site": {
     "title": "Эллиот Дикерсон",

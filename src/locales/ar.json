@@ -6,7 +6,9 @@
     "toggleVisibility": "تبديل الرؤية",
     "toggleCity": "تبديل خلفية المدينة",
     "openTerminal": "فتح الطرفية",
-    "toggleTools": "تبديل الأدوات"
+    "toggleTools": "تبديل الأدوات",
+    "weather": "الطقس",
+    "language": "اللغة"
   },
   "site": {
     "title": "إليوت ديكرسون",

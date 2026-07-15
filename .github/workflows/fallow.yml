@@ -24,12 +24,15 @@ jobs:
         with:
           command: dead-code
           auto-changed-since: false
+          version: '2.104.0'
       - uses: fallow-rs/fallow@v2
         with:
           command: dupes
           auto-changed-since: false
+          version: '2.104.0'
       - uses: fallow-rs/fallow@v2
         with:
           command: health
           auto-changed-since: false
           fail-on-issues: false
+          version: '2.104.0'

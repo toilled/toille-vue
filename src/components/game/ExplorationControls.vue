@@ -4,7 +4,6 @@
       <div class="dpad">
         <button
           class="dpad-btn up"
-          aria-label="Move Forward"
           @touchstart.prevent="controls.forward = true"
           @touchend.prevent="controls.forward = false"
         >
@@ -12,7 +11,6 @@
         </button>
         <button
           class="dpad-btn left"
-          aria-label="Move Left"
           @touchstart.prevent="controls.left = true"
           @touchend.prevent="controls.left = false"
         >
@@ -20,7 +18,6 @@
         </button>
         <button
           class="dpad-btn right"
-          aria-label="Move Right"
           @touchstart.prevent="controls.right = true"
           @touchend.prevent="controls.right = false"
         >
@@ -28,7 +25,6 @@
         </button>
         <button
           class="dpad-btn down"
-          aria-label="Move Backward"
           @touchstart.prevent="controls.backward = true"
           @touchend.prevent="controls.backward = false"
         >
@@ -40,7 +36,6 @@
       <div class="dpad">
         <button
           class="dpad-btn up"
-          aria-label="Look Up"
           @touchstart.prevent="lookControls.up = true"
           @touchend.prevent="lookControls.up = false"
         >
@@ -48,7 +43,6 @@
         </button>
         <button
           class="dpad-btn left"
-          aria-label="Look Left"
           @touchstart.prevent="lookControls.left = true"
           @touchend.prevent="lookControls.left = false"
         >
@@ -56,7 +50,6 @@
         </button>
         <button
           class="dpad-btn right"
-          aria-label="Look Right"
           @touchstart.prevent="lookControls.right = true"
           @touchend.prevent="lookControls.right = false"
         >
@@ -64,7 +57,6 @@
         </button>
         <button
           class="dpad-btn down"
-          aria-label="Look Down"
           @touchstart.prevent="lookControls.down = true"
           @touchend.prevent="lookControls.down = false"
         >
@@ -103,14 +95,14 @@ defineProps<{ controls: Controls; lookControls: LookControls }>();
 
 .dpad {
   position: relative;
-  width: 132px;
-  height: 132px;
+  width: 100px;
+  height: 100px;
 }
 
 .dpad-btn {
   position: absolute;
-  width: 44px;
-  height: 44px;
+  width: 30px;
+  height: 30px;
   padding: 0;
   box-sizing: border-box;
   background: rgba(0, 255, 204, 0.2);
@@ -131,21 +123,21 @@ defineProps<{ controls: Controls; lookControls: LookControls }>();
 
 .dpad-btn.up {
   top: 0;
-  left: 44px;
+  left: 35px;
 }
 
 .dpad-btn.down {
   bottom: 0;
-  left: 44px;
+  left: 35px;
 }
 
 .dpad-btn.left {
-  top: 44px;
+  top: 35px;
   left: 0;
 }
 
 .dpad-btn.right {
-  top: 44px;
+  top: 35px;
   right: 0;
 }
 </style>

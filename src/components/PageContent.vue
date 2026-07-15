@@ -24,41 +24,10 @@
               :last="index + 1 === page.body.length"
             />
           </template>
-          <template v-else>
-            <Paragraph
-              :paragraph="t('notFound.pageDoesNotExist', { name: route.params.name })"
-              :last="false"
-            />
-            <div class="not-found-nav">
-              <h3>{{ t('notFound.availablePages') }}</h3>
-              <ul>
-                <li v-for="p in availablePages" :key="p.link">
-                  <router-link :to="p.link">{{ p.icon }} {{ p.name }}</router-link>
-                </li>
-              </ul>
-              <router-link to="/" class="button outline">{{ t('notFound.goHome') }}</router-link>
-            </div>
-          </template>
+          <PageNotFound v-else :name="String(route.params.name)" :pages="availablePages" />
         </div>
 
-        <template v-if="page">
-          <template v-for="(section, index) in page.sections" :key="index">
-            <SectionDivider
-              v-if="section.type === 'divider'"
-              v-bind="section.icon ? { icon: section.icon } : {}"
-            />
-            <CardsSection v-else-if="section.type === 'cards'" v-bind="sectionBind(section)" />
-            <SkillsSection v-else-if="section.type === 'skills'" v-bind="sectionBind(section)" />
-            <MusicCardSection
-              v-else-if="section.type === 'musicCard'"
-              v-bind="sectionBind(section)"
-            />
-            <InterestGridSection
-              v-else-if="section.type === 'interestGrid'"
-              v-bind="sectionBind(section)"
-            />
-          </template>
-        </template>
+        <PageSections v-if="page" v-bind="page.sections ? { sections: page.sections } : {}" />
       </article>
     </section>
   </div>
@@ -67,13 +36,10 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { useHead } from '@unhead/vue';
-import { Page, PageSection } from '../interfaces/Page';
+import { Page } from '../interfaces/Page';
 import { useTranslatedPages } from '../composables/useTranslatedPages';
-import SectionDivider from './SectionDivider.vue';
-import CardsSection from './sections/CardsSection.vue';
-import SkillsSection from './sections/SkillsSection.vue';
-import MusicCardSection from './sections/MusicCardSection.vue';
-import InterestGridSection from './sections/InterestGridSection.vue';
+import PageSections from './PageSections.vue';
+import PageNotFound from './PageNotFound.vue';
 
 const { t } = useI18n();
 const { translatedPages } = useTranslatedPages();
@@ -108,14 +74,6 @@ function pageStyleVars(accent: string): Record<string, string> {
     '--page-accent': accent,
     '--page-accent-rgb': hexToRgb(accent),
   };
-}
-
-function sectionBind(section: PageSection): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(section)) {
-    if (v !== undefined) out[k] = v;
-  }
-  return out;
 }
 
 const availablePages = computed(() => {

@@ -40,7 +40,12 @@
           <div class="router-view-container" v-show="isContentVisible">
             <router-view v-slot="{ Component, route }">
               <ErrorBoundary>
-                <component :is="Component" :key="route.path" />
+                <Suspense>
+                  <component :is="Component" :key="route.path" />
+                  <template #fallback>
+                    <RouteLoadingSpinner />
+                  </template>
+                </Suspense>
               </ErrorBoundary>
             </router-view>
           </div>
@@ -125,6 +130,7 @@ const Desktop = defineAsyncComponent(() => import('./components/Desktop.vue'));
 const Activity = defineAsyncComponent(() => import('./components/Activity.vue'));
 const Suggestion = defineAsyncComponent(() => import('./components/Suggestion.vue'));
 import EpilepsyWarning from './components/EpilepsyWarning.vue';
+import RouteLoadingSpinner from './components/RouteLoadingSpinner.vue';
 import { useScrollSpy } from './composables/useScrollSpy';
 
 const visiblePages = computed(() => {

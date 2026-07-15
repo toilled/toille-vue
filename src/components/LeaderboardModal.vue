@@ -44,6 +44,23 @@ defineEmits(['close-leaderboard']);
   flex-direction: column;
   align-items: center;
   min-width: 400px;
+  max-width: 90vw;
+  box-sizing: border-box;
+}
+
+@media (max-width: 480px) {
+  #leaderboard-modal {
+    min-width: 0;
+    width: 90vw;
+    padding: 20px;
+    font-size: 18px;
+  }
+  .lb-header {
+    font-size: 18px;
+  }
+  .lb-row {
+    font-size: 16px;
+  }
 }
 
 .lb-header {

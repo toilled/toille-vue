@@ -282,8 +282,8 @@ const toggleCityBackground = () => {
 
 .tools-hint {
   position: absolute;
-  left: 100%;
-  margin-left: 8px;
+  top: 100%;
+  margin-top: 8px;
   padding: 0.4rem 0.75rem;
   background: rgba(0, 255, 204, 0.15);
   border: 1px solid rgba(0, 255, 204, 0.4);

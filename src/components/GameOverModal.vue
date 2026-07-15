@@ -89,42 +89,6 @@ async function submitHighScore() {
   flex-direction: column;
   align-items: center;
   min-width: 400px;
-  max-width: 90vw;
-  box-sizing: border-box;
-}
-
-@media (max-width: 480px) {
-  #game-over {
-    min-width: 0;
-    width: 90vw;
-    padding: 20px;
-    font-size: 32px;
-  }
-  .game-over-title {
-    font-size: 32px;
-  }
-  .final-score {
-    font-size: 20px;
-  }
-  .score-form {
-    flex-direction: column;
-    width: 100%;
-  }
-  .name-input {
-    width: 100%;
-    font-size: 18px;
-  }
-  .submit-btn {
-    font-size: 18px;
-    width: 100%;
-  }
-  .leaderboard {
-    max-width: 100%;
-  }
-  .lb-header,
-  .lb-row {
-    font-size: 16px;
-  }
 }
 
 .game-over-title {

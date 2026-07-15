@@ -1,19 +1,22 @@
 <template>
-  <h3 v-if="section.heading" class="sub-heading">{{ section.heading }}</h3>
-  <SkillCard
-    v-for="(group, i) in section.groups"
-    :key="i"
-    :skills="group.skills ?? []"
-    v-bind="group.category ? { category: group.category } : {}"
-  />
+  <div>
+    <h3 v-if="heading" class="sub-heading">{{ heading }}</h3>
+    <SkillCard
+      v-for="(group, i) in groups"
+      :key="i"
+      :skills="group.skills ?? []"
+      v-bind="group.category ? { category: group.category } : {}"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
-import type { PageSection } from '../../interfaces/Page';
+import type { PageSectionGroup } from '../../interfaces/Page';
 import SkillCard from '../SkillCard.vue';
 
 defineProps<{
-  section: PageSection;
+  heading?: string;
+  groups?: PageSectionGroup[];
 }>();
 </script>
 

@@ -26,9 +26,10 @@
           />
         </div>
 
-        <template v-for="(section, index) in page.sections" :key="index">
-          <PageSection :section="section" />
-        </template>
+        <PageSections
+          v-if="page.sections?.length"
+          v-bind="page.sections ? { sections: page.sections } : {}"
+        />
       </article>
     </section>
   </div>
@@ -39,8 +40,7 @@ import { useI18n } from 'vue-i18n';
 import { useHead } from '@unhead/vue';
 import { Page } from '../interfaces/Page';
 import { useTranslatedPages } from '../composables/useTranslatedPages';
-import { pageStyleVars } from '../utils/pageUtils';
-import PageSection from './PageSection.vue';
+import PageSections from './PageSections.vue';
 
 const { t } = useI18n();
 const { translatedPages } = useTranslatedPages();
@@ -53,6 +53,20 @@ function getSectionId(page: Page): string {
 const displayPages = computed(() => {
   return translatedPages.value.filter((page: Page) => !page.hidden);
 });
+
+function hexToRgb(hex: string): string {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
+    : '0, 255, 204';
+}
+
+function pageStyleVars(accent: string): Record<string, string> {
+  return {
+    '--page-accent': accent,
+    '--page-accent-rgb': hexToRgb(accent),
+  };
+}
 
 const siteTitle = computed(() => t('site.title'));
 

@@ -24,28 +24,10 @@
               :last="index + 1 === page.body.length"
             />
           </template>
-          <template v-else>
-            <Paragraph
-              :paragraph="t('notFound.pageDoesNotExist', { name: route.params.name })"
-              :last="false"
-            />
-            <div class="not-found-nav">
-              <h3>{{ t('notFound.availablePages') }}</h3>
-              <ul>
-                <li v-for="p in availablePages" :key="p.link">
-                  <router-link :to="p.link">{{ p.icon }} {{ p.name }}</router-link>
-                </li>
-              </ul>
-              <router-link to="/" class="button outline">{{ t('notFound.goHome') }}</router-link>
-            </div>
-          </template>
+          <PageNotFound v-else :name="String(route.params.name)" :pages="availablePages" />
         </div>
 
-        <template v-if="page">
-          <template v-for="(section, index) in page.sections" :key="index">
-            <PageSection :section="section" />
-          </template>
-        </template>
+        <PageSections v-if="page" v-bind="page.sections ? { sections: page.sections } : {}" />
       </article>
     </section>
   </div>
@@ -56,8 +38,8 @@ import { useI18n } from 'vue-i18n';
 import { useHead } from '@unhead/vue';
 import { Page } from '../interfaces/Page';
 import { useTranslatedPages } from '../composables/useTranslatedPages';
-import { pageStyleVars } from '../utils/pageUtils';
-import PageSection from './PageSection.vue';
+import PageSections from './PageSections.vue';
+import PageNotFound from './PageNotFound.vue';
 
 const { t } = useI18n();
 const { translatedPages } = useTranslatedPages();
@@ -79,6 +61,20 @@ const page = computed(() => {
   }
   return translatedPages.value[0] as Page;
 });
+
+function hexToRgb(hex: string): string {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
+    : '0, 255, 204';
+}
+
+function pageStyleVars(accent: string): Record<string, string> {
+  return {
+    '--page-accent': accent,
+    '--page-accent-rgb': hexToRgb(accent),
+  };
+}
 
 const availablePages = computed(() => {
   return translatedPages.value.filter((p: Page) => !p.hidden);

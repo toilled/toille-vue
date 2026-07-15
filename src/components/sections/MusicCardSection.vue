@@ -1,28 +1,33 @@
 <template>
-  <h3 v-if="section.heading" class="sub-heading">{{ section.heading }}</h3>
-  <div class="music-card">
-    <div v-if="section.icon" class="music-icon">{{ section.icon }}</div>
-    <div class="music-content">
-      <h4>{{ section.title }}</h4>
-      <p>{{ section.description }}</p>
-      <a
-        v-if="section.linkUrl"
-        :href="section.linkUrl"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="music-link"
-      >
-        {{ section.linkText }}
-      </a>
+  <div>
+    <h3 v-if="heading" class="sub-heading">{{ heading }}</h3>
+    <div class="music-card">
+      <div v-if="icon" class="music-icon">{{ icon }}</div>
+      <div class="music-content">
+        <h4>{{ title }}</h4>
+        <p>{{ description }}</p>
+        <a
+          v-if="linkUrl"
+          :href="linkUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="music-link"
+        >
+          {{ linkText }}
+        </a>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { PageSection } from '../../interfaces/Page';
-
 defineProps<{
-  section: PageSection;
+  heading?: string;
+  icon?: string;
+  title?: string;
+  description?: string;
+  linkUrl?: string;
+  linkText?: string;
 }>();
 </script>
 

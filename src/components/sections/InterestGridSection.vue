@@ -1,6 +1,6 @@
 <template>
   <div class="interest-grid">
-    <div v-for="(item, i) in section.items" :key="i" class="interest-item">
+    <div v-for="(item, i) in items" :key="i" class="interest-item">
       <span class="interest-icon">{{ item.icon }}</span>
       <span>{{ item.text }}</span>
     </div>
@@ -8,10 +8,10 @@
 </template>
 
 <script setup lang="ts">
-import type { PageSection } from '../../interfaces/Page';
+import type { PageSectionItem } from '../../interfaces/Page';
 
 defineProps<{
-  section: PageSection;
+  items?: PageSectionItem[];
 }>();
 </script>
 

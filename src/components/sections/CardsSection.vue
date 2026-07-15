@@ -1,22 +1,30 @@
 <template>
-  <h3 v-if="section.heading" class="sub-heading">{{ section.heading }}</h3>
-  <div class="what-i-do-grid" :style="{ '--columns': section.columns || 3 }">
-    <div v-for="(item, i) in section.items" :key="i" class="do-card">
-      <div class="do-card-accent" :class="accentClass(i)"></div>
-      <div class="do-card-icon">{{ item.icon }}</div>
-      <h4 class="do-card-title">{{ item.title }}</h4>
-      <p class="do-card-desc">{{ item.description }}</p>
+  <div>
+    <h3 v-if="heading" class="sub-heading">{{ heading }}</h3>
+    <div class="what-i-do-grid" :style="{ '--columns': columns || 3 }">
+      <div v-for="(item, i) in items" :key="i" class="do-card">
+        <div class="do-card-accent" :class="accentClass(i)"></div>
+        <div class="do-card-icon">{{ item.icon }}</div>
+        <h4 class="do-card-title">{{ item.title }}</h4>
+        <p class="do-card-desc">{{ item.description }}</p>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { PageSection } from '../../interfaces/Page';
-import { accentClass } from '../../utils/pageUtils';
+import type { PageSectionItem } from '../../interfaces/Page';
 
 defineProps<{
-  section: PageSection;
+  heading?: string;
+  columns?: number;
+  items?: PageSectionItem[];
 }>();
+
+function accentClass(index: number): string {
+  const classes = ['fullstack', 'ux', 'interactive'];
+  return classes[index % classes.length];
+}
 </script>
 
 <style scoped>

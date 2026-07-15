@@ -4,9 +4,6 @@
       <MenuItem v-for="page in pages" :key="page.link" :page="page" />
     </ul>
     <div class="tools-toggle-wrapper">
-      <Transition name="fade">
-        <div v-if="showHint" class="tools-hint">{{ t('menu.toolsHint') }}</div>
-      </Transition>
       <button
         class="tools-toggle"
         @click="handleToolsToggle"
@@ -221,28 +218,8 @@ const showTools = ref(false);
 const weatherRef = ref<{ toggleModal: () => void } | null>(null);
 const langRef = ref<{ toggle: () => void } | null>(null);
 
-const TOOLS_HINT_KEY = 'tools-hint-seen';
-const showHint = ref(false);
-
-onMounted(() => {
-  if (typeof localStorage !== 'undefined' && !localStorage.getItem(TOOLS_HINT_KEY)) {
-    setTimeout(() => {
-      showHint.value = true;
-    }, 2000);
-    setTimeout(() => {
-      showHint.value = false;
-    }, 7000);
-  }
-});
-
 function handleToolsToggle() {
   showTools.value = !showTools.value;
-  if (showHint.value) {
-    showHint.value = false;
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(TOOLS_HINT_KEY, '1');
-    }
-  }
 }
 
 const soundOn = computed(() => audioManager.isSoundEnabled.value);
@@ -278,41 +255,6 @@ const toggleCityBackground = () => {
   position: relative;
   display: flex;
   align-items: center;
-}
-
-.tools-hint {
-  position: absolute;
-  top: 100%;
-  margin-top: 8px;
-  padding: 0.4rem 0.75rem;
-  background: rgba(0, 255, 204, 0.15);
-  border: 1px solid rgba(0, 255, 204, 0.4);
-  border-radius: 6px;
-  color: #00ffcc;
-  font-size: 0.75rem;
-  white-space: nowrap;
-  pointer-events: none;
-  animation: hint-pulse 2s ease-in-out infinite;
-}
-
-@keyframes hint-pulse {
-  0%,
-  100% {
-    opacity: 0.8;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
 }
 
 .nav-links {

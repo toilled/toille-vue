@@ -8,8 +8,7 @@
     "openTerminal": "ターミナルを開く",
     "toggleTools": "ツール切替",
     "weather": "天気",
-    "language": "言語",
-    "toolsHint": "クリックして他のツールを探索！"
+    "language": "言語"
   },
   "site": {
     "title": "Elliot Dickerson",

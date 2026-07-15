@@ -41,26 +41,33 @@ function isKnownPage(pathname: string): boolean {
   return validPageLinks.has('/' + name);
 }
 
+function loadLocaleMessage(locale: string): void {
+  if (locale !== 'en' && localeMessages[locale]) {
+    i18n.global.setLocaleMessage(locale, localeMessages[locale]);
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function configureAppLocale(app: any, locale: string): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const appI18n = app.config.globalProperties.$i18n as any;
+  if (!appI18n?.locale) return;
+
+  if (typeof appI18n.locale === 'object' && 'value' in appI18n.locale) {
+    appI18n.locale.value = locale;
+  } else {
+    appI18n.locale = locale;
+  }
+}
+
 export async function render(url: string, locale?: string) {
   try {
-    if (locale && locale !== 'en' && localeMessages[locale]) {
-      i18n.global.setLocaleMessage(locale, localeMessages[locale]);
-    }
+    if (locale) loadLocaleMessage(locale);
 
     const head = createHead();
     const { app, router } = createApp(head, true);
 
-    if (locale) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const appI18n = app.config.globalProperties.$i18n as any;
-      if (appI18n?.locale) {
-        if (typeof appI18n.locale === 'object' && 'value' in appI18n.locale) {
-          appI18n.locale.value = locale;
-        } else {
-          appI18n.locale = locale;
-        }
-      }
-    }
+    if (locale) configureAppLocale(app, locale);
 
     await router.push(url);
     await router.isReady();
@@ -68,8 +75,7 @@ export async function render(url: string, locale?: string) {
     const pathname = new URL(url, 'http://localhost').pathname;
     const statusCode = isKnownPage(pathname) ? 200 : 404;
 
-    const ctx = {};
-    const html = await renderToString(app, ctx);
+    const html = await renderToString(app, {});
 
     return { html, statusCode };
   } catch (err) {

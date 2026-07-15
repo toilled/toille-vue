@@ -77,12 +77,18 @@ export async function render(url: string, locale?: string) {
 
     const html = await renderToString(app, {});
 
-    return { html, statusCode };
+    const headPayload = head.render();
+    const titleMatch = headPayload.headTags.match(/<title[^>]*>([^<]+)<\/title>/);
+    const title = titleMatch?.[1] ?? '';
+
+    return { html, statusCode, title, lang: locale ?? 'en' };
   } catch (err) {
     console.error('SSR render error:', err);
     return {
       html: '<div id="app"><p>Failed to load page. Please try again.</p></div>',
       statusCode: 500,
+      title: '',
+      lang: 'en',
     };
   }
 }

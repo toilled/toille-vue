@@ -14,22 +14,20 @@ function pathToFileURL(p) {
   return new URL(`file://${p}`);
 }
 
-const routes = ['/', '/about', '/interests', '/hidden'];
+const pages = JSON.parse(readFileSync(resolve(__dirname, '../src/configs/pages.json'), 'utf-8'));
+const ssgRoutes = pages.map((p) => p.link);
+
 const locales = ['en', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'ar', 'zh-CN', 'ja', 'ko', 'hi', 'nl'];
 
 let generated = 0;
 
 for (const locale of locales) {
-  for (const route of routes) {
-    const { html: appHtml } = await render(route, locale);
+  for (const route of ssgRoutes) {
+    const { html: appHtml, title, lang } = await render(route, locale);
 
     let html = template.replace('<!--app-html-->', appHtml);
-    html = html.replace(/<html lang="en">/, `<html lang="${locale}">`);
-
-    const titleMatch = appHtml.match(/<title[^>]*>([^<]+)<\/title>/);
-    if (titleMatch) {
-      html = html.replace('<title>Elliot Dickerson</title>', `<title>${titleMatch[1]}</title>`);
-    }
+    html = html.replace('lang="en"', `lang="${lang}"`);
+    html = html.replace('<title>Elliot Dickerson</title>', `<title>${title}</title>`);
 
     let outPath;
     if (route === '/') {
@@ -52,4 +50,4 @@ for (const locale of locales) {
   }
 }
 
-console.log(`SSG: Generated ${generated} static pages (${locales.length} locales × ${routes.length} routes)`);
+console.log(`SSG: Generated ${generated} static pages (${locales.length} locales × ${ssgRoutes.length} routes)`);

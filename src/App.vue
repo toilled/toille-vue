@@ -1,7 +1,7 @@
 <template>
   <div id="content-wrapper" :class="{ 'fade-out': gameMode }" v-show="!desktopMode">
     <header ref="headerRef" class="app-header">
-      <nav class="container header-nav">
+      <nav class="container header-nav" aria-label="Main">
         <Title
           :title="titles.title"
           :subtitle="t('site.subtitle')"

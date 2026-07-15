@@ -26,22 +26,10 @@
           />
         </div>
 
-        <template v-for="(section, index) in page.sections" :key="index">
-          <SectionDivider
-            v-if="section.type === 'divider'"
-            v-bind="section.icon ? { icon: section.icon } : {}"
-          />
-          <CardsSection v-else-if="section.type === 'cards'" v-bind="sectionBind(section)" />
-          <SkillsSection v-else-if="section.type === 'skills'" v-bind="sectionBind(section)" />
-          <MusicCardSection
-            v-else-if="section.type === 'musicCard'"
-            v-bind="sectionBind(section)"
-          />
-          <InterestGridSection
-            v-else-if="section.type === 'interestGrid'"
-            v-bind="sectionBind(section)"
-          />
-        </template>
+        <PageSections
+          v-if="page.sections?.length"
+          v-bind="page.sections ? { sections: page.sections } : {}"
+        />
       </article>
     </section>
   </div>
@@ -50,13 +38,9 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { useHead } from '@unhead/vue';
-import { Page, PageSection } from '../interfaces/Page';
+import { Page } from '../interfaces/Page';
 import { useTranslatedPages } from '../composables/useTranslatedPages';
-import SectionDivider from './SectionDivider.vue';
-import CardsSection from './sections/CardsSection.vue';
-import SkillsSection from './sections/SkillsSection.vue';
-import MusicCardSection from './sections/MusicCardSection.vue';
-import InterestGridSection from './sections/InterestGridSection.vue';
+import PageSections from './PageSections.vue';
 
 const { t } = useI18n();
 const { translatedPages } = useTranslatedPages();
@@ -69,14 +53,6 @@ function getSectionId(page: Page): string {
 const displayPages = computed(() => {
   return translatedPages.value.filter((page: Page) => !page.hidden);
 });
-
-function sectionBind(section: PageSection): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(section)) {
-    if (v !== undefined) out[k] = v;
-  }
-  return out;
-}
 
 function hexToRgb(hex: string): string {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);

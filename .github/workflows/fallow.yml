@@ -20,15 +20,15 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
       - run: npm ci
-      - uses: fallow-rs/fallow@v2
+      - uses: fallow-rs/fallow@v3
         with:
           command: dead-code
           auto-changed-since: false
-      - uses: fallow-rs/fallow@v2
+      - uses: fallow-rs/fallow@v3
         with:
           command: dupes
           auto-changed-since: false
-      - uses: fallow-rs/fallow@v2
+      - uses: fallow-rs/fallow@v3
         with:
           command: health
           auto-changed-since: false

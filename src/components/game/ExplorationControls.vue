@@ -103,14 +103,14 @@ defineProps<{ controls: Controls; lookControls: LookControls }>();
 
 .dpad {
   position: relative;
-  width: 100px;
-  height: 100px;
+  width: 132px;
+  height: 132px;
 }
 
 .dpad-btn {
   position: absolute;
-  width: 30px;
-  height: 30px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   box-sizing: border-box;
   background: rgba(0, 255, 204, 0.2);
@@ -131,21 +131,21 @@ defineProps<{ controls: Controls; lookControls: LookControls }>();
 
 .dpad-btn.up {
   top: 0;
-  left: 35px;
+  left: 44px;
 }
 
 .dpad-btn.down {
   bottom: 0;
-  left: 35px;
+  left: 44px;
 }
 
 .dpad-btn.left {
-  top: 35px;
+  top: 44px;
   left: 0;
 }
 
 .dpad-btn.right {
-  top: 35px;
+  top: 44px;
   right: 0;
 }
 </style>

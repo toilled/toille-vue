@@ -4,6 +4,7 @@
       <div class="dpad">
         <button
           class="dpad-btn up"
+          aria-label="Move Forward"
           @touchstart.prevent="controls.forward = true"
           @touchend.prevent="controls.forward = false"
         >
@@ -11,6 +12,7 @@
         </button>
         <button
           class="dpad-btn left"
+          aria-label="Move Left"
           @touchstart.prevent="controls.left = true"
           @touchend.prevent="controls.left = false"
         >
@@ -18,6 +20,7 @@
         </button>
         <button
           class="dpad-btn right"
+          aria-label="Move Right"
           @touchstart.prevent="controls.right = true"
           @touchend.prevent="controls.right = false"
         >
@@ -25,6 +28,7 @@
         </button>
         <button
           class="dpad-btn down"
+          aria-label="Move Backward"
           @touchstart.prevent="controls.backward = true"
           @touchend.prevent="controls.backward = false"
         >
@@ -36,6 +40,7 @@
       <div class="dpad">
         <button
           class="dpad-btn up"
+          aria-label="Look Up"
           @touchstart.prevent="lookControls.up = true"
           @touchend.prevent="lookControls.up = false"
         >
@@ -43,6 +48,7 @@
         </button>
         <button
           class="dpad-btn left"
+          aria-label="Look Left"
           @touchstart.prevent="lookControls.left = true"
           @touchend.prevent="lookControls.left = false"
         >
@@ -50,6 +56,7 @@
         </button>
         <button
           class="dpad-btn right"
+          aria-label="Look Right"
           @touchstart.prevent="lookControls.right = true"
           @touchend.prevent="lookControls.right = false"
         >
@@ -57,6 +64,7 @@
         </button>
         <button
           class="dpad-btn down"
+          aria-label="Look Down"
           @touchstart.prevent="lookControls.down = true"
           @touchend.prevent="lookControls.down = false"
         >

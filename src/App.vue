@@ -121,6 +121,7 @@ import { Page } from './interfaces/Page';
 import EpilepsyWarning from './components/EpilepsyWarning.vue';
 import RouteLoadingSpinner from './components/RouteLoadingSpinner.vue';
 import AsyncLoadingSpinner from './components/AsyncLoadingSpinner.vue';
+import AsyncErrorFallback from './components/AsyncErrorFallback.vue';
 import { useScrollSpy } from './composables/useScrollSpy';
 
 const route = useRoute();
@@ -149,31 +150,37 @@ const CyberpunkCity = defineAsyncComponent({
     return import('./components/CyberpunkCity.vue').then((m) => m.default);
   },
   loadingComponent: AsyncLoadingSpinner,
+  errorComponent: AsyncErrorFallback,
   delay: 200,
 });
 const Checker = defineAsyncComponent({
   loader: () => import('./components/Checker.vue'),
   loadingComponent: AsyncLoadingSpinner,
+  errorComponent: AsyncErrorFallback,
   delay: 200,
 });
 const Terminal = defineAsyncComponent({
   loader: () => import('./components/Terminal.vue'),
   loadingComponent: AsyncLoadingSpinner,
+  errorComponent: AsyncErrorFallback,
   delay: 200,
 });
 const Desktop = defineAsyncComponent({
   loader: () => import('./components/Desktop.vue'),
   loadingComponent: AsyncLoadingSpinner,
+  errorComponent: AsyncErrorFallback,
   delay: 200,
 });
 const Activity = defineAsyncComponent({
   loader: () => import('./components/Activity.vue'),
   loadingComponent: AsyncLoadingSpinner,
+  errorComponent: AsyncErrorFallback,
   delay: 200,
 });
 const Suggestion = defineAsyncComponent({
   loader: () => import('./components/Suggestion.vue'),
   loadingComponent: AsyncLoadingSpinner,
+  errorComponent: AsyncErrorFallback,
   delay: 200,
 });
 

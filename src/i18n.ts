@@ -1,5 +1,7 @@
 import { createI18n } from 'vue-i18n';
 import en from './locales/en.json';
+import { SUPPORTED_LOCALES, LOCALE_MAP, type SupportedLocale } from './utils/supportedLocales';
+import { setI18nInstance, loadLocale } from './utils/loadLocale';
 
 type MessageSchema = typeof en;
 
@@ -12,23 +14,8 @@ function getInitialLocale(): string {
   const browserLangs = navigator.languages || [navigator.language];
   for (const lang of browserLangs) {
     const normalized = lang.split('-')[0];
-    const supported = [
-      'en',
-      'es',
-      'fr',
-      'de',
-      'it',
-      'pt',
-      'ru',
-      'ar',
-      'zh',
-      'ja',
-      'ko',
-      'hi',
-      'nl',
-    ];
-    if (normalized === 'zh') return 'zh-CN';
-    if (supported.includes(normalized)) return normalized;
+    if (LOCALE_MAP[normalized]) return LOCALE_MAP[normalized];
+    if (SUPPORTED_LOCALES.includes(normalized as SupportedLocale)) return normalized;
   }
   return 'en';
 }
@@ -41,27 +28,7 @@ const i18n = createI18n<[MessageSchema], string>({
   messages: { en },
 });
 
-export function loadLocale(locale: string): Promise<void> | void {
-  const loaders: Record<string, () => Promise<{ default: MessageSchema }>> = {
-    es: () => import('./locales/es.json'),
-    fr: () => import('./locales/fr.json'),
-    de: () => import('./locales/de.json'),
-    it: () => import('./locales/it.json'),
-    pt: () => import('./locales/pt.json'),
-    ru: () => import('./locales/ru.json'),
-    ar: () => import('./locales/ar.json'),
-    'zh-CN': () => import('./locales/zh-CN.json'),
-    ja: () => import('./locales/ja.json'),
-    ko: () => import('./locales/ko.json'),
-    hi: () => import('./locales/hi.json'),
-    nl: () => import('./locales/nl.json'),
-  };
-  if (loaders[locale] && locale !== 'en') {
-    return loaders[locale]().then((msgs) => {
-      i18n.global.setLocaleMessage(locale, msgs.default);
-    });
-  }
-}
+setI18nInstance(i18n);
 
 if (typeof window !== 'undefined') {
   loadLocale(getInitialLocale());

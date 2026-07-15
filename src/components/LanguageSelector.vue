@@ -52,7 +52,7 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { loadLocale } from '../i18n';
+import { loadLocale } from '../utils/loadLocale';
 
 const { locale, t } = useI18n();
 

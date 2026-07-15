@@ -4,12 +4,13 @@
     <p>{{ errorMessage }}</p>
     <button @click="resetError" class="outline">Try Again</button>
   </div>
-  <slot v-else />
+  <slot v-else :key="errorKey" />
 </template>
 
 <script setup lang="ts">
 const hasError = ref(false);
 const errorMessage = ref('');
+const errorKey = ref(0);
 
 onErrorCaptured((err: Error) => {
   hasError.value = true;
@@ -21,6 +22,7 @@ onErrorCaptured((err: Error) => {
 function resetError() {
   hasError.value = false;
   errorMessage.value = '';
+  errorKey.value++;
 }
 </script>
 

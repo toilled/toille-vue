@@ -3,6 +3,7 @@
     <div class="control-group left">
       <button
         class="control-btn"
+        aria-label="Steer Left"
         @mousedown="controls.left = true"
         @mouseup="controls.left = false"
         @mouseleave="controls.left = false"
@@ -13,6 +14,7 @@
       </button>
       <button
         class="control-btn"
+        aria-label="Steer Right"
         @mousedown="controls.right = true"
         @mouseup="controls.right = false"
         @mouseleave="controls.right = false"
@@ -25,6 +27,7 @@
     <div class="control-group right">
       <button
         class="control-btn"
+        aria-label="Brake"
         @mousedown="controls.backward = true"
         @mouseup="controls.backward = false"
         @mouseleave="controls.backward = false"
@@ -35,6 +38,7 @@
       </button>
       <button
         class="control-btn"
+        aria-label="Accelerate"
         @mousedown="controls.forward = true"
         @mouseup="controls.forward = false"
         @mouseleave="controls.forward = false"

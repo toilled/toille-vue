@@ -3,24 +3,26 @@
     <ul class="nav-links">
       <MenuItem v-for="page in pages" :key="page.link" :page="page" />
     </ul>
-    <button
-      class="tools-toggle"
-      @click="showTools = !showTools"
-      :class="{ expanded: showTools }"
-      :aria-label="t('menu.toggleTools')"
-      :aria-expanded="showTools"
-    >
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        class="toggle-icon"
+    <div class="tools-toggle-wrapper">
+      <button
+        class="tools-toggle"
+        @click="handleToolsToggle"
+        :class="{ expanded: showTools }"
+        :aria-label="t('menu.toggleTools')"
+        :aria-expanded="showTools"
       >
-        <line x1="5" y1="12" x2="19" y2="12" />
-        <line x1="12" y1="5" x2="12" y2="19" />
-      </svg>
-    </button>
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="toggle-icon"
+        >
+          <line x1="5" y1="12" x2="19" y2="12" />
+          <line x1="12" y1="5" x2="12" y2="19" />
+        </svg>
+      </button>
+    </div>
     <div class="nav-tools" :class="{ show: showTools }">
       <button
         @click="$emit('explore')"
@@ -216,6 +218,10 @@ const showTools = ref(false);
 const weatherRef = ref<{ toggleModal: () => void } | null>(null);
 const langRef = ref<{ toggle: () => void } | null>(null);
 
+function handleToolsToggle() {
+  showTools.value = !showTools.value;
+}
+
 const soundOn = computed(() => audioManager.isSoundEnabled.value);
 const cityOn = computed(() => cityBackground.isEnabled.value);
 
@@ -243,6 +249,12 @@ const toggleCityBackground = () => {
   display: flex;
   align-items: center;
   gap: 1rem;
+}
+
+.tools-toggle-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .nav-links {

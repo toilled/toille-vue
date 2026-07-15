@@ -605,6 +605,14 @@ onMounted(() => {
   } else {
     setTimeout(doDeferredInit, 100);
   }
+
+  const splashTimeout = setTimeout(() => {
+    if (showSplash.value) {
+      showSplash.value = false;
+    }
+  }, 10000);
+
+  onUnmounted(() => clearTimeout(splashTimeout));
 });
 
 function onKeyDown(event: KeyboardEvent) {

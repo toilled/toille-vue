@@ -1,7 +1,7 @@
 <template>
   <div id="content-wrapper" :class="{ 'fade-out': gameMode }" v-show="!desktopMode">
     <header ref="headerRef" class="app-header">
-      <nav class="container header-nav">
+      <nav class="container header-nav" aria-label="Main">
         <Title
           :title="titles.title"
           :subtitle="t('site.subtitle')"
@@ -40,7 +40,12 @@
           <div class="router-view-container" v-show="isContentVisible">
             <router-view v-slot="{ Component, route }">
               <ErrorBoundary>
-                <component :is="Component" :key="route.path" />
+                <Suspense>
+                  <component :is="Component" :key="route.path" />
+                  <template #fallback>
+                    <RouteLoadingSpinner />
+                  </template>
+                </Suspense>
               </ErrorBoundary>
             </router-view>
           </div>
@@ -110,26 +115,14 @@ import type { Component } from 'vue';
 const { t, locale } = useI18n();
 const { translatedPages } = useTranslatedPages();
 
-const CyberpunkCity = defineAsyncComponent(() => {
-  if (import.meta.env.SSR) {
-    return Promise.resolve({ render: () => null } as Component);
-  }
-  return import('./components/CyberpunkCity.vue').then((m) => m.default);
-});
 import { cityBackground } from './utils/CityBackgroundManager';
 import titles from './configs/titles.json';
 import { Page } from './interfaces/Page';
-const Checker = defineAsyncComponent(() => import('./components/Checker.vue'));
-const Terminal = defineAsyncComponent(() => import('./components/Terminal.vue'));
-const Desktop = defineAsyncComponent(() => import('./components/Desktop.vue'));
-const Activity = defineAsyncComponent(() => import('./components/Activity.vue'));
-const Suggestion = defineAsyncComponent(() => import('./components/Suggestion.vue'));
 import EpilepsyWarning from './components/EpilepsyWarning.vue';
+import RouteLoadingSpinner from './components/RouteLoadingSpinner.vue';
+import AsyncLoadingSpinner from './components/AsyncLoadingSpinner.vue';
+import AsyncErrorFallback from './components/AsyncErrorFallback.vue';
 import { useScrollSpy } from './composables/useScrollSpy';
-
-const visiblePages = computed(() => {
-  return translatedPages.value.filter((page: Page) => !page.hidden);
-});
 
 const route = useRoute();
 const router = useRouter();
@@ -148,6 +141,52 @@ const desktopMode = ref(false);
 const desktopRunner = ref<((component: string, title: string) => void) | null>(null);
 
 const headerRef = ref<HTMLElement | null>(null);
+
+const CyberpunkCity = defineAsyncComponent({
+  loader: () => {
+    if (import.meta.env.SSR) {
+      return Promise.resolve({ render: () => null } as Component);
+    }
+    return import('./components/CyberpunkCity.vue').then((m) => m.default);
+  },
+  loadingComponent: AsyncLoadingSpinner,
+  errorComponent: AsyncErrorFallback,
+  delay: 200,
+});
+const Checker = defineAsyncComponent({
+  loader: () => import('./components/Checker.vue'),
+  loadingComponent: AsyncLoadingSpinner,
+  errorComponent: AsyncErrorFallback,
+  delay: 200,
+});
+const Terminal = defineAsyncComponent({
+  loader: () => import('./components/Terminal.vue'),
+  loadingComponent: AsyncLoadingSpinner,
+  errorComponent: AsyncErrorFallback,
+  delay: 200,
+});
+const Desktop = defineAsyncComponent({
+  loader: () => import('./components/Desktop.vue'),
+  loadingComponent: AsyncLoadingSpinner,
+  errorComponent: AsyncErrorFallback,
+  delay: 200,
+});
+const Activity = defineAsyncComponent({
+  loader: () => import('./components/Activity.vue'),
+  loadingComponent: AsyncLoadingSpinner,
+  errorComponent: AsyncErrorFallback,
+  delay: 200,
+});
+const Suggestion = defineAsyncComponent({
+  loader: () => import('./components/Suggestion.vue'),
+  loadingComponent: AsyncLoadingSpinner,
+  errorComponent: AsyncErrorFallback,
+  delay: 200,
+});
+
+const visiblePages = computed(() => {
+  return translatedPages.value.filter((page: Page) => !page.hidden);
+});
 
 const {
   activeSection,

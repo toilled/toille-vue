@@ -1,5 +1,6 @@
 import { createI18n } from 'vue-i18n';
 import en from './locales/en.json';
+import { SUPPORTED_LOCALES, LOCALE_MAP, type SupportedLocale } from './utils/supportedLocales';
 
 type MessageSchema = typeof en;
 
@@ -12,23 +13,8 @@ function getInitialLocale(): string {
   const browserLangs = navigator.languages || [navigator.language];
   for (const lang of browserLangs) {
     const normalized = lang.split('-')[0];
-    const supported = [
-      'en',
-      'es',
-      'fr',
-      'de',
-      'it',
-      'pt',
-      'ru',
-      'ar',
-      'zh',
-      'ja',
-      'ko',
-      'hi',
-      'nl',
-    ];
-    if (normalized === 'zh') return 'zh-CN';
-    if (supported.includes(normalized)) return normalized;
+    if (LOCALE_MAP[normalized]) return LOCALE_MAP[normalized];
+    if (SUPPORTED_LOCALES.includes(normalized as SupportedLocale)) return normalized;
   }
   return 'en';
 }

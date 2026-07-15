@@ -1,7 +1,14 @@
 <template>
   <Teleport to="body">
     <Transition name="fade">
-      <div v-if="showWarning" class="epilepsy-overlay" @click.self="cancel">
+      <div
+        v-if="showWarning"
+        class="epilepsy-overlay"
+        @click.self="cancel"
+        @keydown.escape="cancel"
+        tabindex="-1"
+        ref="overlayRef"
+      >
         <div class="epilepsy-modal">
           <div class="modal-header">⚠ SYSTEM WARNING</div>
           <div class="modal-body">{{ warningMessage }}</div>
@@ -16,9 +23,18 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch, nextTick } from 'vue';
 import { useEpilepsyWarning } from '../composables/useEpilepsyWarning';
 
 const { showWarning, warningMessage, resolveConfirm } = useEpilepsyWarning();
+const overlayRef = ref<HTMLElement | null>(null);
+
+watch(showWarning, async (val) => {
+  if (val) {
+    await nextTick();
+    overlayRef.value?.focus();
+  }
+});
 
 function confirm() {
   resolveConfirm(true);

@@ -8,7 +8,8 @@
     "openTerminal": "Terminal openen",
     "toggleTools": "Gereedschap aan/uit",
     "weather": "Weer",
-    "language": "Taal"
+    "language": "Taal",
+    "toolsHint": "Klik om meer tools te ontdekken!"
   },
   "site": {
     "title": "Elliot Dickerson",

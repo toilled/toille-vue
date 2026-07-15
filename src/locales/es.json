@@ -8,7 +8,8 @@
     "openTerminal": "Abrir terminal",
     "toggleTools": "Alternar herramientas",
     "weather": "Clima",
-    "language": "Idioma"
+    "language": "Idioma",
+    "toolsHint": "¡Haz clic para explorar más herramientas!"
   },
   "site": {
     "title": "Elliot Dickerson",

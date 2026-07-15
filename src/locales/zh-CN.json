@@ -8,7 +8,8 @@
     "openTerminal": "打开终端",
     "toggleTools": "切换工具",
     "weather": "天气",
-    "language": "语言"
+    "language": "语言",
+    "toolsHint": "点击探索更多工具！"
   },
   "site": {
     "title": "Elliot Dickerson",

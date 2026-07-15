@@ -3,24 +3,29 @@
     <ul class="nav-links">
       <MenuItem v-for="page in pages" :key="page.link" :page="page" />
     </ul>
-    <button
-      class="tools-toggle"
-      @click="showTools = !showTools"
-      :class="{ expanded: showTools }"
-      :aria-label="t('menu.toggleTools')"
-      :aria-expanded="showTools"
-    >
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        class="toggle-icon"
+    <div class="tools-toggle-wrapper">
+      <Transition name="fade">
+        <div v-if="showHint" class="tools-hint">{{ t('menu.toolsHint') }}</div>
+      </Transition>
+      <button
+        class="tools-toggle"
+        @click="handleToolsToggle"
+        :class="{ expanded: showTools }"
+        :aria-label="t('menu.toggleTools')"
+        :aria-expanded="showTools"
       >
-        <line x1="5" y1="12" x2="19" y2="12" />
-        <line x1="12" y1="5" x2="12" y2="19" />
-      </svg>
-    </button>
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="toggle-icon"
+        >
+          <line x1="5" y1="12" x2="19" y2="12" />
+          <line x1="12" y1="5" x2="12" y2="19" />
+        </svg>
+      </button>
+    </div>
     <div class="nav-tools" :class="{ show: showTools }">
       <button
         @click="$emit('explore')"
@@ -216,6 +221,30 @@ const showTools = ref(false);
 const weatherRef = ref<{ toggleModal: () => void } | null>(null);
 const langRef = ref<{ toggle: () => void } | null>(null);
 
+const TOOLS_HINT_KEY = 'tools-hint-seen';
+const showHint = ref(false);
+
+onMounted(() => {
+  if (typeof localStorage !== 'undefined' && !localStorage.getItem(TOOLS_HINT_KEY)) {
+    setTimeout(() => {
+      showHint.value = true;
+    }, 2000);
+    setTimeout(() => {
+      showHint.value = false;
+    }, 7000);
+  }
+});
+
+function handleToolsToggle() {
+  showTools.value = !showTools.value;
+  if (showHint.value) {
+    showHint.value = false;
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(TOOLS_HINT_KEY, '1');
+    }
+  }
+}
+
 const soundOn = computed(() => audioManager.isSoundEnabled.value);
 const cityOn = computed(() => cityBackground.isEnabled.value);
 
@@ -243,6 +272,47 @@ const toggleCityBackground = () => {
   display: flex;
   align-items: center;
   gap: 1rem;
+}
+
+.tools-toggle-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.tools-hint {
+  position: absolute;
+  right: 100%;
+  margin-right: 8px;
+  padding: 0.4rem 0.75rem;
+  background: rgba(0, 255, 204, 0.15);
+  border: 1px solid rgba(0, 255, 204, 0.4);
+  border-radius: 6px;
+  color: #00ffcc;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: hint-pulse 2s ease-in-out infinite;
+}
+
+@keyframes hint-pulse {
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 .nav-links {

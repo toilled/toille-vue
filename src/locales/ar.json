@@ -8,7 +8,8 @@
     "openTerminal": "فتح الطرفية",
     "toggleTools": "تبديل الأدوات",
     "weather": "الطقس",
-    "language": "اللغة"
+    "language": "اللغة",
+    "toolsHint": "!انقر لاستكشاف المزيد من الأدوات"
   },
   "site": {
     "title": "إليوت ديكرسون",

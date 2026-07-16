@@ -56,7 +56,7 @@
 import { useI18n } from 'vue-i18n';
 import { useHead } from '@unhead/vue';
 import { useTranslate } from '../composables/useTranslate';
-import DOMPurify from 'dompurify';
+import sanitize from 'sanitize-html';
 
 const { t } = useI18n();
 const { translate, locale } = useTranslate();
@@ -89,7 +89,7 @@ const translatedOptions = ref<string[]>([]);
 const decodeHTML = (html: string) => {
   if (import.meta.env.SSR) return html;
   const txt = document.createElement('textarea');
-  txt.innerHTML = DOMPurify.sanitize(html);
+  txt.innerHTML = sanitize(html);
   return txt.value;
 };
 

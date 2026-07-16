@@ -46,6 +46,7 @@ import { useI18n } from 'vue-i18n';
 import { useHead } from '@unhead/vue';
 import { useTranslate } from '../composables/useTranslate';
 import sanitize from 'sanitize-html';
+import AnswerIndicator from './AnswerIndicator.vue';
 
 const { t } = useI18n();
 const { translate, locale } = useTranslate();
@@ -201,7 +202,9 @@ const resultClass = computed(() => ({
 
 const resultText = computed(() => {
   if (isCorrect.value) return t('quiz.correct');
-  return t('quiz.wrong', { answer: translatedOptions.value[currentQuestion.value?.correctIndex ?? 0] });
+  return t('quiz.wrong', {
+    answer: translatedOptions.value[currentQuestion.value?.correctIndex ?? 0],
+  });
 });
 </script>
 

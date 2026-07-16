@@ -1,15 +1,17 @@
 /// <reference types="vitest" />
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
-import viteCompression from "vite-plugin-compression";
+import brotliCompress, { CompressionType } from "vite-plugin-bundler";
 import { sharedPlugins } from "./vite.plugins";
 
 export default defineConfig({
   plugins: [
     vue(),
     ...sharedPlugins(),
-    viteCompression(),
-    viteCompression({ algorithm: "brotliCompress", ext: ".br" }),
+    brotliCompress({
+      type: CompressionType.BOTH,
+      threshold: 1024,
+    }),
   ],
   test: {
     globals: true,
@@ -25,13 +27,6 @@ export default defineConfig({
   build: {
     target: "esnext",
     sourcemap: false,
-    minify: "terser",
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-      },
-    },
     rollupOptions: {
       output: {
         manualChunks(id: string): string | undefined {

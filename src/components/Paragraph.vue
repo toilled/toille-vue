@@ -3,18 +3,18 @@
 </template>
 
 <script setup lang="ts">
-import DOMPurify from 'dompurify';
+import sanitize from 'sanitize-html';
 
 /**
  * @file Paragraph.vue
  * @description Renders a single paragraph of text. It can apply a specific class if it's the last paragraph.
- * Uses DOMPurify to sanitize HTML content before rendering.
+ * Uses sanitize-html to sanitize HTML content before rendering.
  */
 
 /**
  * @props {Object}
  * @property {string} paragraph - The HTML content of the paragraph to be rendered.
- * @property {boolean} last - A boolean indicating if this is the last paragraph, used to apply a 'marginless' class.
+ * @property {boolean} last - A boolean indicating if it's the last paragraph, used to apply a 'marginless' class.
  */
 const props = defineProps<{
   paragraph: string;
@@ -23,10 +23,10 @@ const props = defineProps<{
 
 /**
  * @type {import('vue').ComputedRef<string>}
- * @description A computed property that sanitizes the paragraph HTML using DOMPurify.
+ * @description A computed property that sanitizes the paragraph HTML using sanitize-html.
  */
 const sanitizedParagraph = computed(() => {
   if (import.meta.env.SSR) return props.paragraph;
-  return DOMPurify.sanitize(props.paragraph);
+  return sanitize(props.paragraph);
 });
 </script>

@@ -1,13 +1,13 @@
 <template>
   <component
-    :is="link ? 'a' : 'div'"
+    :is="tag"
     class="feature-card"
-    :href="link && !isHash ? link : undefined"
-    :target="link && link.startsWith('http') ? '_blank' : undefined"
-    :rel="link && link.startsWith('http') ? 'noopener noreferrer' : undefined"
+    :href="href"
+    :target="target"
+    :rel="rel"
     @click="handleClick"
     :tabindex="link ? 0 : undefined"
-    :role="link && isHash ? 'link' : undefined"
+    :role="role"
   >
     <div class="feature-icon" aria-hidden="true">{{ icon }}</div>
     <div class="feature-content">
@@ -35,6 +35,13 @@ const router = useRouter();
 const navigateToSection =
   inject<(id: string, behavior?: ScrollBehavior) => void>('navigateToSection');
 
+const isExternal = computed(() => props.link?.startsWith('http') ?? false);
+const tag = computed(() => (props.link ? 'a' : 'div'));
+const href = computed(() => (props.link && !props.isHash ? props.link : undefined));
+const target = computed(() => (isExternal.value ? '_blank' : undefined));
+const rel = computed(() => (isExternal.value ? 'noopener noreferrer' : undefined));
+const role = computed(() => (props.link && props.isHash ? 'link' : undefined));
+
 function handleClick() {
   if (!props.link) return;
 
@@ -43,7 +50,7 @@ function handleClick() {
     navigateToSection(sectionId);
   } else if (props.link.startsWith('/')) {
     router.push(props.link);
-  } else if (props.link.startsWith('http')) {
+  } else if (isExternal.value) {
     window.open(props.link, '_blank', 'noopener noreferrer');
   }
 }

@@ -17,28 +17,17 @@
           class="outline answer-option"
           :aria-label="getAnswerLabel(index)"
         >
-          <span
-            v-if="hasAnswered && index === currentQuestion.correctIndex"
-            class="answer-indicator correct-indicator"
-            aria-hidden="true"
-            >✓</span
-          >
-          <span
-            v-else-if="hasAnswered && index === selectedOptionIndex && !isCorrect"
-            class="answer-indicator wrong-indicator"
-            aria-hidden="true"
-            >✗</span
-          >
+          <AnswerIndicator
+            v-if="hasAnswered"
+            :is-correct="index === currentQuestion.correctIndex"
+            :is-wrong="index === selectedOptionIndex && !isCorrect"
+          />
           {{ translatedOptions[index] }}
         </button>
       </div>
 
-      <div v-if="hasAnswered" class="result" :class="{ correct: isCorrect, wrong: !isCorrect }">
-        <p v-if="isCorrect">{{ t('quiz.correct') }}</p>
-        <p v-else>
-          {{ t('quiz.wrong', { answer: translatedOptions[currentQuestion.correctIndex] }) }}
-        </p>
-
+      <div v-if="hasAnswered" class="result" :class="resultClass">
+        <p>{{ resultText }}</p>
         <button @click.stop="nextQuestion">{{ t('quiz.nextQuestion') }}</button>
       </div>
     </div>
@@ -56,7 +45,8 @@
 import { useI18n } from 'vue-i18n';
 import { useHead } from '@unhead/vue';
 import { useTranslate } from '../composables/useTranslate';
-import DOMPurify from 'dompurify';
+import sanitize from 'sanitize-html';
+import AnswerIndicator from './AnswerIndicator.vue';
 
 const { t } = useI18n();
 const { translate, locale } = useTranslate();
@@ -89,7 +79,7 @@ const translatedOptions = ref<string[]>([]);
 const decodeHTML = (html: string) => {
   if (import.meta.env.SSR) return html;
   const txt = document.createElement('textarea');
-  txt.innerHTML = DOMPurify.sanitize(html);
+  txt.innerHTML = sanitize(html);
   return txt.value;
 };
 
@@ -204,6 +194,18 @@ const getAnswerLabel = (index: number) => {
 const nextQuestion = () => {
   fetchQuestion();
 };
+
+const resultClass = computed(() => ({
+  correct: isCorrect.value,
+  wrong: !isCorrect.value,
+}));
+
+const resultText = computed(() => {
+  if (isCorrect.value) return t('quiz.correct');
+  return t('quiz.wrong', {
+    answer: translatedOptions.value[currentQuestion.value?.correctIndex ?? 0],
+  });
+});
 </script>
 
 <style scoped>
@@ -257,19 +259,6 @@ button.outline.answer-option.wrong-option {
 button.outline.answer-option.wrong-option:disabled {
   opacity: 1;
   box-shadow: 0 0 12px rgba(255, 0, 204, 0.3);
-}
-
-.answer-indicator {
-  margin-right: 0.5rem;
-  font-weight: bold;
-}
-
-.correct-indicator {
-  color: #00ffcc;
-}
-
-.wrong-indicator {
-  color: #ff00cc;
 }
 
 .result {

@@ -45,6 +45,15 @@ vi.stubGlobal(
   'cancelAnimationFrame',
   vi.fn((id) => clearTimeout(id))
 );
+
+vi.mock('../utils/TextureCache', () => ({
+  getCachedOrGenerate: vi.fn().mockImplementation((_key: string, generate: () => unknown) =>
+    Promise.resolve(generate())
+  ),
+  getCachedHeightmap: vi.fn().mockResolvedValue(null),
+  cacheHeightmap: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.stubGlobal(
   'ResizeObserver',
   class ResizeObserver {
@@ -563,10 +572,10 @@ describe('CyberpunkCity.vue', () => {
   it('initializes spark positions off-screen', async () => {
     vi.useFakeTimers();
     wrapper = mount(CyberpunkCity);
-    // Advance timers and flush microtasks to resolve async deferred init with chunked building
-    for (let i = 0; i < 50; i++) {
-      vi.advanceTimersByTime(50);
-      await Promise.resolve();
+    // Advance past requestIdleCallback setTimeout(100) and flush async init chain
+    for (let i = 0; i < 100; i++) {
+      vi.advanceTimersByTime(10);
+      await vi.advanceTimersByTimeAsync(0);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

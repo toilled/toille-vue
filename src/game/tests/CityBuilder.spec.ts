@@ -10,8 +10,17 @@ vi.mock('../utils/HeightMap', () => ({
 // Mock TextureGenerator
 vi.mock('../utils/TextureGenerator', () => ({
   createGroundTexture: vi.fn(() => new CanvasTexture(document.createElement('canvas'))),
+  createGroundNormalMap: vi.fn(() => new CanvasTexture(document.createElement('canvas'))),
   createWindowTexture: vi.fn(() => new CanvasTexture(document.createElement('canvas'))),
   createBillboardTextures: vi.fn(() => [new CanvasTexture(document.createElement('canvas'))]),
+}));
+
+vi.mock('../utils/TextureCache', () => ({
+  getCachedOrGenerate: vi.fn().mockImplementation((_key: string, generate: () => unknown) =>
+    Promise.resolve(generate())
+  ),
+  getCachedHeightmap: vi.fn().mockResolvedValue(null),
+  cacheHeightmap: vi.fn().mockResolvedValue(undefined),
 }));
 
 describe('CityBuilder', () => {

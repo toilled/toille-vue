@@ -14,6 +14,7 @@ import {
   createWindowTexture,
   createWindowRoughnessMap,
 } from '../utils/TextureGenerator';
+import { getCachedOrGenerate } from '../utils/TextureCache';
 
 const BUILDING_COLORS: number[] = [
   0x1a1a2e, // deep indigo
@@ -49,10 +50,30 @@ export class CityMaterials {
   public cylinderGeo!: CylinderGeometry;
   public neonStripGeo!: BoxGeometry;
 
-  private initTextures() {
-    this.windowTexture = createWindowTexture();
-    this.windowRoughnessMap = createWindowRoughnessMap();
+  async init() {
+    this.windowTexture = await getCachedOrGenerate('window', createWindowTexture);
+    this.windowRoughnessMap = await getCachedOrGenerate(
+      'window-roughness',
+      createWindowRoughnessMap,
+      false,
+      1
+    );
+
     this.billboardTextures = createBillboardTextures();
+    for (let i = 0; i < this.billboardTextures.length; i++) {
+      const cached = await getCachedOrGenerate(
+        `billboard-${i}`,
+        () => this.billboardTextures[i],
+        false,
+        1
+      );
+      this.billboardTextures[i] = cached;
+    }
+
+    this.initGeometries();
+    this.initBuildingMaterials();
+    this.initAudioMaterials();
+    this.initEdgeAndBillboardMaterials();
   }
 
   private initGeometries() {
@@ -109,14 +130,6 @@ export class CityMaterials {
       (tex) =>
         new MeshBasicMaterial({ map: tex, side: DoubleSide, transparent: true, opacity: 0.9 })
     );
-  }
-
-  constructor() {
-    this.initTextures();
-    this.initGeometries();
-    this.initBuildingMaterials();
-    this.initAudioMaterials();
-    this.initEdgeAndBillboardMaterials();
   }
 
   dispose() {

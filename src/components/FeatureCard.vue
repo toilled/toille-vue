@@ -37,7 +37,7 @@ const navigateToSection =
 
 const isExternal = computed(() => props.link?.startsWith('http') ?? false);
 const tag = computed(() => (props.link ? 'a' : 'div'));
-const href = computed(() => props.link && !props.isHash ? props.link : undefined);
+const href = computed(() => (props.link && !props.isHash ? props.link : undefined));
 const target = computed(() => (isExternal.value ? '_blank' : undefined));
 const rel = computed(() => (isExternal.value ? 'noopener noreferrer' : undefined));
 const role = computed(() => (props.link && props.isHash ? 'link' : undefined));

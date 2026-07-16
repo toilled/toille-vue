@@ -454,13 +454,13 @@ function initRenderer(width: number, height: number) {
   composer = setupPostProcessing(scene, camera, renderer, browserQuality);
 }
 
-function initGameWorld() {
+async function initGameWorld() {
   skyEffects = new SkyEffects(scene);
   skyEffects.addClouds();
 
   const lbTexture = createLeaderboardTexture();
   cityBuilder = new CityBuilder(scene);
-  cityBuilder.buildCity(isMobile.value, lbTexture);
+  await cityBuilder.buildCity(isMobile.value, lbTexture);
   buildings = cityBuilder.getBuildings();
   occupiedGrids = cityBuilder.getOccupiedGrids();
 
@@ -576,9 +576,9 @@ onMounted(() => {
   initScene(width, height);
   initRenderer(width, height);
 
-  const doDeferredInit = () => {
+  const doDeferredInit = async () => {
     if (deferredInitCancelled) return;
-    initGameWorld();
+    await initGameWorld();
     skyEffects.setStarTwinkleEnabled(browserQuality.starTwinkleEnabled);
     initTrafficAndSparks();
     initGameManagers();

@@ -560,10 +560,14 @@ describe('CyberpunkCity.vue', () => {
     // but ensuring no errors on unmount is a good basic check.
   });
 
-  it('initializes spark positions off-screen', () => {
+  it('initializes spark positions off-screen', async () => {
     vi.useFakeTimers();
     wrapper = mount(CyberpunkCity);
-    vi.advanceTimersByTime(200);
+    // Advance timers and flush microtasks to resolve async deferred init with chunked building
+    for (let i = 0; i < 50; i++) {
+      vi.advanceTimersByTime(50);
+      await Promise.resolve();
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const calls = (THREE.BufferAttribute as any).mock.calls;

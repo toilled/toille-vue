@@ -44,10 +44,10 @@ export class CityBuilder {
     return this.materials.audioMaterials;
   }
 
-  public buildCity(isMobile: boolean, lbTexture: Texture) {
+  public async buildCity(isMobile: boolean, lbTexture: Texture) {
     this.setupLighting();
     this.createGround();
-    this.createBuildings(lbTexture);
+    await this.createBuildings(lbTexture);
 
     this.scene.fog = new FogExp2(0x0a0015, isMobile ? 0.0005 : 0.0009);
   }
@@ -115,10 +115,22 @@ export class CityBuilder {
     this.scene.add(this.ground);
   }
 
-  private createBuildings(lbTexture: Texture) {
+  private async createBuildings(lbTexture: Texture) {
+    const BATCH_SIZE = 4;
+    const cells: { x: number; z: number }[] = [];
     for (let x = 0; x < GRID_SIZE; x++) {
       for (let z = 0; z < GRID_SIZE; z++) {
+        cells.push({ x, z });
+      }
+    }
+
+    for (let i = 0; i < cells.length; i += BATCH_SIZE) {
+      const batch = cells.slice(i, i + BATCH_SIZE);
+      for (const { x, z } of batch) {
         this.createBuildingAt(x, z, lbTexture);
+      }
+      if (i + BATCH_SIZE < cells.length) {
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
       }
     }
   }

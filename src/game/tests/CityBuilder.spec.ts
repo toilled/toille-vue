@@ -26,10 +26,10 @@ describe('CityBuilder', () => {
     vi.clearAllMocks();
   });
 
-  it('should initialize and build city', () => {
+  it('should initialize and build city', async () => {
     const lbTexture = new CanvasTexture(document.createElement('canvas'));
 
-    cityBuilder.buildCity(false, lbTexture);
+    await cityBuilder.buildCity(false, lbTexture);
 
     // Verify buildings are created
     const buildings = cityBuilder.getBuildings();
@@ -39,9 +39,9 @@ describe('CityBuilder', () => {
     expect(scene.add).toHaveBeenCalled();
   });
 
-  it('should create different building styles', () => {
+  it('should create different building styles', async () => {
     const lbTexture = new CanvasTexture(document.createElement('canvas'));
-    cityBuilder.buildCity(false, lbTexture);
+    await cityBuilder.buildCity(false, lbTexture);
 
     const buildings = cityBuilder.getBuildings();
 
@@ -59,9 +59,9 @@ describe('CityBuilder', () => {
     });
   });
 
-  it('should track occupied grids', () => {
+  it('should track occupied grids', async () => {
     const lbTexture = new CanvasTexture(document.createElement('canvas'));
-    cityBuilder.buildCity(false, lbTexture);
+    await cityBuilder.buildCity(false, lbTexture);
 
     const grid = cityBuilder.getOccupiedGrids();
     expect(grid.size).toBeGreaterThan(0);

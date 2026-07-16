@@ -15,7 +15,7 @@ vi.mock('../utils/TextureGenerator', () => ({
   createBillboardTextures: vi.fn(() => [new CanvasTexture(document.createElement('canvas'))]),
 }));
 
-vi.mock('../utils/TextureCache', () => ({
+vi.mock('../../utils/TextureCache', () => ({
   getCachedOrGenerate: vi
     .fn()
     .mockImplementation((_key: string, generate: () => unknown) => Promise.resolve(generate())),

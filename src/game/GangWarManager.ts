@@ -22,6 +22,7 @@ export class GangWarManager {
   spawnSparks: (pos: Vector3) => void;
   playPewSound: (pos?: Vector3) => void;
   private updateCounter = 0;
+  private warriorsSpawned = false;
 
   bodyGeo = new CylinderGeometry(0.5, 0.5, 2.5);
   headGeo = new SphereGeometry(0.6);
@@ -72,7 +73,11 @@ export class GangWarManager {
       this.arrowGeo,
       this.arrowMat
     );
+  }
 
+  ensureWarriorsSpawned() {
+    if (this.warriorsSpawned) return;
+    this.warriorsSpawned = true;
     this.initWarriors();
   }
 
@@ -152,6 +157,7 @@ export class GangWarManager {
   }
 
   update(dt: number) {
+    this.ensureWarriorsSpawned();
     this.updateCounter++;
     if (this.updateCounter % 3 === 0) {
       this.combat.checkReinforcements();

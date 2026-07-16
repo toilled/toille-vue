@@ -456,7 +456,6 @@ function initRenderer(width: number, height: number) {
 
 async function initGameWorld() {
   skyEffects = new SkyEffects(scene);
-  skyEffects.addClouds();
 
   const lbTexture = createLeaderboardTexture();
   cityBuilder = new CityBuilder(scene);
@@ -490,7 +489,7 @@ function initGameManagers() {
 
   gangWarManager = new GangWarManager(scene, occupiedGrids, spawnSparks, playPewSound);
 
-  multiplayerManager = new MultiplayerManager(scene, onlineCount);
+  multiplayerManager = new MultiplayerManager(scene, onlineCount, trafficSystem.getCarFactory());
 
   createCheckpoint();
   createNavArrow();
@@ -560,9 +559,6 @@ function initStoryAndMode() {
       }
     }
   });
-
-  isActive = true;
-  animate();
 }
 
 onMounted(() => {
@@ -580,9 +576,15 @@ onMounted(() => {
     if (deferredInitCancelled) return;
     await initGameWorld();
     skyEffects.setStarTwinkleEnabled(browserQuality.starTwinkleEnabled);
+
+    // Start rendering the scene immediately
+    initEventListeners();
+    isActive = true;
+    animate();
+
+    // Initialize remaining systems while city is visible
     initTrafficAndSparks();
     initGameManagers();
-    initEventListeners();
     initStoryAndMode();
 
     ScoreService.getTopScores()
@@ -857,7 +859,7 @@ function updateSparks() {
 }
 
 function updateCamera(time: number, now: number) {
-  if (gameModeManager.getMode()) return;
+  if (gameModeManager?.getMode()) return;
 
   if (isCinematicMode.value) {
     const angle = time * INTRO_ORBIT_SPEED;
@@ -914,11 +916,17 @@ function animate() {
   if (checkLowFps(now)) return;
   tickCounter++;
 
-  konamiManager.update(dt);
-  gangWarManager.update(dt);
+  if (tickCounter === 1 && trafficSystem) {
+    trafficSystem.init();
+    skyEffects?.addClouds();
+    cityBuilder?.enableAllShadowMaps();
+  }
+
+  konamiManager?.update(dt);
+  gangWarManager?.update(dt);
   skyEffects.update(dt);
-  gameModeManager.update(dt, time);
-  trafficSystem.update(activeCar.value);
+  gameModeManager?.update(dt, time);
+  trafficSystem?.update(activeCar.value);
   storyItemsManager?.updateTriggerAnimation(time * 1000);
   pagePanelRenderer?.update(now);
 

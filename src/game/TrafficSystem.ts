@@ -7,6 +7,7 @@ import { carAudio } from './audio/CarAudio';
 export class TrafficSystem {
   private cars: Group[] = [];
   private spawner: TrafficSpawner;
+  private initialized = false;
 
   constructor(
     scene: Scene,
@@ -15,6 +16,11 @@ export class TrafficSystem {
   ) {
     const carFactory = new CarFactory();
     this.spawner = new TrafficSpawner(scene, carFactory, this.cars, carCount, spawnSparks);
+  }
+
+  public init() {
+    if (this.initialized) return;
+    this.initialized = true;
     this.spawner.initCars();
     this.spawner.createInstanceMeshes();
   }
@@ -23,7 +29,12 @@ export class TrafficSystem {
     return this.cars;
   }
 
+  public getCarFactory(): CarFactory {
+    return this.spawner.getCarFactory();
+  }
+
   public update(activeCar?: Group | null) {
+    if (!this.initialized) return;
     TrafficAI.updateCars(this.cars, (car) => this.spawner.resetCar(car));
     this.checkCollisions();
     this.spawner.syncCarInstances(activeCar || null);

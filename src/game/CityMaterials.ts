@@ -10,7 +10,7 @@ import {
   CylinderGeometry,
 } from 'three';
 import {
-  createBillboardTextures,
+  createBillboardTexture,
   createWindowTexture,
   createWindowRoughnessMap,
 } from '../utils/TextureGenerator';
@@ -59,15 +59,16 @@ export class CityMaterials {
       1
     );
 
-    this.billboardTextures = createBillboardTextures();
-    for (let i = 0; i < this.billboardTextures.length; i++) {
+    const billboardCount = 8;
+    this.billboardTextures = [];
+    for (let i = 0; i < billboardCount; i++) {
       const cached = await getCachedOrGenerate(
         `billboard-${i}`,
-        () => this.billboardTextures[i],
+        () => createBillboardTexture(i),
         false,
         1
       );
-      this.billboardTextures[i] = cached;
+      this.billboardTextures.push(cached);
     }
 
     this.initGeometries();

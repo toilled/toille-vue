@@ -33,20 +33,23 @@ export class KonamiManager {
   private fwVelocities: Float32Array;
   private fwLifetimes: Float32Array;
   private fwTypes: Float32Array; // 0 = rocket, 1 = explosion
+  private initialized = false;
 
   constructor(scene: Scene) {
     this.scene = scene;
-
     this.fwPositions = new Float32Array(this.fireworkCount * 3);
-    // Initialize fireworks off-screen
-    for (let i = 0; i < this.fireworkCount; i++) {
-      this.fwPositions[i * 3 + 1] = -99999;
-    }
     this.fwColors = new Float32Array(this.fireworkCount * 3);
     this.fwVelocities = new Float32Array(this.fireworkCount * 3);
     this.fwLifetimes = new Float32Array(this.fireworkCount);
     this.fwTypes = new Float32Array(this.fireworkCount);
+  }
 
+  private ensureInitialized() {
+    if (this.initialized) return;
+    this.initialized = true;
+    for (let i = 0; i < this.fireworkCount; i++) {
+      this.fwPositions[i * 3 + 1] = -99999;
+    }
     this.initFireworks();
   }
 
@@ -74,6 +77,7 @@ export class KonamiManager {
     if (event.key === this.konamiCode[this.konamiIndex]) {
       this.konamiIndex++;
       if (this.konamiIndex === this.konamiCode.length) {
+        this.ensureInitialized();
         this.startFireworkShow();
         this.konamiIndex = 0; // Reset after success
       }
@@ -128,7 +132,7 @@ export class KonamiManager {
   }
 
   public update(dt: number) {
-    if (!this.fireworks) return;
+    if (!this.initialized || !this.fireworks) return;
 
     const positions = this.fireworks.geometry.attributes.position.array as Float32Array;
     let needsUpdate = false;

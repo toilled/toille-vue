@@ -4,7 +4,7 @@ import { CityMaterials } from '../CityMaterials';
 vi.mock('../../utils/TextureGenerator', () => ({
   createWindowTexture: () => ({ dispose: vi.fn() }),
   createWindowRoughnessMap: () => ({ dispose: vi.fn() }),
-  createBillboardTextures: () => [{ dispose: vi.fn() }, { dispose: vi.fn() }],
+  createBillboardTexture: () => ({ dispose: vi.fn() }),
 }));
 
 vi.mock('../../utils/TextureCache', () => ({

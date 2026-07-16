@@ -59,6 +59,10 @@ export class TrafficSpawner {
     }
   }
 
+  public getCarFactory(): CarFactory {
+    return this.carFactory;
+  }
+
   public createInstanceMeshes() {
     const total = this.cars.length;
     const f = this.carFactory;

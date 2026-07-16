@@ -27,6 +27,7 @@ export class CityBuilder {
   private occupiedGrids = new Map<string, { halfW: number; halfD: number; isRound?: boolean }>();
   private materials: CityMaterials;
   private ground: Mesh | null = null;
+  private directionalLights: DirectionalLight[] = [];
 
   constructor(scene: Scene) {
     this.scene = scene;
@@ -59,15 +60,21 @@ export class CityBuilder {
     hemiLight.position.set(0, 500, 0);
     this.scene.add(hemiLight);
 
-    this.addDirectionalLight(150, 350, 100, 0xff00cc);
-    this.addDirectionalLight(-150, 300, -150, 0x00ccff);
-    this.addDirectionalLight(50, 200, -200, 0xaa44ff);
+    this.addDirectionalLight(150, 350, 100, 0xff00cc, true);
+    this.addDirectionalLight(-150, 300, -150, 0x00ccff, false);
+    this.addDirectionalLight(50, 200, -200, 0xaa44ff, false);
   }
 
-  private addDirectionalLight(x: number, y: number, z: number, color: number) {
+  enableAllShadowMaps() {
+    for (const light of this.directionalLights) {
+      light.castShadow = true;
+    }
+  }
+
+  private addDirectionalLight(x: number, y: number, z: number, color: number, castShadow: boolean) {
     const dirLight = new DirectionalLight(color, 1.5);
     dirLight.position.set(x, y, z);
-    dirLight.castShadow = true;
+    dirLight.castShadow = castShadow;
     dirLight.shadow.mapSize.width = 1024;
     dirLight.shadow.mapSize.height = 1024;
     dirLight.shadow.camera.near = 10;
@@ -77,6 +84,7 @@ export class CityBuilder {
     dirLight.shadow.camera.top = 500;
     dirLight.shadow.camera.bottom = -500;
     dirLight.shadow.bias = -0.0005;
+    this.directionalLights.push(dirLight);
     this.scene.add(dirLight);
   }
 

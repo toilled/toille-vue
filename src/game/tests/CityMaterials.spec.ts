@@ -8,9 +8,9 @@ vi.mock('../../utils/TextureGenerator', () => ({
 }));
 
 vi.mock('../../utils/TextureCache', () => ({
-  getCachedOrGenerate: vi.fn().mockImplementation((_key: string, generate: () => unknown) =>
-    Promise.resolve(generate())
-  ),
+  getCachedOrGenerate: vi
+    .fn()
+    .mockImplementation((_key: string, generate: () => unknown) => Promise.resolve(generate())),
 }));
 
 describe('CityMaterials', () => {

@@ -18,6 +18,7 @@ import {
 import { BLOCK_SIZE, CELL_SIZE, CITY_SIZE, GRID_SIZE, START_OFFSET } from './config';
 import { createGroundTexture, createGroundNormalMap } from '../utils/TextureGenerator';
 import { getHeight } from '../utils/HeightMap';
+import { getCachedHeightmap, cacheHeightmap } from '../utils/TextureCache';
 import { CityMaterials } from './CityMaterials';
 
 export class CityBuilder {
@@ -45,8 +46,9 @@ export class CityBuilder {
   }
 
   public async buildCity(isMobile: boolean, lbTexture: Texture) {
+    await this.materials.init();
     this.setupLighting();
-    this.createGround();
+    await this.createGround();
     await this.createBuildings(lbTexture);
 
     this.scene.fog = new FogExp2(0x0a0015, isMobile ? 0.0005 : 0.0009);
@@ -78,18 +80,30 @@ export class CityBuilder {
     this.scene.add(dirLight);
   }
 
-  private createGround() {
+  private async createGround() {
     const groundTexture = createGroundTexture();
     const groundNormalMap = createGroundNormalMap();
     const planeGeometry = new PlaneGeometry(CITY_SIZE * 2, CITY_SIZE * 2, 128, 128);
 
+    const vertexCount = (128 + 1) * (128 + 1);
+    const heightmapKey = `heightmap-${128}-${CITY_SIZE * 2}`;
+    const cachedHeights = await getCachedHeightmap(heightmapKey);
+
     const posAttribute = planeGeometry.attributes.position;
-    for (let i = 0; i < posAttribute.count; i++) {
-      const x = posAttribute.getX(i);
-      const y = posAttribute.getY(i);
-      // Local y corresponds to world -z after rotation
-      const h = getHeight(x, -y);
-      posAttribute.setZ(i, h);
+    if (cachedHeights && cachedHeights.length === vertexCount) {
+      for (let i = 0; i < vertexCount; i++) {
+        posAttribute.setZ(i, cachedHeights[i]);
+      }
+    } else {
+      const heights = new Float32Array(vertexCount);
+      for (let i = 0; i < posAttribute.count; i++) {
+        const x = posAttribute.getX(i);
+        const y = posAttribute.getY(i);
+        const h = getHeight(x, -y);
+        posAttribute.setZ(i, h);
+        heights[i] = h;
+      }
+      cacheHeightmap(heightmapKey, heights);
     }
     planeGeometry.computeVertexNormals();
 

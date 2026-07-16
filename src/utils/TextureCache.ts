@@ -32,7 +32,7 @@ function openDB(): Promise<IDBDatabase | null> {
   });
 }
 
-export async function getCachedTexture(key: string): Promise<CanvasTexture | null> {
+async function getCachedTexture(key: string): Promise<CanvasTexture | null> {
   const db = await openDB();
   if (!db) return null;
 
@@ -75,7 +75,7 @@ export async function getCachedTexture(key: string): Promise<CanvasTexture | nul
   });
 }
 
-export async function cacheTexture(
+async function cacheTexture(
   key: string,
   texture: CanvasTexture,
   useNearestFilter = false

@@ -47,9 +47,9 @@ vi.stubGlobal(
 );
 
 vi.mock('../utils/TextureCache', () => ({
-  getCachedOrGenerate: vi.fn().mockImplementation((_key: string, generate: () => unknown) =>
-    Promise.resolve(generate())
-  ),
+  getCachedOrGenerate: vi
+    .fn()
+    .mockImplementation((_key: string, generate: () => unknown) => Promise.resolve(generate())),
   getCachedHeightmap: vi.fn().mockResolvedValue(null),
   cacheHeightmap: vi.fn().mockResolvedValue(undefined),
 }));

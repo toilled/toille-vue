@@ -11,6 +11,7 @@ describe('TrafficSystem', () => {
     scene = new Scene();
     spawnSparks = vi.fn();
     trafficSystem = new TrafficSystem(scene, 10, spawnSparks);
+    trafficSystem.init();
   });
 
   it('should initialize cars including police cars', () => {

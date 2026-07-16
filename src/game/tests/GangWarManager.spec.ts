@@ -111,12 +111,14 @@ describe('GangWarManager', () => {
   });
 
   it('should initialize with warriors', () => {
+    manager.ensureWarriorsSpawned();
     // 4 gangs * 20 warriors = 80
     expect(manager.warriors.length).toBe(80);
     expect(scene.add).toHaveBeenCalledTimes(80); // Groups added to scene
   });
 
   it('should update warriors and create projectiles', () => {
+    manager.ensureWarriorsSpawned();
     // Force warriors close to each other
     manager.warriors[0].group.position.set(0, 0, 0);
     manager.warriors[1].group.position.set(10, 0, 0);
@@ -137,6 +139,7 @@ describe('GangWarManager', () => {
   });
 
   it('should respawn warriors when count is low', () => {
+    manager.ensureWarriorsSpawned();
     // Kill all warriors of gang 0
     const gang0Warriors = manager.warriors.filter((w) => w.gangId === 0);
     gang0Warriors.forEach((w) => (w.state = 'DEAD'));
@@ -153,6 +156,7 @@ describe('GangWarManager', () => {
   });
 
   it('should create fight markers for combat clusters', () => {
+    manager.ensureWarriorsSpawned();
     // Setup a cluster of 4 warriors in COMBAT
     manager.warriors[0].group.position.set(0, 0, 0);
     manager.warriors[1].group.position.set(5, 0, 0);
@@ -179,6 +183,7 @@ describe('GangWarManager', () => {
   });
 
   it('should handle damage and death', () => {
+    manager.ensureWarriorsSpawned();
     const w1 = manager.warriors[0];
     const w2 = manager.warriors[1];
     w2.gangId = (w1.gangId + 1) % 4;

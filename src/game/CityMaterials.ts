@@ -10,10 +10,11 @@ import {
   CylinderGeometry,
 } from 'three';
 import {
-  createBillboardTextures,
+  createBillboardTexture,
   createWindowTexture,
   createWindowRoughnessMap,
 } from '../utils/TextureGenerator';
+import { getCachedOrGenerate } from '../utils/TextureCache';
 
 const BUILDING_COLORS: number[] = [
   0x1a1a2e, // deep indigo
@@ -49,10 +50,31 @@ export class CityMaterials {
   public cylinderGeo!: CylinderGeometry;
   public neonStripGeo!: BoxGeometry;
 
-  private initTextures() {
-    this.windowTexture = createWindowTexture();
-    this.windowRoughnessMap = createWindowRoughnessMap();
-    this.billboardTextures = createBillboardTextures();
+  async init() {
+    this.windowTexture = await getCachedOrGenerate('window', createWindowTexture);
+    this.windowRoughnessMap = await getCachedOrGenerate(
+      'window-roughness',
+      createWindowRoughnessMap,
+      false,
+      1
+    );
+
+    const billboardCount = 8;
+    this.billboardTextures = [];
+    for (let i = 0; i < billboardCount; i++) {
+      const cached = await getCachedOrGenerate(
+        `billboard-${i}`,
+        () => createBillboardTexture(i),
+        false,
+        1
+      );
+      this.billboardTextures.push(cached);
+    }
+
+    this.initGeometries();
+    this.initBuildingMaterials();
+    this.initAudioMaterials();
+    this.initEdgeAndBillboardMaterials();
   }
 
   private initGeometries() {
@@ -109,14 +131,6 @@ export class CityMaterials {
       (tex) =>
         new MeshBasicMaterial({ map: tex, side: DoubleSide, transparent: true, opacity: 0.9 })
     );
-  }
-
-  constructor() {
-    this.initTextures();
-    this.initGeometries();
-    this.initBuildingMaterials();
-    this.initAudioMaterials();
-    this.initEdgeAndBillboardMaterials();
   }
 
   dispose() {

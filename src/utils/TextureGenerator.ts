@@ -378,8 +378,7 @@ function drawBillboardContent(ctx: CanvasRenderingContext2D, i: number, color: s
 }
 
 // Generate Billboard Textures
-export function createBillboardTextures() {
-  const textures: CanvasTexture[] = [];
+export function createBillboardTexture(index: number): CanvasTexture {
   const colors = [
     '#ff00cc',
     '#00ffcc',
@@ -391,22 +390,26 @@ export function createBillboardTextures() {
     '#ff8800',
   ];
 
+  const canvas = document.createElement('canvas');
+  canvas.width = 128;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, 128, 64);
+    const color = colors[index % colors.length];
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 4;
+    ctx.strokeRect(4, 4, 120, 56);
+    drawBillboardContent(ctx, index, color);
+  }
+  return new CanvasTexture(canvas);
+}
+
+export function createBillboardTextures() {
+  const textures: CanvasTexture[] = [];
   for (let i = 0; i < 8; i++) {
-    const canvas = document.createElement('canvas');
-    canvas.width = 128;
-    canvas.height = 64;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(0, 0, 128, 64);
-      const color = colors[i % colors.length];
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 4;
-      ctx.strokeRect(4, 4, 120, 56);
-      drawBillboardContent(ctx, i, color);
-    }
-    const texture = new CanvasTexture(canvas);
-    textures.push(texture);
+    textures.push(createBillboardTexture(i));
   }
   return textures;
 }

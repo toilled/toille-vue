@@ -32,10 +32,10 @@ export class MultiplayerManager {
   private lastBroadcastTime = 0;
   private broadcastInterval = 100; // max 10Hz
 
-  constructor(scene: Scene, onlineCountRef: Ref<number>) {
+  constructor(scene: Scene, onlineCountRef: Ref<number>, carFactory: CarFactory) {
     this.scene = scene;
     this.myId = Math.random().toString(36).substring(2, 10);
-    this.carFactory = new CarFactory();
+    this.carFactory = carFactory;
     this.onlineCountRef = onlineCountRef;
   }
 

@@ -52,7 +52,23 @@ describe('KonamiManager', () => {
     new KonamiManager(scene);
   });
 
-  it('should initialize fireworks positions off-screen', () => {
+  it('should initialize fireworks positions off-screen after Konami code', () => {
+    const manager = new KonamiManager(scene);
+    // Enter the full Konami code to trigger initialization
+    const keys = [
+      'ArrowUp',
+      'ArrowUp',
+      'ArrowDown',
+      'ArrowDown',
+      'ArrowLeft',
+      'ArrowRight',
+      'ArrowLeft',
+      'ArrowRight',
+      'b',
+      'a',
+    ];
+    keys.forEach((key) => manager.onKeyDown({ key } as KeyboardEvent));
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const calls = (THREE.BufferAttribute as any).mock.calls;
     let fireworksPosFound = false;

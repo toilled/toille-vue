@@ -10,8 +10,17 @@ vi.mock('../utils/HeightMap', () => ({
 // Mock TextureGenerator
 vi.mock('../utils/TextureGenerator', () => ({
   createGroundTexture: vi.fn(() => new CanvasTexture(document.createElement('canvas'))),
+  createGroundNormalMap: vi.fn(() => new CanvasTexture(document.createElement('canvas'))),
   createWindowTexture: vi.fn(() => new CanvasTexture(document.createElement('canvas'))),
-  createBillboardTextures: vi.fn(() => [new CanvasTexture(document.createElement('canvas'))]),
+  createBillboardTexture: vi.fn(() => new CanvasTexture(document.createElement('canvas'))),
+}));
+
+vi.mock('../../utils/TextureCache', () => ({
+  getCachedOrGenerate: vi
+    .fn()
+    .mockImplementation((_key: string, generate: () => unknown) => Promise.resolve(generate())),
+  getCachedHeightmap: vi.fn().mockResolvedValue(null),
+  cacheHeightmap: vi.fn().mockResolvedValue(undefined),
 }));
 
 describe('CityBuilder', () => {
@@ -26,10 +35,10 @@ describe('CityBuilder', () => {
     vi.clearAllMocks();
   });
 
-  it('should initialize and build city', () => {
+  it('should initialize and build city', async () => {
     const lbTexture = new CanvasTexture(document.createElement('canvas'));
 
-    cityBuilder.buildCity(false, lbTexture);
+    await cityBuilder.buildCity(false, lbTexture);
 
     // Verify buildings are created
     const buildings = cityBuilder.getBuildings();
@@ -39,9 +48,9 @@ describe('CityBuilder', () => {
     expect(scene.add).toHaveBeenCalled();
   });
 
-  it('should create different building styles', () => {
+  it('should create different building styles', async () => {
     const lbTexture = new CanvasTexture(document.createElement('canvas'));
-    cityBuilder.buildCity(false, lbTexture);
+    await cityBuilder.buildCity(false, lbTexture);
 
     const buildings = cityBuilder.getBuildings();
 
@@ -59,9 +68,9 @@ describe('CityBuilder', () => {
     });
   });
 
-  it('should track occupied grids', () => {
+  it('should track occupied grids', async () => {
     const lbTexture = new CanvasTexture(document.createElement('canvas'));
-    cityBuilder.buildCity(false, lbTexture);
+    await cityBuilder.buildCity(false, lbTexture);
 
     const grid = cityBuilder.getOccupiedGrids();
     expect(grid.size).toBeGreaterThan(0);

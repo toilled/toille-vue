@@ -44,6 +44,7 @@ export class SkyEffects {
   private stars: Points;
   private time: number = 0;
   private fog: FogExp2;
+  private cloudsAdded = false;
 
   constructor(scene: Scene, config: Partial<SkyEffectConfig> = {}) {
     this.scene = scene;
@@ -191,6 +192,8 @@ export class SkyEffects {
   }
 
   addClouds(): void {
+    if (this.cloudsAdded) return;
+    this.cloudsAdded = true;
     const cloudTexture = createCloudTexture();
 
     for (let i = 0; i < this.config.cloudCount; i++) {

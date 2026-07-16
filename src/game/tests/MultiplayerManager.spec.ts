@@ -54,7 +54,9 @@ describe('MultiplayerManager', () => {
       remove: vi.fn(),
     } as unknown as Scene;
     onlineCount = ref(0);
-    manager = new MultiplayerManager(scene, onlineCount);
+    manager = new MultiplayerManager(scene, onlineCount, {
+      createCar: vi.fn(() => new Group()),
+    } as never);
   });
 
   afterEach(() => {

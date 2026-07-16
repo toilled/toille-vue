@@ -18,6 +18,7 @@ import {
 import { BLOCK_SIZE, CELL_SIZE, CITY_SIZE, GRID_SIZE, START_OFFSET } from './config';
 import { createGroundTexture, createGroundNormalMap } from '../utils/TextureGenerator';
 import { getHeight } from '../utils/HeightMap';
+import { getCachedHeightmap, cacheHeightmap } from '../utils/TextureCache';
 import { CityMaterials } from './CityMaterials';
 
 export class CityBuilder {
@@ -26,6 +27,7 @@ export class CityBuilder {
   private occupiedGrids = new Map<string, { halfW: number; halfD: number; isRound?: boolean }>();
   private materials: CityMaterials;
   private ground: Mesh | null = null;
+  private directionalLights: DirectionalLight[] = [];
 
   constructor(scene: Scene) {
     this.scene = scene;
@@ -44,10 +46,11 @@ export class CityBuilder {
     return this.materials.audioMaterials;
   }
 
-  public buildCity(isMobile: boolean, lbTexture: Texture) {
+  public async buildCity(isMobile: boolean, lbTexture: Texture) {
+    await this.materials.init();
     this.setupLighting();
-    this.createGround();
-    this.createBuildings(lbTexture);
+    await this.createGround();
+    await this.createBuildings(lbTexture);
 
     this.scene.fog = new FogExp2(0x0a0015, isMobile ? 0.0005 : 0.0009);
   }
@@ -57,15 +60,21 @@ export class CityBuilder {
     hemiLight.position.set(0, 500, 0);
     this.scene.add(hemiLight);
 
-    this.addDirectionalLight(150, 350, 100, 0xff00cc);
-    this.addDirectionalLight(-150, 300, -150, 0x00ccff);
-    this.addDirectionalLight(50, 200, -200, 0xaa44ff);
+    this.addDirectionalLight(150, 350, 100, 0xff00cc, true);
+    this.addDirectionalLight(-150, 300, -150, 0x00ccff, false);
+    this.addDirectionalLight(50, 200, -200, 0xaa44ff, false);
   }
 
-  private addDirectionalLight(x: number, y: number, z: number, color: number) {
+  enableAllShadowMaps() {
+    for (const light of this.directionalLights) {
+      light.castShadow = true;
+    }
+  }
+
+  private addDirectionalLight(x: number, y: number, z: number, color: number, castShadow: boolean) {
     const dirLight = new DirectionalLight(color, 1.5);
     dirLight.position.set(x, y, z);
-    dirLight.castShadow = true;
+    dirLight.castShadow = castShadow;
     dirLight.shadow.mapSize.width = 1024;
     dirLight.shadow.mapSize.height = 1024;
     dirLight.shadow.camera.near = 10;
@@ -75,21 +84,34 @@ export class CityBuilder {
     dirLight.shadow.camera.top = 500;
     dirLight.shadow.camera.bottom = -500;
     dirLight.shadow.bias = -0.0005;
+    this.directionalLights.push(dirLight);
     this.scene.add(dirLight);
   }
 
-  private createGround() {
+  private async createGround() {
     const groundTexture = createGroundTexture();
     const groundNormalMap = createGroundNormalMap();
     const planeGeometry = new PlaneGeometry(CITY_SIZE * 2, CITY_SIZE * 2, 128, 128);
 
+    const vertexCount = (128 + 1) * (128 + 1);
+    const heightmapKey = `heightmap-${128}-${CITY_SIZE * 2}`;
+    const cachedHeights = await getCachedHeightmap(heightmapKey);
+
     const posAttribute = planeGeometry.attributes.position;
-    for (let i = 0; i < posAttribute.count; i++) {
-      const x = posAttribute.getX(i);
-      const y = posAttribute.getY(i);
-      // Local y corresponds to world -z after rotation
-      const h = getHeight(x, -y);
-      posAttribute.setZ(i, h);
+    if (cachedHeights && cachedHeights.length === vertexCount) {
+      for (let i = 0; i < vertexCount; i++) {
+        posAttribute.setZ(i, cachedHeights[i]);
+      }
+    } else {
+      const heights = new Float32Array(vertexCount);
+      for (let i = 0; i < posAttribute.count; i++) {
+        const x = posAttribute.getX(i);
+        const y = posAttribute.getY(i);
+        const h = getHeight(x, -y);
+        posAttribute.setZ(i, h);
+        heights[i] = h;
+      }
+      cacheHeightmap(heightmapKey, heights);
     }
     planeGeometry.computeVertexNormals();
 
@@ -115,10 +137,22 @@ export class CityBuilder {
     this.scene.add(this.ground);
   }
 
-  private createBuildings(lbTexture: Texture) {
+  private async createBuildings(lbTexture: Texture) {
+    const BATCH_SIZE = 4;
+    const cells: { x: number; z: number }[] = [];
     for (let x = 0; x < GRID_SIZE; x++) {
       for (let z = 0; z < GRID_SIZE; z++) {
+        cells.push({ x, z });
+      }
+    }
+
+    for (let i = 0; i < cells.length; i += BATCH_SIZE) {
+      const batch = cells.slice(i, i + BATCH_SIZE);
+      for (const { x, z } of batch) {
         this.createBuildingAt(x, z, lbTexture);
+      }
+      if (i + BATCH_SIZE < cells.length) {
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
       }
     }
   }

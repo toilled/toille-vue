@@ -5,7 +5,12 @@
     :style="windowStyle"
     @mousedown.prevent="onFocus"
   >
-    <div class="window-titlebar" @mousedown.prevent="onDragStart" @dblclick="toggleMaximize">
+    <div
+      class="window-titlebar"
+      ref="titlebarRef"
+      @mousedown.prevent="onDragStart"
+      @dblclick="toggleMaximize"
+    >
       <span class="window-icon" v-if="win.icon">{{ win.icon }}</span>
       <span class="window-title">{{ win.title }}</span>
       <div class="window-controls">
@@ -14,7 +19,7 @@
         <button class="ctrl close" @click.stop="onClose" title="Close">✕</button>
       </div>
     </div>
-    <div class="window-body">
+    <div class="window-body" ref="bodyRef">
       <component :is="props.component" v-bind="resolvedProps" />
     </div>
     <div v-if="!win.maximized" class="resize-handle" @mousedown.prevent="onResizeStart" />
@@ -24,6 +29,7 @@
 <script setup lang="ts">
 import type { Component } from 'vue';
 import type { WindowState } from '../composables/useWindowManager';
+import { useWindowManager } from '../composables/useWindowManager';
 
 const props = defineProps<{
   win: WindowState;
@@ -41,6 +47,8 @@ const emit = defineEmits<{
 
 provide('currentWindowId', props.win.id);
 
+const { fitContent } = useWindowManager();
+
 const resolvedProps = computed(() => props.win.props ?? {});
 
 const windowStyle = computed(() => {
@@ -55,6 +63,55 @@ const windowStyle = computed(() => {
     height: w.height + 'px',
     zIndex: w.zIndex,
   };
+});
+
+const titlebarRef = ref<HTMLDivElement>();
+const bodyRef = ref<HTMLDivElement>();
+let contentObserver: MutationObserver | null = null;
+
+function fitToContent() {
+  if (props.win.userResized || !titlebarRef.value || !bodyRef.value) return;
+
+  const titlebarHeight = titlebarRef.value.offsetHeight;
+  const body = bodyRef.value;
+  const origOverflow = body.style.overflow;
+  const origWidth = body.style.width;
+  body.style.overflow = 'visible';
+  body.style.width = 'max-content';
+
+  const contentWidth = body.scrollWidth;
+  const contentHeight = body.scrollHeight;
+
+  body.style.overflow = origOverflow;
+  body.style.width = origWidth;
+
+  const width = contentWidth + 2;
+  const height = titlebarHeight + contentHeight + 2;
+
+  const maxWidth = Math.min(window.innerWidth - 20, 1000);
+  const maxHeight = window.innerHeight - 60;
+
+  const finalWidth = Math.min(Math.max(width, props.win.minWidth ?? 200), maxWidth);
+  const finalHeight = Math.min(Math.max(height, props.win.minHeight ?? 120), maxHeight);
+
+  fitContent(props.win.id, finalWidth, finalHeight);
+}
+
+onMounted(async () => {
+  await nextTick();
+  fitToContent();
+
+  if (bodyRef.value) {
+    contentObserver = new MutationObserver(async () => {
+      await nextTick();
+      fitToContent();
+    });
+    contentObserver.observe(bodyRef.value, { childList: true, subtree: true, characterData: true });
+  }
+});
+
+onUnmounted(() => {
+  contentObserver?.disconnect();
 });
 
 function onFocus() {

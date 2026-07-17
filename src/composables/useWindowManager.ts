@@ -13,6 +13,7 @@ export interface WindowState {
   icon: string | undefined;
   minWidth: number | undefined;
   minHeight: number | undefined;
+  userResized: boolean;
   _prevX?: number;
   _prevY?: number;
   _prevWidth?: number;
@@ -64,6 +65,7 @@ export function useWindowManager() {
       icon: opts.icon ?? undefined,
       minWidth: opts.minWidth ?? undefined,
       minHeight: opts.minHeight ?? undefined,
+      userResized: false,
     };
 
     windows.value.push(w);
@@ -138,6 +140,15 @@ export function useWindowManager() {
     if (w && !w.maximized) {
       w.width = Math.max(w.minWidth ?? 300, width);
       w.height = Math.max(w.minHeight ?? 200, height);
+      w.userResized = true;
+    }
+  }
+
+  function fitContent(id: string, width: number, height: number) {
+    const w = windows.value.find((w) => w.id === id);
+    if (w && !w.maximized && !w.userResized) {
+      w.width = Math.max(w.minWidth ?? 300, width);
+      w.height = Math.max(w.minHeight ?? 200, height);
     }
   }
 
@@ -154,6 +165,7 @@ export function useWindowManager() {
     focusWindow,
     moveWindow,
     resizeWindow,
+    fitContent,
     closeAll,
   };
 }

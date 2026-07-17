@@ -69,7 +69,7 @@ const desktopRunner =
   inject<Ref<((component: string, title: string) => void) | null>>('desktopRunner');
 if (desktopRunner) {
   desktopRunner.value = (component: string, title: string) => {
-    openWindow({ title, component, width: 700, height: 500 });
+    openWindow({ title, component, width: 800, height: 500 });
   };
 }
 provide('desktopCloseWindow', (id: string) => closeWindow(id));
@@ -105,9 +105,9 @@ const shortcuts: Shortcut[] = [
     icon: '⬛',
     component: 'Terminal',
     props: { overlay: false },
-    width: 700,
+    width: 800,
     height: 500,
-    minWidth: 320,
+    minWidth: 800,
     minHeight: 240,
   },
   {

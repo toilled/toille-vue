@@ -76,8 +76,17 @@ function fitToContent() {
   const contentEl = bodyRef.value.firstElementChild as HTMLElement | null;
   if (!contentEl) return;
 
+  const body = bodyRef.value;
+  const origOverflow = body.style.overflow;
+  const origWidth = body.style.width;
+  body.style.overflow = 'visible';
+  body.style.width = 'max-content';
+
   const contentWidth = contentEl.scrollWidth;
   const contentHeight = contentEl.scrollHeight;
+
+  body.style.overflow = origOverflow;
+  body.style.width = origWidth;
 
   const width = contentWidth + 2;
   const height = titlebarHeight + contentHeight + 2;

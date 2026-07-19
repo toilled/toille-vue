@@ -73,17 +73,11 @@ function fitToContent() {
   if (props.win.userResized || !titlebarRef.value || !bodyRef.value) return;
 
   const titlebarHeight = titlebarRef.value.offsetHeight;
-  const body = bodyRef.value;
-  const origOverflow = body.style.overflow;
-  const origWidth = body.style.width;
-  body.style.overflow = 'visible';
-  body.style.width = 'max-content';
+  const contentEl = bodyRef.value.firstElementChild as HTMLElement | null;
+  if (!contentEl) return;
 
-  const contentWidth = body.scrollWidth;
-  const contentHeight = body.scrollHeight;
-
-  body.style.overflow = origOverflow;
-  body.style.width = origWidth;
+  const contentWidth = contentEl.scrollWidth;
+  const contentHeight = contentEl.scrollHeight;
 
   const width = contentWidth + 2;
   const height = titlebarHeight + contentHeight + 2;

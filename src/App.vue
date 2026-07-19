@@ -54,15 +54,15 @@
   <div class="ambient-glow" aria-hidden="true"></div>
 
   <Transition name="fade">
-    <Terminal v-if="terminal" @close="uiStore.terminal = false" />
+    <Terminal v-if="terminal" @close="toggleTerminal" />
   </Transition>
 
   <CyberpunkCity
     v-if="showCity"
     ref="cyberpunkCityRef"
-    @game-start="gameStore.enterGameMode()"
-    @game-end="gameStore.exitGameMode()"
-    @fallback="gameStore.setCityFallback(true)"
+    @game-start="startGame"
+    @game-end="endGame"
+    @fallback="handleCityFallback"
     @navigate="handleNavigate"
   />
   <EpilepsyWarning />
@@ -76,12 +76,15 @@ import type { Component } from 'vue';
 import AppHeader from './components/AppHeader.vue';
 import AppFooter from './components/AppFooter.vue';
 import AppOverlays from './components/AppOverlays.vue';
-import { useGameStore } from './stores/gameStore';
+import { useGameState } from './composables/useGameState';
+import { useDesktopMode } from './composables/useDesktopMode';
 import { useUIStore } from './stores/uiStore';
 
 const { t, locale } = useI18n();
 const { translatedPages } = useTranslatedPages();
-const gameStore = useGameStore();
+const { gameMode, cityFallback, showCity, setClient, startGame, endGame, handleCityFallback } =
+  useGameState();
+const { desktopMode, terminal, toggleDesktop, toggleTerminal } = useDesktopMode();
 const uiStore = useUIStore();
 
 const CyberpunkCity = defineAsyncComponent(() => {
@@ -90,7 +93,6 @@ const CyberpunkCity = defineAsyncComponent(() => {
   }
   return import('./components/CyberpunkCity.vue').then((m) => m.default);
 });
-import { cityBackground } from './utils/CityBackgroundManager';
 import titles from './configs/titles.json';
 import { Page } from './interfaces/Page';
 const Terminal = defineAsyncComponent(() => import('./components/Terminal.vue'));
@@ -104,18 +106,10 @@ const visiblePages = computed(() => {
 
 const route = useRoute();
 const router = useRouter();
-const gameMode = computed(() => gameStore.gameMode);
-const cityFallback = computed(() => gameStore.cityFallback);
 const isContentVisible = computed(() => uiStore.isContentVisible);
-const isClient = computed(() => gameStore.isClient);
-const showCity = computed(
-  () => isClient.value && cityBackground.isEnabled.value && !uiStore.desktopMode
-);
 const checker = computed(() => uiStore.checker);
 const activity = computed(() => uiStore.activity);
 const joke = computed(() => uiStore.joke);
-const terminal = computed(() => uiStore.terminal);
-const desktopMode = computed(() => uiStore.desktopMode);
 
 const headerRef = ref<HTMLElement | null>(null);
 
@@ -222,16 +216,8 @@ function toggleJoke() {
   uiStore.toggleJoke();
 }
 
-function toggleTerminal() {
-  uiStore.toggleTerminal();
-}
-
-function toggleDesktop() {
-  uiStore.toggleDesktop();
-}
-
 onMounted(() => {
-  gameStore.setClient(true);
+  setClient(true);
 
   history.scrollRestoration = 'manual';
 
@@ -321,12 +307,6 @@ watch(
   },
   { immediate: true }
 );
-
-watch(showCity, (val) => {
-  if (val) {
-    gameStore.setCityFallback(false);
-  }
-});
 
 watch(
   locale,

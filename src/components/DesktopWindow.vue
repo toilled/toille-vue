@@ -82,6 +82,8 @@ function fitToContent() {
   body.style.overflow = 'visible';
   body.style.width = 'max-content';
 
+  const bodyStyles = getComputedStyle(body);
+  const bodyPadV = parseFloat(bodyStyles.paddingTop) + parseFloat(bodyStyles.paddingBottom);
   const contentWidth = contentEl.scrollWidth;
   const contentHeight = contentEl.scrollHeight;
 
@@ -89,7 +91,7 @@ function fitToContent() {
   body.style.width = origWidth;
 
   const width = contentWidth + 2;
-  const height = titlebarHeight + contentHeight + 2;
+  const height = titlebarHeight + contentHeight + bodyPadV + 2;
 
   const maxWidth = Math.min(window.innerWidth - 20, 1000);
   const maxHeight = window.innerHeight - 60;

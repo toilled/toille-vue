@@ -293,8 +293,6 @@ const lookControls = ref({
   down: false,
 });
 
-const _props = defineProps({});
-
 const emit = defineEmits(['game-start', 'game-end', 'fallback', 'navigate']);
 const showSplash = ref(true);
 
@@ -577,13 +575,14 @@ onMounted(() => {
     await initGameWorld();
     skyEffects.setStarTwinkleEnabled(browserQuality.starTwinkleEnabled);
 
+    // Initialize remaining systems while city is visible
+    initTrafficAndSparks();
+
     // Start rendering the scene immediately
     initEventListeners();
     isActive = true;
     animate();
 
-    // Initialize remaining systems while city is visible
-    initTrafficAndSparks();
     initGameManagers();
     initStoryAndMode();
 

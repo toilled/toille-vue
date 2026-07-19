@@ -1,5 +1,6 @@
 import { createSSRApp, createApp as createClientApp, type Plugin } from 'vue';
 import { createRouter, createWebHistory, createMemoryHistory } from 'vue-router';
+import { createPinia } from 'pinia';
 import App from './App.vue';
 import SinglePageContent from './components/SinglePageContent.vue';
 import i18n from './i18n';
@@ -23,10 +24,12 @@ export function createApp(head?: Plugin, hydrate?: boolean) {
     routes,
   });
 
+  const pinia = createPinia();
   const app = hydrate ? createSSRApp(App) : createClientApp(App);
   if (head) {
     app.use(head);
   }
+  app.use(pinia);
   app.use(router);
   app.use(i18n);
 

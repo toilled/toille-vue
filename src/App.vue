@@ -1,25 +1,17 @@
 <template>
   <div id="content-wrapper" :class="{ 'fade-out': gameMode }" v-show="!desktopMode">
-    <header ref="headerRef" class="app-header">
-      <nav class="container header-nav">
-        <Title
-          :title="titles.title"
-          :subtitle="t('site.subtitle')"
-          @activity="toggleActivity"
-          @joke="toggleJoke"
-        />
-        <Menu
-          :pages="visiblePages"
-          :content-visible="isContentVisible"
-          :city-fallback="cityFallback"
-          @explore="startExploration"
-          @demo="startDemoMode"
-          @toggle-content="toggleContent"
-          @toggle-terminal="toggleTerminal"
-          @toggle-desktop="toggleDesktop"
-        />
-      </nav>
-    </header>
+    <AppHeader
+      :visible-pages="visiblePages"
+      :content-visible="isContentVisible"
+      :city-fallback="cityFallback"
+      @activity="toggleActivity"
+      @joke="toggleJoke"
+      @explore="startExploration"
+      @demo="startDemoMode"
+      @toggle-content="toggleContent"
+      @toggle-terminal="toggleTerminal"
+      @toggle-desktop="toggleDesktop"
+    />
 
     <main
       id="main-content"
@@ -48,54 +40,29 @@
       </div>
     </main>
 
-    <Transition name="slide-fade">
-      <footer
-        class="app-footer"
-        v-if="noFootersShowing"
-        v-show="isContentVisible"
-        @click="checker = !checker"
-      >
-        <div class="container">
-          <TypingText :text="t('footer.hint')" :skip-animation="hintHasBeenShown" />
-        </div>
-      </footer>
-    </Transition>
+    <AppFooter
+      :no-footers-showing="noFootersShowing"
+      :content-visible="isContentVisible"
+      :hint-has-been-shown="hintHasBeenShown"
+      @toggle-checker="toggleChecker"
+    />
 
-    <Transition name="slide-fade">
-      <div class="container" style="min-width: 0" v-if="checker">
-        <Checker :class="{ 'fade-out': gameMode }" />
-      </div>
-    </Transition>
-    <Transition name="slide-fade">
-      <div class="container" style="min-width: 0" v-if="activity">
-        <Activity :class="{ 'fade-out': gameMode }" />
-      </div>
-    </Transition>
-    <Transition name="slide-fade">
-      <div class="container" style="min-width: 0" v-if="joke">
-        <Suggestion
-          :class="{ 'fade-out': gameMode }"
-          url="https://icanhazdadjoke.com/"
-          valueName="joke"
-          :title="t('haveALaugh')"
-        />
-      </div>
-    </Transition>
+    <AppOverlays :checker="checker" :activity="activity" :joke="joke" :game-mode="gameMode" />
   </div>
 
   <div id="ambient-bg" aria-hidden="true"></div>
   <div class="ambient-glow" aria-hidden="true"></div>
 
   <Transition name="fade">
-    <Terminal v-if="terminal" @close="terminal = false" />
+    <Terminal v-if="terminal" @close="toggleTerminal" />
   </Transition>
 
   <CyberpunkCity
     v-if="showCity"
     ref="cyberpunkCityRef"
-    @game-start="gameMode = true"
-    @game-end="gameMode = false"
-    @fallback="cityFallback = true"
+    @game-start="startGame"
+    @game-end="endGame"
+    @fallback="handleCityFallback"
     @navigate="handleNavigate"
   />
   <EpilepsyWarning />
@@ -106,9 +73,19 @@
 import { useI18n } from 'vue-i18n';
 import { useTranslatedPages } from './composables/useTranslatedPages';
 import type { Component } from 'vue';
+import AppHeader from './components/AppHeader.vue';
+import AppFooter from './components/AppFooter.vue';
+import AppOverlays from './components/AppOverlays.vue';
+import { useGameState } from './composables/useGameState';
+import { useDesktopMode } from './composables/useDesktopMode';
+import { useUIStore } from './stores/uiStore';
 
 const { t, locale } = useI18n();
 const { translatedPages } = useTranslatedPages();
+const { gameMode, cityFallback, showCity, setClient, startGame, endGame, handleCityFallback } =
+  useGameState();
+const { desktopMode, terminal, toggleDesktop, toggleTerminal } = useDesktopMode();
+const uiStore = useUIStore();
 
 const CyberpunkCity = defineAsyncComponent(() => {
   if (import.meta.env.SSR) {
@@ -116,14 +93,10 @@ const CyberpunkCity = defineAsyncComponent(() => {
   }
   return import('./components/CyberpunkCity.vue').then((m) => m.default);
 });
-import { cityBackground } from './utils/CityBackgroundManager';
 import titles from './configs/titles.json';
 import { Page } from './interfaces/Page';
-const Checker = defineAsyncComponent(() => import('./components/Checker.vue'));
 const Terminal = defineAsyncComponent(() => import('./components/Terminal.vue'));
 const Desktop = defineAsyncComponent(() => import('./components/Desktop.vue'));
-const Activity = defineAsyncComponent(() => import('./components/Activity.vue'));
-const Suggestion = defineAsyncComponent(() => import('./components/Suggestion.vue'));
 import EpilepsyWarning from './components/EpilepsyWarning.vue';
 import { useScrollSpy } from './composables/useScrollSpy';
 
@@ -133,19 +106,10 @@ const visiblePages = computed(() => {
 
 const route = useRoute();
 const router = useRouter();
-const gameMode = ref(false);
-const cityFallback = ref(false);
-const isContentVisible = ref(true);
-const isClient = ref(false);
-const showCity = computed(
-  () => isClient.value && cityBackground.isEnabled.value && !desktopMode.value
-);
-const checker = ref(false);
-const activity = ref(false);
-const joke = ref(false);
-const terminal = ref(false);
-const desktopMode = ref(false);
-const desktopRunner = ref<((component: string, title: string) => void) | null>(null);
+const isContentVisible = computed(() => uiStore.isContentVisible);
+const checker = computed(() => uiStore.checker);
+const activity = computed(() => uiStore.activity);
+const joke = computed(() => uiStore.joke);
 
 const headerRef = ref<HTMLElement | null>(null);
 
@@ -163,11 +127,13 @@ const {
 } = useScrollSpy(visiblePages, headerRef);
 
 provide('activeSection', activeSection);
-provide('navigateToSection', scrollToSection);
-provide('desktopRunner', desktopRunner);
 
 function toggleContent() {
-  isContentVisible.value = !isContentVisible.value;
+  uiStore.toggleContent();
+}
+
+function toggleChecker() {
+  uiStore.toggleChecker();
 }
 
 const cyberpunkCityRef = ref<InstanceType<
@@ -188,7 +154,7 @@ function startDemoMode() {
 
 function handleNavigate(path: string) {
   if (gameMode.value) return;
-  isContentVisible.value = true;
+  uiStore.isContentVisible = true;
   if (path === '/') {
     router.push('/');
     return;
@@ -240,31 +206,18 @@ function handleKeydown(e: KeyboardEvent) {
   }
 }
 
-const noFootersShowing = computed(() => {
-  return !activity.value && !checker.value && !joke.value;
-});
+const noFootersShowing = computed(() => uiStore.noFootersShowing);
 
 function toggleActivity() {
-  activity.value = !activity.value;
+  uiStore.toggleActivity();
 }
 
 function toggleJoke() {
-  joke.value = !joke.value;
-}
-
-function toggleTerminal() {
-  terminal.value = !terminal.value;
-}
-
-function toggleDesktop() {
-  desktopMode.value = !desktopMode.value;
-  if (desktopMode.value) {
-    terminal.value = false;
-  }
+  uiStore.toggleJoke();
 }
 
 onMounted(() => {
-  isClient.value = true;
+  setClient(true);
 
   history.scrollRestoration = 'manual';
 
@@ -354,12 +307,6 @@ watch(
   },
   { immediate: true }
 );
-
-watch(showCity, (val) => {
-  if (val) {
-    cityFallback.value = false;
-  }
-});
 
 watch(
   locale,

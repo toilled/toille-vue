@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import App from '../../App.vue';
 import { createRouter, createMemoryHistory } from 'vue-router';
+import { createPinia } from 'pinia';
 
 const createTestRouter = () => {
   return createRouter({
@@ -32,9 +33,10 @@ async function mountApp(stubs: Record<string, unknown> = {}) {
   const router = createTestRouter();
   router.push('/');
   await router.isReady();
+  const pinia = createPinia();
   const app = mount(App, {
     global: {
-      plugins: [router],
+      plugins: [router, pinia],
       stubs: { Starfield: true, ...stubs },
     },
   });
@@ -154,7 +156,7 @@ describe('App.vue', () => {
     await router.isReady();
     wrapper = mount(App, {
       global: {
-        plugins: [router],
+        plugins: [router, createPinia()],
         stubs: {
           'router-view': true,
           Starfield: true,

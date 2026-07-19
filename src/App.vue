@@ -54,15 +54,15 @@
   <div class="ambient-glow" aria-hidden="true"></div>
 
   <Transition name="fade">
-    <Terminal v-if="terminal" @close="terminal = false" />
+    <Terminal v-if="terminal" @close="uiStore.terminal = false" />
   </Transition>
 
   <CyberpunkCity
     v-if="showCity"
     ref="cyberpunkCityRef"
-    @game-start="gameMode = true"
-    @game-end="gameMode = false"
-    @fallback="cityFallback = true"
+    @game-start="gameStore.enterGameMode()"
+    @game-end="gameStore.exitGameMode()"
+    @fallback="gameStore.setCityFallback(true)"
     @navigate="handleNavigate"
   />
   <EpilepsyWarning />
@@ -76,9 +76,13 @@ import type { Component } from 'vue';
 import AppHeader from './components/AppHeader.vue';
 import AppFooter from './components/AppFooter.vue';
 import AppOverlays from './components/AppOverlays.vue';
+import { useGameStore } from './stores/gameStore';
+import { useUIStore } from './stores/uiStore';
 
 const { t, locale } = useI18n();
 const { translatedPages } = useTranslatedPages();
+const gameStore = useGameStore();
+const uiStore = useUIStore();
 
 const CyberpunkCity = defineAsyncComponent(() => {
   if (import.meta.env.SSR) {
@@ -100,18 +104,18 @@ const visiblePages = computed(() => {
 
 const route = useRoute();
 const router = useRouter();
-const gameMode = ref(false);
-const cityFallback = ref(false);
-const isContentVisible = ref(true);
-const isClient = ref(false);
+const gameMode = computed(() => gameStore.gameMode);
+const cityFallback = computed(() => gameStore.cityFallback);
+const isContentVisible = computed(() => uiStore.isContentVisible);
+const isClient = computed(() => gameStore.isClient);
 const showCity = computed(
-  () => isClient.value && cityBackground.isEnabled.value && !desktopMode.value
+  () => isClient.value && cityBackground.isEnabled.value && !uiStore.desktopMode
 );
-const checker = ref(false);
-const activity = ref(false);
-const joke = ref(false);
-const terminal = ref(false);
-const desktopMode = ref(false);
+const checker = computed(() => uiStore.checker);
+const activity = computed(() => uiStore.activity);
+const joke = computed(() => uiStore.joke);
+const terminal = computed(() => uiStore.terminal);
+const desktopMode = computed(() => uiStore.desktopMode);
 
 const headerRef = ref<HTMLElement | null>(null);
 
@@ -131,11 +135,11 @@ const {
 provide('activeSection', activeSection);
 
 function toggleContent() {
-  isContentVisible.value = !isContentVisible.value;
+  uiStore.toggleContent();
 }
 
 function toggleChecker() {
-  checker.value = !checker.value;
+  uiStore.toggleChecker();
 }
 
 const cyberpunkCityRef = ref<InstanceType<
@@ -156,7 +160,7 @@ function startDemoMode() {
 
 function handleNavigate(path: string) {
   if (gameMode.value) return;
-  isContentVisible.value = true;
+  uiStore.isContentVisible = true;
   if (path === '/') {
     router.push('/');
     return;
@@ -208,31 +212,26 @@ function handleKeydown(e: KeyboardEvent) {
   }
 }
 
-const noFootersShowing = computed(() => {
-  return !activity.value && !checker.value && !joke.value;
-});
+const noFootersShowing = computed(() => uiStore.noFootersShowing);
 
 function toggleActivity() {
-  activity.value = !activity.value;
+  uiStore.toggleActivity();
 }
 
 function toggleJoke() {
-  joke.value = !joke.value;
+  uiStore.toggleJoke();
 }
 
 function toggleTerminal() {
-  terminal.value = !terminal.value;
+  uiStore.toggleTerminal();
 }
 
 function toggleDesktop() {
-  desktopMode.value = !desktopMode.value;
-  if (desktopMode.value) {
-    terminal.value = false;
-  }
+  uiStore.toggleDesktop();
 }
 
 onMounted(() => {
-  isClient.value = true;
+  gameStore.setClient(true);
 
   history.scrollRestoration = 'manual';
 
@@ -325,7 +324,7 @@ watch(
 
 watch(showCity, (val) => {
   if (val) {
-    cityFallback.value = false;
+    gameStore.setCityFallback(false);
   }
 });
 

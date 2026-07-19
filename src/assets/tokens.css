@@ -1,0 +1,56 @@
+/* ============================================
+   Design Tokens - Cyberpunk Professional
+   ============================================ */
+html {
+  font-size: 100%;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+  overflow-x: hidden;
+
+  --font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Courier New', Courier, monospace;
+  --background-color: #050510;
+  --text-color: #ffffff;
+  --heading-color: #ff00cc;
+  --content-width: 58em;
+  --site-max-width: 80em;
+}
+
+@media (min-width: 576px) {
+  html {
+    font-size: 106.25%;
+  }
+}
+@media (min-width: 768px) {
+  html {
+    font-size: 112.5%;
+  }
+}
+@media (min-width: 1024px) {
+  html {
+    font-size: 118.75%;
+  }
+}
+@media (min-width: 1280px) {
+  html {
+    font-size: 125%;
+  }
+}
+@media (min-width: 1536px) {
+  html {
+    font-size: 131.25%;
+  }
+}
+
+@media (color-gamut: p3) {
+  html {
+    --heading-color: color(display-p3 1 0.08 0.82);
+    --neon-cyan: color(display-p3 0 1 0.82);
+    --neon-magenta: color(display-p3 1 0.08 0.82);
+  }
+}

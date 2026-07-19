@@ -42,7 +42,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useNoughtsAndCrosses } from '../composables/useNoughtsAndCrosses';
 
 import { useHead } from '@unhead/vue';

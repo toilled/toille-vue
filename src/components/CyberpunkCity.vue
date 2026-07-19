@@ -293,8 +293,6 @@ const lookControls = ref({
   down: false,
 });
 
-const _props = defineProps({});
-
 const emit = defineEmits(['game-start', 'game-end', 'fallback', 'navigate']);
 const showSplash = ref(true);
 

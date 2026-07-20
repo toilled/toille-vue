@@ -12,5 +12,7 @@ auto-imports.d.ts
 components.d.ts
 .fallow/
 .wrangler
+test-results/
+playwright-report/
 .env
 .env.*

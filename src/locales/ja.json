@@ -8,7 +8,8 @@
     "openTerminal": "ターミナルを開く",
     "toggleTools": "ツール切替",
     "weather": "天気",
-    "language": "言語"
+    "language": "言語",
+    "playground": "Playground"
   },
   "site": {
     "title": "Elliot Dickerson",
@@ -92,7 +93,8 @@
   "app": {
     "titleNoughtsAndCrosses": "三目並べ",
     "titleChecker": "アルコールチェッカー",
-    "titleAsk": "質問する"
+    "titleAsk": "質問する",
+    "titlePlayground": "JS Playground"
   },
   "haveALaugh": "笑ってみよう！",
   "suggestionDown": "ダウンしている可能性があります。",

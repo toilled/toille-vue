@@ -206,7 +206,9 @@ function handleKeydown(e: KeyboardEvent) {
   }
 }
 
-const noFootersShowing = computed(() => uiStore.noFootersShowing);
+const noFootersShowing = computed(
+  () => uiStore.noFootersShowing && route.path !== '/playground'
+);
 
 function toggleActivity() {
   uiStore.toggleActivity();
@@ -277,6 +279,8 @@ function getTitleForPath(path: string): string {
       return t('app.titleNoughtsAndCrosses');
     case '/checker':
       return t('app.titleChecker');
+    case '/playground':
+      return t('app.titlePlayground');
     default: {
       const page = visiblePages.value.find(
         (p: Page) => getSectionIdFromPage(p) === activeSection.value

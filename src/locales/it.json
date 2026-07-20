@@ -8,7 +8,8 @@
     "openTerminal": "Apri terminale",
     "toggleTools": "Mostra/nascondi strumenti",
     "weather": "Meteo",
-    "language": "Lingua"
+    "language": "Lingua",
+    "playground": "Playground"
   },
   "site": {
     "title": "Elliot Dickerson",
@@ -92,7 +93,8 @@
   "app": {
     "titleNoughtsAndCrosses": "Tris",
     "titleChecker": "Controllo alcol",
-    "titleAsk": "Chiedimi"
+    "titleAsk": "Chiedimi",
+    "titlePlayground": "JS Playground"
   },
   "haveALaugh": "Fatti una risata!",
   "suggestionDown": "potrebbe essere giù.",

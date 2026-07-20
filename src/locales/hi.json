@@ -8,7 +8,8 @@
     "openTerminal": "टर्मिनल खोलें",
     "toggleTools": "उपकरण बदलें",
     "weather": "मौसम",
-    "language": "भाषा"
+    "language": "भाषा",
+    "playground": "Playground"
   },
   "site": {
     "title": "एलियट डिकरसन",
@@ -92,7 +93,8 @@
   "app": {
     "titleNoughtsAndCrosses": "टिक-टैक-टो",
     "titleChecker": "अल्कोहल जाँचकर्ता",
-    "titleAsk": "मुझसे पूछें"
+    "titleAsk": "मुझसे पूछें",
+    "titlePlayground": "JS Playground"
   },
   "haveALaugh": "थोड़ा हँसिए!",
   "suggestionDown": "संभवतः डाउन है।",

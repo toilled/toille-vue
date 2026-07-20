@@ -49,6 +49,7 @@ describe('main.ts', () => {
         { path: '/checker', component: expect.any(Function) },
         { path: '/noughts-and-crosses', component: expect.any(Function) },
         { path: '/quiz', component: expect.any(Function) },
+        { path: '/playground', component: expect.any(Function) },
         { path: '/:pathMatch(.*)*', component: expect.any(Function) },
       ],
     });

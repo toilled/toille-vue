@@ -8,7 +8,8 @@
     "openTerminal": "打开终端",
     "toggleTools": "切换工具",
     "weather": "天气",
-    "language": "语言"
+    "language": "语言",
+    "playground": "Playground"
   },
   "site": {
     "title": "Elliot Dickerson",
@@ -92,7 +93,8 @@
   "app": {
     "titleNoughtsAndCrosses": "井字游戏",
     "titleChecker": "酒精检测",
-    "titleAsk": "问我"
+    "titleAsk": "问我",
+    "titlePlayground": "JS Playground"
   },
   "haveALaugh": "笑一笑！",
   "suggestionDown": "可能已下线。",

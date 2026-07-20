@@ -8,7 +8,8 @@
     "openTerminal": "Open Terminal",
     "toggleTools": "Toggle tools",
     "weather": "Weather",
-    "language": "Language"
+    "language": "Language",
+    "playground": "Playground"
   },
   "site": {
     "title": "Elliot Dickerson",
@@ -92,7 +93,8 @@
   "app": {
     "titleNoughtsAndCrosses": "Noughts and Crosses",
     "titleChecker": "Checker",
-    "titleAsk": "Ask Me"
+    "titleAsk": "Ask Me",
+    "titlePlayground": "JS Playground"
   },
   "haveALaugh": "Have a laugh!",
   "suggestionDown": "might be down.",

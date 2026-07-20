@@ -26,7 +26,6 @@ const props = defineProps<{
  * @description A computed property that sanitizes the paragraph HTML using sanitize-html.
  */
 const sanitizedParagraph = computed(() => {
-  if (import.meta.env.SSR) return props.paragraph;
   return sanitize(props.paragraph);
 });
 </script>

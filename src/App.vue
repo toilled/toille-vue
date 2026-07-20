@@ -79,6 +79,7 @@ import AppOverlays from './components/AppOverlays.vue';
 import { useGameState } from './composables/useGameState';
 import { useDesktopMode } from './composables/useDesktopMode';
 import { useUIStore } from './stores/uiStore';
+import { cityBackground } from './utils/CityBackgroundManager';
 
 const { t, locale } = useI18n();
 const { translatedPages } = useTranslatedPages();
@@ -206,7 +207,7 @@ function handleKeydown(e: KeyboardEvent) {
   }
 }
 
-const noFootersShowing = computed(() => uiStore.noFootersShowing);
+const noFootersShowing = computed(() => uiStore.noFootersShowing && route.path !== '/playground');
 
 function toggleActivity() {
   uiStore.toggleActivity();
@@ -218,6 +219,7 @@ function toggleJoke() {
 
 onMounted(() => {
   setClient(true);
+  cityBackground.init();
 
   history.scrollRestoration = 'manual';
 
@@ -277,6 +279,8 @@ function getTitleForPath(path: string): string {
       return t('app.titleNoughtsAndCrosses');
     case '/checker':
       return t('app.titleChecker');
+    case '/playground':
+      return t('app.titlePlayground');
     default: {
       const page = visiblePages.value.find(
         (p: Page) => getSectionIdFromPage(p) === activeSection.value

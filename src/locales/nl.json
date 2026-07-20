@@ -8,7 +8,8 @@
     "openTerminal": "Terminal openen",
     "toggleTools": "Gereedschap aan/uit",
     "weather": "Weer",
-    "language": "Taal"
+    "language": "Taal",
+    "playground": "Playground"
   },
   "site": {
     "title": "Elliot Dickerson",
@@ -92,7 +93,8 @@
   "app": {
     "titleNoughtsAndCrosses": "Boter-kaas-en-eieren",
     "titleChecker": "Alcoholcontrole",
-    "titleAsk": "Vraag mij"
+    "titleAsk": "Vraag mij",
+    "titlePlayground": "JS Playground"
   },
   "haveALaugh": "Lach even!",
   "suggestionDown": "is mogelijk niet beschikbaar.",

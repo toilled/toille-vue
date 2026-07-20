@@ -146,6 +146,26 @@
       </button>
       <button
         class="icon-wrapper"
+        @click="$router.push('/playground')"
+        :aria-label="t('menu.playground')"
+        data-label="Playground"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#000000"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="icon"
+        >
+          <polyline points="16 18 22 12 16 6" />
+          <polyline points="8 6 2 12 8 18" />
+        </svg>
+      </button>
+      <button
+        class="icon-wrapper"
         @click="$emit('toggle-desktop')"
         :aria-label="t('desktop.toggleDesktop')"
         data-label="Desktop"

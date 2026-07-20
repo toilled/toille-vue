@@ -2,16 +2,19 @@ const STORAGE_KEY = 'city-background-enabled';
 
 class CityBackgroundManager {
   isEnabled = ref(true);
+  private initialized = false;
 
-  constructor() {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored !== null) {
-        this.isEnabled.value = stored === 'true';
-      }
+  init() {
+    if (typeof window === 'undefined') return;
+    if (!this.initialized) {
+      this.initialized = true;
       watch(this.isEnabled, (val) => {
         localStorage.setItem(STORAGE_KEY, String(val));
       });
+    }
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored !== null) {
+      this.isEnabled.value = stored === 'true';
     }
   }
 

@@ -8,7 +8,8 @@
     "openTerminal": "فتح الطرفية",
     "toggleTools": "تبديل الأدوات",
     "weather": "الطقس",
-    "language": "اللغة"
+    "language": "اللغة",
+    "playground": "Playground"
   },
   "site": {
     "title": "إليوت ديكرسون",
@@ -92,7 +93,8 @@
   "app": {
     "titleNoughtsAndCrosses": "إكس أوم",
     "titleChecker": "فحص الكحول",
-    "titleAsk": "اسألني"
+    "titleAsk": "اسألني",
+    "titlePlayground": "JS Playground"
   },
   "haveALaugh": "اضحك قليلاً!",
   "suggestionDown": "قد يكون معطلاً.",

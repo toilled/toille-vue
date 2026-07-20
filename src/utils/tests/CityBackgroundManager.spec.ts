@@ -22,7 +22,16 @@ describe('CityBackgroundManager', () => {
     expect(cityBackground.isEnabled.value).toBe(true);
   });
 
-  it('persists state to localStorage', async () => {
+  it('reads localStorage on init', () => {
+    localStorage.setItem('city-background-enabled', 'false');
+    cityBackground.init();
+    expect(cityBackground.isEnabled.value).toBe(false);
+  });
+
+  it('persists state to localStorage after init', async () => {
+    cityBackground.init();
+    cityBackground.isEnabled.value = true;
+    await nextTick();
     cityBackground.toggle();
     await nextTick();
     expect(localStorage.getItem('city-background-enabled')).toBe('false');

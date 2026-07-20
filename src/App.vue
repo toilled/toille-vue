@@ -79,6 +79,7 @@ import AppOverlays from './components/AppOverlays.vue';
 import { useGameState } from './composables/useGameState';
 import { useDesktopMode } from './composables/useDesktopMode';
 import { useUIStore } from './stores/uiStore';
+import { cityBackground } from './utils/CityBackgroundManager';
 
 const { t, locale } = useI18n();
 const { translatedPages } = useTranslatedPages();
@@ -218,6 +219,7 @@ function toggleJoke() {
 
 onMounted(() => {
   setClient(true);
+  cityBackground.init();
 
   history.scrollRestoration = 'manual';
 

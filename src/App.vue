@@ -206,9 +206,7 @@ function handleKeydown(e: KeyboardEvent) {
   }
 }
 
-const noFootersShowing = computed(
-  () => uiStore.noFootersShowing && route.path !== '/playground'
-);
+const noFootersShowing = computed(() => uiStore.noFootersShowing && route.path !== '/playground');
 
 function toggleActivity() {
   uiStore.toggleActivity();

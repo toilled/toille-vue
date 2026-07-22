@@ -153,14 +153,7 @@ useHead({
     rgba(10, 5, 25, 0.85) 100%
   );
   border: 1px solid rgba(var(--page-accent-rgb, 0, 255, 204), 0.2);
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.2),
-    0 4px 8px rgba(0, 0, 0, 0.15),
-    0 8px 24px rgba(0, 0, 0, 0.2),
-    0 16px 48px rgba(0, 0, 0, 0.15),
-    0 32px 80px rgba(0, 0, 0, 0.12),
-    0 0 0 1px rgba(var(--page-accent-rgb, 0, 255, 204), 0.05),
-    0 0 20px rgba(var(--page-accent-rgb, 0, 255, 204), 0.06);
+  box-shadow: var(--shadow-page-card);
   animation: panel-float 6s ease-in-out infinite;
 }
 

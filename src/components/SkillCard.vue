@@ -62,13 +62,18 @@ defineProps<{
   align-items: center;
   gap: 0.35rem;
   padding: 0.4rem 0.85rem;
-  background: rgba(15, 25, 50, 0.5);
+  background: linear-gradient(165deg, rgba(15, 25, 50, 0.6) 0%, rgba(10, 18, 40, 0.7) 100%);
   border: 1px solid rgba(0, 255, 204, 0.15);
   border-radius: 100px;
   font-size: 0.82rem;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   text-decoration: none;
   backdrop-filter: blur(4px);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  transform: translateZ(0);
 }
 
 a.skill-tag {
@@ -77,10 +82,14 @@ a.skill-tag {
 }
 
 .can-hover a.skill-tag:hover {
-  background: rgba(25, 45, 80, 0.7);
+  background: linear-gradient(165deg, rgba(25, 45, 80, 0.8) 0%, rgba(20, 35, 65, 0.85) 100%);
   border-color: rgba(0, 255, 204, 0.35);
-  box-shadow: 0 0 12px rgba(0, 255, 204, 0.15);
-  transform: translateY(-2px);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 0 12px rgba(0, 255, 204, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transform: translateY(-2px) translateZ(0);
 }
 
 .skill-icon {

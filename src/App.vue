@@ -333,10 +333,14 @@ watch(
   position: sticky;
   top: 0;
   z-index: 50;
-  backdrop-filter: blur(16px) saturate(1.2);
-  -webkit-backdrop-filter: blur(16px) saturate(1.2);
-  background: rgba(5, 5, 16, 0.85);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  background: linear-gradient(180deg, rgba(8, 8, 22, 0.92) 0%, rgba(5, 5, 16, 0.88) 100%);
+  box-shadow:
+    0 1px 0 rgba(0, 255, 204, 0.08),
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 4px 16px rgba(0, 0, 0, 0.2),
+    0 8px 32px rgba(0, 0, 0, 0.15);
   transform: translateZ(0);
   contain: paint layout;
 }
@@ -366,6 +370,9 @@ html.fx .app-header {
   );
   animation: header-glow 3s ease-in-out infinite;
   will-change: opacity;
+  box-shadow:
+    0 0 8px rgba(0, 255, 204, 0.2),
+    0 0 16px rgba(0, 255, 204, 0.1);
 }
 
 @keyframes header-glow {
@@ -402,6 +409,11 @@ html.fx .app-header {
   border-top: 1px solid rgba(0, 255, 204, 0.1);
   color: rgba(255, 255, 255, 0.6);
   font-size: 0.85rem;
+  background: linear-gradient(180deg, transparent 0%, rgba(5, 5, 16, 0.4) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(0, 255, 204, 0.06),
+    0 -2px 8px rgba(0, 0, 0, 0.15);
+  text-shadow: 0 0 4px rgba(0, 255, 204, 0.15);
 }
 
 .fade-enter-active,
@@ -540,7 +552,10 @@ html {
     width: 220px;
     height: 100vh;
     overflow-y: auto;
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+    box-shadow:
+      1px 0 0 rgba(0, 255, 204, 0.08),
+      4px 0 16px rgba(0, 0, 0, 0.3),
+      8px 0 32px rgba(0, 0, 0, 0.2);
   }
 
   .app-header::after {

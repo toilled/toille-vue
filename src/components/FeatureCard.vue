@@ -62,17 +62,33 @@ function handleClick() {
   align-items: center;
   gap: 1rem;
   padding: 1rem 1.25rem;
-  background: rgba(10, 10, 20, 0.6);
+  background: linear-gradient(165deg, rgba(10, 10, 25, 0.7) 0%, rgba(5, 8, 20, 0.8) 100%);
   border: 1px solid rgba(0, 255, 204, 0.12);
   border-radius: 10px;
   margin: 0.75rem 0;
   cursor: default;
-  transition: all 0.3s ease;
+  transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   text-decoration: none;
   color: inherit;
   font: inherit;
   width: 100%;
   box-sizing: border-box;
+  position: relative;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.15),
+    0 4px 8px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+  transform: translateZ(0);
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .feature-card[link] {
@@ -80,10 +96,15 @@ function handleClick() {
 }
 
 .can-hover .feature-card[link]:hover {
-  background: rgba(15, 20, 35, 0.8);
+  background: linear-gradient(165deg, rgba(15, 20, 40, 0.85) 0%, rgba(10, 15, 30, 0.9) 100%);
   border-color: rgba(0, 255, 204, 0.35);
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-  transform: translateY(-2px);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 8px 16px rgba(0, 0, 0, 0.2),
+    0 16px 32px rgba(0, 0, 0, 0.15),
+    0 0 16px rgba(0, 255, 204, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transform: translateY(-2px) translateZ(0);
 }
 
 .feature-icon {
@@ -123,6 +144,9 @@ function handleClick() {
   background: rgba(0, 255, 204, 0.1);
   color: #00ffcc;
   border: 1px solid rgba(0, 255, 204, 0.2);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .feature-arrow {

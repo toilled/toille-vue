@@ -45,24 +45,46 @@ function accentClass(index: number): string {
 .do-card {
   position: relative;
   padding: 1.5rem 1.25rem;
-  background: rgba(10, 10, 20, 0.5);
+  background: linear-gradient(165deg, rgba(10, 10, 25, 0.65) 0%, rgba(5, 8, 20, 0.75) 100%);
   border: 1px solid rgba(0, 255, 204, 0.12);
   border-radius: 14px;
   overflow: hidden;
-  transition: all 0.35s ease;
+  transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.15),
+    0 4px 8px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  transform: translateZ(0);
+}
+
+.do-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .can-hover .do-card:hover {
-  background: rgba(15, 20, 40, 0.7);
+  background: linear-gradient(165deg, rgba(15, 20, 45, 0.85) 0%, rgba(10, 15, 35, 0.9) 100%);
   border-color: rgba(0, 255, 204, 0.3);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  transform: translateY(-3px) translateZ(0);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 8px 16px rgba(0, 0, 0, 0.2),
+    0 16px 32px rgba(0, 0, 0, 0.15),
+    0 0 12px rgba(0, 255, 204, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .can-hover .do-card:hover .do-card-accent {
   height: 4px;
   filter: brightness(1.3);
-  box-shadow: 0 0 12px currentColor;
+  box-shadow:
+    0 0 12px currentColor,
+    0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .do-card-accent {
@@ -73,6 +95,7 @@ function accentClass(index: number): string {
   height: 3px;
   border-radius: 14px 14px 0 0;
   transition: all 0.35s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
 .do-card-accent.fullstack {

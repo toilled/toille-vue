@@ -63,6 +63,7 @@ function handleClick() {
   border: 1px solid transparent;
   font-size: 0.9rem;
   position: relative;
+  background: transparent;
 }
 
 .menu-item a::after {
@@ -82,18 +83,26 @@ function handleClick() {
 }
 
 .can-hover .menu-item a:hover {
-  background: rgba(0, 255, 204, 0.08);
+  background: linear-gradient(165deg, rgba(0, 255, 204, 0.08) 0%, rgba(0, 255, 204, 0.04) 100%);
   box-shadow:
-    0 0 16px rgba(0, 255, 204, 0.12),
-    inset 0 0 12px rgba(0, 255, 204, 0.03);
-  transform: translateY(-1px);
+    0 1px 2px rgba(0, 0, 0, 0.15),
+    0 4px 8px rgba(0, 0, 0, 0.1),
+    0 0 12px rgba(0, 255, 204, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px) translateZ(0);
   border-color: rgba(0, 255, 204, 0.2);
 }
 
 .menu-item a.active {
-  background: rgba(0, 255, 204, 0.08);
+  background: linear-gradient(165deg, rgba(0, 255, 204, 0.1) 0%, rgba(0, 255, 204, 0.05) 100%);
   border-color: rgba(0, 255, 204, 0.25);
-  box-shadow: 0 0 8px rgba(0, 255, 204, 0.08);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.15),
+    0 4px 8px rgba(0, 0, 0, 0.1),
+    0 0 8px rgba(0, 255, 204, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
   color: #ffffff;
   text-shadow: 0 0 8px rgba(0, 255, 204, 0.5);
 }

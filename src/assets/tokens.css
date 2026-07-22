@@ -54,3 +54,46 @@ html {
     --neon-magenta: color(display-p3 1 0.08 0.82);
   }
 }
+
+/* ============================================
+   Depth Tokens
+   ============================================ */
+html {
+  --depth-surface: rgba(5, 5, 16, 0.85);
+  --depth-surface-raised: rgba(10, 10, 30, 0.75);
+  --depth-surface-overlay: rgba(20, 5, 40, 0.6);
+  --depth-shadow-ambient: rgba(0, 0, 0, 0.4);
+  --depth-shadow-deep: rgba(0, 0, 0, 0.6);
+  --depth-shadow-contact: rgba(0, 0, 0, 0.25);
+  --depth-glow-cyan: rgba(0, 255, 204, 0.08);
+  --depth-glow-cyan-strong: rgba(0, 255, 204, 0.15);
+  --depth-glow-magenta: rgba(255, 0, 204, 0.08);
+  --depth-glow-magenta-strong: rgba(255, 0, 204, 0.15);
+  --depth-border-subtle: rgba(0, 255, 204, 0.12);
+  --depth-border-medium: rgba(0, 255, 204, 0.2);
+  --depth-border-strong: rgba(0, 255, 204, 0.35);
+  --depth-inset-highlight: rgba(255, 255, 255, 0.03);
+  --depth-inset-shadow: rgba(0, 0, 0, 0.3);
+
+  --shadow-card:
+    0 1px 2px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.15), 0 8px 24px rgba(0, 0, 0, 0.2),
+    0 16px 48px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 255, 204, 0.1);
+  --shadow-card-hover:
+    0 2px 4px rgba(0, 0, 0, 0.25), 0 8px 16px rgba(0, 0, 0, 0.2), 0 16px 40px rgba(0, 0, 0, 0.25),
+    0 24px 64px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 255, 204, 0.1);
+  --shadow-panel:
+    0 1px 2px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1), 0 12px 32px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04), inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+  --shadow-elevated:
+    0 2px 4px rgba(0, 0, 0, 0.2), 0 8px 16px rgba(0, 0, 0, 0.15), 0 16px 48px rgba(0, 0, 0, 0.2),
+    0 0 1px rgba(0, 255, 204, 0.15);
+  --shadow-emboss:
+    0 1px 0 rgba(255, 255, 255, 0.06), 0 -1px 0 rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-inset:
+    inset 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(0, 0, 0, 0.2),
+    inset 0 0 0 1px rgba(0, 255, 204, 0.05);
+  --shadow-page-card:
+    0 1px 2px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.15), 0 8px 24px rgba(0, 0, 0, 0.2),
+    0 16px 48px rgba(0, 0, 0, 0.15), 0 32px 80px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(0, 255, 204, 0.05), 0 0 20px rgba(0, 255, 204, 0.06);
+}

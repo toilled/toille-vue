@@ -287,7 +287,7 @@ const toggleCityBackground = () => {
   display: none;
   align-items: center;
   justify-content: center;
-  background: none;
+  background: rgba(0, 255, 204, 0.06);
   border: 1px solid rgba(0, 255, 204, 0.3);
   border-radius: 6px;
   cursor: pointer;
@@ -295,12 +295,29 @@ const toggleCityBackground = () => {
   margin-left: auto;
   color: #00ffcc;
   transition: all 0.2s ease;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  position: relative;
+}
+
+.tools-toggle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .can-hover .tools-toggle:hover {
-  background: rgba(0, 255, 204, 0.1);
+  background: linear-gradient(165deg, rgba(0, 255, 204, 0.12) 0%, rgba(0, 255, 204, 0.06) 100%);
   border-color: rgba(0, 255, 204, 0.5);
-  box-shadow: 0 0 12px rgba(0, 255, 204, 0.2);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.2),
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    0 0 12px rgba(0, 255, 204, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .toggle-icon {
@@ -320,26 +337,50 @@ const toggleCityBackground = () => {
   justify-content: center;
   padding: 0.3rem;
   border-radius: 6px;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   position: relative;
-  background: none;
+  background: rgba(255, 255, 255, 0.02);
   border: none;
   font: inherit;
   color: inherit;
   margin: 0;
   appearance: none;
   -webkit-appearance: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.icon-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, transparent 50%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
 }
 
 .can-hover .icon-wrapper:hover {
-  background: rgba(0, 255, 204, 0.1);
+  background: linear-gradient(165deg, rgba(0, 255, 204, 0.1) 0%, rgba(0, 255, 204, 0.05) 100%);
   box-shadow:
-    0 0 12px rgba(0, 255, 204, 0.2),
-    inset 0 0 8px rgba(0, 255, 204, 0.05);
+    0 1px 2px rgba(0, 0, 0, 0.2),
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    0 0 12px rgba(0, 255, 204, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transform: translateY(-1px);
+}
+
+.can-hover .icon-wrapper:hover::before {
+  opacity: 1;
 }
 
 .icon-wrapper:active {
-  transform: scale(0.92);
+  transform: scale(0.92) translateY(1px);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.25),
+    inset 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 .icon-wrapper.disabled {

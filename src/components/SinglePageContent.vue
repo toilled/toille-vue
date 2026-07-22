@@ -159,24 +159,17 @@ useHead({
   overflow: hidden;
   transform: rotateX(2deg) translateZ(20px);
   transform-style: preserve-3d;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  background: linear-gradient(135deg, rgba(10, 10, 30, 0.75), rgba(20, 5, 40, 0.6));
+  backdrop-filter: blur(12px) saturate(1.1);
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+  background: linear-gradient(
+    165deg,
+    rgba(10, 10, 30, 0.8) 0%,
+    rgba(5, 5, 20, 0.9) 50%,
+    rgba(10, 5, 25, 0.85) 100%
+  );
   border: 1px solid rgba(var(--page-accent-rgb, 0, 255, 204), 0.2);
-  box-shadow:
-    0 0 20px rgba(var(--page-accent-rgb, 0, 255, 204), 0.08),
-    0 8px 32px rgba(0, 0, 0, 0.4);
-  animation: page-float 6s ease-in-out infinite;
-}
-
-@keyframes page-float {
-  0%,
-  100% {
-    transform: rotateX(2deg) translateZ(20px) translateY(0);
-  }
-  50% {
-    transform: rotateX(2deg) translateZ(20px) translateY(-4px);
-  }
+  box-shadow: var(--shadow-page-card);
+  animation: panel-float 6s ease-in-out infinite;
 }
 
 .page-content-card::before {
@@ -189,6 +182,7 @@ useHead({
   border-radius: 0 0 2px 2px;
   background: linear-gradient(90deg, transparent, var(--page-accent, #00ffcc), transparent);
   transition: all 0.4s ease;
+  box-shadow: 0 0 8px rgba(var(--page-accent-rgb, 0, 255, 204), 0.3);
 }
 
 .page-content-card::after {
@@ -200,14 +194,17 @@ useHead({
   bottom: -1px;
   border-radius: inherit;
   background: linear-gradient(
-    135deg,
-    var(--page-accent, #00ffcc),
-    transparent 50%,
-    var(--page-accent, #00ffcc)
+    165deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    transparent 30%,
+    transparent 70%,
+    rgba(var(--page-accent-rgb, 0, 255, 204), 0.03) 100%
   );
-  opacity: 0.06;
   pointer-events: none;
   z-index: -1;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
 }
 
 .page-content-card > header {
@@ -215,6 +212,8 @@ useHead({
   align-items: center;
   padding-bottom: 1rem;
   margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(var(--page-accent-rgb, 0, 255, 204), 0.08);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
 }
 
 .page-icon {

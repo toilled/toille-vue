@@ -176,17 +176,7 @@ useHead({
     0 32px 80px rgba(0, 0, 0, 0.12),
     0 0 0 1px rgba(var(--page-accent-rgb, 0, 255, 204), 0.05),
     0 0 20px rgba(var(--page-accent-rgb, 0, 255, 204), 0.06);
-  animation: page-float 6s ease-in-out infinite;
-}
-
-@keyframes page-float {
-  0%,
-  100% {
-    transform: rotateX(2deg) translateZ(20px) translateY(0);
-  }
-  50% {
-    transform: rotateX(2deg) translateZ(20px) translateY(-4px);
-  }
+  animation: panel-float 6s ease-in-out infinite;
 }
 
 .page-content-card::before {

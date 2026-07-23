@@ -11,14 +11,17 @@ export class DrivingMode implements GameMode {
   context: GameContext | null = null;
   private redCarAI: RedCarAI | null = null;
 
+  // fallow-ignore-next-line unused-class-member
   get redCar(): Group | null {
     return this.redCarAI?.car ?? null;
   }
 
+  // fallow-ignore-next-line unused-class-member
   get redCarSpeed(): number {
     return this.redCarAI?.speed ?? 0;
   }
 
+  // fallow-ignore-next-line unused-class-member
   set redCarSpeed(speed: number) {
     if (this.redCarAI) this.redCarAI.speed = speed;
   }
@@ -49,6 +52,7 @@ export class DrivingMode implements GameMode {
     }
   }
 
+  // fallow-ignore-next-line unused-class-member
   spawnRedCar() {
     this.redCarAI?.spawn();
   }

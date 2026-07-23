@@ -8,7 +8,7 @@ vi.mock('../../audio/CarAudio', () => ({
   carAudio: { playCrash: vi.fn() },
 }));
 
-vi.mock('../../utils/HeightMap', () => ({
+vi.mock('../../../utils/HeightMap', () => ({
   getHeight: vi.fn(() => 0),
 }));
 

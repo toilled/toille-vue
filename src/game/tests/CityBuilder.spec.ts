@@ -3,12 +3,12 @@ import { CityBuilder } from '../CityBuilder';
 import { Scene, Mesh, Group, CanvasTexture, LineSegments, SpotLight, Object3D } from 'three';
 
 // Mock HeightMap
-vi.mock('../utils/HeightMap', () => ({
+vi.mock('../../utils/HeightMap', () => ({
   getHeight: vi.fn(() => 0),
 }));
 
 // Mock TextureGenerator
-vi.mock('../utils/TextureGenerator', () => ({
+vi.mock('../../utils/TextureGenerator', () => ({
   createGroundTexture: vi.fn(() => new CanvasTexture(document.createElement('canvas'))),
   createGroundNormalMap: vi.fn(() => new CanvasTexture(document.createElement('canvas'))),
   createWindowTexture: vi.fn(() => new CanvasTexture(document.createElement('canvas'))),

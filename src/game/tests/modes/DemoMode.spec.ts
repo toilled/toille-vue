@@ -5,7 +5,7 @@ import { ref } from 'vue';
 import type { GameContext } from '../../types';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 
-vi.mock('../../utils/CyberpunkAudio', () => ({
+vi.mock('../../../utils/CyberpunkAudio', () => ({
   cyberpunkAudio: {
     play: vi.fn(),
     pause: vi.fn(),
@@ -15,7 +15,7 @@ vi.mock('../../utils/CyberpunkAudio', () => ({
   },
 }));
 
-vi.mock('../../utils/AudioManager', () => ({
+vi.mock('../../../utils/AudioManager', () => ({
   audioManager: {
     isSoundEnabled: ref(false),
   },

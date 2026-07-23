@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DemoMode } from '../../modes/DemoMode';
 import { Scene, PerspectiveCamera, WebGLRenderer } from 'three';
-import { ref } from 'vue';
 import type { GameContext } from '../../types';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 
@@ -17,7 +16,7 @@ vi.mock('../../../utils/CyberpunkAudio', () => ({
 
 vi.mock('../../../utils/AudioManager', () => ({
   audioManager: {
-    isSoundEnabled: ref(false),
+    isSoundEnabled: { value: false },
   },
 }));
 

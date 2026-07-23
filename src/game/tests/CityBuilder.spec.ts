@@ -12,6 +12,7 @@ vi.mock('../../utils/TextureGenerator', () => ({
   createGroundTexture: vi.fn(() => new CanvasTexture(document.createElement('canvas'))),
   createGroundNormalMap: vi.fn(() => new CanvasTexture(document.createElement('canvas'))),
   createWindowTexture: vi.fn(() => new CanvasTexture(document.createElement('canvas'))),
+  createWindowRoughnessMap: vi.fn(() => new CanvasTexture(document.createElement('canvas'))),
   createBillboardTexture: vi.fn(() => new CanvasTexture(document.createElement('canvas'))),
 }));
 

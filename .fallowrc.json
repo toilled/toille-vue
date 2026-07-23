@@ -1,32 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
-  "entry": [
-    "src/index.{ts,tsx,js,jsx}",
-    "src/main.{ts,tsx,js,jsx}",
-    "src/entry-server.ts",
-    "src/entry-client.ts"
-  ],
-  "duplicates": {
-    "minOccurrences": 3
-  },
-  "rules": {
-    "unused-dependencies": "warn"
-  },
-  "health": {
-    "maxCyclomatic": 15,
-    "maxCognitive": 22,
-    "maxCrap": 38.0
-  },
-  "ignoreUnresolvedImports": [
-    "../utils/HeightMap",
-    "../utils/TextureGenerator",
-    "../../utils/CyberpunkAudio",
-    "../../utils/AudioManager",
-    "../../utils/HeightMap",
-    "**/ssr-app.js"
-  ],
-  "ignorePatterns": [
-    "**/tests/setupHead.ts",
-    "**/tests/setupThree.ts"
-  ]
+  "$schema": "https://fallow.tools/schema/config.json",
+  "entry": ["src/main.ts"],
+  "ignorePatterns": ["src/tests/**", "src/entry-server.ts"]
 }

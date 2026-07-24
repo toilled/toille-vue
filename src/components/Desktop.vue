@@ -96,6 +96,7 @@ const componentMap: Record<string, Component> = {
   Activity: defineAsyncComponent(() => import('./Activity.vue')),
   Suggestion: defineAsyncComponent(() => import('./Suggestion.vue')),
   DesktopFileExplorer: defineAsyncComponent(() => import('./DesktopFileExplorer.vue')),
+  CodePlayground: defineAsyncComponent(() => import('./CodePlayground.vue')),
 };
 
 const shortcuts: Shortcut[] = [
@@ -170,6 +171,16 @@ const shortcuts: Shortcut[] = [
     minWidth: 280,
     minHeight: 180,
     props: { url: 'https://icanhazdadjoke.com/', valueName: 'joke', title: 'Have a laugh!' },
+  },
+  {
+    id: 'playground',
+    label: 'JS Playground',
+    icon: '</>',
+    component: 'CodePlayground',
+    width: 1200,
+    height: 700,
+    minWidth: 800,
+    minHeight: 500,
   },
 ];
 

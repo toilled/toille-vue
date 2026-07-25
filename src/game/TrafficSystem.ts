@@ -40,11 +40,6 @@ export class TrafficSystem {
     this.spawner.syncCarInstances(activeCar || null);
   }
 
-  public updateInstances(activeCar?: Group | null) {
-    if (!this.initialized) return;
-    this.spawner.syncCarInstances(activeCar || null);
-  }
-
   // fallow-ignore-next-line unused-class-member
   public resetCar(carGroup: Group, activeCar?: Group | null) {
     this.spawner.resetCar(carGroup, activeCar);

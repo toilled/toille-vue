@@ -1,7 +1,6 @@
 import mqtt from 'mqtt';
-import { Scene, Group, Mesh, Vector3 } from 'three';
+import { Scene, Group, Mesh, BoxGeometry, MeshStandardMaterial, Vector3 } from 'three';
 import { CarFactory } from './CarFactory';
-import { createWalkingPlayer } from './createWalkingPlayer';
 import type { Ref } from 'vue';
 
 interface PlayerState {
@@ -88,7 +87,12 @@ export class MultiplayerManager {
       if (data.state === 'driving') {
         group = this.carFactory.createCar(false);
       } else {
-        group = createWalkingPlayer();
+        group = new Group();
+        const bodyGeo = new BoxGeometry(2, 4, 2);
+        const bodyMat = new MeshStandardMaterial({ color: 0x00ffcc });
+        const body = new Mesh(bodyGeo, bodyMat);
+        body.position.y = 2; // Half height
+        group.add(body);
       }
 
       group.position.set(data.x, data.y, data.z);

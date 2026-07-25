@@ -2,23 +2,6 @@ import { BOUNDS, CELL_SIZE, START_OFFSET, GRID_SIZE, CITY_SIZE } from './config'
 import { Group, BoxGeometry, MeshStandardMaterial, Mesh, SpotLight, Object3D } from 'three';
 import { getHeight, getNormal } from '../utils/HeightMap';
 import { GameContext } from './types';
-import {
-  steerTowardsPlayer,
-  handleIntersection as handleIntersectionMath,
-  enforceBounds,
-  type RedCarState,
-} from './redCarMath';
-
-function redCarStateFromGroup(car: Group, speed: number): RedCarState {
-  return {
-    x: car.position.x,
-    y: car.position.y,
-    z: car.position.z,
-    heading: car.userData.heading ?? 0,
-    speed,
-    active: true,
-  };
-}
 
 export class RedCarAI {
   car: Group | null = null;
@@ -120,47 +103,82 @@ export class RedCarAI {
 
   steerTowardsPlayer(playerCar: Group) {
     if (!this.car) return;
-    const redCarState = redCarStateFromGroup(this.car, this.speed);
+    const heading = this.car.userData.heading ?? 0;
+    const isZAxis = Math.abs(Math.cos(heading)) > 0.5;
 
-    const { roadCenterX, roadCenterZ, isZAxis } = steerTowardsPlayer(
-      redCarState,
-      playerCar.position.x,
-      playerCar.position.z,
-      { cellSize: CELL_SIZE, startOffset: START_OFFSET, bounds: BOUNDS }
-    );
+    const roadHalf = CELL_SIZE / 2;
+    const gridX = Math.round((this.car.position.x - START_OFFSET - roadHalf) / CELL_SIZE);
+    const gridZ = Math.round((this.car.position.z - START_OFFSET - roadHalf) / CELL_SIZE);
+    const roadCenterX = START_OFFSET + gridX * CELL_SIZE + roadHalf;
+    const roadCenterZ = START_OFFSET + gridZ * CELL_SIZE + roadHalf;
 
-    this.car.position.x = redCarState.x;
-    this.car.position.z = redCarState.z;
+    const lateralSpeed = this.speed * 0.3;
+    const maxOffset = 18;
+
+    if (isZAxis) {
+      const targetX = Math.max(
+        roadCenterX - maxOffset,
+        Math.min(roadCenterX + maxOffset, playerCar.position.x)
+      );
+      const diff = targetX - this.car.position.x;
+      if (Math.abs(diff) > 0.1) {
+        this.car.position.x += Math.sign(diff) * Math.min(Math.abs(diff), lateralSpeed);
+      }
+    } else {
+      const targetZ = Math.max(
+        roadCenterZ - maxOffset,
+        Math.min(roadCenterZ + maxOffset, playerCar.position.z)
+      );
+      const diff = targetZ - this.car.position.z;
+      if (Math.abs(diff) > 0.1) {
+        this.car.position.z += Math.sign(diff) * Math.min(Math.abs(diff), lateralSpeed);
+      }
+    }
 
     return { roadCenterX, roadCenterZ, isZAxis };
   }
 
   handleIntersection(roadCenterX: number, roadCenterZ: number, isZAxis: boolean, playerCar: Group) {
     if (!this.car) return;
-    const redCarState = redCarStateFromGroup(this.car, this.speed);
+    const longDist = isZAxis
+      ? Math.abs(this.car.position.z - roadCenterZ)
+      : Math.abs(this.car.position.x - roadCenterX);
+    const latDist = isZAxis
+      ? Math.abs(this.car.position.x - roadCenterX)
+      : Math.abs(this.car.position.z - roadCenterZ);
 
-    handleIntersectionMath(
-      redCarState,
-      roadCenterX,
-      roadCenterZ,
-      isZAxis,
-      playerCar.position.x,
-      playerCar.position.z
-    );
+    if (longDist >= 5 || latDist >= 25) return;
 
-    this.car.position.x = redCarState.x;
-    this.car.position.z = redCarState.z;
-    this.car.userData.heading = redCarState.heading;
+    const directions = [0, Math.PI / 2, Math.PI, -Math.PI / 2];
+    let bestDir = this.car.userData.heading ?? 0;
+    let minDst = Infinity;
+    const curDirX = Math.sin(bestDir);
+    const curDirZ = Math.cos(bestDir);
+
+    for (const dir of directions) {
+      const dx = Math.sin(dir);
+      const dz = Math.cos(dir);
+      if (dx * curDirX + dz * curDirZ < -0.9) continue;
+      const d =
+        (this.car.position.x + dx * 100 - playerCar.position.x) ** 2 +
+        (this.car.position.z + dz * 100 - playerCar.position.z) ** 2;
+      if (d < minDst) {
+        minDst = d;
+        bestDir = dir;
+      }
+    }
+
+    this.car.userData.heading = bestDir;
+    this.car.position.x += Math.sin(bestDir) * 6;
+    this.car.position.z += Math.cos(bestDir) * 6;
   }
 
   enforceBounds() {
     if (!this.car) return;
-    const redCarState = redCarStateFromGroup(this.car, this.speed);
-
-    enforceBounds(redCarState, BOUNDS);
-
-    this.car.position.x = redCarState.x;
-    this.car.position.z = redCarState.z;
+    if (this.car.position.x > BOUNDS) this.car.position.x = -BOUNDS;
+    if (this.car.position.x < -BOUNDS) this.car.position.x = BOUNDS;
+    if (this.car.position.z > BOUNDS) this.car.position.z = -BOUNDS;
+    if (this.car.position.z < -BOUNDS) this.car.position.z = BOUNDS;
   }
 
   checkCollision(playerCar: Group) {

@@ -64,8 +64,6 @@ import SignalFinder from './SignalFinder.vue';
 import StoryHint from './StoryHint.vue';
 import StoryTriggerPrompt from './StoryTriggerPrompt.vue';
 import { ScoreService, type ScoreEntry } from '../utils/ScoreService';
-import { StoryManager } from '../game/StoryManager';
-import { StoryItemsManager, STORY_TRIGGER_POSITION } from '../game/StoryItemsManager';
 import {
   AdditiveBlending,
   CanvasTexture,
@@ -86,17 +84,12 @@ import {
   ACESFilmicToneMapping,
 } from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-import { GameModeManager } from '../game/GameModeManager';
 import { setupPostProcessing } from '../game/PostProcessingManager';
-import { DrivingMode } from '../game/modes/DrivingMode';
-import { ExplorationMode } from '../game/modes/ExplorationMode';
-import { DemoMode } from '../game/modes/DemoMode';
-import { GameContext, StoryState, MinimapData } from '../game/types';
+import { StoryState, MinimapData } from '../game/types';
 import { carAudio } from '../game/audio/CarAudio';
 import { cyberpunkAudio } from '../utils/CyberpunkAudio';
 import { CELL_SIZE, START_OFFSET, GRID_SIZE } from '../game/config';
 import {
-  CAR_COUNT,
   CAMERA_FOV,
   CAMERA_FAR,
   CAMERA_NEAR,
@@ -119,14 +112,12 @@ import {
   EMISSIVE_LERP_FACTOR,
   CHASE_ARROW_POSITION_Z,
 } from '../game/constants/CyberpunkCity';
+import { STORY_TRIGGER_POSITION } from '../game/StoryItemsManager';
 import { KonamiManager } from '../game/KonamiManager';
-import { GangWarManager } from '../game/GangWarManager';
 import { CityBuilder } from '../game/CityBuilder';
-import { TrafficSystem } from '../game/TrafficSystem';
 import { SkyEffects } from '../game/SkyEffects';
 import { getHeight } from '../utils/HeightMap';
 import { audioManager } from '../utils/AudioManager';
-import { MultiplayerManager } from '../game/MultiplayerManager';
 import { getBrowserQuality, isMobile as checkMobile } from '../utils/BrowserDetect';
 import { drawLeaderboard, createLeaderboardCanvas } from '../utils/LeaderboardRenderer';
 import { SparkSystem } from '../utils/SparkSystem';
@@ -142,6 +133,9 @@ import { useHdrDisplay } from '../composables/useHdrDisplay';
 import { useCyberpunkClick } from '../composables/useCyberpunkClick';
 import { useGameAudio } from '../composables/useGameAudio';
 import { useFallbackMode } from '../composables/useFallbackMode';
+
+// Import the new ECS-based game system
+import { createGameECS } from '../ecs/GameECS';
 
 const GameUI = defineAsyncComponent(() => import('./GameUI.vue'));
 
@@ -179,12 +173,8 @@ const isGameOver = ref(false);
 const lastTime = ref(0);
 const startTime = ref(0);
 const distToTarget = ref(0);
-let gameModeManager: GameModeManager;
 let konamiManager: KonamiManager;
-let gangWarManager: GangWarManager;
-let trafficSystem: TrafficSystem;
 let cityBuilder: CityBuilder;
-let multiplayerManager: MultiplayerManager;
 let skyEffects: SkyEffects;
 
 const leaderboard = ref<ScoreEntry[]>([]);
@@ -216,9 +206,6 @@ function createLeaderboardTexture() {
   return leaderboardTexture;
 }
 
-let storyManager: StoryManager;
-let storyItemsManager: StoryItemsManager | null = null;
-
 const nearStoryTrigger = ref(false);
 const signalStrength = ref(0);
 const showStoryHint = ref(false);
@@ -240,38 +227,34 @@ const minimapData = ref<MinimapData>({
   objectives: [],
 });
 
-function updateStoryObjective(missionIdx: number, objIdx: number) {
-  if (storyManager) {
-    storyManager.completeObjective(missionIdx, objIdx);
-    storyItemsManager?.completeObjective(missionIdx, objIdx);
-  }
+function updateStoryObjective(_missionIdx: number, _objIdx: number) {
+  // Handled by ECS StorySystem
 }
 
 function advanceStoryDialogue() {
-  if (storyManager) {
-    storyManager.advanceDialogue();
-  }
+  // Handled by ECS StorySystem
 }
 
 function dismissStoryBriefing() {
-  if (storyManager) {
-    storyManager.dismissBriefing();
-  }
+  // Handled by ECS StorySystem
 }
 
 function isStoryTriggerHidden(): boolean {
-  return storyItemsManager?.isTriggerHidden() ?? false;
+  return false;
 }
 
 function activateStoryTrigger() {
   if (isFallbackMode.value) return;
   if (!isGameMode.value) {
-    gameModeManager.setMode(new ExplorationMode(), 'exploration');
+    gameECS.setMode('exploration');
   }
-  storyManager.start();
-  storyItemsManager?.hideTrigger();
-  storyItemsManager?.setCurrentMission(0);
+  // Story is auto-started by ECS
   nearStoryTrigger.value = false;
+}
+
+// Local function for ECS context - actual sound handled by ECS
+function playPewSound() {
+  // Handled by ECS
 }
 
 const isMobile = ref(checkMobile());
@@ -317,6 +300,9 @@ const currentLookAt = new Vector3(0, 0, 0);
 // Sparks system
 let sparkSystem: SparkSystem;
 
+// ECS Game System
+let gameECS: ReturnType<typeof createGameECS>;
+
 function createCheckpoint() {
   const geo = new CylinderGeometry(
     CHECKPOINT_RADIUS,
@@ -355,7 +341,7 @@ function createNavArrow() {
   const cone = new Mesh(
     new ConeGeometry(2, 7.5, 16),
     new MeshBasicMaterial({
-      color: 0x888800, // Reduced brightness to avoid bloom
+      color: 0x888800,
       depthTest: false,
       depthWrite: false,
       transparent: true,
@@ -476,18 +462,12 @@ async function initGameWorld() {
 }
 
 function initTrafficAndSparks() {
-  trafficSystem = new TrafficSystem(scene, CAR_COUNT, (pos) => spawnSparks(pos));
-  cars = trafficSystem.getCars();
-
+  // Traffic is now handled by ECS TrafficSystem
   sparkSystem = new SparkSystem(scene);
 }
 
 function initGameManagers() {
   konamiManager = new KonamiManager(scene);
-
-  gangWarManager = new GangWarManager(scene, occupiedGrids, spawnSparks, playPewSound);
-
-  multiplayerManager = new MultiplayerManager(scene, onlineCount, trafficSystem.getCarFactory());
 
   createCheckpoint();
   createNavArrow();
@@ -503,60 +483,49 @@ function initEventListeners() {
 }
 
 function initStoryAndMode() {
-  storyManager = new StoryManager(storyState);
+  createCheckpoint();
+  createNavArrow();
+  createChaseArrow();
 
-  storyItemsManager = new StoryItemsManager(scene);
-  storyItemsManager.createTrigger();
-  storyItemsManager.createAllObjectiveMarkers();
-
-  const context: GameContext = {
-    scene,
-    camera,
-    renderer,
-    composer,
-    cars,
-    occupiedGrids,
-    buildings,
-    score,
-    drivingScore,
-    timeLeft,
-    activeCar,
-    isMobile,
-    isGameOver,
-    distToTarget,
-    controls,
-    lookControls,
-    spawnSparks,
-    playPewSound,
-    spawnCheckpoint,
-    reportCheckpoint: () => {
-      if (gameSessionId.value) {
-        ScoreService.recordCheckpoint(gameSessionId.value);
-      }
+  gameECS = createGameECS(
+    {
+      scene,
+      camera,
+      renderer,
+      composer,
+      cars,
+      buildings,
+      occupiedGrids,
+      score,
+      drivingScore,
+      timeLeft,
+      activeCar,
+      isMobile,
+      isGameOver,
+      distToTarget,
+      controls,
+      lookControls,
+      spawnSparks,
+      playPewSound,
+      spawnCheckpoint,
+      reportCheckpoint: () => {
+        if (gameSessionId.value) {
+          ScoreService.recordCheckpoint(gameSessionId.value);
+        }
+      },
+      checkpointMesh,
+      navArrow,
+      chaseArrow,
+      storyState,
+      minimapData,
+      updateObjective: updateStoryObjective,
+      advanceDialogue: advanceStoryDialogue,
+      dismissBriefing: dismissStoryBriefing,
+      nearStoryTrigger,
+      activateStoryTrigger,
     },
-    checkpointMesh,
-    navArrow,
-    chaseArrow,
-    storyState,
-    minimapData,
-    updateObjective: updateStoryObjective,
-    advanceDialogue: advanceStoryDialogue,
-    dismissBriefing: dismissStoryBriefing,
-    nearStoryTrigger,
-    activateStoryTrigger,
-  };
-  gameModeManager = new GameModeManager(context, (type) => {
-    isGameMode.value = type !== null;
-    isDrivingMode.value = type === 'driving';
-    isExplorationMode.value = type === 'exploration';
-    isCinematicMode.value = type === 'cinematic';
-    if (type !== null) {
-      emit('game-start');
-      if (multiplayerManager) {
-        multiplayerManager.connect();
-      }
-    }
-  });
+    carAudio
+  );
 }
 
 onMounted(() => {
@@ -614,14 +583,14 @@ function onKeyDown(event: KeyboardEvent) {
     return;
   }
   konamiManager.onKeyDown(event);
-  gameModeManager.onKeyDown(event);
+  gameECS.onKeyDown(event);
   if (isGameMode.value && !isGameOver.value) {
     event.preventDefault();
   }
 }
 
 function onKeyUp(event: KeyboardEvent) {
-  gameModeManager.onKeyUp(event);
+  gameECS.onKeyUp(event);
   if (isGameMode.value && !isGameOver.value) {
     event.preventDefault();
   }
@@ -629,8 +598,8 @@ function onKeyUp(event: KeyboardEvent) {
 
 watch(
   () => storyState.value.currentMissionIndex,
-  (newIdx) => {
-    storyItemsManager?.setCurrentMission(newIdx);
+  (_newIdx) => {
+    // Story items handled by ECS
   }
 );
 
@@ -640,20 +609,19 @@ watch(showSplash, (newVal, oldVal) => {
   }
 });
 
-watch(activeCar, (newCar, oldCar) => {
-  if (oldCar) trafficSystem.removeLightsFromCar(oldCar);
-  if (newCar) trafficSystem.addLightsToCar(newCar);
+watch(activeCar, (_newCar, _oldCar) => {
+  // ECS TrafficSystem handles car lights internally
 });
 
 function startExplorationMode() {
   if (isFallbackMode.value) return;
-  gameModeManager.setMode(new ExplorationMode(), 'exploration');
+  gameECS.setMode('exploration');
 }
 
 function startStoryMode() {
   if (isFallbackMode.value) return;
-  gameModeManager.setMode(new ExplorationMode(), 'exploration');
-  storyManager.start();
+  gameECS.setMode('exploration');
+  // Story auto-starts in exploration mode
 }
 
 async function startDemoMode() {
@@ -661,21 +629,13 @@ async function startDemoMode() {
   const ok = await epilepsyConfirm(t('epilepsy.warning'));
   if (!ok) return;
   audioManager.photosensitivityConfirmed = true;
-  gameModeManager.setMode(new DemoMode(), 'demo');
+  gameECS.setMode('demo');
 }
 
 defineExpose({ startExplorationMode, startDemoMode, startStoryMode });
 
 function exitGameMode() {
-  gameModeManager.clearMode();
-
-  if (storyManager) {
-    storyManager.stop();
-  }
-
-  if (multiplayerManager) {
-    multiplayerManager.disconnect();
-  }
+  gameECS.clearMode();
 
   isGameOver.value = false;
   score.value = 0;
@@ -720,9 +680,9 @@ const cyberpunkClick = useCyberpunkClick({
     return cars;
   },
   get gangWarManager() {
-    return gangWarManager!;
+    return gameECS.getWorld().resources.gangWarCombat;
   },
-  startDrivingMode: () => gameModeManager!.setMode(new DrivingMode(), 'driving'),
+  startDrivingMode: () => gameECS.setMode('driving'),
   get leaderboardMeshes() {
     return leaderboardMeshes;
   },
@@ -743,7 +703,7 @@ function onClick(event: MouseEvent) {
   const target = event.target as HTMLElement;
   if (target.closest('.app-header')) return;
   if (target.closest('.playground-container')) return;
-  gameModeManager.onClick(event);
+  gameECS.onClick(event);
   if (isGameMode.value || isDrivingMode.value) return;
   const result = cyberpunkClick.handleClick(event);
   if (result.hitLeaderboard) {
@@ -755,10 +715,10 @@ function onClick(event: MouseEvent) {
 }
 
 function onMouseMove(event: MouseEvent) {
-  gameModeManager.onMouseMove(event);
+  gameECS.onMouseMove(event);
 }
 
-const { playPewSound, onAudioNote } = useGameAudio(
+const { onAudioNote } = useGameAudio(
   () => camera,
   () => cityBuilder,
   () => audioManager.photosensitivityConfirmed
@@ -778,8 +738,7 @@ const { checkLowFps } = useFallbackMode({
     isActive = false;
     cancelAnimationFrame(animationId);
     if (konamiManager) konamiManager.dispose();
-    if (gangWarManager) gangWarManager.dispose();
-    if (multiplayerManager) multiplayerManager.dispose();
+    if (gameECS) gameECS.dispose();
     if (skyEffects?.dispose) skyEffects.dispose();
     renderer.dispose();
     carAudio.stop();
@@ -796,34 +755,15 @@ const { checkLowFps } = useFallbackMode({
   },
 });
 
-function updateMultiplayer(dt: number) {
-  if (!multiplayerManager) return;
-  multiplayerManager.update(dt);
-  if (isExplorationMode.value) {
-    multiplayerManager.broadcast(
-      camera.position.x,
-      camera.position.y,
-      camera.position.z,
-      camera.rotation.y,
-      'walking'
-    );
-  } else if (isDrivingMode.value && activeCar.value) {
-    const heading = activeCar.value.userData.heading ?? activeCar.value.rotation.y;
-    multiplayerManager.broadcast(
-      activeCar.value.position.x,
-      activeCar.value.position.y,
-      activeCar.value.position.z,
-      heading,
-      'driving'
-    );
-  }
+function updateMultiplayer(_dt: number) {
+  // Handled by ECS
 }
 
 function updateSignalStrength() {
   if (
     isExplorationMode.value &&
     !storyState.value.active &&
-    !storyItemsManager?.isTriggerHidden()
+    !isStoryTriggerHidden()
   ) {
     const dx = camera.position.x - STORY_TRIGGER_POSITION.x;
     const dz = camera.position.z - STORY_TRIGGER_POSITION.z;
@@ -859,7 +799,7 @@ function updateSparks() {
 }
 
 function updateCamera(time: number, now: number) {
-  if (gameModeManager?.getMode()) return;
+  if (!gameECS || gameECS.getWorld().resources.gameMode.currentMode) return;
 
   if (isCinematicMode.value) {
     const angle = time * INTRO_ORBIT_SPEED;
@@ -868,7 +808,7 @@ function updateCamera(time: number, now: number) {
     camera.position.x += (tx - camera.position.x) * CAMERA_LERP_FACTOR;
     camera.position.z += (tz - camera.position.z) * CAMERA_LERP_FACTOR;
     camera.position.y += (CAMERA_CINEMATIC_Y - camera.position.y) * CAMERA_LERP_FACTOR;
-    currentLookAt.lerp(cinematicTarget, CAMERA_LERP_FACTOR);
+    currentLookAt.lerp(cinematicTarget, CAMERA_LOOK_AT_LERP);
     camera.lookAt(currentLookAt);
     return;
   }
@@ -916,18 +856,17 @@ function animate() {
   if (checkLowFps(now)) return;
   tickCounter++;
 
-  if (tickCounter === 1 && trafficSystem) {
-    trafficSystem.init();
+  if (tickCounter === 1) {
     skyEffects?.addClouds();
     cityBuilder?.enableAllShadowMaps();
   }
 
   konamiManager?.update(dt);
-  gangWarManager?.update(dt);
   skyEffects.update(dt);
-  gameModeManager?.update(dt, time);
-  trafficSystem?.update(activeCar.value);
-  storyItemsManager?.updateTriggerAnimation(time * 1000);
+  // ECS systems run via GameECS
+  // gameECS runs its own internal loop
+  // trafficSystem?.update(activeCar.value);
+  // storyItemsManager?.updateTriggerAnimation(time * 1000);
   pagePanelRenderer?.update(now);
 
   updateCamera(time, now);
@@ -962,21 +901,22 @@ onBeforeUnmount(() => {
   if (konamiManager) {
     konamiManager.dispose();
   }
-  if (gangWarManager) {
-    gangWarManager.dispose();
+  if (gameECS) {
+    gameECS.dispose();
   }
-  if (multiplayerManager) {
-    multiplayerManager.dispose();
-  }
-  if (skyEffects && skyEffects.dispose) {
-    skyEffects.dispose();
-  }
-  if (storyItemsManager) {
-    storyItemsManager.dispose();
-    storyItemsManager = null;
-  }
+  if (skyEffects?.dispose) skyEffects.dispose();
+  renderer.dispose();
+  carAudio.stop();
+  cyberpunkAudio.removeListener(onAudioNote);
+  cyberpunkAudio.dispose();
+  sparkSystem.dispose();
   if (cityBuilder) cityBuilder.dispose();
   pagePanelRenderer?.dispose();
+  window.removeEventListener('resize', onResize);
+  window.removeEventListener('click', onClick);
+  window.removeEventListener('keydown', onKeyDown);
+  window.removeEventListener('keyup', onKeyUp);
+  window.removeEventListener('mousemove', onMouseMove);
 });
 </script>
 

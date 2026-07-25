@@ -1,8 +1,13 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { ref } from 'vue';
 import { mount } from '@vue/test-utils';
 import { configureAxe } from 'vitest-axe';
 import MenuItem from '../../MenuItem.vue';
+
+vi.mock('vue-router', () => ({
+  useRouter: vi.fn(() => ({ push: vi.fn() })),
+  useRoute: vi.fn(() => ({ path: '/' })),
+}));
 
 const runAxe = configureAxe({
   rules: {

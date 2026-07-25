@@ -1,7 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { ref } from 'vue';
 import { mount } from '@vue/test-utils';
 import MenuItem from '../MenuItem.vue';
+
+vi.mock('vue-router', () => ({
+  useRouter: vi.fn(() => ({ push: vi.fn() })),
+  useRoute: vi.fn(() => ({ path: '/' })),
+}));
 
 describe('MenuItem.vue', () => {
   it('renders the menu item with the correct link and text', () => {

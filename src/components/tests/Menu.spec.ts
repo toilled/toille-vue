@@ -4,6 +4,11 @@ import { mount } from '@vue/test-utils';
 import Menu from '../Menu.vue';
 import MenuItem from '../MenuItem.vue';
 
+vi.mock('vue-router', () => ({
+  useRouter: vi.fn(() => ({ push: vi.fn() })),
+  useRoute: vi.fn(() => ({ path: '/' })),
+}));
+
 describe('Menu.vue', () => {
   beforeEach(() => {
     const mockWeatherData = {

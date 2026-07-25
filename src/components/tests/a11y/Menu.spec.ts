@@ -3,6 +3,11 @@ import { mount } from '@vue/test-utils';
 import { configureAxe } from 'vitest-axe';
 import Menu from '../../Menu.vue';
 
+vi.mock('vue-router', () => ({
+  useRouter: vi.fn(() => ({ push: vi.fn() })),
+  useRoute: vi.fn(() => ({ path: '/' })),
+}));
+
 const runAxe = configureAxe({
   rules: {
     region: { enabled: false },

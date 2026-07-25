@@ -1,4 +1,5 @@
-import { GameContext, GameMode, GameModeType } from './types';
+import { GameContext, GameMode } from './types';
+import type { GameModeType } from './ecs/components';
 
 export class GameModeManager {
   private currentMode: GameMode | null = null;

@@ -116,14 +116,22 @@ describe('GameOverModal + ScoreService integration', () => {
   });
 
   it('fetches from localStorage after API failure', async () => {
+    const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const mockFetch = vi.mocked(fetch);
     mockFetch.mockRejectedValue(new Error('Network error'));
 
     await ScoreService.submitScore('LOCAL', 300);
 
-    mockFetch.mockResolvedValueOnce(new Error('fail') as never);
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      statusText: 'Internal Server Error',
+      headers: { get: () => 'application/json' },
+      json: () => Promise.resolve([]),
+    } as never);
     const localScores = await ScoreService.getTopScores();
     expect(localScores).toEqual([{ name: 'LOCAL', score: 300 }]);
+    consoleSpy.mockRestore();
   });
 
   it('validates name and score before submission', async () => {

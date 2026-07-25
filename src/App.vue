@@ -128,6 +128,7 @@ const {
 } = useScrollSpy(visiblePages, headerRef);
 
 provide('activeSection', activeSection);
+provide('navigateToSection', scrollToSection);
 
 function toggleContent() {
   uiStore.toggleContent();

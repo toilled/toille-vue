@@ -146,6 +146,7 @@ describe('entry-server render', () => {
   });
 
   it('returns error result when renderToString throws', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     mockRenderToString.mockRejectedValue(new Error('render failed'));
 
     const render = await getRender();
@@ -155,5 +156,6 @@ describe('entry-server render', () => {
     expect(result.html).toContain('Failed to load page');
     expect(result.title).toBe('');
     expect(result.lang).toBe('en');
+    consoleSpy.mockRestore();
   });
 });

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ExplorationMode } from '../../modes/ExplorationMode';
 import { Scene, PerspectiveCamera, WebGLRenderer, Group } from 'three';
-import { ref } from 'vue';
 import type { GameContext } from '../../types';
+import { GameState } from '../../GameState';
 
 vi.mock('../../audio/CarAudio', () => ({
   carAudio: { playCrash: vi.fn() },
@@ -21,7 +21,24 @@ describe('ExplorationMode', () => {
     document.exitPointerLock = vi.fn();
 
     mode = new ExplorationMode();
+    const gameState = new GameState(
+      new Scene(),
+      new PerspectiveCamera(),
+      new WebGLRenderer(),
+      null,
+      [],
+      [],
+      new Map(),
+      vi.fn(),
+      vi.fn(),
+      vi.fn(),
+      vi.fn(),
+      undefined,
+      {} as any,
+      {} as any,
+    );
     context = {
+      gameState,
       scene: new Scene(),
       camera: new PerspectiveCamera(),
       renderer: new WebGLRenderer(),
@@ -29,22 +46,13 @@ describe('ExplorationMode', () => {
       cars: [],
       buildings: [],
       occupiedGrids: new Map(),
-      score: ref(0),
-      drivingScore: ref(0),
-      timeLeft: ref(0),
-      activeCar: ref(null),
-      isMobile: ref(false),
-      isGameOver: ref(false),
-      distToTarget: ref(0),
-      controls: ref({ left: false, right: false, forward: false, backward: false }),
-      lookControls: ref({ left: false, right: false, up: false, down: false }),
       spawnSparks: vi.fn(),
       playPewSound: vi.fn(),
       spawnCheckpoint: vi.fn(),
       reportCheckpoint: vi.fn(),
       checkpointMesh: undefined,
-      navArrow: { visible: false } as never,
-      chaseArrow: { visible: false } as never,
+      navArrow: { visible: false } as any,
+      chaseArrow: { visible: false } as any,
     };
   });
 
@@ -76,43 +84,43 @@ describe('ExplorationMode', () => {
     mode.init(context);
     const wEvent = new KeyboardEvent('keydown', { key: 'w' });
     mode.onKeyDown(wEvent);
-    expect(context.controls.value.forward).toBe(true);
+    expect(context.gameState.controls.forward).toBe(true);
 
     const aEvent = new KeyboardEvent('keydown', { key: 'a' });
     mode.onKeyDown(aEvent);
-    expect(context.controls.value.left).toBe(true);
+    expect(context.gameState.controls.left).toBe(true);
 
     const sEvent = new KeyboardEvent('keydown', { key: 's' });
     mode.onKeyDown(sEvent);
-    expect(context.controls.value.backward).toBe(true);
+    expect(context.gameState.controls.backward).toBe(true);
 
     const dEvent = new KeyboardEvent('keydown', { key: 'd' });
     mode.onKeyDown(dEvent);
-    expect(context.controls.value.right).toBe(true);
+    expect(context.gameState.controls.right).toBe(true);
   });
 
   it('onKeyDown supports arrow keys', () => {
     mode.init(context);
     mode.onKeyDown(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
-    expect(context.controls.value.forward).toBe(true);
+    expect(context.gameState.controls.forward).toBe(true);
     mode.onKeyDown(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
-    expect(context.controls.value.backward).toBe(true);
+    expect(context.gameState.controls.backward).toBe(true);
     mode.onKeyDown(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
-    expect(context.controls.value.left).toBe(true);
+    expect(context.gameState.controls.left).toBe(true);
     mode.onKeyDown(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
-    expect(context.controls.value.right).toBe(true);
+    expect(context.gameState.controls.right).toBe(true);
   });
 
   it('onKeyUp unsets forward control', () => {
     mode.init(context);
-    context.controls.value.forward = true;
+    context.gameState.controls.forward = true;
     mode.onKeyUp(new KeyboardEvent('keyup', { key: 'w' }));
-    expect(context.controls.value.forward).toBe(false);
+    expect(context.gameState.controls.forward).toBe(false);
   });
 
   it('onKeyUp unsets all WASD controls', () => {
     mode.init(context);
-    const c = context.controls.value;
+    const c = context.gameState.controls;
     c.forward = true;
     c.backward = true;
     c.left = true;
@@ -129,7 +137,7 @@ describe('ExplorationMode', () => {
 
   it('onKeyUp unsets all arrow key controls', () => {
     mode.init(context);
-    const c = context.controls.value;
+    const c = context.gameState.controls;
     c.forward = true;
     c.backward = true;
     c.left = true;
@@ -147,7 +155,7 @@ describe('ExplorationMode', () => {
   it('E key dismisses briefing via handleStoryInteraction', () => {
     mode.init(context);
     const dismissBriefing = vi.fn();
-    context.storyState = ref({
+    context.gameState.storyState = {
       active: true,
       showingBriefing: true,
       showingDialogue: false,
@@ -155,7 +163,7 @@ describe('ExplorationMode', () => {
       currentMissionIndex: 0,
       currentDialogueIndex: 0,
       missions: [],
-    });
+    };
     context.dismissBriefing = dismissBriefing;
     mode.onKeyDown(new KeyboardEvent('keydown', { key: 'e' }));
     expect(dismissBriefing).toHaveBeenCalled();
@@ -164,7 +172,7 @@ describe('ExplorationMode', () => {
   it('E key advances dialogue via handleStoryInteraction', () => {
     mode.init(context);
     const advanceDialogue = vi.fn();
-    context.storyState = ref({
+    context.gameState.storyState = {
       active: true,
       showingBriefing: false,
       showingDialogue: true,
@@ -172,7 +180,7 @@ describe('ExplorationMode', () => {
       currentMissionIndex: 0,
       currentDialogueIndex: 0,
       missions: [],
-    });
+    };
     context.advanceDialogue = advanceDialogue;
     mode.onKeyDown(new KeyboardEvent('keydown', { key: 'e' }));
     expect(advanceDialogue).toHaveBeenCalled();
@@ -180,13 +188,13 @@ describe('ExplorationMode', () => {
 
   it('update forwards player position and mission to minimapData', () => {
     mode.init(context);
-    context.minimapData = ref({
+    context.gameState.minimapData = {
       playerX: 0,
       playerZ: 0,
       playerRotation: 0,
       objectives: [],
-    });
-    context.storyState = ref({
+    };
+    context.gameState.storyState = {
       active: true,
       showingBriefing: false,
       showingDialogue: false,
@@ -204,13 +212,13 @@ describe('ExplorationMode', () => {
           ],
         },
       ],
-    });
+    };
     mode.isTransitioning = false;
     context.camera.position.set(42, 3, 99);
     mode.update(0.1, 0);
-    expect(context.minimapData.value.playerX).toBe(42);
-    expect(context.minimapData.value.playerZ).toBe(99);
-    expect(context.minimapData.value.objectives).toHaveLength(1);
+    expect(context.gameState.minimapData.playerX).toBe(42);
+    expect(context.gameState.minimapData.playerZ).toBe(99);
+    expect(context.gameState.minimapData.objectives).toHaveLength(1);
   });
 
   it('detects car collision and plays crash sound', () => {
@@ -228,7 +236,7 @@ describe('ExplorationMode', () => {
   it('update detects proximity to story objective', () => {
     const updateObjective = vi.fn();
     context.updateObjective = updateObjective;
-    context.storyState = ref({
+    context.gameState.storyState = {
       active: true,
       showingBriefing: false,
       showingDialogue: false,
@@ -246,7 +254,7 @@ describe('ExplorationMode', () => {
           ],
         },
       ],
-    });
+    };
     mode.init(context);
     mode.isTransitioning = false;
     context.camera.position.set(0, 3, 0);
@@ -297,11 +305,11 @@ describe('ExplorationMode', () => {
   });
 
   it('handles mobile look controls', () => {
-    context.isMobile.value = true;
+    context.gameState.isMobile = true;
     mode.init(context);
     context.camera.position.set(0, 3, 0);
     mode.isTransitioning = false;
-    context.lookControls.value.left = true;
+    context.gameState.lookControls.left = true;
     mode.update(0.1, 0);
     expect(context.camera.rotation.y).not.toBe(0);
   });

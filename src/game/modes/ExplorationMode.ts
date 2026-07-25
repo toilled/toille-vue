@@ -10,16 +10,11 @@ import { checkGridCollision } from '../../utils/GridCollision';
 export class ExplorationMode implements GameMode {
   context: GameContext | null = null;
 
-  // State
   isTransitioning = false;
   isJumping = false;
   velocityY = 0;
   playerRotation = new Euler(0, 0, 0, 'YXZ');
-
-  // Story proximity cooldown
   private lastObjectiveProximityCheck = 0;
-
-  // Constants
   gravity = 0.015;
   jumpStrength = 0.4;
 
@@ -30,7 +25,7 @@ export class ExplorationMode implements GameMode {
     this.velocityY = 0;
     this.isJumping = false;
 
-    if (!context.isMobile.value && context.renderer) {
+    if (!context.gameState.isMobile && context.renderer) {
       document.body.requestPointerLock();
     }
   }
@@ -53,13 +48,14 @@ export class ExplorationMode implements GameMode {
   }
 
   private handleMobileLook() {
-    if (!this.context || !this.context.isMobile.value) return;
-    const { camera, lookControls } = this.context;
+    if (!this.context || !this.context.gameState.isMobile) return;
+    const { camera } = this.context;
+    const { lookControls } = this.context.gameState;
     const rotateSpeed = 0.03;
-    if (lookControls.value.left) this.playerRotation.y += rotateSpeed;
-    if (lookControls.value.right) this.playerRotation.y -= rotateSpeed;
-    if (lookControls.value.up) this.playerRotation.x += rotateSpeed;
-    if (lookControls.value.down) this.playerRotation.x -= rotateSpeed;
+    if (lookControls.left) this.playerRotation.y += rotateSpeed;
+    if (lookControls.right) this.playerRotation.y -= rotateSpeed;
+    if (lookControls.up) this.playerRotation.x += rotateSpeed;
+    if (lookControls.down) this.playerRotation.x -= rotateSpeed;
 
     this.playerRotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.playerRotation.x));
     camera.rotation.copy(this.playerRotation);
@@ -67,16 +63,17 @@ export class ExplorationMode implements GameMode {
 
   private computeMovement(): { dx: number; dz: number } | null {
     if (!this.context) return null;
-    const { camera, controls } = this.context;
+    const { camera } = this.context;
+    const { controls } = this.context.gameState;
     const speed = 2.0;
 
     const frontVector = new Vector3(
       0,
       0,
-      Number(controls.value.backward) - Number(controls.value.forward)
+      Number(controls.backward) - Number(controls.forward)
     );
     const sideVector = new Vector3(
-      Number(controls.value.left) - Number(controls.value.right),
+      Number(controls.left) - Number(controls.right),
       0,
       0
     );
@@ -92,7 +89,7 @@ export class ExplorationMode implements GameMode {
 
   private checkGridCollision(nextX: number, nextZ: number): boolean {
     if (!this.context) return false;
-    return checkGridCollision(nextX, nextZ, this.context.occupiedGrids, 2);
+    return checkGridCollision(nextX, nextZ, this.context.gameState.occupiedGrids, 2);
   }
 
   private enforceCameraBounds() {
@@ -106,7 +103,8 @@ export class ExplorationMode implements GameMode {
 
   private updateJumpAndBob() {
     if (!this.context) return;
-    const { camera, controls } = this.context;
+    const { camera } = this.context;
+    const { controls } = this.context.gameState;
     const currentGroundH = getHeight(camera.position.x, camera.position.z) + 3;
 
     if (this.isJumping) {
@@ -118,10 +116,10 @@ export class ExplorationMode implements GameMode {
         this.velocityY = 0;
       }
     } else if (
-      controls.value.forward ||
-      controls.value.backward ||
-      controls.value.left ||
-      controls.value.right
+      controls.forward ||
+      controls.backward ||
+      controls.left ||
+      controls.right
     ) {
       camera.position.y = currentGroundH + Math.sin(Date.now() * 0.01) * 0.1;
     } else {
@@ -131,7 +129,8 @@ export class ExplorationMode implements GameMode {
 
   private checkCarCollisions() {
     if (!this.context) return;
-    const { camera, cars } = this.context;
+    const { camera } = this.context;
+    const { cars } = this.context;
     const hitDistSq = 15 * 15;
 
     for (let i = 0; i < cars.length; i++) {
@@ -188,28 +187,28 @@ export class ExplorationMode implements GameMode {
     ctx: GameContext | null | undefined,
     ss: StoryState | undefined
   ): boolean {
-    if (!ctx?.updateObjective || !ctx?.storyState) return false;
+    if (!ctx?.updateObjective) return false;
     if (!ss?.active || ss.showingBriefing || ss.showingDialogue || ss.missionComplete) return false;
     return true;
   }
 
   private checkStoryTriggerProximity(px: number, pz: number) {
     const ctx = this.context;
-    if (!ctx?.nearStoryTrigger || !ctx?.storyState) return;
-    const ss = ctx.storyState.value;
+    if (!ctx || !ctx.gameState.nearStoryTrigger || !ctx.gameState.storyState) return;
+    const ss = ctx.gameState.storyState;
     if (ss.active || ss.missions.length === 0) {
-      ctx.nearStoryTrigger.value = false;
+      ctx.gameState.nearStoryTrigger = false;
       return;
     }
     const dx = px - STORY_TRIGGER_POSITION.x;
     const dz = pz - STORY_TRIGGER_POSITION.z;
     const dist = Math.sqrt(dx * dx + dz * dz);
-    ctx.nearStoryTrigger.value = dist < 50;
+    ctx.gameState.nearStoryTrigger = dist < 50;
   }
 
   private updateStoryObjectives(px: number, pz: number) {
     const ctx = this.context;
-    const ss = ctx?.storyState?.value;
+    const ss = ctx?.gameState.storyState;
     if (!this.canCheckObjective(ctx, ss)) return;
     const mission = ss!.missions[ss!.currentMissionIndex];
     if (!mission) return;
@@ -241,14 +240,13 @@ export class ExplorationMode implements GameMode {
 
   private updateMinimap(px: number, pz: number) {
     const ctx = this.context;
-    if (!ctx || !ctx.minimapData || !ctx.storyState) return;
-    const ss = ctx.storyState.value;
-    const mdata = ctx.minimapData.value;
+    if (!ctx || !ctx.gameState.minimapData || !ctx.gameState.storyState) return;
+    const ss = ctx.gameState.storyState;
+    const mdata = ctx.gameState.minimapData;
     mdata.playerX = px;
     mdata.playerZ = pz;
     mdata.playerRotation = ctx.camera.rotation.y;
     mdata.objectives = this.getMinimapObjectives(ss);
-    ctx.minimapData.value = { ...mdata };
   }
 
   cleanup() {
@@ -259,7 +257,7 @@ export class ExplorationMode implements GameMode {
 
   private advanceStoryFromEvent() {
     if (!this.context) return false;
-    const ss = this.context.storyState?.value;
+    const ss = this.context.gameState.storyState;
     if (ss?.showingBriefing && this.context.dismissBriefing) {
       this.context.dismissBriefing();
       return true;
@@ -274,7 +272,7 @@ export class ExplorationMode implements GameMode {
   private handleStoryInteraction(event: KeyboardEvent) {
     if (!this.context || (event.key !== 'e' && event.key !== 'E')) return;
     if (this.advanceStoryFromEvent()) return;
-    if (this.context.nearStoryTrigger?.value && this.context.activateStoryTrigger) {
+    if (this.context.gameState.nearStoryTrigger && this.context.activateStoryTrigger) {
       this.context.activateStoryTrigger();
     }
   }
@@ -288,25 +286,25 @@ export class ExplorationMode implements GameMode {
     }
 
     this.handleStoryInteraction(event);
-    handleControlsKeyDown(this.context.controls.value, event);
+    handleControlsKeyDown(this.context.gameState.controls, event);
   }
 
   onKeyUp(event: KeyboardEvent) {
     if (!this.context) return;
-    handleControlsKeyUp(this.context.controls.value, event);
+    handleControlsKeyUp(this.context.gameState.controls, event);
   }
 
   onClick(_event: MouseEvent) {
     if (!this.context) return;
     if (this.advanceStoryFromEvent()) return;
-    if (!this.context.isMobile.value && document.pointerLockElement !== document.body) {
+    if (!this.context.gameState.isMobile && document.pointerLockElement !== document.body) {
       document.body.requestPointerLock();
     }
   }
 
   onMouseMove(event: MouseEvent) {
     if (!this.context) return;
-    if (this.context.isMobile.value) return;
+    if (this.context.gameState.isMobile) return;
     if (document.pointerLockElement !== document.body) return;
 
     const sensitivity = 0.002;

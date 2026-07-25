@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Scene, Group } from 'three';
-import { ref, type Ref } from 'vue';
 import { MultiplayerManager } from '../MultiplayerManager';
 
 let mockMqttClient: {
@@ -45,16 +44,15 @@ vi.mock('../CarFactory', () => ({
 describe('MultiplayerManager', () => {
   let scene: Scene;
   let manager: MultiplayerManager;
-
-  let onlineCount: Ref<number>;
+  let onlineCount: number;
 
   beforeEach(() => {
     scene = {
       add: vi.fn(),
       remove: vi.fn(),
     } as unknown as Scene;
-    onlineCount = ref(0);
-    manager = new MultiplayerManager(scene, onlineCount, {
+    onlineCount = 0;
+    manager = new MultiplayerManager(scene, (count) => { onlineCount = count; }, {
       createCar: vi.fn(() => new Group()),
     } as never);
   });
@@ -126,13 +124,13 @@ describe('MultiplayerManager', () => {
 
   it('tracks online count on connect and disconnect', () => {
     manager.connect();
-    expect(onlineCount.value).toBe(0);
+    expect(onlineCount).toBe(0);
     mockMqttClient.connected = true;
     onConnectCallback();
-    expect(onlineCount.value).toBe(1);
+    expect(onlineCount).toBe(1);
     mockMqttClient.connected = false;
     onDisconnectCallback();
-    expect(onlineCount.value).toBe(0);
+    expect(onlineCount).toBe(0);
   });
 
   it('increments online count when remote players join', () => {
@@ -149,7 +147,7 @@ describe('MultiplayerManager', () => {
       timestamp: Date.now(),
     });
     onMessageCallback('toille-vue/cyberpunk/players', Buffer.from(message));
-    expect(onlineCount.value).toBe(2);
+    expect(onlineCount).toBe(2);
   });
 
   it('decrements online count when remote players time out', () => {
@@ -167,10 +165,10 @@ describe('MultiplayerManager', () => {
       timestamp: Date.now(),
     });
     onMessageCallback('toille-vue/cyberpunk/players', Buffer.from(message));
-    expect(onlineCount.value).toBe(2);
+    expect(onlineCount).toBe(2);
     vi.advanceTimersByTime(6000);
     manager.update(0);
-    expect(onlineCount.value).toBe(1);
+    expect(onlineCount).toBe(1);
     vi.useRealTimers();
   });
 
@@ -178,9 +176,9 @@ describe('MultiplayerManager', () => {
     manager.connect();
     mockMqttClient.connected = true;
     onConnectCallback();
-    expect(onlineCount.value).toBe(1);
+    expect(onlineCount).toBe(1);
     manager.dispose();
-    expect(onlineCount.value).toBe(0);
+    expect(onlineCount).toBe(0);
   });
 
   it('dispose cleans up', () => {

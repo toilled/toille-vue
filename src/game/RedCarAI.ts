@@ -51,7 +51,7 @@ export class RedCarAI {
   }
 
   respawn() {
-    const player = this.context.activeCar.value;
+    const player = this.context.gameState.activeCar;
     if (!this.car || !player) return;
 
     let spawned = false;
@@ -185,13 +185,13 @@ export class RedCarAI {
     if (!this.car) return;
     const dist = this.car.position.distanceTo(playerCar.position);
     if (dist < 10) {
-      this.context.isGameOver.value = true;
+      this.context.gameState.isGameOver = true;
     }
   }
 
   updateChaseArrow(playerCar: Group) {
-    if (!this.context.chaseArrow || !this.car) return;
-    const arrow = this.context.chaseArrow;
+    if (!this.context.gameState.chaseArrow || !this.car) return;
+    const arrow = this.context.gameState.chaseArrow;
     arrow.visible = true;
     arrow.position.copy(playerCar.position);
     arrow.position.y += 3;

@@ -1,4 +1,5 @@
 import { mount, VueWrapper } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import CyberpunkCity from '../components/CyberpunkCity.vue';
 import * as THREE from 'three';
@@ -502,6 +503,7 @@ describe('CyberpunkCity.vue', () => {
   let wrapper: VueWrapper;
 
   beforeEach(() => {
+    setActivePinia(createPinia());
     // Reset mocks
     vi.clearAllMocks();
 

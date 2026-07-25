@@ -1,7 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { StoryManager } from '../StoryManager';
-import { ref } from 'vue';
-import type { Ref } from 'vue';
 import type { StoryState } from '../types';
 
 function emptyState(): StoryState {
@@ -26,12 +24,12 @@ function startMission(manager: StoryManager) {
 }
 
 describe('StoryManager', () => {
-  let state: Ref<StoryState>;
+  let state: StoryState;
   let manager: StoryManager;
 
   beforeEach(() => {
     vi.useFakeTimers();
-    state = ref(emptyState()) as Ref<StoryState>;
+    state = emptyState();
     manager = new StoryManager(state);
   });
 
@@ -40,9 +38,10 @@ describe('StoryManager', () => {
   });
 
   it('initializes state when passed null/empty', () => {
-    expect(state.value).not.toBeNull();
-    expect(state.value.active).toBe(false);
-    expect(state.value.missions.length).toBe(5);
+    const s = manager.getState();
+    expect(s).not.toBeNull();
+    expect(s.active).toBe(false);
+    expect(s.missions.length).toBe(5);
   });
 
   it('does not overwrite existing state with missions', () => {
@@ -66,7 +65,7 @@ describe('StoryManager', () => {
         completeMessage: '',
       },
     ];
-    const existing = ref<StoryState>({
+    const existing = {
       active: false,
       currentMissionIndex: 2,
       currentDialogueIndex: 1,
@@ -74,98 +73,103 @@ describe('StoryManager', () => {
       showingBriefing: false,
       missionComplete: false,
       missions,
-    });
+    };
     const m = new StoryManager(existing);
-    expect(existing.value.currentMissionIndex).toBe(2);
+    expect(existing.currentMissionIndex).toBe(2);
     expect(m.getState().currentMissionIndex).toBe(2);
   });
 
   it('start sets active and showingBriefing', () => {
     manager.start();
-    expect(state.value.active).toBe(true);
-    expect(state.value.showingBriefing).toBe(true);
+    const s = manager.getState();
+    expect(s.active).toBe(true);
+    expect(s.showingBriefing).toBe(true);
   });
 
   it('stop sets active to false', () => {
     manager.start();
     manager.stop();
-    expect(state.value.active).toBe(false);
+    expect(manager.getState().active).toBe(false);
   });
 
   it('dismissBriefing transitions to dialogue', () => {
     manager.start();
     manager.dismissBriefing();
-    expect(state.value.showingBriefing).toBe(false);
-    expect(state.value.showingDialogue).toBe(true);
-    expect(state.value.currentDialogueIndex).toBe(0);
+    const s = manager.getState();
+    expect(s.showingBriefing).toBe(false);
+    expect(s.showingDialogue).toBe(true);
+    expect(s.currentDialogueIndex).toBe(0);
   });
 
   it('dismissBriefing does nothing when not active', () => {
     manager.dismissBriefing();
-    expect(state.value.showingBriefing).toBe(false);
+    expect(manager.getState().showingBriefing).toBe(false);
   });
 
   it('advanceDialogue increments currentDialogueIndex', () => {
     manager.start();
     manager.dismissBriefing();
-    expect(state.value.currentDialogueIndex).toBe(0);
+    const s = manager.getState();
+    expect(s.currentDialogueIndex).toBe(0);
     manager.advanceDialogue();
-    expect(state.value.currentDialogueIndex).toBe(1);
+    expect(manager.getState().currentDialogueIndex).toBe(1);
   });
 
   it('advanceDialogue finishes dialogue at last line', () => {
     manager.start();
     manager.dismissBriefing();
-    const mission = state.value.missions[0];
+    const s = manager.getState();
+    const mission = s.missions[0];
     for (let i = 0; i < mission.dialogue.length; i++) {
       manager.advanceDialogue();
     }
-    expect(state.value.showingDialogue).toBe(false);
-    expect(state.value.currentDialogueIndex).toBe(0);
+    expect(s.showingDialogue).toBe(false);
+    expect(s.currentDialogueIndex).toBe(0);
   });
 
   it('advanceDialogue does nothing when not active', () => {
     manager.advanceDialogue();
-    expect(state.value.currentDialogueIndex).toBe(0);
+    expect(manager.getState().currentDialogueIndex).toBe(0);
   });
 
   it('completeObjective marks an objective as done', () => {
     startMission(manager);
     manager.completeObjective(0, 0);
-    expect(state.value.missions[0].objectives[0].completed).toBe(true);
+    expect(manager.getState().missions[0].objectives[0].completed).toBe(true);
   });
 
   it('completeObjective advances mission when all objectives done', () => {
     startMission(manager);
     manager.completeObjective(0, 0);
-    expect(state.value.missionComplete).toBe(true);
+    expect(manager.getState().missionComplete).toBe(true);
     vi.advanceTimersByTime(3000);
-    expect(state.value.currentMissionIndex).toBe(1);
-    expect(state.value.showingBriefing).toBe(true);
+    expect(manager.getState().currentMissionIndex).toBe(1);
+    expect(manager.getState().showingBriefing).toBe(true);
   });
 
   it('completeObjective does not auto-advance past last mission', () => {
     // complete missions 0-3
     for (let m = 0; m < 4; m++) {
       startMission(manager);
-      for (let o = 0; o < state.value.missions[m].objectives.length; o++) {
+      for (let o = 0; o < manager.getState().missions[m].objectives.length; o++) {
         manager.completeObjective(m, o);
       }
       vi.advanceTimersByTime(3000);
     }
     // mission 4 is the last one — no auto-advance
     startMission(manager);
-    for (let o = 0; o < state.value.missions[4].objectives.length; o++) {
+    for (let o = 0; o < manager.getState().missions[4].objectives.length; o++) {
       manager.completeObjective(4, o);
     }
     vi.advanceTimersByTime(3000);
-    expect(state.value.active).toBe(true);
-    expect(state.value.missionComplete).toBe(true);
+    expect(manager.getState().active).toBe(true);
+    expect(manager.getState().missionComplete).toBe(true);
   });
 
   it('completeObjective does nothing when not active', () => {
     manager.completeObjective(0, 0);
-    expect(state.value.missions[0].objectives[0].completed).toBe(false);
+    const s = manager.getState();
+    expect(s.missions[0]?.objectives?.[0]?.completed).toBeFalsy();
   });
 
   it('getPlayerObjective returns nearby uncompleted objective', () => {
@@ -209,7 +213,7 @@ describe('StoryManager', () => {
     manager.completeObjective(0, 0);
     manager.stop();
     vi.advanceTimersByTime(3000);
-    expect(state.value.currentMissionIndex).toBe(0);
+    expect(manager.getState().currentMissionIndex).toBe(0);
   });
 
   it('getState returns current state', () => {

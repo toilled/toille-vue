@@ -8,11 +8,12 @@ import {
   Mesh,
 } from 'three';
 import { ScoreService } from '../utils/ScoreService';
-import type { Ref } from 'vue';
 
 export type GangWarManagerLike = {
   fightMarkers: Object3D[];
 };
+
+type RefLike<T> = { value: T };
 
 export interface CyberpunkClickContext {
   camera: PerspectiveCamera;
@@ -22,13 +23,13 @@ export interface CyberpunkClickContext {
   startDrivingMode: () => void;
   leaderboardMeshes: Mesh[];
   pageMeshes: Mesh[];
-  isGameMode: Ref<boolean>;
-  isDrivingMode: Ref<boolean>;
-  isCinematicMode: Ref<boolean>;
+  isGameMode: RefLike<boolean>;
+  isDrivingMode: RefLike<boolean>;
+  isCinematicMode: RefLike<boolean>;
   cinematicTarget: Vector3;
   emit: (event: string, ...args: unknown[]) => void;
-  gameSessionId: Ref<string | null>;
-  activeCar: Ref<Group | null>;
+  gameSessionId: RefLike<string | null>;
+  activeCar: RefLike<Group | null>;
 }
 
 export function useCyberpunkClick(ctx: CyberpunkClickContext) {

@@ -3,7 +3,7 @@ import en from './locales/en.json';
 
 type MessageSchema = typeof en;
 
-function getInitialLocale(): string {
+export function getInitialLocale(): string {
   if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
     return 'en';
   }
@@ -12,6 +12,7 @@ function getInitialLocale(): string {
   const browserLangs = navigator.languages || [navigator.language];
   for (const lang of browserLangs) {
     const normalized = lang.split('-')[0];
+    if (normalized === 'zh') return 'zh-CN';
     const supported = [
       'en',
       'es',
@@ -27,21 +28,20 @@ function getInitialLocale(): string {
       'hi',
       'nl',
     ];
-    if (normalized === 'zh') return 'zh-CN';
     if (supported.includes(normalized)) return normalized;
   }
   return 'en';
 }
 
-const i18n = createI18n<[MessageSchema], string>({
+export const i18nConfig = {
   legacy: false,
   locale: getInitialLocale(),
   fallbackLocale: 'en',
   warnHtmlMessage: false,
   messages: { en },
-});
+} as const;
 
-export function loadLocale(locale: string): Promise<void> | void {
+export async function loadLocale(locale: string): Promise<void> {
   const loaders: Record<string, () => Promise<{ default: MessageSchema }>> = {
     es: () => import('./locales/es.json'),
     fr: () => import('./locales/fr.json'),
@@ -62,6 +62,8 @@ export function loadLocale(locale: string): Promise<void> | void {
     });
   }
 }
+
+export const i18n = createI18n<[MessageSchema], string>(i18nConfig);
 
 if (typeof window !== 'undefined') {
   loadLocale(getInitialLocale());

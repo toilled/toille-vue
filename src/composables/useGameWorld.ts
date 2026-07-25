@@ -1,4 +1,3 @@
-import { type Ref } from 'vue';
 import { createGameWorld } from '../game/ecs/world';
 import { type GameWorldContext, type InputState } from '../game/ecs/components';
 import { drivingPipeline, explorationPipeline, alwaysPipeline } from '../game/ecs/pipelines';
@@ -9,39 +8,21 @@ import {
   clearMode,
 } from '../game/ecs/modeManager';
 import { handleControlsKeyDown, handleControlsKeyUp } from '../utils/controls';
-import type { Scene, PerspectiveCamera, WebGLRenderer, Group, Mesh, Object3D } from 'three';
 import type { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-import type { StoryState, MinimapData } from '../game/types';
 
-export interface UseGameWorldOptions {
-  scene: Scene;
-  camera: PerspectiveCamera;
-  renderer: WebGLRenderer;
+export type UseGameWorldOptions = Omit<
+  GameWorldContext,
+  | 'input'
+  | 'activeMode'
+  | 'playerEid'
+  | 'redCarEid'
+  | 'cars'
+  | 'controls'
+  | 'lookControls'
+  | 'composer'
+> & {
   composer: EffectComposer;
-  occupiedGrids: Map<string, { halfW: number; halfD: number; isRound?: boolean }>;
-  buildings: Object3D[];
-  score: Ref<number>;
-  drivingScore: Ref<number>;
-  timeLeft: Ref<number>;
-  isGameOver: Ref<boolean>;
-  distToTarget: Ref<number>;
-  isMobile: Ref<boolean>;
-  nearStoryTrigger: Ref<boolean>;
-  activeCar: Ref<Group | null>;
-  spawnSparks: (position: { x: number; y: number; z: number }) => void;
-  playPewSound: () => void;
-  spawnCheckpoint: () => void;
-  reportCheckpoint: () => void;
-  checkpointMesh: Mesh | undefined;
-  navArrow: Group;
-  chaseArrow: Group;
-  storyState: Ref<StoryState>;
-  minimapData: Ref<MinimapData>;
-  updateObjective?: (missionIdx: number, objIdx: number) => void;
-  advanceDialogue?: () => void;
-  dismissBriefing?: () => void;
-  activateStoryTrigger?: () => void;
-}
+};
 
 export function useGameWorld(options: UseGameWorldOptions) {
   const input: InputState = {

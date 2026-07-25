@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DemoMode } from '../../modes/DemoMode';
 import { Scene, PerspectiveCamera, WebGLRenderer } from 'three';
-import type { GameContext } from '../../types';
+import type { GameContext, StoryState, MinimapData } from '../../types';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 
 vi.mock('../../../utils/CyberpunkAudio', () => ({
@@ -72,6 +72,9 @@ describe('DemoMode', () => {
       checkpointMesh: undefined,
       navArrow: {} as never,
       chaseArrow: {} as never,
+      nearStoryTrigger: ref(false),
+      storyState: ref(null as unknown as StoryState),
+      minimapData: ref(null as unknown as MinimapData),
     };
   });
 

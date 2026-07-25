@@ -599,27 +599,15 @@ function initStoryAndMode() {
   };
 }
 
-onMounted(() => {
-  if (!canvasContainer.value) return;
-
-  checkHdr();
-
-  const width = canvasContainer.value.clientWidth || window.innerWidth;
-  const height = canvasContainer.value.clientHeight || window.innerHeight;
-
-  initScene(width, height);
-  initRenderer(width, height);
-
-  const doDeferredInit = async () => {
-    if (deferredInitCancelled) return;
+async function doDeferredInit() {
+  if (deferredInitCancelled) return;
+  try {
     await initGameWorld();
     skyEffects.setStarTwinkleEnabled(browserQuality.starTwinkleEnabled);
 
-    // Initialize remaining systems while city is visible
     initTrafficAndSparks();
     await initSimulationBridge();
 
-    // Start rendering the scene immediately
     initEventListeners();
     isActive = true;
     animate();
@@ -634,18 +622,36 @@ onMounted(() => {
           drawLeaderboard(leaderboardCanvas, leaderboardTexture, leaderboard.value);
         }
       })
-      .catch(() => {
-        // Scores failed to load, leaderboard stays empty
-      });
+      .catch(() => {});
 
     cyberpunkAudio.addListener(onAudioNote);
+  } catch (err) {
+    console.error('[CyberpunkCity] Deferred init failed:', err);
+  } finally {
     showSplash.value = false;
-  };
+  }
+}
 
-  if (typeof requestIdleCallback !== 'undefined') {
-    requestIdleCallback(doDeferredInit, { timeout: 3000 });
-  } else {
-    setTimeout(doDeferredInit, 100);
+onMounted(() => {
+  if (!canvasContainer.value) return;
+
+  try {
+    checkHdr();
+
+    const width = canvasContainer.value.clientWidth || window.innerWidth;
+    const height = canvasContainer.value.clientHeight || window.innerHeight;
+
+    initScene(width, height);
+    initRenderer(width, height);
+
+    if (typeof requestIdleCallback !== 'undefined') {
+      requestIdleCallback(doDeferredInit, { timeout: 3000 });
+    } else {
+      setTimeout(doDeferredInit, 100);
+    }
+  } catch (err) {
+    console.error('[CyberpunkCity] Mount init failed:', err);
+    showSplash.value = false;
   }
 });
 

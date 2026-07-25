@@ -606,7 +606,9 @@ async function doDeferredInit() {
     skyEffects.setStarTwinkleEnabled(browserQuality.starTwinkleEnabled);
 
     initTrafficAndSparks();
-    await initSimulationBridge();
+    initSimulationBridge().catch((err) =>
+      console.warn('[CyberpunkCity] SimulationBridge init failed (non-blocking):', err)
+    );
 
     initEventListeners();
     isActive = true;

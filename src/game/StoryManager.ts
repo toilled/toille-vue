@@ -1,7 +1,7 @@
 import { StoryState, StoryMission } from './types';
 import { Ref } from 'vue';
 
-const STORY_MISSIONS: StoryMission[] = [
+export const STORY_MISSIONS: StoryMission[] = [
   {
     id: 'first-contact',
     title: 'FIRST CONTACT',

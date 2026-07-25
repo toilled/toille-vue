@@ -14,6 +14,8 @@ import type {
   RemotePlayerUpdate,
   SimulationWorkerAPI,
 } from './workerProtocol';
+import { steerTowardsPlayer, handleIntersection, enforceBounds } from '../redCarMath';
+import { moveTrafficCar } from '../trafficMath';
 
 // HeightMap — pure math, no DOM/Three.js
 class HeightMapWorker {
@@ -185,18 +187,36 @@ function moveCar(car: CarState) {
   if (car.isPlayerHit) return;
   if (car.turnCooldown > 0) car.turnCooldown--;
 
-  if (car.axis === 'x') {
-    car.x += car.speed * car.dir;
-    handlePoliceTurning(car, car.x);
-    if (car.x > config.bounds) car.x = -config.bounds;
-    if (car.x < -config.bounds) car.x = config.bounds;
-  } else {
-    car.z += car.speed * car.dir;
-    handlePoliceTurning(car, car.z);
-    if (car.z > config.bounds) car.z = -config.bounds;
-    if (car.z < -config.bounds) car.z = config.bounds;
-  }
+  const trafficCar = {
+    axis: car.axis,
+    dir: car.dir,
+    speed: car.speed,
+    x: car.x,
+    z: car.z,
+    heading: car.heading,
+    turnCooldown: car.turnCooldown,
+    isPolice: car.isPolice,
+    isPlayerHit: car.isPlayerHit,
+  };
 
+  moveTrafficCar(trafficCar, {
+    cellSize: config.cellSize,
+    startOffset: config.startOffset,
+    roadWidth: config.roadWidth,
+    bounds: config.bounds,
+  });
+
+  car.x = trafficCar.x;
+  car.z = trafficCar.z;
+  car.axis = trafficCar.axis;
+  car.dir = trafficCar.dir;
+  car.heading = trafficCar.heading;
+  car.turnCooldown = trafficCar.turnCooldown;
+
+  applyOrientation(car);
+}
+
+function applyOrientation(car: CarState): void {
   const orient = computeOrientation(car.x, car.z, car.heading);
   car.y = orient.y;
   car.upX = orient.upX;
@@ -205,46 +225,6 @@ function moveCar(car: CarState) {
   car.lookAtX = orient.lookAtX;
   car.lookAtY = orient.lookAtY;
   car.lookAtZ = orient.lookAtZ;
-}
-
-function isAtRoadCenter(car: CarState, currentPos: number): boolean {
-  const roadIndex = Math.round(
-    (currentPos - (config.startOffset - config.cellSize / 2)) / config.cellSize
-  );
-  const roadCenter = config.startOffset + roadIndex * config.cellSize - config.cellSize / 2;
-  return Math.abs(currentPos - roadCenter) < car.speed * 1.5;
-}
-
-function executePoliceTurn(car: CarState) {
-  const newDir = Math.random() > 0.5 ? 1 : -1;
-  const laneOffset = (Math.random() > 0.5 ? 1 : -1) * (config.roadWidth / 4);
-
-  if (car.axis === 'x') {
-    car.x =
-      Math.round((car.x - (config.startOffset - config.cellSize / 2)) / config.cellSize) *
-        config.cellSize +
-      (config.startOffset - config.cellSize / 2) +
-      laneOffset;
-    car.axis = 'z';
-    car.heading = newDir === 1 ? 0 : Math.PI;
-  } else {
-    car.z =
-      Math.round((car.z - (config.startOffset - config.cellSize / 2)) / config.cellSize) *
-        config.cellSize +
-      (config.startOffset - config.cellSize / 2) +
-      laneOffset;
-    car.axis = 'x';
-    car.heading = newDir === 1 ? Math.PI / 2 : -Math.PI / 2;
-  }
-  car.dir = newDir;
-  car.turnCooldown = 60;
-}
-
-function handlePoliceTurning(car: CarState, currentPos: number) {
-  if (!car.isPolice || car.turnCooldown > 0) return;
-  if (!isAtRoadCenter(car, currentPos)) return;
-  if (Math.random() >= 0.4) return;
-  executePoliceTurn(car);
 }
 
 function fadeCar(car: CarState) {
@@ -254,14 +234,7 @@ function fadeCar(car: CarState) {
     car.z += car.speed * 0.5 * car.dir;
   }
 
-  const orient = computeOrientation(car.x, car.z, car.heading);
-  car.y = orient.y;
-  car.upX = orient.upX;
-  car.upY = orient.upY;
-  car.upZ = orient.upZ;
-  car.lookAtX = orient.lookAtX;
-  car.lookAtY = orient.lookAtY;
-  car.lookAtZ = orient.lookAtZ;
+  applyOrientation(car);
 
   car.opacity -= 0.02;
   if (car.opacity <= 0) {
@@ -453,60 +426,17 @@ function updateRedCarState(playerX: number, playerZ: number): RedCarState {
   redCar.y = orient.y;
 
   // Steer towards player
-  const heading = redCar.heading;
-  const isZAxis = Math.abs(Math.cos(heading)) > 0.5;
-  const roadHalf = config.cellSize / 2;
-  const gridX = Math.round((redCar.x - config.startOffset - roadHalf) / config.cellSize);
-  const gridZ = Math.round((redCar.z - config.startOffset - roadHalf) / config.cellSize);
-  const roadCenterX = config.startOffset + gridX * config.cellSize + roadHalf;
-  const roadCenterZ = config.startOffset + gridZ * config.cellSize + roadHalf;
-  const lateralSpeed = redCar.speed * 0.3;
-  const maxOffset = 18;
-
-  if (isZAxis) {
-    const targetX = Math.max(roadCenterX - maxOffset, Math.min(roadCenterX + maxOffset, playerX));
-    const diff = targetX - redCar.x;
-    if (Math.abs(diff) > 0.1) {
-      redCar.x += Math.sign(diff) * Math.min(Math.abs(diff), lateralSpeed);
-    }
-  } else {
-    const targetZ = Math.max(roadCenterZ - maxOffset, Math.min(roadCenterZ + maxOffset, playerZ));
-    const diff = targetZ - redCar.z;
-    if (Math.abs(diff) > 0.1) {
-      redCar.z += Math.sign(diff) * Math.min(Math.abs(diff), lateralSpeed);
-    }
-  }
+  const { roadCenterX, roadCenterZ, isZAxis } = steerTowardsPlayer(redCar, playerX, playerZ, {
+    cellSize: config.cellSize,
+    startOffset: config.startOffset,
+    bounds: config.bounds,
+  });
 
   // Handle intersection
-  const longDist = isZAxis ? Math.abs(redCar.z - roadCenterZ) : Math.abs(redCar.x - roadCenterX);
-  const latDist = isZAxis ? Math.abs(redCar.x - roadCenterX) : Math.abs(redCar.z - roadCenterZ);
-
-  if (longDist < 5 && latDist < 25) {
-    const directions = [0, Math.PI / 2, Math.PI, -Math.PI / 2];
-    let bestDir = redCar.heading;
-    let minDst = Infinity;
-    const curDirX = Math.sin(bestDir);
-    const curDirZ = Math.cos(bestDir);
-
-    for (const dir of directions) {
-      const dx = Math.sin(dir);
-      const dz = Math.cos(dir);
-      if (dx * curDirX + dz * curDirZ < -0.9) continue;
-      const d = (redCar.x + dx * 100 - playerX) ** 2 + (redCar.z + dz * 100 - playerZ) ** 2;
-      if (d < minDst) {
-        minDst = d;
-        bestDir = dir;
-      }
-    }
-
-    redCar.heading = bestDir;
-    redCar.x += Math.sin(bestDir) * 6;
-    redCar.z += Math.cos(bestDir) * 6;
-  }
+  handleIntersection(redCar, roadCenterX, roadCenterZ, isZAxis, playerX, playerZ);
 
   // Enforce bounds
-  if (redCar.x > config.bounds) redCar.x = -config.bounds;
-  if (redCar.x < -config.bounds) redCar.x = config.bounds;
+  enforceBounds(redCar, config.bounds);
   if (redCar.z > config.bounds) redCar.z = -config.bounds;
   if (redCar.z < -config.bounds) redCar.z = config.bounds;
 

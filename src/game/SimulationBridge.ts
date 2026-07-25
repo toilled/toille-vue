@@ -12,8 +12,11 @@ import type {
   SparkEvent,
   CrashEvent,
 } from './workers/workerTypes';
-import { Group, BoxGeometry, MeshStandardMaterial, Mesh, Scene, Vector3 } from 'three';
+import { Group, Scene, Vector3 } from 'three';
 import { CarFactory } from './CarFactory';
+import { disposeGroup } from './disposeGroup';
+import { createWalkingPlayer } from './createWalkingPlayer';
+import { applyFadingOpacity } from './applyFadingOpacity';
 import { type Ref } from 'vue';
 
 export interface SimulationUpdateResult {
@@ -165,20 +168,7 @@ export class SimulationBridge {
 
       // Handle fading opacity on materials
       if (state.fading) {
-        car.traverse((child) => {
-          if (child instanceof Mesh) {
-            const mat = child.material;
-            if (
-              !Array.isArray(mat) &&
-              child.userData.partType &&
-              child.userData.partType !== 'hitbox'
-            ) {
-              mat.opacity = (child.userData.originalOpacity ?? 1.0) * state.opacity;
-              mat.transparent = true;
-              mat.depthWrite = false;
-            }
-          }
-        });
+        applyFadingOpacity(car, state.opacity);
       }
     }
   }
@@ -221,18 +211,7 @@ export class SimulationBridge {
         const existing = this.remotePlayerMeshes.get(update.id);
         if (existing) {
           this.scene.remove(existing);
-          existing.traverse((child) => {
-            if (child instanceof Mesh) {
-              if (child.geometry) child.geometry.dispose();
-              if (child.material) {
-                if (Array.isArray(child.material)) {
-                  child.material.forEach((m) => m.dispose());
-                } else {
-                  child.material.dispose();
-                }
-              }
-            }
-          });
+          disposeGroup(existing);
           this.remotePlayerMeshes.delete(update.id);
         }
         continue;
@@ -248,12 +227,7 @@ export class SimulationBridge {
         if (update.state === 'driving') {
           group = this.carFactory.createCar(false);
         } else {
-          group = new Group();
-          const bodyGeo = new BoxGeometry(2, 4, 2);
-          const bodyMat = new MeshStandardMaterial({ color: 0x00ffcc });
-          const body = new Mesh(bodyGeo, bodyMat);
-          body.position.y = 2;
-          group.add(body);
+          group = createWalkingPlayer();
         }
 
         group.position.set(update.x, update.y, update.z);
@@ -281,18 +255,7 @@ export class SimulationBridge {
     // Remove remote player meshes
     for (const [, mesh] of this.remotePlayerMeshes) {
       this.scene.remove(mesh);
-      mesh.traverse((child) => {
-        if (child instanceof Mesh) {
-          if (child.geometry) child.geometry.dispose();
-          if (child.material) {
-            if (Array.isArray(child.material)) {
-              child.material.forEach((m) => m.dispose());
-            } else {
-              child.material.dispose();
-            }
-          }
-        }
-      });
+      disposeGroup(mesh);
     }
     this.remotePlayerMeshes.clear();
 

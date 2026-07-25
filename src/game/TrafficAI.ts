@@ -1,6 +1,22 @@
 import { Group, Mesh, MeshBasicMaterial, PointLight } from 'three';
 import { BOUNDS, CELL_SIZE, ROAD_WIDTH, START_OFFSET } from './config';
 import { applyCarOrientation } from '../utils/HeightMap';
+import { isAtRoadCenter, executePoliceTurn, type TrafficCarState } from './trafficMath';
+import { applyFadingOpacity } from './applyFadingOpacity';
+
+function trafficCarStateFromGroup(car: Group): TrafficCarState {
+  return {
+    axis: car.userData.axis as 'x' | 'z',
+    dir: car.userData.dir,
+    speed: car.userData.speed,
+    x: car.position.x,
+    z: car.position.z,
+    heading: car.userData.heading ?? 0,
+    turnCooldown: car.userData.turnCooldown ?? 0,
+    isPolice: car.userData.isPolice ?? false,
+    isPlayerHit: car.userData.isPlayerHit ?? false,
+  };
+}
 
 export class TrafficAI {
   static updateCars(cars: Group[], resetCar: (car: Group) => void) {
@@ -66,32 +82,30 @@ export class TrafficAI {
   }
 
   static isAtRoadCenter(car: Group, currentPos: number): boolean {
-    const roadIndex = Math.round((currentPos - (START_OFFSET - CELL_SIZE / 2)) / CELL_SIZE);
-    const roadCenter = START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
-    return Math.abs(currentPos - roadCenter) < car.userData.speed * 1.5;
+    return isAtRoadCenter(trafficCarStateFromGroup(car), currentPos, {
+      cellSize: CELL_SIZE,
+      startOffset: START_OFFSET,
+      roadWidth: ROAD_WIDTH,
+      bounds: BOUNDS,
+    });
   }
 
   static executePoliceTurn(car: Group) {
-    const newDir = Math.random() > 0.5 ? 1 : -1;
-    const laneOffset = (Math.random() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
+    const trafficCar = trafficCarStateFromGroup(car);
 
-    if (car.userData.axis === 'x') {
-      car.position.x =
-        Math.round((car.position.x - (START_OFFSET - CELL_SIZE / 2)) / CELL_SIZE) * CELL_SIZE +
-        (START_OFFSET - CELL_SIZE / 2) +
-        laneOffset;
-      car.userData.axis = 'z';
-      car.userData.heading = newDir === 1 ? 0 : Math.PI;
-    } else {
-      car.position.z =
-        Math.round((car.position.z - (START_OFFSET - CELL_SIZE / 2)) / CELL_SIZE) * CELL_SIZE +
-        (START_OFFSET - CELL_SIZE / 2) +
-        laneOffset;
-      car.userData.axis = 'x';
-      car.userData.heading = newDir === 1 ? Math.PI / 2 : -Math.PI / 2;
-    }
-    car.userData.dir = newDir;
-    car.userData.turnCooldown = 60;
+    executePoliceTurn(trafficCar, {
+      cellSize: CELL_SIZE,
+      startOffset: START_OFFSET,
+      roadWidth: ROAD_WIDTH,
+      bounds: BOUNDS,
+    });
+
+    car.position.x = trafficCar.x;
+    car.position.z = trafficCar.z;
+    car.userData.axis = trafficCar.axis;
+    car.userData.heading = trafficCar.heading;
+    car.userData.dir = trafficCar.dir;
+    car.userData.turnCooldown = trafficCar.turnCooldown;
   }
 
   static handlePoliceTurning(car: Group, currentPos: number) {
@@ -103,22 +117,7 @@ export class TrafficAI {
 
   static fadeCar(car: Group, resetCar: (car: Group) => void) {
     if (!car.userData._fadeInitialized) {
-      car.traverse((child) => {
-        if (child instanceof Mesh) {
-          const mat = child.material;
-          if (
-            !Array.isArray(mat) &&
-            child.userData.partType &&
-            child.userData.partType !== 'hitbox'
-          ) {
-            const clone = mat.clone();
-            clone.transparent = true;
-            clone.depthWrite = false;
-            child.userData._originalMaterial = mat;
-            child.material = clone;
-          }
-        }
-      });
+      applyFadingOpacity(car, car.userData.opacity);
       car.userData._fadeInitialized = true;
     }
 

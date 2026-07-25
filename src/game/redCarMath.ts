@@ -1,12 +1,5 @@
-export interface RedCarState {
-  x: number;
-  y: number;
-  z: number;
-  heading: number;
-  speed: number;
-  active: boolean;
-  spawnTime?: number;
-}
+import type { RedCarState } from './workers/workerTypes';
+export type { RedCarState } from './workers/workerTypes';
 
 export interface RedCarConfig {
   cellSize: number;

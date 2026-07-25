@@ -54,7 +54,7 @@ export function executePoliceTurn(car: TrafficCarState, config: TrafficConfig): 
   car.turnCooldown = 60;
 }
 
-export function handlePoliceTurning(
+function handlePoliceTurning(
   car: TrafficCarState,
   currentPos: number,
   config: TrafficConfig

@@ -66,4 +66,5 @@ export interface RedCarState {
   heading: number;
   speed: number;
   active: boolean;
+  spawnTime?: number;
 }

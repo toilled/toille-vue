@@ -190,28 +190,42 @@ export class DemoMode implements GameMode {
   // ==========================================================================
 
   private onAudioNote(type: string, _data?: number) {
-    if (type === 'kick') {
-      if (this.bloomPass) this.bloomPass.strength = 3.0;
-      this.cameraShake.y += (Math.random() - 0.5) * 6;
-      if (this.glitchPass && Math.random() < 0.3) this.glitchPass.enabled = true;
+    switch (type) {
+      case 'kick':
+        this.handleKick();
+        break;
+      case 'snare':
+        this.handleSnare();
+        break;
+      case 'hihat':
+        this.handleHiHat();
+        break;
     }
+  }
 
-    if (type === 'snare') {
-      if (this.bloomPass) this.bloomPass.strength = 2.5;
-      this.cameraShake.x += (Math.random() - 0.5) * 5;
+  private handleKick() {
+    if (this.bloomPass) this.bloomPass.strength = 3.0;
+    this.cameraShake.y += (Math.random() - 0.5) * 6;
+    if (this.glitchPass && Math.random() < 0.3) this.glitchPass.enabled = true;
+  }
 
-      if (this.sparkTargets.length > 0) {
-        for (let k = 0; k < 3; k++) {
-          const target = this.sparkTargets[Math.floor(Math.random() * this.sparkTargets.length)];
-          for (let i = 0; i < 5; i++) {
-            this.context.spawnSparks(target.clone());
-          }
-        }
+  private handleSnare() {
+    if (this.bloomPass) this.bloomPass.strength = 2.5;
+    this.cameraShake.x += (Math.random() - 0.5) * 5;
+    this.emitSparks(3, 5);
+  }
+
+  private handleHiHat() {
+    this.cameraShake.z += (Math.random() - 0.5) * 2;
+  }
+
+  private emitSparks(sparkRounds: number, sparksPerRound: number) {
+    if (this.sparkTargets.length === 0) return;
+    for (let k = 0; k < sparkRounds; k++) {
+      const target = this.sparkTargets[Math.floor(Math.random() * this.sparkTargets.length)];
+      for (let i = 0; i < sparksPerRound; i++) {
+        this.context.spawnSparks(target.clone());
       }
-    }
-
-    if (type === 'hihat') {
-      this.cameraShake.z += (Math.random() - 0.5) * 2;
     }
   }
 

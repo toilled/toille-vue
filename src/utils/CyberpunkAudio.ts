@@ -60,24 +60,30 @@ export class CyberpunkAudio {
     const motifLength = 32;
     for (let i = 0; i < 128; i++) {
       const motifPos = i % motifLength;
+      const noteProbability = this.getNoteProbability(i);
+      const noteIndex = this.getBassNoteIndex(i, motifPos);
 
-      let noteProbability = 0.85;
-
-      if (i % 16 === 3 || i % 16 === 11) noteProbability = 0.1;
-
-      if (this.random() < noteProbability) {
-        let noteIndex = 0;
-
-        const r = this.random();
-        if (i >= 64 && motifPos % 16 === 14) {
-          noteIndex = r > 0.5 ? 2 : 1;
-        } else if (i >= 96 && motifPos % 8 === 6) {
-          noteIndex = 3;
-        }
-
+      if (noteIndex >= 0 && this.random() < noteProbability) {
         this.bassPattern[i] = noteIndex + 1; // 1-based index
       }
     }
+  }
+
+  private getNoteProbability(i: number): number {
+    if (i % 16 === 3 || i % 16 === 11) return 0.1;
+    return 0.85;
+  }
+
+  private getBassNoteIndex(i: number, motifPos: number): number {
+    const r = this.random();
+
+    if (i >= 64 && motifPos % 16 === 14) {
+      return r > 0.5 ? 2 : 1;
+    }
+    if (i >= 96 && motifPos % 8 === 6) {
+      return 3;
+    }
+    return 0;
   }
 
   private generateDrumPatterns() {
@@ -86,42 +92,56 @@ export class CyberpunkAudio {
     this.hiHatPattern = new Array(128).fill(0);
 
     for (let bar = 0; bar < 8; bar++) {
-      const offset = bar * 16;
+      this.generateKickPatternForBar(bar);
+      this.generateSnarePatternForBar(bar);
+      this.generateHiHatPatternForBar(bar);
+    }
+  }
 
-      this.kickPattern[offset + 0] = 1.0;
-      this.kickPattern[offset + 4] = 1.0;
-      this.kickPattern[offset + 8] = 1.0;
-      this.kickPattern[offset + 12] = 1.0;
+  private generateKickPatternForBar(bar: number) {
+    const offset = bar * 16;
 
-      if (this.random() < 0.3) {
-        this.kickPattern[offset + 14] = 0.7;
+    this.kickPattern[offset + 0] = 1.0;
+    this.kickPattern[offset + 4] = 1.0;
+    this.kickPattern[offset + 8] = 1.0;
+    this.kickPattern[offset + 12] = 1.0;
+
+    if (this.random() < 0.3) {
+      this.kickPattern[offset + 14] = 0.7;
+    }
+    if (bar % 4 === 3 && this.random() < 0.8) {
+      this.kickPattern[offset + 15] = 0.8;
+    }
+  }
+
+  private generateSnarePatternForBar(bar: number) {
+    const offset = bar * 16;
+
+    this.snarePattern[offset + 4] = 1.0;
+    this.snarePattern[offset + 12] = 1.0;
+
+    if (this.random() < 0.2) this.snarePattern[offset + 7] = 0.3;
+    if (this.random() < 0.2) this.snarePattern[offset + 15] = 0.4;
+  }
+
+  private generateHiHatPatternForBar(bar: number) {
+    const offset = bar * 16;
+
+    for (let i = 0; i < 16; i++) {
+      const globalIndex = offset + i;
+      const isDownbeat = i % 4 === 0;
+      const isUpbeat = i % 4 === 2;
+
+      if (isUpbeat) {
+        this.hiHatPattern[globalIndex] = 0.9;
+      } else if (isDownbeat) {
+        this.hiHatPattern[globalIndex] = 0.5;
+      } else {
+        this.hiHatPattern[globalIndex] = 0.3;
       }
-      if (bar % 4 === 3 && this.random() < 0.8) {
-        this.kickPattern[offset + 15] = 0.8;
-      }
 
-      this.snarePattern[offset + 4] = 1.0;
-      this.snarePattern[offset + 12] = 1.0;
-
-      if (this.random() < 0.2) this.snarePattern[offset + 7] = 0.3;
-      if (this.random() < 0.2) this.snarePattern[offset + 15] = 0.4;
-
-      for (let i = 0; i < 16; i++) {
-        const globalIndex = offset + i;
-        const isDownbeat = i % 4 === 0;
-        const isUpbeat = i % 4 === 2;
-
-        if (isUpbeat) {
-          this.hiHatPattern[globalIndex] = 0.9;
-        } else if (isDownbeat) {
-          this.hiHatPattern[globalIndex] = 0.5;
-        } else {
-          this.hiHatPattern[globalIndex] = 0.3;
-        }
-
-        if (this.random() < 0.05) {
-          this.hiHatPattern[globalIndex] = 0;
-        }
+      if (this.random() < 0.05) {
+        this.hiHatPattern[globalIndex] = 0;
       }
     }
   }

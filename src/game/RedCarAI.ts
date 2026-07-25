@@ -54,35 +54,66 @@ export class RedCarAI {
     const player = this.context.activeCar.value;
     if (!this.car || !player) return;
 
-    let spawned = false;
+    const spawnConfig = this.getSpawnConfig();
+    const validPosition = this.findValidSpawnPosition(spawnConfig, player);
+
+    if (validPosition) {
+      this.car.position.set(validPosition.x, validPosition.y, validPosition.z);
+    }
+  }
+
+  private getSpawnConfig() {
+    return {
+      maxAttempts: 20,
+      minDistanceFromPlayer: 500,
+      cityBounds: CITY_SIZE,
+      roadSpacing: CELL_SIZE,
+      startOffset: START_OFFSET,
+    };
+  }
+
+  private findValidSpawnPosition(
+    config: ReturnType<typeof this.getSpawnConfig>,
+    player: Group
+  ): { x: number; y: number; z: number } | null {
     let attempts = 0;
-    while (!spawned && attempts < 20) {
-      const roadIndex = Math.floor(Math.random() * (GRID_SIZE + 1));
-      const roadCoordinate = START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
-      const otherCoord = (Math.random() - 0.5) * CITY_SIZE;
 
-      const axis = Math.random() > 0.5 ? 'x' : 'z';
-      let x = 0,
-        z = 0;
+    while (attempts < config.maxAttempts) {
+      const candidate = this.generateSpawnCandidate(config);
 
-      if (axis === 'x') {
-        z = roadCoordinate;
-        x = otherCoord;
-        this.car.userData.heading = Math.random() > 0.5 ? Math.PI / 2 : -Math.PI / 2;
-      } else {
-        x = roadCoordinate;
-        z = otherCoord;
-        this.car.userData.heading = Math.random() > 0.5 ? 0 : Math.PI;
-      }
+      const dist = Math.sqrt(
+        (candidate.x - player.position.x) ** 2 + (candidate.z - player.position.z) ** 2
+      );
 
-      const dist = Math.sqrt((x - player.position.x) ** 2 + (z - player.position.z) ** 2);
-      if (dist > 500) {
-        const h = getHeight(x, z);
-        this.car.position.set(x, h + 1, z);
-        spawned = true;
+      if (dist > config.minDistanceFromPlayer) {
+        const h = getHeight(candidate.x, candidate.z);
+        return { x: candidate.x, y: h + 1, z: candidate.z };
       }
       attempts++;
     }
+    return null;
+  }
+
+  private generateSpawnCandidate(config: ReturnType<typeof this.getSpawnConfig>) {
+    const roadIndex = Math.floor(Math.random() * (GRID_SIZE + 1));
+    const roadCoordinate = config.startOffset + roadIndex * config.roadSpacing - config.roadSpacing / 2;
+    const otherCoord = (Math.random() - 0.5) * config.cityBounds;
+
+    const axis = Math.random() > 0.5 ? 'x' : 'z';
+    let x = 0;
+    let z = 0;
+
+    if (axis === 'x') {
+      z = roadCoordinate;
+      x = otherCoord;
+      this.car!.userData.heading = Math.random() > 0.5 ? Math.PI / 2 : -Math.PI / 2;
+    } else {
+      x = roadCoordinate;
+      z = otherCoord;
+      this.car!.userData.heading = Math.random() > 0.5 ? 0 : Math.PI;
+    }
+
+    return { x, z };
   }
 
   move() {

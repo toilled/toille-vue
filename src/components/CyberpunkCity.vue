@@ -126,7 +126,7 @@ import { TrafficSystem } from '../game/TrafficSystem';
 import { SkyEffects } from '../game/SkyEffects';
 import { getHeight } from '../utils/HeightMap';
 import { audioManager } from '../utils/AudioManager';
-import { MultiplayerManager } from '../game/MultiplayerManager';
+import { SimulationBridge } from '../game/SimulationBridge';
 import { getBrowserQuality, isMobile as checkMobile } from '../utils/BrowserDetect';
 import { drawLeaderboard, createLeaderboardCanvas } from '../utils/LeaderboardRenderer';
 import { SparkSystem } from '../utils/SparkSystem';
@@ -184,7 +184,7 @@ let konamiManager: KonamiManager;
 let gangWarManager: GangWarManager;
 let trafficSystem: TrafficSystem;
 let cityBuilder: CityBuilder;
-let multiplayerManager: MultiplayerManager;
+let simulationBridge: SimulationBridge;
 let skyEffects: SkyEffects;
 
 const leaderboard = ref<ScoreEntry[]>([]);
@@ -482,12 +482,33 @@ function initTrafficAndSparks() {
   sparkSystem = new SparkSystem(scene);
 }
 
+async function initSimulationBridge() {
+  const occupiedGridsObj: Record<string, { halfW: number; halfD: number; isRound?: boolean }> = {};
+  occupiedGrids.forEach((value, key) => {
+    occupiedGridsObj[key] = value;
+  });
+
+  simulationBridge = new SimulationBridge(scene, trafficSystem.getCarFactory(), onlineCount);
+
+  await simulationBridge.init(
+    {
+      carCount: CAR_COUNT,
+      citySize: 2000,
+      cellSize: CELL_SIZE,
+      gridSize: GRID_SIZE,
+      startOffset: START_OFFSET,
+      bounds: (GRID_SIZE * CELL_SIZE) / 2 + CELL_SIZE,
+      roadWidth: 40,
+    },
+    occupiedGridsObj,
+    cars
+  );
+}
+
 function initGameManagers() {
   konamiManager = new KonamiManager(scene);
 
   gangWarManager = new GangWarManager(scene, occupiedGrids, spawnSparks, playPewSound);
-
-  multiplayerManager = new MultiplayerManager(scene, onlineCount, trafficSystem.getCarFactory());
 
   createCheckpoint();
   createNavArrow();
@@ -552,8 +573,8 @@ function initStoryAndMode() {
     isCinematicMode.value = type === 'cinematic';
     if (type !== null) {
       emit('game-start');
-      if (multiplayerManager) {
-        multiplayerManager.connect();
+      if (simulationBridge) {
+        simulationBridge.connect();
       }
     }
   });
@@ -577,6 +598,7 @@ onMounted(() => {
 
     // Initialize remaining systems while city is visible
     initTrafficAndSparks();
+    await initSimulationBridge();
 
     // Start rendering the scene immediately
     initEventListeners();
@@ -673,8 +695,8 @@ function exitGameMode() {
     storyManager.stop();
   }
 
-  if (multiplayerManager) {
-    multiplayerManager.disconnect();
+  if (simulationBridge) {
+    simulationBridge.disconnect();
   }
 
   isGameOver.value = false;
@@ -779,7 +801,7 @@ const { checkLowFps } = useFallbackMode({
     cancelAnimationFrame(animationId);
     if (konamiManager) konamiManager.dispose();
     if (gangWarManager) gangWarManager.dispose();
-    if (multiplayerManager) multiplayerManager.dispose();
+    if (simulationBridge) simulationBridge.dispose();
     if (skyEffects?.dispose) skyEffects.dispose();
     renderer.dispose();
     carAudio.stop();
@@ -796,11 +818,10 @@ const { checkLowFps } = useFallbackMode({
   },
 });
 
-function updateMultiplayer(dt: number) {
-  if (!multiplayerManager) return;
-  multiplayerManager.update(dt);
+function updateMultiplayer(_dt: number) {
+  if (!simulationBridge) return;
   if (isExplorationMode.value) {
-    multiplayerManager.broadcast(
+    simulationBridge.broadcast(
       camera.position.x,
       camera.position.y,
       camera.position.z,
@@ -809,7 +830,7 @@ function updateMultiplayer(dt: number) {
     );
   } else if (isDrivingMode.value && activeCar.value) {
     const heading = activeCar.value.userData.heading ?? activeCar.value.rotation.y;
-    multiplayerManager.broadcast(
+    simulationBridge.broadcast(
       activeCar.value.position.x,
       activeCar.value.position.y,
       activeCar.value.position.z,
@@ -926,12 +947,38 @@ function animate() {
   gangWarManager?.update(dt);
   skyEffects.update(dt);
   gameModeManager?.update(dt, time);
-  trafficSystem?.update(activeCar.value);
+
+  // Run simulation in worker (non-blocking)
+  if (simulationBridge) {
+    simulationBridge.startUpdate(dt, activeCar.value, controls.value);
+  }
+  // Sync traffic instances on main thread (rendering only)
+  trafficSystem?.updateInstances(activeCar.value);
+
   storyItemsManager?.updateTriggerAnimation(time * 1000);
   pagePanelRenderer?.update(now);
 
   updateCamera(time, now);
   renderFrame();
+
+  // Consume worker results (from previous frame)
+  if (simulationBridge) {
+    simulationBridge.consumeUpdate().then((result) => {
+      if (result) {
+        // Spawn sparks from collisions
+        for (const spark of result.sparkEvents) {
+          spawnSparks(spark);
+        }
+
+        // Play crash sounds
+        for (const crash of result.crashEvents) {
+          if (crash.isPlayerInvolved) {
+            carAudio.playCrash();
+          }
+        }
+      }
+    });
+  }
 
   if (tickCounter % 3 === 0) {
     updateMultiplayer(dt);
@@ -965,8 +1012,8 @@ onBeforeUnmount(() => {
   if (gangWarManager) {
     gangWarManager.dispose();
   }
-  if (multiplayerManager) {
-    multiplayerManager.dispose();
+  if (simulationBridge) {
+    simulationBridge.dispose();
   }
   if (skyEffects && skyEffects.dispose) {
     skyEffects.dispose();

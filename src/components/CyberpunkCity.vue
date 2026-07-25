@@ -86,12 +86,9 @@ import {
   ACESFilmicToneMapping,
 } from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-import { GameModeManager } from '../game/GameModeManager';
 import { setupPostProcessing } from '../game/PostProcessingManager';
-import { DrivingMode } from '../game/modes/DrivingMode';
-import { ExplorationMode } from '../game/modes/ExplorationMode';
-import { DemoMode } from '../game/modes/DemoMode';
-import { GameContext, StoryState, MinimapData } from '../game/types';
+import { StoryState, MinimapData } from '../game/types';
+import { useGameWorld } from '../composables/useGameWorld';
 import { carAudio } from '../game/audio/CarAudio';
 import { cyberpunkAudio } from '../utils/CyberpunkAudio';
 import { CELL_SIZE, START_OFFSET, GRID_SIZE } from '../game/config';
@@ -179,7 +176,7 @@ const isGameOver = ref(false);
 const lastTime = ref(0);
 const startTime = ref(0);
 const distToTarget = ref(0);
-let gameModeManager: GameModeManager;
+let gameWorld: ReturnType<typeof useGameWorld> | null = null;
 let konamiManager: KonamiManager;
 let gangWarManager: GangWarManager;
 let trafficSystem: TrafficSystem;
@@ -266,12 +263,20 @@ function isStoryTriggerHidden(): boolean {
 function activateStoryTrigger() {
   if (isFallbackMode.value) return;
   if (!isGameMode.value) {
-    gameModeManager.setMode(new ExplorationMode(), 'exploration');
+    gameWorld?.startExploration();
   }
   storyManager.start();
   storyItemsManager?.hideTrigger();
   storyItemsManager?.setCurrentMission(0);
   nearStoryTrigger.value = false;
+}
+
+function updateModeFlags() {
+  const mode = gameWorld?.ctx.activeMode ?? null;
+  isGameMode.value = mode !== null;
+  isDrivingMode.value = mode === 'driving';
+  isExplorationMode.value = mode === 'exploration';
+  isCinematicMode.value = mode === 'demo';
 }
 
 const isMobile = ref(checkMobile());
@@ -530,12 +535,11 @@ function initStoryAndMode() {
   storyItemsManager.createTrigger();
   storyItemsManager.createAllObjectiveMarkers();
 
-  const context: GameContext = {
+  gameWorld = useGameWorld({
     scene,
     camera,
     renderer,
     composer,
-    cars,
     occupiedGrids,
     buildings,
     score,
@@ -545,8 +549,6 @@ function initStoryAndMode() {
     isMobile,
     isGameOver,
     distToTarget,
-    controls,
-    lookControls,
     spawnSparks,
     playPewSound,
     spawnCheckpoint,
@@ -565,19 +567,36 @@ function initStoryAndMode() {
     dismissBriefing: dismissStoryBriefing,
     nearStoryTrigger,
     activateStoryTrigger,
-  };
-  gameModeManager = new GameModeManager(context, (type) => {
-    isGameMode.value = type !== null;
-    isDrivingMode.value = type === 'driving';
-    isExplorationMode.value = type === 'exploration';
-    isCinematicMode.value = type === 'cinematic';
-    if (type !== null) {
-      emit('game-start');
-      if (simulationBridge) {
-        simulationBridge.connect();
-      }
-    }
   });
+
+  // Wire mode switching to Vue reactive state
+  const origStartDriving = gameWorld.startDriving;
+  const origStartExploration = gameWorld.startExploration;
+  const origStartDemo = gameWorld.startDemo;
+  const origExitMode = gameWorld.exitMode;
+
+  gameWorld.startDriving = () => {
+    origStartDriving();
+    updateModeFlags();
+    emit('game-start');
+    simulationBridge?.connect();
+  };
+  gameWorld.startExploration = () => {
+    origStartExploration();
+    updateModeFlags();
+    emit('game-start');
+    simulationBridge?.connect();
+  };
+  gameWorld.startDemo = () => {
+    origStartDemo();
+    updateModeFlags();
+    emit('game-start');
+    simulationBridge?.connect();
+  };
+  gameWorld.exitMode = () => {
+    origExitMode();
+    updateModeFlags();
+  };
 }
 
 onMounted(() => {
@@ -636,14 +655,14 @@ function onKeyDown(event: KeyboardEvent) {
     return;
   }
   konamiManager.onKeyDown(event);
-  gameModeManager.onKeyDown(event);
+  gameWorld?.onKeyDown(event);
   if (isGameMode.value && !isGameOver.value) {
     event.preventDefault();
   }
 }
 
 function onKeyUp(event: KeyboardEvent) {
-  gameModeManager.onKeyUp(event);
+  gameWorld?.onKeyUp(event);
   if (isGameMode.value && !isGameOver.value) {
     event.preventDefault();
   }
@@ -669,12 +688,12 @@ watch(activeCar, (newCar, oldCar) => {
 
 function startExplorationMode() {
   if (isFallbackMode.value) return;
-  gameModeManager.setMode(new ExplorationMode(), 'exploration');
+  gameWorld?.startExploration();
 }
 
 function startStoryMode() {
   if (isFallbackMode.value) return;
-  gameModeManager.setMode(new ExplorationMode(), 'exploration');
+  gameWorld?.startExploration();
   storyManager.start();
 }
 
@@ -683,13 +702,14 @@ async function startDemoMode() {
   const ok = await epilepsyConfirm(t('epilepsy.warning'));
   if (!ok) return;
   audioManager.photosensitivityConfirmed = true;
-  gameModeManager.setMode(new DemoMode(), 'demo');
+  gameWorld?.startDemo();
 }
 
 defineExpose({ startExplorationMode, startDemoMode, startStoryMode });
 
 function exitGameMode() {
-  gameModeManager.clearMode();
+  gameWorld?.exitMode();
+  updateModeFlags();
 
   if (storyManager) {
     storyManager.stop();
@@ -744,7 +764,7 @@ const cyberpunkClick = useCyberpunkClick({
   get gangWarManager() {
     return gangWarManager!;
   },
-  startDrivingMode: () => gameModeManager!.setMode(new DrivingMode(), 'driving'),
+  startDrivingMode: () => gameWorld?.startDriving(),
   get leaderboardMeshes() {
     return leaderboardMeshes;
   },
@@ -765,7 +785,7 @@ function onClick(event: MouseEvent) {
   const target = event.target as HTMLElement;
   if (target.closest('.app-header')) return;
   if (target.closest('.playground-container')) return;
-  gameModeManager.onClick(event);
+  gameWorld?.onClick(event);
   if (isGameMode.value || isDrivingMode.value) return;
   const result = cyberpunkClick.handleClick(event);
   if (result.hitLeaderboard) {
@@ -777,7 +797,7 @@ function onClick(event: MouseEvent) {
 }
 
 function onMouseMove(event: MouseEvent) {
-  gameModeManager.onMouseMove(event);
+  gameWorld?.onMouseMove(event);
 }
 
 const { playPewSound, onAudioNote } = useGameAudio(
@@ -880,7 +900,7 @@ function updateSparks() {
 }
 
 function updateCamera(time: number, now: number) {
-  if (gameModeManager?.getMode()) return;
+  if (gameWorld?.ctx.activeMode) return;
 
   if (isCinematicMode.value) {
     const angle = time * INTRO_ORBIT_SPEED;
@@ -946,7 +966,7 @@ function animate() {
   konamiManager?.update(dt);
   gangWarManager?.update(dt);
   skyEffects.update(dt);
-  gameModeManager?.update(dt, time);
+  gameWorld?.update(dt, time);
 
   // Run simulation in worker (non-blocking)
   if (simulationBridge) {

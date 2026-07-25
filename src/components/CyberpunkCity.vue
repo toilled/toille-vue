@@ -600,14 +600,9 @@ function initStoryAndMode() {
 }
 
 async function doDeferredInit() {
-  console.log('[CyberpunkCity] doDeferredInit started');
-  if (deferredInitCancelled) {
-    console.log('[CyberpunkCity] deferredInitCancelled — aborting');
-    return;
-  }
+  if (deferredInitCancelled) return;
   try {
     await initGameWorld();
-    console.log('[CyberpunkCity] initGameWorld done');
     skyEffects.setStarTwinkleEnabled(browserQuality.starTwinkleEnabled);
 
     initTrafficAndSparks();
@@ -635,13 +630,11 @@ async function doDeferredInit() {
   } catch (err) {
     console.error('[CyberpunkCity] Deferred init failed:', err);
   } finally {
-    console.log('[CyberpunkCity] finally — showSplash = false');
     showSplash.value = false;
   }
 }
 
 onMounted(() => {
-  console.log('[CyberpunkCity] onMounted fired, canvasContainer:', !!canvasContainer.value);
   if (!canvasContainer.value) return;
 
   try {
@@ -691,7 +684,6 @@ watch(
 );
 
 watch(showSplash, (newVal, oldVal) => {
-  console.log(`[CyberpunkCity] showSplash changed: ${oldVal} → ${newVal}`);
   if (oldVal === true && newVal === false) {
     startTime.value = Date.now();
   }

@@ -1,5 +1,4 @@
 import { StoryState, StoryMission } from './types';
-import { Ref } from 'vue';
 
 const STORY_MISSIONS: StoryMission[] = [
   {
@@ -187,14 +186,13 @@ function createInitialState(): StoryState {
 }
 
 export class StoryManager {
-  private state: Ref<StoryState>;
+  private state: StoryState;
   private advanceTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(storyState: Ref<StoryState>) {
+  constructor(storyState: StoryState) {
     this.state = storyState;
-    const s = this.state.value;
-    if (!s || s.missions.length === 0) {
-      this.state.value = createInitialState();
+    if (!this.state || this.state.missions.length === 0) {
+      this.state = createInitialState();
     }
   }
 
@@ -202,12 +200,12 @@ export class StoryManager {
     const s = createInitialState();
     s.active = true;
     s.showingBriefing = true;
-    this.state.value = s;
+    Object.assign(this.state, s);
   }
 
   stop() {
     this.clearTimers();
-    this.state.value.active = false;
+    this.state.active = false;
   }
 
   private clearTimers() {
@@ -218,72 +216,55 @@ export class StoryManager {
   }
 
   getState(): StoryState {
-    return this.state.value;
+    return this.state;
   }
 
   dismissBriefing() {
-    const s = this.state.value;
-    if (!s.active) return;
-    if (s.showingBriefing) {
-      s.showingBriefing = false;
-      s.showingDialogue = true;
-      s.currentDialogueIndex = 0;
-      this.state.value = { ...s };
+    if (!this.state.active) return;
+    if (this.state.showingBriefing) {
+      this.state.showingBriefing = false;
+      this.state.showingDialogue = true;
+      this.state.currentDialogueIndex = 0;
     }
   }
 
   advanceDialogue() {
-    const s = this.state.value;
-    if (!s.active || !s.showingDialogue) return;
-    const mission = s.missions[s.currentMissionIndex];
-    if (s.currentDialogueIndex < mission.dialogue.length - 1) {
-      s.currentDialogueIndex++;
-      this.state.value = { ...s };
+    if (!this.state.active || !this.state.showingDialogue) return;
+    const mission = this.state.missions[this.state.currentMissionIndex];
+    if (this.state.currentDialogueIndex < mission.dialogue.length - 1) {
+      this.state.currentDialogueIndex++;
     } else {
-      s.showingDialogue = false;
-      s.currentDialogueIndex = 0;
-      this.state.value = { ...s };
+      this.state.showingDialogue = false;
+      this.state.currentDialogueIndex = 0;
     }
   }
 
   completeObjective(missionIdx: number, objIdx: number) {
-    const s = this.state.value;
-    if (!s.active) return;
-    const mission = s.missions[missionIdx];
+    if (!this.state.active) return;
+    const mission = this.state.missions[missionIdx];
     if (!mission || !mission.objectives[objIdx]) return;
     mission.objectives[objIdx].completed = true;
     const allDone = mission.objectives.every((o) => o.completed);
     if (allDone) {
-      s.missionComplete = true;
-      if (missionIdx < s.missions.length - 1) {
+      this.state.missionComplete = true;
+      if (missionIdx < this.state.missions.length - 1) {
         this.advanceTimer = setTimeout(() => {
           this.advanceMission();
         }, 3000);
       }
     }
-    this.state.value = { ...s };
   }
 
   private advanceMission() {
-    const s = this.state.value;
+    const s = this.state;
     if (!s.active) return;
     s.missionComplete = false;
     s.currentMissionIndex++;
     if (s.currentMissionIndex >= s.missions.length) {
       s.active = false;
-      this.state.value = { ...s };
       return;
     }
     s.showingBriefing = true;
-    this.state.value = { ...s };
-  }
-
-  private getCurrentMission() {
-    const s = this.state.value;
-    if (!s.active || s.showingBriefing || s.showingDialogue || s.missionComplete) return null;
-    const mission = s.missions[s.currentMissionIndex];
-    if (!mission) return null;
-    return mission;
   }
 
   getPlayerObjective(
@@ -291,7 +272,9 @@ export class StoryManager {
     playerZ: number,
     proximity = 45
   ): { missionIdx: number; objIdx: number } | null {
-    const mission = this.getCurrentMission();
+    const s = this.state;
+    if (!s.active || s.showingBriefing || s.showingDialogue || s.missionComplete) return null;
+    const mission = s.missions[s.currentMissionIndex];
     if (!mission) return null;
     for (let i = 0; i < mission.objectives.length; i++) {
       const obj = mission.objectives[i];
@@ -300,14 +283,16 @@ export class StoryManager {
       const dz = playerZ - obj.z;
       const dist = Math.sqrt(dx * dx + dz * dz);
       if (dist < proximity) {
-        return { missionIdx: this.state.value.currentMissionIndex, objIdx: i };
+        return { missionIdx: s.currentMissionIndex, objIdx: i };
       }
     }
     return null;
   }
 
   getCurrentObjectivePosition(): { x: number; z: number } | null {
-    const mission = this.getCurrentMission();
+    const s = this.state;
+    if (!s.active || s.showingBriefing || s.showingDialogue || s.missionComplete) return null;
+    const mission = s.missions[s.currentMissionIndex];
     if (!mission) return null;
     for (const obj of mission.objectives) {
       if (!obj.completed) {

@@ -3,6 +3,7 @@ import { DemoMode } from '../../modes/DemoMode';
 import { Scene, PerspectiveCamera, WebGLRenderer } from 'three';
 import type { GameContext } from '../../types';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { GameState } from '../../GameState';
 
 vi.mock('../../../utils/CyberpunkAudio', () => ({
   cyberpunkAudio: {
@@ -46,9 +47,25 @@ describe('DemoMode', () => {
     composer = new EffectComposer(new WebGLRenderer());
     composer.passes = [
       { strength: 1.5, radius: 0.4, threshold: 0.85, render: vi.fn() },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ] as any;
+    const gameState = new GameState(
+      new Scene(),
+      new PerspectiveCamera(),
+      new WebGLRenderer(),
+      composer,
+      [],
+      [],
+      new Map(),
+      vi.fn(),
+      vi.fn(),
+      vi.fn(),
+      vi.fn(),
+      undefined,
+      {} as any,
+      {} as any,
+    );
     context = {
+      gameState,
       scene: new Scene(),
       camera: new PerspectiveCamera(),
       renderer: new WebGLRenderer(),
@@ -56,22 +73,13 @@ describe('DemoMode', () => {
       cars: [],
       buildings: [],
       occupiedGrids: new Map(),
-      score: ref(0),
-      drivingScore: ref(0),
-      timeLeft: ref(0),
-      activeCar: ref(null),
-      isMobile: ref(false),
-      isGameOver: ref(false),
-      distToTarget: ref(0),
-      controls: ref({ left: false, right: false, forward: false, backward: false }),
-      lookControls: ref({ left: false, right: false, up: false, down: false }),
       spawnSparks: vi.fn(),
       playPewSound: vi.fn(),
       spawnCheckpoint: vi.fn(),
       reportCheckpoint: vi.fn(),
       checkpointMesh: undefined,
-      navArrow: {} as never,
-      chaseArrow: {} as never,
+      navArrow: {} as any,
+      chaseArrow: {} as any,
     };
   });
 

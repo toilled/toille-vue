@@ -11,48 +11,43 @@ export class DrivingMode implements GameMode {
   context: GameContext | null = null;
   private redCarAI: RedCarAI | null = null;
 
-  // fallow-ignore-next-line unused-class-member
   get redCar(): Group | null {
     return this.redCarAI?.car ?? null;
   }
 
-  // fallow-ignore-next-line unused-class-member
   get redCarSpeed(): number {
     return this.redCarAI?.speed ?? 0;
   }
 
-  // fallow-ignore-next-line unused-class-member
   set redCarSpeed(speed: number) {
     if (this.redCarAI) this.redCarAI.speed = speed;
   }
 
   init(context: GameContext) {
     this.context = context;
-    if (!context.activeCar.value && context.cars.length > 0) {
+    const { gameState } = context;
+    if (!gameState.activeCar && gameState.cars.length > 0) {
       // Find a car to control (e.g. first one)
     }
 
-    if (context.activeCar.value) {
-      context.activeCar.value.userData.isPlayerControlled = true;
-      context.activeCar.value.userData.currentSpeed = 0;
-      // Initialize heading if not present
-      if (context.activeCar.value.userData.heading === undefined) {
-        context.activeCar.value.userData.heading = context.activeCar.value.rotation.y;
+    if (gameState.activeCar) {
+      gameState.activeCar.userData.isPlayerControlled = true;
+      gameState.activeCar.userData.currentSpeed = 0;
+      if (gameState.activeCar.userData.heading === undefined) {
+        gameState.activeCar.userData.heading = gameState.activeCar.rotation.y;
       }
 
-      context.timeLeft.value = 30;
-      context.isGameOver.value = false;
-      context.spawnCheckpoint();
+      gameState.timeLeft = 30;
+      gameState.isGameOver = false;
+      gameState.spawnCheckpoint();
       carAudio.start();
 
-      // Init Red Car AI
       this.redCarAI = new RedCarAI(context);
       this.redCarAI.speed = 1.4;
       this.redCarAI.spawn();
     }
   }
 
-  // fallow-ignore-next-line unused-class-member
   spawnRedCar() {
     this.redCarAI?.spawn();
   }
@@ -95,22 +90,19 @@ export class DrivingMode implements GameMode {
 
   private updateTimerAndCheckpoint(car: Group, dt: number) {
     if (!this.context) return;
+    const { gameState } = this.context;
     const {
-      timeLeft,
       checkpointMesh,
       navArrow,
-      drivingScore,
       playPewSound,
       spawnCheckpoint,
-      isGameOver,
-      distToTarget,
       reportCheckpoint,
-    } = this.context;
+    } = gameState;
 
-    timeLeft.value -= dt;
-    if (timeLeft.value <= 0) {
-      timeLeft.value = 0;
-      isGameOver.value = true;
+    gameState.timeLeft -= dt;
+    if (gameState.timeLeft <= 0) {
+      gameState.timeLeft = 0;
+      gameState.isGameOver = true;
       navArrow.visible = false;
       return;
     }
@@ -122,11 +114,11 @@ export class DrivingMode implements GameMode {
     const tx = checkpointMesh.position.x;
     const tz = checkpointMesh.position.z;
     const distSq = (cx - tx) ** 2 + (cz - tz) ** 2;
-    distToTarget.value = Math.sqrt(distSq);
+    gameState.distToTarget = Math.sqrt(distSq);
 
     if (distSq < 20 * 20) {
-      drivingScore.value += 500;
-      timeLeft.value += 15;
+      gameState.drivingScore += 500;
+      gameState.timeLeft += 15;
       playPewSound();
       spawnCheckpoint();
       reportCheckpoint();
@@ -142,16 +134,17 @@ export class DrivingMode implements GameMode {
   }
 
   private computeCarSpeed(car: Group): number {
-    const { controls } = this.context!;
+    if (!this.context) return 0;
+    const { controls } = this.context.gameState;
     let speed = car.userData.currentSpeed || 0;
     const maxSpeed = 2;
     const acceleration = 0.1;
     const braking = 0.05;
     const friction = 0.99;
 
-    if (controls.value.forward) {
+    if (controls.forward) {
       speed += speed < 0 ? braking : acceleration;
-    } else if (controls.value.backward) {
+    } else if (controls.backward) {
       speed -= speed > 0 ? braking : acceleration;
     }
 
@@ -166,11 +159,11 @@ export class DrivingMode implements GameMode {
 
   private applyCarSteering(car: Group, speed: number) {
     if (Math.abs(speed) <= 0.1) return;
-    const { controls } = this.context!;
+    const { controls } = this.context!.gameState;
     const dir = speed > 0 ? 1 : -1;
     const turnSpeed = 0.04 / (Math.sqrt(Math.abs(speed)) + 1);
-    if (controls.value.left) car.userData.heading += turnSpeed * dir;
-    if (controls.value.right) car.userData.heading -= turnSpeed * dir;
+    if (controls.left) car.userData.heading += turnSpeed * dir;
+    if (controls.right) car.userData.heading -= turnSpeed * dir;
   }
 
   private enforceCarBounds(car: Group) {
@@ -182,7 +175,7 @@ export class DrivingMode implements GameMode {
 
   private checkBuildingCollision(car: Group) {
     if (!this.context) return;
-    const { occupiedGrids, spawnSparks } = this.context;
+    const { occupiedGrids, spawnSparks } = this.context.gameState;
 
     if (!checkGridCollision(car.position.x, car.position.z, occupiedGrids, 5)) return;
 
@@ -215,12 +208,12 @@ export class DrivingMode implements GameMode {
 
   update(dt: number, _time: number) {
     if (!this.context) return;
-    const { activeCar, isGameOver } = this.context;
-    if (!activeCar.value) return;
+    const { gameState } = this.context;
+    if (!gameState.activeCar) return;
 
-    const car = activeCar.value;
+    const car = gameState.activeCar;
 
-    if (isGameOver.value) {
+    if (gameState.isGameOver) {
       this.handleGameOver(car);
       return;
     }
@@ -235,17 +228,18 @@ export class DrivingMode implements GameMode {
 
   cleanup() {
     if (this.context) {
-      if (this.context.activeCar.value) {
-        this.context.activeCar.value.userData.isPlayerControlled = false;
-        this.context.activeCar.value = null;
+      const { gameState } = this.context;
+      if (gameState.activeCar) {
+        gameState.activeCar.userData.isPlayerControlled = false;
+        gameState.activeCar = null;
       }
-      this.context.navArrow.visible = false;
-      if (this.context.chaseArrow) this.context.chaseArrow.visible = false;
-      if (this.context.checkpointMesh) this.context.checkpointMesh.visible = false;
+      gameState.navArrow.visible = false;
+      if (gameState.chaseArrow) gameState.chaseArrow.visible = false;
+      if (gameState.checkpointMesh) gameState.checkpointMesh.visible = false;
 
       this.redCarAI?.cleanup();
 
-      const c = this.context.controls.value;
+      const c = this.context.gameState.controls;
       c.forward = false;
       c.backward = false;
       c.left = false;
@@ -256,13 +250,13 @@ export class DrivingMode implements GameMode {
   }
 
   onKeyDown(event: KeyboardEvent) {
-    if (!this.context || this.context.isGameOver.value) return;
-    handleControlsKeyDown(this.context.controls.value, event);
+    if (!this.context || this.context.gameState.isGameOver) return;
+    handleControlsKeyDown(this.context.gameState.controls, event);
   }
 
   onKeyUp(event: KeyboardEvent) {
-    if (!this.context || this.context.isGameOver.value) return;
-    handleControlsKeyUp(this.context.controls.value, event);
+    if (!this.context || this.context.gameState.isGameOver) return;
+    handleControlsKeyUp(this.context.gameState.controls, event);
   }
 
   onClick(_event: MouseEvent) {}

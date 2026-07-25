@@ -2,55 +2,55 @@
   <div id="cyberpunk-city-wrapper">
     <div ref="canvasContainer" id="cyberpunk-city"></div>
     <Transition name="glitch-fade">
-      <SplashScreen v-if="showSplash" />
+      <SplashScreen v-if="uiStore.showSplash" />
     </Transition>
   </div>
   <GameUI
-    :isDrivingMode="isDrivingMode"
-    :isGameMode="isGameMode"
-    :isExplorationMode="isExplorationMode"
-    :isCinematicMode="isCinematicMode"
-    :isGameOver="isGameOver"
-    :isMobile="isMobile"
-    :drivingScore="drivingScore"
-    :timeLeft="timeLeft"
-    :distToTarget="distToTarget"
-    :controls="controls"
-    :lookControls="lookControls"
-    :leaderboard="leaderboard"
-    :showLeaderboard="showLeaderboard"
-    :gameSessionId="gameSessionId"
+    :isDrivingMode="gameStore.isDrivingMode"
+    :isGameMode="gameStore.gameMode"
+    :isExplorationMode="gameStore.isExplorationMode"
+    :isCinematicMode="gameStore.isCinematicMode"
+    :isGameOver="gameStore.isGameOver"
+    :isMobile="gameStore.isMobile"
+    :drivingScore="gameStore.drivingScore"
+    :timeLeft="gameStore.timeLeft"
+    :distToTarget="gameStore.distToTarget"
+    :controls="gameState.controls"
+    :lookControls="gameState.lookControls"
+    :leaderboard="uiStore.leaderboard"
+    :showLeaderboard="uiStore.showLeaderboard"
+    :gameSessionId="uiStore.gameSessionId"
     @exit-game-mode="exitGameMode"
     @update-leaderboard="updateLeaderboard"
-    @close-leaderboard="showLeaderboard = false"
+    @close-leaderboard="uiStore.syncShowLeaderboard(false)"
   />
   <MiniMap
-    :playerX="minimapData.playerX"
-    :playerZ="minimapData.playerZ"
-    :playerRotation="minimapData.playerRotation"
-    :objectives="minimapData.objectives"
-    :visible="isExplorationMode && storyState.active"
+    :playerX="gameState.minimapData.playerX"
+    :playerZ="gameState.minimapData.playerZ"
+    :playerRotation="gameState.minimapData.playerRotation"
+    :objectives="gameState.minimapData.objectives"
+    :visible="gameStore.isExplorationMode && gameState.storyState.active"
   />
-  <SignalFinder :visible="showSignalFinder" :signalStrength="signalStrength" />
-  <StoryHint :visible="showStoryHintEl" />
+  <SignalFinder :visible="uiStore.showSignalFinder" :signalStrength="uiStore.signalStrength" />
+  <StoryHint :visible="uiStore.showStoryHint" />
   <Transition name="fade">
-    <div v-if="onlineCount > 0" id="online-indicator">
+    <div v-if="uiStore.onlineCount > 0" id="online-indicator">
       <span id="online-dot"></span>
-      {{ onlineCount }}
+      {{ uiStore.onlineCount }}
     </div>
   </Transition>
   <Transition name="fade">
-    <div v-if="hdrSupported" id="hdr-badge">HDR</div>
+    <div v-if="uiStore.hdrSupported" id="hdr-badge">HDR</div>
   </Transition>
-  <StoryTriggerPrompt :visible="showStoryTriggerPrompt" />
+  <StoryTriggerPrompt :visible="uiStore.showStoryTriggerPrompt" />
   <StoryDialog
-    :visible="storyState.active"
-    :showingBriefing="storyState.showingBriefing"
-    :showingDialogue="storyState.showingDialogue"
-    :missionComplete="storyState.missionComplete"
-    :dialogueIndex="storyState.currentDialogueIndex"
-    :currentMission="storyState.missions[storyState.currentMissionIndex] ?? null"
-    :hasNextMission="storyState.currentMissionIndex < storyState.missions.length - 1"
+    :visible="gameState.storyState.active"
+    :showingBriefing="gameState.storyState.showingBriefing"
+    :showingDialogue="gameState.storyState.showingDialogue"
+    :missionComplete="gameState.storyState.missionComplete"
+    :dialogueIndex="gameState.storyState.currentDialogueIndex"
+    :currentMission="gameState.storyState.missions[gameState.storyState.currentMissionIndex] ?? null"
+    :hasNextMission="gameState.storyState.currentMissionIndex < gameState.storyState.missions.length - 1"
     @dismiss="dismissStoryBriefing"
     @advance="advanceStoryDialogue"
   />
@@ -91,7 +91,7 @@ import { setupPostProcessing } from '../game/PostProcessingManager';
 import { DrivingMode } from '../game/modes/DrivingMode';
 import { ExplorationMode } from '../game/modes/ExplorationMode';
 import { DemoMode } from '../game/modes/DemoMode';
-import { GameContext, StoryState, MinimapData } from '../game/types';
+import { GameContext } from '../game/types';
 import { carAudio } from '../game/audio/CarAudio';
 import { cyberpunkAudio } from '../utils/CyberpunkAudio';
 import { CELL_SIZE, START_OFFSET, GRID_SIZE } from '../game/config';
@@ -143,7 +143,13 @@ import { useCyberpunkClick } from '../composables/useCyberpunkClick';
 import { useGameAudio } from '../composables/useGameAudio';
 import { useFallbackMode } from '../composables/useFallbackMode';
 
+import { useGameStore } from '../stores/gameStore';
+import { useUIStore } from '../stores/uiStore';
+import { GameState } from '../game/GameState';
+
 const GameUI = defineAsyncComponent(() => import('./GameUI.vue'));
+
+const emit = defineEmits(['game-start', 'game-end', 'fallback', 'navigate']);
 
 const canvasContainer = ref<HTMLDivElement | null>(null);
 
@@ -163,22 +169,10 @@ let leaderboardMeshes: Mesh[] = [];
 let pagePanelRenderer: PagePanelRenderer;
 let pageMeshes: Mesh[] = [];
 
-const score = ref(0);
-const drivingScore = ref(0);
-const isGameMode = ref(false);
-const isDrivingMode = ref(false);
-const isExplorationMode = ref(false);
-const isCinematicMode = ref(false);
-const cinematicTarget = new Vector3();
-const activeCar = ref<Group | null>(null);
 let checkpointMesh: Mesh;
 let navArrow: Group;
 let chaseArrow: Group;
-const timeLeft = ref(0);
-const isGameOver = ref(false);
-const lastTime = ref(0);
-const startTime = ref(0);
-const distToTarget = ref(0);
+
 let gameModeManager: GameModeManager;
 let konamiManager: KonamiManager;
 let gangWarManager: GangWarManager;
@@ -187,131 +181,37 @@ let cityBuilder: CityBuilder;
 let multiplayerManager: MultiplayerManager;
 let skyEffects: SkyEffects;
 
-const leaderboard = ref<ScoreEntry[]>([]);
-const showLeaderboard = ref(false);
-const gameSessionId = ref<string | null>(null);
-
-let leaderboardCanvas: HTMLCanvasElement;
-let leaderboardTexture: CanvasTexture;
-
-function updateLeaderboard(newScores: ScoreEntry[]) {
-  leaderboard.value = newScores;
-}
-
-watch(
-  leaderboard,
-  () => {
-    if (leaderboardCanvas && leaderboardTexture) {
-      drawLeaderboard(leaderboardCanvas, leaderboardTexture, leaderboard.value);
-    }
-  },
-  { deep: true }
-);
-
-function createLeaderboardTexture() {
-  const result = createLeaderboardCanvas();
-  leaderboardCanvas = result.canvas;
-  leaderboardTexture = result.texture;
-  drawLeaderboard(leaderboardCanvas, leaderboardTexture, leaderboard.value);
-  return leaderboardTexture;
-}
-
 let storyManager: StoryManager;
 let storyItemsManager: StoryItemsManager | null = null;
 
-const nearStoryTrigger = ref(false);
-const signalStrength = ref(0);
-const showStoryHint = ref(false);
+// GameState - plain TypeScript class, NOT reactive
+// Initialize with minimal values to avoid undefined access in template before onMounted
+const gameState = new GameState(
+  new Scene(),
+  new PerspectiveCamera(),
+  new WebGLRenderer(),
+  null,
+  [],
+  [],
+  new Map(),
+  () => {},
+  () => {},
+  () => {},
+  () => {},
+  undefined,
+  new Group(),
+  new Group(),
+);
 
-const storyState = ref<StoryState>({
-  active: false,
-  currentMissionIndex: 0,
-  currentDialogueIndex: 0,
-  showingDialogue: false,
-  showingBriefing: false,
-  missionComplete: false,
-  missions: [],
-});
-
-const minimapData = ref<MinimapData>({
-  playerX: 0,
-  playerZ: 0,
-  playerRotation: 0,
-  objectives: [],
-});
-
-function updateStoryObjective(missionIdx: number, objIdx: number) {
-  if (storyManager) {
-    storyManager.completeObjective(missionIdx, objIdx);
-    storyItemsManager?.completeObjective(missionIdx, objIdx);
-  }
-}
-
-function advanceStoryDialogue() {
-  if (storyManager) {
-    storyManager.advanceDialogue();
-  }
-}
-
-function dismissStoryBriefing() {
-  if (storyManager) {
-    storyManager.dismissBriefing();
-  }
-}
-
-function isStoryTriggerHidden(): boolean {
-  return storyItemsManager?.isTriggerHidden() ?? false;
-}
-
-function activateStoryTrigger() {
-  if (isFallbackMode.value) return;
-  if (!isGameMode.value) {
-    gameModeManager.setMode(new ExplorationMode(), 'exploration');
-  }
-  storyManager.start();
-  storyItemsManager?.hideTrigger();
-  storyItemsManager?.setCurrentMission(0);
-  nearStoryTrigger.value = false;
-}
-
-const isMobile = ref(checkMobile());
-
-const ZERO_VEC = new Vector3(0, 0, 0);
-
-// Controls State
-const controls = ref({
-  left: false,
-  right: false,
-  forward: false,
-  backward: false,
-});
-
-const lookControls = ref({
-  left: false,
-  right: false,
-  up: false,
-  down: false,
-});
-
-const emit = defineEmits(['game-start', 'game-end', 'fallback', 'navigate']);
-const showSplash = ref(true);
+const gameStore = useGameStore();
+const uiStore = useUIStore();
 
 const { hdrSupported, checkHdr } = useHdrDisplay();
 const isFallbackMode = ref(false);
-const onlineCount = ref(0);
-const showSignalFinder = computed(
-  () => isExplorationMode.value && !storyState.value.active && !isStoryTriggerHidden()
-);
-const showStoryHintEl = computed(
-  () =>
-    showStoryHint.value &&
-    isExplorationMode.value &&
-    !storyState.value.active &&
-    signalStrength.value > 0.4
-);
-const showStoryTriggerPrompt = computed(
-  () => nearStoryTrigger.value && isExplorationMode.value && !storyState.value.active
-);
+const startTime = ref(0);
+const cinematicTarget = new Vector3();
+
+const ZERO_VEC = new Vector3(0, 0, 0);
 const currentLookAt = new Vector3(0, 0, 0);
 
 // Sparks system
@@ -355,7 +255,7 @@ function createNavArrow() {
   const cone = new Mesh(
     new ConeGeometry(2, 7.5, 16),
     new MeshBasicMaterial({
-      color: 0x888800, // Reduced brightness to avoid bloom
+      color: 0x888800,
       depthTest: false,
       depthWrite: false,
       transparent: true,
@@ -450,6 +350,13 @@ function initRenderer(width: number, height: number) {
   canvasContainer.value!.appendChild(renderer.domElement);
 
   composer = setupPostProcessing(scene, camera, renderer, browserQuality);
+
+  // Update GameState with real scene, camera, renderer, composer
+  // (Was initialized at module scope with dummy values for template access)
+  gameState.scene = scene;
+  gameState.camera = camera;
+  gameState.renderer = renderer;
+  gameState.composer = composer;
 }
 
 async function initGameWorld() {
@@ -457,9 +364,13 @@ async function initGameWorld() {
 
   const lbTexture = createLeaderboardTexture();
   cityBuilder = new CityBuilder(scene);
-  await cityBuilder.buildCity(isMobile.value, lbTexture);
+  await cityBuilder.buildCity(gameState.isMobile, lbTexture);
   buildings = cityBuilder.getBuildings();
   occupiedGrids = cityBuilder.getOccupiedGrids();
+
+  // Update GameState with real buildings and grids
+  gameState.buildings = buildings;
+  gameState.occupiedGrids = occupiedGrids;
 
   buildings.forEach((b) => {
     b.traverse((c) => {
@@ -480,6 +391,14 @@ function initTrafficAndSparks() {
   cars = trafficSystem.getCars();
 
   sparkSystem = new SparkSystem(scene);
+
+  // Update GameState with real cars
+  gameState.cars = cars;
+  gameState.buildings = buildings;
+  gameState.occupiedGrids = occupiedGrids;
+  gameState.checkpointMesh = checkpointMesh;
+  gameState.navArrow = navArrow;
+  gameState.chaseArrow = chaseArrow;
 }
 
 function initGameManagers() {
@@ -487,11 +406,20 @@ function initGameManagers() {
 
   gangWarManager = new GangWarManager(scene, occupiedGrids, spawnSparks, playPewSound);
 
-  multiplayerManager = new MultiplayerManager(scene, onlineCount, trafficSystem.getCarFactory());
+  multiplayerManager = new MultiplayerManager(
+    scene,
+    (count) => { uiStore.syncOnlineCount(count); },
+    trafficSystem.getCarFactory()
+  );
 
   createCheckpoint();
   createNavArrow();
   createChaseArrow();
+
+  // Update gameState with the created meshes
+  gameState.checkpointMesh = checkpointMesh;
+  gameState.navArrow = navArrow;
+  gameState.chaseArrow = chaseArrow;
 }
 
 function initEventListeners() {
@@ -503,7 +431,7 @@ function initEventListeners() {
 }
 
 function initStoryAndMode() {
-  storyManager = new StoryManager(storyState);
+  storyManager = new StoryManager(gameState.storyState);
 
   storyItemsManager = new StoryItemsManager(scene);
   storyItemsManager.createTrigger();
@@ -517,39 +445,28 @@ function initStoryAndMode() {
     cars,
     occupiedGrids,
     buildings,
-    score,
-    drivingScore,
-    timeLeft,
-    activeCar,
-    isMobile,
-    isGameOver,
-    distToTarget,
-    controls,
-    lookControls,
+    gameState,
     spawnSparks,
     playPewSound,
     spawnCheckpoint,
     reportCheckpoint: () => {
-      if (gameSessionId.value) {
-        ScoreService.recordCheckpoint(gameSessionId.value);
+      if (uiStore.gameSessionId) {
+        ScoreService.recordCheckpoint(uiStore.gameSessionId);
       }
     },
     checkpointMesh,
     navArrow,
     chaseArrow,
-    storyState,
-    minimapData,
     updateObjective: updateStoryObjective,
     advanceDialogue: advanceStoryDialogue,
     dismissBriefing: dismissStoryBriefing,
-    nearStoryTrigger,
     activateStoryTrigger,
   };
   gameModeManager = new GameModeManager(context, (type) => {
-    isGameMode.value = type !== null;
-    isDrivingMode.value = type === 'driving';
-    isExplorationMode.value = type === 'exploration';
-    isCinematicMode.value = type === 'cinematic';
+    gameStore.syncDrivingMode(type === 'driving');
+    gameStore.syncExplorationMode(type === 'exploration');
+    gameStore.syncCinematicMode(type === 'cinematic');
+    gameStore.syncIsGameOver(false);
     if (type !== null) {
       emit('game-start');
       if (multiplayerManager) {
@@ -559,91 +476,95 @@ function initStoryAndMode() {
   });
 }
 
-onMounted(() => {
-  if (!canvasContainer.value) return;
+// Sync GameState to Pinia stores for UI
+function syncGameStateToStores() {
+  // Only sync when values actually change (throttled in animate loop)
+  gameStore.syncScore(gameState.score);
+  gameStore.syncDrivingScore(gameState.drivingScore);
+  gameStore.syncTimeLeft(gameState.timeLeft);
+  gameStore.syncIsGameOver(gameState.isGameOver);
+  gameStore.syncDistToTarget(gameState.distToTarget);
+  gameStore.syncIsMobile(gameState.isMobile);
 
-  checkHdr();
+  uiStore.syncSignalStrength(gameState.signalStrength ?? 0);
+  uiStore.syncNearStoryTrigger(gameState.nearStoryTrigger ?? false);
+  uiStore.syncShowSignalFinder(
+    gameStore.isExplorationMode && !gameState.storyState.active && !storyItemsManager?.isTriggerHidden()
+  );
+  uiStore.syncShowStoryHint(
+    gameState.showStoryHint &&
+    gameStore.isExplorationMode &&
+    !gameState.storyState.active &&
+    (gameState.signalStrength ?? 0) > 0.4
+  );
+  uiStore.syncShowStoryTriggerPrompt(
+    gameState.nearStoryTrigger && gameStore.isExplorationMode && !gameState.storyState.active
+  );
+}
 
-  const width = canvasContainer.value.clientWidth || window.innerWidth;
-  const height = canvasContainer.value.clientHeight || window.innerHeight;
-
-  initScene(width, height);
-  initRenderer(width, height);
-
-  const doDeferredInit = async () => {
-    if (deferredInitCancelled) return;
-    await initGameWorld();
-    skyEffects.setStarTwinkleEnabled(browserQuality.starTwinkleEnabled);
-
-    // Initialize remaining systems while city is visible
-    initTrafficAndSparks();
-
-    // Start rendering the scene immediately
-    initEventListeners();
-    isActive = true;
-    animate();
-
-    initGameManagers();
-    initStoryAndMode();
-
-    ScoreService.getTopScores()
-      .then((scores) => {
-        leaderboard.value = scores;
-        if (leaderboardCanvas && leaderboardTexture) {
-          drawLeaderboard(leaderboardCanvas, leaderboardTexture, leaderboard.value);
-        }
-      })
-      .catch(() => {
-        // Scores failed to load, leaderboard stays empty
-      });
-
-    cyberpunkAudio.addListener(onAudioNote);
-    showSplash.value = false;
-  };
-
-  if (typeof requestIdleCallback !== 'undefined') {
-    requestIdleCallback(doDeferredInit, { timeout: 3000 });
-  } else {
-    setTimeout(doDeferredInit, 100);
-  }
-});
-
-function onKeyDown(event: KeyboardEvent) {
-  if (event.key === 'Escape') {
-    exitGameMode();
-    return;
-  }
-  konamiManager.onKeyDown(event);
-  gameModeManager.onKeyDown(event);
-  if (isGameMode.value && !isGameOver.value) {
-    event.preventDefault();
+function updateStoryObjective(missionIdx: number, objIdx: number) {
+  if (storyManager) {
+    storyManager.completeObjective(missionIdx, objIdx);
+    storyItemsManager?.completeObjective(missionIdx, objIdx);
   }
 }
 
-function onKeyUp(event: KeyboardEvent) {
-  gameModeManager.onKeyUp(event);
-  if (isGameMode.value && !isGameOver.value) {
-    event.preventDefault();
+function advanceStoryDialogue() {
+  if (storyManager) {
+    storyManager.advanceDialogue();
   }
+}
+
+function dismissStoryBriefing() {
+  if (storyManager) {
+    storyManager.dismissBriefing();
+  }
+}
+
+function activateStoryTrigger() {
+  if (isFallbackMode.value) return;
+  if (!gameStore.gameMode) {
+    gameModeManager.setMode(new ExplorationMode(), 'exploration');
+  }
+  storyManager.start();
+  storyItemsManager?.hideTrigger();
+  storyItemsManager?.setCurrentMission(0);
+  gameState.nearStoryTrigger = false;
+}
+
+function createLeaderboardTexture() {
+  const result = createLeaderboardCanvas();
+  leaderboardCanvas = result.canvas;
+  leaderboardTexture = result.texture;
+  drawLeaderboard(leaderboardCanvas, leaderboardTexture, uiStore.leaderboard);
+  return leaderboardTexture;
+}
+
+let leaderboardCanvas: HTMLCanvasElement;
+let leaderboardTexture: CanvasTexture;
+
+function updateLeaderboard(newScores: ScoreEntry[]) {
+  uiStore.syncLeaderboard(newScores);
 }
 
 watch(
-  () => storyState.value.currentMissionIndex,
-  (newIdx) => {
-    storyItemsManager?.setCurrentMission(newIdx);
-  }
+  uiStore.leaderboard,
+  () => {
+    if (leaderboardCanvas && leaderboardTexture) {
+      drawLeaderboard(leaderboardCanvas, leaderboardTexture, uiStore.leaderboard);
+    }
+  },
+  { deep: true }
 );
 
-watch(showSplash, (newVal, oldVal) => {
-  if (oldVal === true && newVal === false) {
-    startTime.value = Date.now();
+watch(
+  () => uiStore.showSplash,
+  (newVal, oldVal) => {
+    if (oldVal === true && newVal === false) {
+      startTime.value = Date.now();
+    }
   }
-});
-
-watch(activeCar, (newCar, oldCar) => {
-  if (oldCar) trafficSystem.removeLightsFromCar(oldCar);
-  if (newCar) trafficSystem.addLightsToCar(newCar);
-});
+);
 
 function startExplorationMode() {
   if (isFallbackMode.value) return;
@@ -677,11 +598,30 @@ function exitGameMode() {
     multiplayerManager.disconnect();
   }
 
-  isGameOver.value = false;
-  score.value = 0;
-  drivingScore.value = 0;
-  gameSessionId.value = null;
+  gameState.isGameOver = false;
+  gameState.score = 0;
+  gameState.drivingScore = 0;
+  uiStore.syncGameSessionId(null);
   emit('game-end');
+}
+
+function onKeyDown(event: KeyboardEvent) {
+  if (event.key === 'Escape') {
+    exitGameMode();
+    return;
+  }
+  konamiManager.onKeyDown(event);
+  gameModeManager.onKeyDown(event);
+  if (gameStore.gameMode && !gameState.isGameOver) {
+    event.preventDefault();
+  }
+}
+
+function onKeyUp(event: KeyboardEvent) {
+  gameModeManager.onKeyUp(event);
+  if (gameStore.gameMode && !gameState.isGameOver) {
+    event.preventDefault();
+  }
 }
 
 function onResize() {
@@ -690,8 +630,7 @@ function onResize() {
   const width = window.innerWidth;
   const height = window.innerHeight;
 
-  // On mobile, ignore vertical resizes caused by address bar appearing/disappearing
-  if (isMobile.value && width === lastWidth) {
+  if (gameState.isMobile && width === lastWidth) {
     return;
   }
 
@@ -706,7 +645,7 @@ function onResize() {
   if (composer) {
     composer.setSize(containerWidth, containerHeight);
   }
-  isMobile.value = checkMobile();
+  gameState.isMobile = checkMobile();
 }
 
 const cyberpunkClick = useCyberpunkClick({
@@ -729,13 +668,13 @@ const cyberpunkClick = useCyberpunkClick({
   get pageMeshes() {
     return pageMeshes;
   },
-  isGameMode,
-  isDrivingMode,
-  isCinematicMode,
+  isGameMode: { get value() { return gameStore.gameMode; }, set value(v) { gameStore.gameMode = v; } },
+  isDrivingMode: { get value() { return gameStore.isDrivingMode; }, set value(v) { gameStore.isDrivingMode = v; } },
+  isCinematicMode: { get value() { return gameStore.isCinematicMode; }, set value(v) { gameStore.isCinematicMode = v; } },
   cinematicTarget,
   emit: (e: string, ...args: unknown[]) => emit(e as 'game-start', ...args),
-  gameSessionId,
-  activeCar,
+  gameSessionId: { get value() { return uiStore.gameSessionId; }, set value(v) { uiStore.syncGameSessionId(v); } },
+  activeCar: { get value() { return gameState.activeCar; }, set value(v) { gameState.activeCar = v; } },
 });
 
 function onClick(event: MouseEvent) {
@@ -744,10 +683,10 @@ function onClick(event: MouseEvent) {
   if (target.closest('.app-header')) return;
   if (target.closest('.playground-container')) return;
   gameModeManager.onClick(event);
-  if (isGameMode.value || isDrivingMode.value) return;
+  if (gameStore.gameMode || gameStore.isDrivingMode) return;
   const result = cyberpunkClick.handleClick(event);
   if (result.hitLeaderboard) {
-    showLeaderboard.value = true;
+    uiStore.syncShowLeaderboard(true);
   }
   if (result.hitPagePanel && result.pageLink) {
     emit('navigate', result.pageLink);
@@ -799,7 +738,7 @@ const { checkLowFps } = useFallbackMode({
 function updateMultiplayer(dt: number) {
   if (!multiplayerManager) return;
   multiplayerManager.update(dt);
-  if (isExplorationMode.value) {
+  if (gameStore.isExplorationMode) {
     multiplayerManager.broadcast(
       camera.position.x,
       camera.position.y,
@@ -807,12 +746,12 @@ function updateMultiplayer(dt: number) {
       camera.rotation.y,
       'walking'
     );
-  } else if (isDrivingMode.value && activeCar.value) {
-    const heading = activeCar.value.userData.heading ?? activeCar.value.rotation.y;
+  } else if (gameStore.isDrivingMode && gameState.activeCar) {
+    const heading = gameState.activeCar.userData.heading ?? gameState.activeCar.rotation.y;
     multiplayerManager.broadcast(
-      activeCar.value.position.x,
-      activeCar.value.position.y,
-      activeCar.value.position.z,
+      gameState.activeCar.position.x,
+      gameState.activeCar.position.y,
+      gameState.activeCar.position.z,
       heading,
       'driving'
     );
@@ -821,19 +760,19 @@ function updateMultiplayer(dt: number) {
 
 function updateSignalStrength() {
   if (
-    isExplorationMode.value &&
-    !storyState.value.active &&
+    gameStore.isExplorationMode &&
+    !gameState.storyState.active &&
     !storyItemsManager?.isTriggerHidden()
   ) {
     const dx = camera.position.x - STORY_TRIGGER_POSITION.x;
     const dz = camera.position.z - STORY_TRIGGER_POSITION.z;
     const dist = Math.sqrt(dx * dx + dz * dz);
-    signalStrength.value = Math.max(0, Math.min(1, 1 - dist / 1500));
-    if (signalStrength.value > 0.05 && !showStoryHint.value) {
-      showStoryHint.value = true;
+    gameState.signalStrength = Math.max(0, Math.min(1, 1 - dist / 1500));
+    if (gameState.signalStrength > 0.05 && !gameState.showStoryHint) {
+      gameState.showStoryHint = true;
     }
   } else {
-    signalStrength.value = 0;
+    gameState.signalStrength = 0;
   }
 }
 
@@ -861,7 +800,7 @@ function updateSparks() {
 function updateCamera(time: number, now: number) {
   if (gameModeManager?.getMode()) return;
 
-  if (isCinematicMode.value) {
+  if (gameStore.isCinematicMode) {
     const angle = time * INTRO_ORBIT_SPEED;
     const tx = cinematicTarget.x + Math.sin(angle) * INTRO_ORBIT_RADIUS;
     const tz = cinematicTarget.z + Math.cos(angle) * INTRO_ORBIT_RADIUS;
@@ -910,8 +849,8 @@ function animate() {
 
   const now = Date.now();
   const time = now * 0.0005;
-  const dt = (now - lastTime.value) / 1000;
-  lastTime.value = now;
+  const dt = (now - lastTime) / 1000;
+  lastTime = now;
 
   if (checkLowFps(now)) return;
   tickCounter++;
@@ -926,12 +865,15 @@ function animate() {
   gangWarManager?.update(dt);
   skyEffects.update(dt);
   gameModeManager?.update(dt, time);
-  trafficSystem?.update(activeCar.value);
+  trafficSystem?.update(gameState.activeCar);
   storyItemsManager?.updateTriggerAnimation(time * 1000);
   pagePanelRenderer?.update(now);
 
   updateCamera(time, now);
   renderFrame();
+
+  // Sync GameState to Pinia stores every frame (for UI)
+  syncGameStateToStores();
 
   if (tickCounter % 3 === 0) {
     updateMultiplayer(dt);
@@ -943,6 +885,71 @@ function animate() {
     updateSparks();
   }
 }
+
+let lastTime = 0;
+
+onMounted(() => {
+  if (!canvasContainer.value) return;
+
+  checkHdr();
+
+  const width = canvasContainer.value.clientWidth || window.innerWidth;
+  const height = canvasContainer.value.clientHeight || window.innerHeight;
+
+  initScene(width, height);
+  initRenderer(width, height);
+
+  const doDeferredInit = async () => {
+    if (deferredInitCancelled) return;
+    await initGameWorld();
+    skyEffects.setStarTwinkleEnabled(browserQuality.starTwinkleEnabled);
+
+    initTrafficAndSparks();
+
+    initEventListeners();
+    isActive = true;
+    animate();
+
+    initGameManagers();
+    initStoryAndMode();
+
+    ScoreService.getTopScores()
+      .then((scores) => {
+        uiStore.syncLeaderboard(scores);
+        if (leaderboardCanvas && leaderboardTexture) {
+          drawLeaderboard(leaderboardCanvas, leaderboardTexture, uiStore.leaderboard);
+        }
+      })
+      .catch(() => {
+        // Scores failed to load, leaderboard stays empty
+      });
+
+    cyberpunkAudio.addListener(onAudioNote);
+    uiStore.syncShowSplash(false);
+
+    // Set up watches that depend on gameState (created in initTrafficAndSparks)
+    watch(
+      () => gameState.storyState.currentMissionIndex,
+      (newIdx) => {
+        storyItemsManager?.setCurrentMission(newIdx);
+      }
+    );
+
+    watch(
+      () => gameState.activeCar,
+      (newCar, oldCar) => {
+        if (oldCar) trafficSystem.removeLightsFromCar(oldCar);
+        if (newCar) trafficSystem.addLightsToCar(newCar);
+      }
+    );
+  };
+
+  if (typeof requestIdleCallback !== 'undefined') {
+    requestIdleCallback(doDeferredInit, { timeout: 3000 });
+  } else {
+    setTimeout(doDeferredInit, 100);
+  }
+});
 
 onBeforeUnmount(() => {
   cyberpunkAudio.removeListener(onAudioNote);

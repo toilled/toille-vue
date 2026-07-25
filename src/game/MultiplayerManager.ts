@@ -1,7 +1,6 @@
 import mqtt from 'mqtt';
 import { Scene, Group, Mesh, BoxGeometry, MeshStandardMaterial, Vector3 } from 'three';
 import { CarFactory } from './CarFactory';
-import type { Ref } from 'vue';
 
 interface PlayerState {
   x: number;
@@ -27,20 +26,24 @@ export class MultiplayerManager {
   private myId: string;
   private topic = 'toille-vue/cyberpunk/players';
   private carFactory: CarFactory;
-  private onlineCountRef: Ref<number>;
+  private onlineCount: number = 0;
+  private onOnlineCountChange: ((count: number) => void) | null = null;
 
   private lastBroadcastTime = 0;
   private broadcastInterval = 100; // max 10Hz
 
-  constructor(scene: Scene, onlineCountRef: Ref<number>, carFactory: CarFactory) {
+  constructor(scene: Scene, onOnlineCountChange: (count: number) => void, carFactory: CarFactory) {
     this.scene = scene;
     this.myId = Math.random().toString(36).substring(2, 10);
     this.carFactory = carFactory;
-    this.onlineCountRef = onlineCountRef;
+    this.onOnlineCountChange = onOnlineCountChange;
   }
 
   private updateOnlineCount() {
-    this.onlineCountRef.value = this.client?.connected ? 1 + this.players.size : 0;
+    this.onlineCount = this.client?.connected ? 1 + this.players.size : 0;
+    if (this.onOnlineCountChange) {
+      this.onOnlineCountChange(this.onlineCount);
+    }
   }
 
   public connect() {
@@ -91,7 +94,7 @@ export class MultiplayerManager {
         const bodyGeo = new BoxGeometry(2, 4, 2);
         const bodyMat = new MeshStandardMaterial({ color: 0x00ffcc });
         const body = new Mesh(bodyGeo, bodyMat);
-        body.position.y = 2; // Half height
+        body.position.y = 2;
         group.add(body);
       }
 

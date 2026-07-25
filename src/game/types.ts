@@ -1,6 +1,6 @@
 import { Scene, PerspectiveCamera, WebGLRenderer, Group, Vector3, Mesh, Object3D } from 'three';
-import { Ref } from 'vue';
 import type { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { GameState } from './GameState';
 
 export interface Controls {
   left: boolean;
@@ -17,6 +17,8 @@ export interface LookControls {
 }
 
 export interface GameContext {
+  gameState: GameState;
+
   scene: Scene;
   camera: PerspectiveCamera;
   renderer: WebGLRenderer;
@@ -25,17 +27,6 @@ export interface GameContext {
   cars: Group[];
   buildings: Object3D[];
   occupiedGrids: Map<string, { halfW: number; halfD: number; isRound?: boolean }>;
-
-  score: Ref<number>;
-  drivingScore: Ref<number>;
-  timeLeft: Ref<number>;
-  activeCar: Ref<Group | null>;
-  isMobile: Ref<boolean>;
-  isGameOver: Ref<boolean>;
-  distToTarget: Ref<number>;
-
-  controls: Ref<Controls>;
-  lookControls: Ref<LookControls>;
 
   spawnSparks: (position: Vector3) => void;
   playPewSound: () => void;
@@ -46,12 +37,9 @@ export interface GameContext {
   navArrow: Group;
   chaseArrow: Group;
 
-  storyState?: Ref<StoryState>;
-  minimapData?: Ref<MinimapData>;
   updateObjective?: (missionIdx: number, objIdx: number) => void;
   advanceDialogue?: () => void;
   dismissBriefing?: () => void;
-  nearStoryTrigger?: Ref<boolean>;
   activateStoryTrigger?: () => void;
 }
 

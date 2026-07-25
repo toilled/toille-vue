@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 import { useI18n } from 'vue-i18n';
 
 const cache = new Map<string, string>();

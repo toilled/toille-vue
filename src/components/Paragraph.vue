@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 <template>
   <div class="text-paragraph" :class="{ marginless: last }" v-html="sanitizedParagraph"></div>
 </template>

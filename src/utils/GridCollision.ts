@@ -16,6 +16,19 @@ function getGridCenter(ix: number, iz: number): { cx: number; cz: number } {
   };
 }
 
+function getRoundDistance(
+  x: number,
+  z: number,
+  cx: number,
+  cz: number,
+  dims: { halfW: number; halfD: number }
+): { radius: number; dist: number } {
+  const radius = Math.max(dims.halfW, dims.halfD);
+  const dx = x - cx;
+  const dz = z - cz;
+  return { radius, dist: Math.sqrt(dx * dx + dz * dz) };
+}
+
 export function checkGridCollision(
   x: number,
   z: number,
@@ -28,6 +41,12 @@ export function checkGridCollision(
   const { cx, cz } = getGridCenter(ix, iz);
   const dims = occupiedGrids.get(key);
   if (!dims) return false;
+
+  if (dims.isRound) {
+    const { radius, dist } = getRoundDistance(x, z, cx, cz, dims);
+    return dist < radius + margin;
+  }
+
   return Math.abs(x - cx) < dims.halfW + margin && Math.abs(z - cz) < dims.halfD + margin;
 }
 
@@ -51,16 +70,13 @@ export function resolveBuildingCollision(
   const dims = occupiedGrids.get(key)!;
 
   if (dims.isRound) {
-    const radius = Math.max(dims.halfW, dims.halfD);
-    const dx = x - cx;
-    const dz = z - cz;
-    const dist = Math.sqrt(dx * dx + dz * dz);
+    const { radius, dist } = getRoundDistance(x, z, cx, cz, dims);
     if (dist < radius + margin) {
       let nx = 0;
       let nz = 1;
       if (dist > 0.001) {
-        nx = dx / dist;
-        nz = dz / dist;
+        nx = (x - cx) / dist;
+        nz = (z - cz) / dist;
       }
       return {
         hit: true,

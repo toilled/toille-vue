@@ -42,39 +42,52 @@
               </text>
             </g>
 
-            <!-- Temp Line -->
+            <!-- Graph Line (Temp) -->
             <polyline
               :points="tempLinePoints"
               fill="none"
-              stroke="#ff6600"
-              stroke-width="2"
+              stroke="#00ff9d"
+              stroke-width="3"
               stroke-linecap="round"
               stroke-linejoin="round"
             />
 
-            <!-- Temp Dots -->
+            <!-- Data Points (Temp) -->
             <g v-for="(point, index) in computedPoints" :key="'dot-' + index">
-              <circle :cx="point.x" :cy="point.tempY" r="3" fill="#ff6600" />
+              <circle
+                :cx="point.x"
+                :cy="point.tempY"
+                r="4"
+                fill="#111"
+                stroke="#00ff9d"
+                stroke-width="2"
+                class="data-point"
+              />
+              <text :x="point.x" y="148" text-anchor="middle" fill="#ccc" font-size="10">
+                {{ point.time }}
+              </text>
               <text
                 :x="point.x"
-                :y="point.tempY - 6"
+                :y="point.tempY - 10"
                 text-anchor="middle"
-                fill="#ff6600"
-                font-size="9"
+                fill="#fff"
+                font-size="12"
                 font-weight="bold"
               >
                 {{ point.temp }}°
               </text>
             </g>
-
-            <!-- Time Labels -->
-            <g v-for="(point, index) in computedPoints" :key="'label-' + index">
-              <text :x="point.x" y="148" text-anchor="middle" fill="#aaa" font-size="8">
-                {{ point.time }}
-              </text>
-            </g>
           </svg>
         </div>
+        <footer class="modal-footer">
+          <small>{{ t('weather.nextHours') }}</small>
+          <div class="legend">
+            <span class="legend-item"><span class="dot temp"></span>{{ t('weather.temp') }}</span>
+            <span class="legend-item"
+              ><span class="dot rain"></span>{{ t('weather.rainLabel') }}</span
+            >
+          </div>
+        </footer>
       </article>
     </div>
   </Teleport>
@@ -132,85 +145,110 @@ const tempLinePoints = computed(() => {
 <style scoped>
 .weather-modal-overlay {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  z-index: 10000;
+  backdrop-filter: blur(5px);
 }
 
 .weather-modal {
-  background: linear-gradient(145deg, #1a1a2e 0%, #0f0f1a 100%);
-  border: 1px solid #00ffcc;
-  border-radius: 12px;
-  padding: 1.5rem;
+  background: #111;
+  color: #eee;
+  padding: 2rem;
+  border-radius: 8px;
   width: 90%;
-  max-width: 340px;
-  box-shadow:
-    0 0 20px rgba(0, 255, 204, 0.2),
-    0 10px 30px rgba(0, 0, 0, 0.5);
-  animation: slideUp 0.3s ease-out;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  max-width: 500px;
+  border: 1px solid #333;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(0, 255, 204, 0.2);
+  margin-bottom: 1.5rem;
 }
 
 .modal-header h2 {
   margin: 0;
-  color: #00ffcc;
-  font-size: 1.1rem;
-  font-weight: 600;
+  color: #00ff9d;
 }
 
 .close-btn {
   background: none;
   border: none;
-  color: #aaa;
+  color: #888;
   font-size: 1.5rem;
   cursor: pointer;
-  line-height: 1;
   padding: 0;
-  transition: color 0.2s;
+  line-height: 1;
 }
 
 .close-btn:hover {
-  color: #00ffcc;
+  color: #fff;
 }
 
 .chart-container {
-  height: 160px;
+  width: 100%;
 }
 
 .weather-chart {
   width: 100%;
-  height: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.modal-footer {
+  margin-top: 1rem;
+  text-align: center;
+  color: #666;
+}
+
+.data-point {
+  transition: r 0.2s ease;
+}
+
+.data-point:hover {
+  r: 6;
+  cursor: crosshair;
+}
+
+.rain-bar {
+  transition: height 0.3s ease;
+}
+
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 5px;
+  font-size: 0.8rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot.temp {
+  background: #00ff9d;
+}
+
+.dot.rain {
+  background: #3399ff;
 }
 </style>

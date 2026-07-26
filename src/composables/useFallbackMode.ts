@@ -78,6 +78,13 @@ export function useFallbackMode(options: UseFallbackModeOptions) {
     cleanup();
   }
 
+  function calculateFps(): number | null {
+    if (frameTimestamps.length < 30) return null;
+    const elapsed = frameTimestamps[frameTimestamps.length - 1] - frameTimestamps[0];
+    if (elapsed <= 0) return null;
+    return ((frameTimestamps.length - 1) / elapsed) * 1000;
+  }
+
   function checkLowFps(now: number): boolean {
     if (lastFpsCheckTime === 0) {
       if (startTime.value > 0 && now - startTime.value > FALLBACK_MONITOR_DELAY_MS) {
@@ -88,14 +95,11 @@ export function useFallbackMode(options: UseFallbackModeOptions) {
 
     frameTimestamps.push(now);
     if (frameTimestamps.length > 60) frameTimestamps.shift();
-    if (frameTimestamps.length < 30 || now - lastFpsCheckTime < FALLBACK_CHECK_INTERVAL_MS)
-      return false;
+    if (now - lastFpsCheckTime < FALLBACK_CHECK_INTERVAL_MS) return false;
 
-    const elapsed = frameTimestamps[frameTimestamps.length - 1] - frameTimestamps[0];
-    if (elapsed <= 0) return false;
-
-    const fps = ((frameTimestamps.length - 1) / elapsed) * 1000;
+    const fps = calculateFps();
     lastFpsCheckTime = now;
+    if (fps === null) return false;
 
     if (fps < FALLBACK_FPS_THRESHOLD) {
       lowFpsCount++;

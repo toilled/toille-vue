@@ -15,7 +15,7 @@
       </div>
     </div>
     <div v-if="winner" class="winner" role="status" aria-live="assertive">
-      <h2>{{ winner === 'draw' ? "It's a draw!" : winner === 'X' ? 'You win!' : 'You lose!' }}</h2>
+      <h2>{{ winnerMessage }}</h2>
       <button @click="resetGame">Play Again</button>
     </div>
     <div class="board" role="grid" aria-label="Game board">
@@ -27,14 +27,7 @@
         :aria-label="`Row ${Math.floor(index / 3) + 1}, Column ${(index % 3) + 1}, ${cell || 'empty'}`"
         :aria-disabled="cell !== null || !!winner"
         @click="makeMove(index)"
-        :style="{
-          color:
-            cell === 'X'
-              ? 'var(--primary, #1095c1)'
-              : cell === 'O'
-                ? 'var(--danger, #e74c3c)'
-                : 'inherit',
-        }"
+        :style="{ color: cellColor(cell) }"
       >
         {{ cell }}
       </button>
@@ -62,6 +55,17 @@ useHead({
     },
   ],
 });
+
+const winnerMessage = computed(() => {
+  if (winner.value === 'draw') return "It's a draw!";
+  return winner.value === 'X' ? 'You win!' : 'You lose!';
+});
+
+function cellColor(cell: string | null) {
+  if (cell === 'X') return 'var(--primary, #1095c1)';
+  if (cell === 'O') return 'var(--danger, #e74c3c)';
+  return 'inherit';
+}
 
 watch(winner, (newWinner) => {
   if (newWinner === 'X') playerScore.value++;

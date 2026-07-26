@@ -88,6 +88,28 @@ export class SparkSystem {
     this.velocities[i * 3 + 2] = (Math.random() - 0.5) * SPARK_RANDOM_VELOCITY;
   }
 
+  private checkHeightmapCollision(positions: Float32Array, i: number) {
+    const h = getHeight(positions[i * 3], positions[i * 3 + 2]);
+    if (positions[i * 3 + 1] < h) {
+      positions[i * 3 + 1] = h;
+      this.velocities[i * 3 + 1] *= -0.5;
+    }
+  }
+
+  private checkGridCollisions(positions: Float32Array, i: number, occupiedGrids: OccupiedGrid) {
+    if (checkGridCollision(positions[i * 3], positions[i * 3 + 2], occupiedGrids, 0)) {
+      this.lifetimes[i] = 0;
+    }
+  }
+
+  private decayLifetime(positions: Float32Array, i: number) {
+    this.lifetimes[i] -= SPARK_LIFETIME_DECAY;
+    if (this.lifetimes[i] < 0) {
+      this.lifetimes[i] = 0;
+      positions[i * 3 + 1] = SPARK_OFF_SCREEN_Y;
+    }
+  }
+
   update(occupiedGrids: OccupiedGrid) {
     const positions = this.points.geometry.attributes.position.array as Float32Array;
     let needsUpdate = false;
@@ -101,25 +123,10 @@ export class SparkSystem {
       positions[i * 3 + 1] += this.velocities[i * 3 + 1];
       positions[i * 3 + 2] += this.velocities[i * 3 + 2];
 
-      if ((i + this.frameCounter) % 3 === 0) {
-        const h = getHeight(positions[i * 3], positions[i * 3 + 2]);
-        if (positions[i * 3 + 1] < h) {
-          positions[i * 3 + 1] = h;
-          this.velocities[i * 3 + 1] *= -0.5;
-        }
-      }
+      if ((i + this.frameCounter) % 3 === 0) this.checkHeightmapCollision(positions, i);
+      if ((i + this.frameCounter) % 4 === 0) this.checkGridCollisions(positions, i, occupiedGrids);
 
-      if ((i + this.frameCounter) % 4 === 0) {
-        if (checkGridCollision(positions[i * 3], positions[i * 3 + 2], occupiedGrids, 0)) {
-          this.lifetimes[i] = 0;
-        }
-      }
-
-      this.lifetimes[i] -= SPARK_LIFETIME_DECAY;
-      if (this.lifetimes[i] < 0) {
-        this.lifetimes[i] = 0;
-        positions[i * 3 + 1] = SPARK_OFF_SCREEN_Y;
-      }
+      this.decayLifetime(positions, i);
       needsUpdate = true;
     }
 

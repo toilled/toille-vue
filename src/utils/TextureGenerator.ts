@@ -322,59 +322,76 @@ function drawGlowPatches(
   }
 }
 
+function drawBillboardBars(ctx: CanvasRenderingContext2D, color: string) {
+  ctx.fillStyle = color;
+  ctx.fillRect(15, 15, 80, 5);
+  ctx.fillRect(15, 30, 60, 5);
+  ctx.fillRect(15, 45, 90, 5);
+}
+
+function drawBillboardCircle(ctx: CanvasRenderingContext2D, color: string) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(32, 32, 20, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.arc(32, 32, 10, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = color;
+  ctx.fillRect(64, 20, 40, 24);
+}
+
+function drawBillboardTriangle(ctx: CanvasRenderingContext2D) {
+  ctx.beginPath();
+  ctx.moveTo(64, 10);
+  ctx.lineTo(20, 54);
+  ctx.lineTo(108, 54);
+  ctx.fill();
+}
+
+function drawBillboardGrid(ctx: CanvasRenderingContext2D) {
+  for (let gx = 10; gx < 118; gx += 20) {
+    for (let gy = 10; gy < 54; gy += 10) {
+      ctx.fillRect(gx, gy, 15, 5);
+    }
+  }
+}
+
+function drawBillboardText(ctx: CanvasRenderingContext2D) {
+  ctx.font = '40px serif';
+  ctx.fillText('CYBER', 10, 45);
+}
+
+function drawBillboardRandom(ctx: CanvasRenderingContext2D, color: string) {
+  for (let k = 0; k < 6; k++) {
+    ctx.fillStyle = k % 2 === 0 ? color : '#ffffff';
+    ctx.fillRect(
+      10 + Math.random() * 100,
+      10 + Math.random() * 40,
+      10 + Math.random() * 20,
+      5 + Math.random() * 10
+    );
+  }
+}
+
+const billboardDrawers: ((ctx: CanvasRenderingContext2D, color: string) => void)[] = [
+  drawBillboardBars,
+  drawBillboardCircle,
+  (ctx) => drawBillboardTriangle(ctx),
+  (ctx) => drawBillboardGrid(ctx),
+  (ctx) => drawBillboardText(ctx),
+  drawBillboardRandom,
+];
+
 function drawBillboardContent(ctx: CanvasRenderingContext2D, i: number, color: string) {
   ctx.globalAlpha = 1.0;
   ctx.fillStyle = color;
   ctx.shadowColor = color;
   ctx.shadowBlur = 15;
 
-  switch (i) {
-    case 0:
-      ctx.fillRect(15, 15, 80, 5);
-      ctx.fillRect(15, 30, 60, 5);
-      ctx.fillRect(15, 45, 90, 5);
-      break;
-    case 1:
-      ctx.beginPath();
-      ctx.arc(32, 32, 20, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#000';
-      ctx.beginPath();
-      ctx.arc(32, 32, 10, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = color;
-      ctx.fillRect(64, 20, 40, 24);
-      break;
-    case 2:
-      ctx.beginPath();
-      ctx.moveTo(64, 10);
-      ctx.lineTo(20, 54);
-      ctx.lineTo(108, 54);
-      ctx.fill();
-      break;
-    case 3:
-      for (let gx = 10; gx < 118; gx += 20) {
-        for (let gy = 10; gy < 54; gy += 10) {
-          ctx.fillRect(gx, gy, 15, 5);
-        }
-      }
-      break;
-    case 4:
-      ctx.font = '40px serif';
-      ctx.fillText('CYBER', 10, 45);
-      break;
-    default:
-      for (let k = 0; k < 6; k++) {
-        ctx.fillStyle = k % 2 === 0 ? color : '#ffffff';
-        ctx.fillRect(
-          10 + Math.random() * 100,
-          10 + Math.random() * 40,
-          10 + Math.random() * 20,
-          5 + Math.random() * 10
-        );
-      }
-      break;
-  }
+  const drawer = billboardDrawers[i] ?? billboardDrawers[billboardDrawers.length - 1];
+  drawer(ctx, color);
 }
 
 // Generate Billboard Textures

@@ -50,38 +50,42 @@ function loadLocaleMessage(locale: string): void {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function configureAppLocale(app: any, locale: string): void {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const appI18n = app.config.globalProperties.$i18n as any;
-  if (!appI18n?.locale) return;
-
-  if (typeof appI18n.locale === 'object' && 'value' in appI18n.locale) {
-    appI18n.locale.value = locale;
+  const i18n = app.config.globalProperties.$i18n as any;
+  if (!i18n?.locale) return;
+  if (typeof i18n.locale === 'object') {
+    i18n.locale.value = locale;
   } else {
-    appI18n.locale = locale;
+    i18n.locale = locale;
   }
+}
+
+function extractTitle(headPayload: { headTags: string }): string {
+  const match = headPayload.headTags.match(/<title[^>]*>([^<]+)<\/title>/);
+  return match?.[1] ?? '';
+}
+
+function getStatusCode(pathname: string): number {
+  return isKnownPage(pathname) ? 200 : 404;
 }
 
 export async function render(url: string, locale?: string) {
   try {
-    if (locale) loadLocaleMessage(locale);
-
     const head = createHead();
     const { app, router } = createApp(head, true);
 
-    if (locale) configureAppLocale(app, locale);
+    if (locale) {
+      loadLocaleMessage(locale);
+      configureAppLocale(app, locale);
+    }
 
     await router.push(url);
     await router.isReady();
 
     const pathname = new URL(url, 'http://localhost').pathname;
-    const statusCode = isKnownPage(pathname) ? 200 : 404;
-
     const html = await renderToString(app, {});
+    const title = extractTitle(head.render());
 
-    const headPayload = head.render();
-    const titleMatch = headPayload.headTags.match(/<title[^>]*>([^<]+)<\/title>/);
-    const title = titleMatch?.[1] ?? '';
-
-    return { html, statusCode, title, lang: locale ?? 'en' };
+    return { html, statusCode: getStatusCode(pathname), title, lang: locale ?? 'en' };
   } catch (err) {
     console.error('SSR render error:', err);
     return {

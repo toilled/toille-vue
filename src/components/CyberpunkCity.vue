@@ -684,28 +684,27 @@ function exitGameMode() {
   emit('game-end');
 }
 
+function getContainerSize() {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  return {
+    width: canvasContainer.value?.clientWidth || width,
+    height: canvasContainer.value?.clientHeight || height,
+  };
+}
+
 function onResize() {
   if (!renderer || !camera) return;
 
   const width = window.innerWidth;
-  const height = window.innerHeight;
-
-  // On mobile, ignore vertical resizes caused by address bar appearing/disappearing
-  if (isMobile.value && width === lastWidth) {
-    return;
-  }
-
+  if (isMobile.value && width === lastWidth) return;
   lastWidth = width;
 
-  const containerWidth = canvasContainer.value?.clientWidth || width;
-  const containerHeight = canvasContainer.value?.clientHeight || height;
-
+  const { width: containerWidth, height: containerHeight } = getContainerSize();
   camera.aspect = containerWidth / containerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(containerWidth, containerHeight);
-  if (composer) {
-    composer.setSize(containerWidth, containerHeight);
-  }
+  if (composer) composer.setSize(containerWidth, containerHeight);
   isMobile.value = checkMobile();
 }
 

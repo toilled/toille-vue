@@ -5,19 +5,22 @@ import CodePlayground from '../CodePlayground.vue';
 const mockDestroy = vi.fn();
 const mockToString = vi.fn(() => 'console.log("hello");');
 
-vi.mock('@codemirror/view', () => ({
-  EditorView: Object.assign(
-    vi.fn(() => ({
+vi.mock('@codemirror/view', () => {
+  const EditorViewMock = vi.fn().mockImplementation(function () {
+    return {
       destroy: mockDestroy,
       state: { doc: { toString: mockToString } },
-    })),
-    { lineWrapping: 'lineWrapping', theme: vi.fn(() => ({})) }
-  ),
-  keymap: { of: vi.fn(() => ({})) },
-  lineNumbers: vi.fn(() => ({})),
-  highlightActiveLine: vi.fn(() => ({})),
-  highlightActiveLineGutter: vi.fn(() => ({})),
-}));
+    };
+  });
+  Object.assign(EditorViewMock, { lineWrapping: 'lineWrapping', theme: vi.fn(() => ({})) });
+  return {
+    EditorView: EditorViewMock,
+    keymap: { of: vi.fn(() => ({})) },
+    lineNumbers: vi.fn(() => ({})),
+    highlightActiveLine: vi.fn(() => ({})),
+    highlightActiveLineGutter: vi.fn(() => ({})),
+  };
+});
 
 vi.mock('@codemirror/state', () => ({
   EditorState: {

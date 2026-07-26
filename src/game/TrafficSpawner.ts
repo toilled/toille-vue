@@ -336,15 +336,8 @@ export class TrafficSpawner {
     const roadCoordinate = START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
     const laneOffset = (Math.random() > 0.5 ? 1 : -1) * (ROAD_WIDTH / 4);
 
-    let x = 0,
-      z = 0;
-    if (axis === 'x') {
-      z = roadCoordinate + laneOffset;
-      x = (Math.random() - 0.5) * CITY_SIZE;
-    } else {
-      x = roadCoordinate + laneOffset;
-      z = (Math.random() - 0.5) * CITY_SIZE;
-    }
+    const x = axis === 'x' ? (Math.random() - 0.5) * CITY_SIZE : roadCoordinate + laneOffset;
+    const z = axis === 'x' ? roadCoordinate + laneOffset : (Math.random() - 0.5) * CITY_SIZE;
     return { axis, dir, x, z, laneOffset };
   }
 

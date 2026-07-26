@@ -60,12 +60,7 @@ export function useGameAudio(
     const builder = cityBuilder();
     if (!builder) return;
     const materials = builder.getAudioMaterials();
-    let key = '';
-    if (type === 'bass') {
-      key = `bass${data}`;
-    } else {
-      key = type;
-    }
+    const key = type === 'bass' ? `bass${data}` : type;
     if (materials[key] && photosensitivityConfirmed()) {
       let boost = EMISSIVE_INTENSITY_BOOST_BASS;
       if (type === 'hihat') boost = EMISSIVE_INTENSITY_BOOST_HIHAT;

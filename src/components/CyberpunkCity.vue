@@ -405,15 +405,8 @@ function spawnCheckpoint() {
   const limit = (GRID_SIZE * CELL_SIZE) / 2;
   const otherCoord = (Math.random() - 0.5) * 2 * limit * 0.9;
 
-  let x = 0,
-    z = 0;
-  if (axis === 'x') {
-    z = roadCoordinate;
-    x = otherCoord;
-  } else {
-    x = roadCoordinate;
-    z = otherCoord;
-  }
+  const x = axis === 'x' ? otherCoord : roadCoordinate;
+  const z = axis === 'x' ? roadCoordinate : otherCoord;
 
   const h = getHeight(x, z);
   checkpointMesh.position.set(x, h, z);

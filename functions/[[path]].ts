@@ -27,14 +27,9 @@ async function handleSsrRequest(url: URL, context: RequestContext) {
   const { html: appHtml, statusCode } = await render(url.pathname);
   const response = await context.next();
 
-  let htmlResult: { template: string; headers: Headers } | null = null;
-
-  if (isHtmlResponse(response)) {
-    const template = await response.text();
-    htmlResult = { template, headers: new Headers(response.headers) };
-  } else {
-    htmlResult = await tryFetchIndexHtml(url, context);
-  }
+  const htmlResult: { template: string; headers: Headers } | null = isHtmlResponse(response)
+    ? { template: await response.text(), headers: new Headers(response.headers) }
+    : await tryFetchIndexHtml(url, context);
 
   if (!htmlResult) return response;
 

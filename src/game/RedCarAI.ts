@@ -101,18 +101,16 @@ export class RedCarAI {
     const otherCoord = (Math.random() - 0.5) * config.cityBounds;
 
     const axis = Math.random() > 0.5 ? 'x' : 'z';
-    let x = 0;
-    let z = 0;
-
-    if (axis === 'x') {
-      z = roadCoordinate;
-      x = otherCoord;
-      this.car!.userData.heading = Math.random() > 0.5 ? Math.PI / 2 : -Math.PI / 2;
-    } else {
-      x = roadCoordinate;
-      z = otherCoord;
-      this.car!.userData.heading = Math.random() > 0.5 ? 0 : Math.PI;
-    }
+    const x = axis === 'x' ? otherCoord : roadCoordinate;
+    const z = axis === 'x' ? roadCoordinate : otherCoord;
+    this.car!.userData.heading =
+      axis === 'x'
+        ? Math.random() > 0.5
+          ? Math.PI / 2
+          : -Math.PI / 2
+        : Math.random() > 0.5
+          ? 0
+          : Math.PI;
 
     return { x, z };
   }

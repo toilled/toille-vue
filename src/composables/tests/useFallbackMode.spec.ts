@@ -137,7 +137,7 @@ describe('useFallbackMode', () => {
   it('uses renderer.render if composer is null', () => {
     const mockOptions = createMockOptions();
     mockOptions.composer = vi.fn(() => null) as unknown as typeof mockOptions.composer;
-    const mockRenderer = { render: vi.fn() };
+    const mockRenderer = { render: vi.fn(), domElement: { toDataURL: vi.fn(() => '') } };
     mockOptions.renderer = vi.fn(() => mockRenderer);
 
     const { checkLowFps } = useFallbackMode(mockOptions as never);

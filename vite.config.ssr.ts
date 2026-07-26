@@ -17,8 +17,8 @@ export default defineConfig({
     target: 'esnext',
     outDir: 'functions',
     emptyOutDir: false,
-    minify: 'esbuild',
-    rollupOptions: {
+    minify: 'oxc',
+    rolldownOptions: {
       input: 'src/entry-server.ts',
       output: {
         entryFileNames: 'ssr-app.js',

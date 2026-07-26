@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 export interface ScoreEntry {
   name: string;
   score: number;

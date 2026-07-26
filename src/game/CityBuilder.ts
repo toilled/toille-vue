@@ -455,35 +455,31 @@ export class CityBuilder {
     d: number
   ) {
     if (isLeaderboard || h <= 40) return;
-    // Add more strips: 0-2 per building
     const stripCount = Math.random() > 0.6 ? 1 : Math.random() > 0.3 ? 2 : 0;
     const usedFaces: number[] = [];
+    const offset = 0.6;
     for (let s = 0; s < stripCount; s++) {
       const color = new Color().setHSL(Math.random(), 1.0, 0.5 + Math.random() * 0.2);
       const strip = new Mesh(this.materials.neonStripGeo, new MeshBasicMaterial({ color }));
-      const stripHeight = h * (0.3 + Math.random() * 0.6);
-      strip.scale.set(1, stripHeight, 1);
+      strip.scale.set(1, h * (0.3 + Math.random() * 0.6), 1);
       const face = Math.floor(Math.random() * 4);
       if (usedFaces.includes(face)) continue;
       usedFaces.push(face);
-      const offset = 0.6;
       const yPos = h * (0.3 + Math.random() * 0.5);
-      switch (face) {
-        case 0:
-          strip.position.set(0, yPos, d / 2 + offset);
-          break;
-        case 1:
-          strip.position.set(0, yPos, -d / 2 - offset);
-          break;
-        case 2:
-          strip.position.set(w / 2 + offset, yPos, 0);
-          break;
-        case 3:
-          strip.position.set(-w / 2 - offset, yPos, 0);
-          break;
-      }
+      const pos = this.getFacePosition(face, w, d, offset, yPos);
+      strip.position.set(pos.x, pos.y, pos.z);
       buildingGroup.add(strip);
     }
+  }
+
+  private getFacePosition(face: number, w: number, d: number, offset: number, yPos: number) {
+    const positions = [
+      { x: 0, y: yPos, z: d / 2 + offset },
+      { x: 0, y: yPos, z: -d / 2 - offset },
+      { x: w / 2 + offset, y: yPos, z: 0 },
+      { x: -w / 2 - offset, y: yPos, z: 0 },
+    ];
+    return positions[face];
   }
 
   private addAntenna(buildingGroup: Group, style: string, h: number) {

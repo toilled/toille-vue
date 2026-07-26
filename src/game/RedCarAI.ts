@@ -54,35 +54,67 @@ export class RedCarAI {
     const player = this.context.activeCar.value;
     if (!this.car || !player) return;
 
-    let spawned = false;
+    const spawnConfig = this.getSpawnConfig();
+    const validPosition = this.findValidSpawnPosition(spawnConfig, player);
+
+    if (validPosition) {
+      this.car.position.set(validPosition.x, validPosition.y, validPosition.z);
+    }
+  }
+
+  private getSpawnConfig() {
+    return {
+      maxAttempts: 20,
+      minDistanceFromPlayer: 500,
+      cityBounds: CITY_SIZE,
+      roadSpacing: CELL_SIZE,
+      startOffset: START_OFFSET,
+    };
+  }
+
+  private findValidSpawnPosition(
+    config: ReturnType<typeof this.getSpawnConfig>,
+    player: Group
+  ): { x: number; y: number; z: number } | null {
     let attempts = 0;
-    while (!spawned && attempts < 20) {
-      const roadIndex = Math.floor(Math.random() * (GRID_SIZE + 1));
-      const roadCoordinate = START_OFFSET + roadIndex * CELL_SIZE - CELL_SIZE / 2;
-      const otherCoord = (Math.random() - 0.5) * CITY_SIZE;
 
-      const axis = Math.random() > 0.5 ? 'x' : 'z';
-      let x = 0,
-        z = 0;
+    while (attempts < config.maxAttempts) {
+      const candidate = this.generateSpawnCandidate(config);
 
-      if (axis === 'x') {
-        z = roadCoordinate;
-        x = otherCoord;
-        this.car.userData.heading = Math.random() > 0.5 ? Math.PI / 2 : -Math.PI / 2;
-      } else {
-        x = roadCoordinate;
-        z = otherCoord;
-        this.car.userData.heading = Math.random() > 0.5 ? 0 : Math.PI;
-      }
+      const dist = Math.sqrt(
+        (candidate.x - player.position.x) ** 2 + (candidate.z - player.position.z) ** 2
+      );
 
-      const dist = Math.sqrt((x - player.position.x) ** 2 + (z - player.position.z) ** 2);
-      if (dist > 500) {
-        const h = getHeight(x, z);
-        this.car.position.set(x, h + 1, z);
-        spawned = true;
+      if (dist > config.minDistanceFromPlayer) {
+        const h = getHeight(candidate.x, candidate.z);
+        return { x: candidate.x, y: h + 1, z: candidate.z };
       }
       attempts++;
     }
+    return null;
+  }
+
+  private generateSpawnCandidate(config: ReturnType<typeof this.getSpawnConfig>) {
+    const roadIndex = Math.floor(Math.random() * (GRID_SIZE + 1));
+    const roadCoordinate =
+      config.startOffset + roadIndex * config.roadSpacing - config.roadSpacing / 2;
+    const otherCoord = (Math.random() - 0.5) * config.cityBounds;
+
+    const axis = Math.random() > 0.5 ? 'x' : 'z';
+    let x = 0;
+    let z = 0;
+
+    if (axis === 'x') {
+      z = roadCoordinate;
+      x = otherCoord;
+      this.car!.userData.heading = Math.random() > 0.5 ? Math.PI / 2 : -Math.PI / 2;
+    } else {
+      x = roadCoordinate;
+      z = otherCoord;
+      this.car!.userData.heading = Math.random() > 0.5 ? 0 : Math.PI;
+    }
+
+    return { x, z };
   }
 
   move() {
@@ -149,28 +181,33 @@ export class RedCarAI {
 
     if (longDist >= 5 || latDist >= 25) return;
 
+    const curDirX = Math.sin(this.car.userData.heading ?? 0);
+    const curDirZ = Math.cos(this.car.userData.heading ?? 0);
+    const bestDir = this.findBestDirection(curDirX, curDirZ, playerCar);
+
+    this.car.userData.heading = bestDir;
+    this.car.position.x += Math.sin(bestDir) * 6;
+    this.car.position.z += Math.cos(bestDir) * 6;
+  }
+
+  private findBestDirection(curDirX: number, curDirZ: number, playerCar: Group): number {
     const directions = [0, Math.PI / 2, Math.PI, -Math.PI / 2];
-    let bestDir = this.car.userData.heading ?? 0;
+    let bestDir = this.car!.userData.heading ?? 0;
     let minDst = Infinity;
-    const curDirX = Math.sin(bestDir);
-    const curDirZ = Math.cos(bestDir);
 
     for (const dir of directions) {
       const dx = Math.sin(dir);
       const dz = Math.cos(dir);
       if (dx * curDirX + dz * curDirZ < -0.9) continue;
       const d =
-        (this.car.position.x + dx * 100 - playerCar.position.x) ** 2 +
-        (this.car.position.z + dz * 100 - playerCar.position.z) ** 2;
+        (this.car!.position.x + dx * 100 - playerCar.position.x) ** 2 +
+        (this.car!.position.z + dz * 100 - playerCar.position.z) ** 2;
       if (d < minDst) {
         minDst = d;
         bestDir = dir;
       }
     }
-
-    this.car.userData.heading = bestDir;
-    this.car.position.x += Math.sin(bestDir) * 6;
-    this.car.position.z += Math.cos(bestDir) * 6;
+    return bestDir;
   }
 
   enforceBounds() {

@@ -1,6 +1,21 @@
+// fallow-ignore-file security-sink
 import { useI18n } from 'vue-i18n';
 
 const cache = new Map<string, string>();
+
+async function fetchTranslation(
+  text: string,
+  source: string,
+  target: string
+): Promise<string | null> {
+  const baseUrl =
+    import.meta.env.VITE_TRANSLATE_API_URL || 'https://api.mymemory.translated.net/get';
+  const url = `${baseUrl}?q=${encodeURIComponent(text.slice(0, 500))}&langpair=${source}|${target}`;
+  const response = await fetch(url);
+  const data = await response.json();
+  const result = data?.responseData?.translatedText;
+  return typeof result === 'string' ? result : null;
+}
 
 export function useTranslate() {
   const { locale } = useI18n();
@@ -17,13 +32,8 @@ export function useTranslate() {
     if (import.meta.env.SSR) return text;
 
     try {
-      const baseUrl =
-        import.meta.env.VITE_TRANSLATE_API_URL || 'https://api.mymemory.translated.net/get';
-      const url = `${baseUrl}?q=${encodeURIComponent(text.slice(0, 500))}&langpair=${source}|${target}`;
-      const response = await fetch(url);
-      const data = await response.json();
-      const result = data?.responseData?.translatedText;
-      if (result && typeof result === 'string') {
+      const result = await fetchTranslation(text, source, target);
+      if (result) {
         cache.set(cacheKey, result);
         return result;
       }

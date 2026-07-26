@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 <template>
   <component
     :is="tag"

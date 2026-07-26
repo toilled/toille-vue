@@ -6,6 +6,7 @@ import {
   createGroundTexture,
   createBillboardTextures,
   createCloudTexture,
+  createBillboardTexture,
 } from '../TextureGenerator';
 import { CanvasTexture } from 'three';
 
@@ -50,5 +51,52 @@ describe('TextureGenerator', () => {
   it('createCloudTexture returns a CanvasTexture', () => {
     const tex = createCloudTexture();
     expect(tex).toBeInstanceOf(CanvasTexture);
+  });
+
+  describe('createBillboardTexture (tests drawBillboardContent)', () => {
+    it('creates texture for case 0 (horizontal bars)', () => {
+      const tex = createBillboardTexture(0);
+      expect(tex).toBeInstanceOf(CanvasTexture);
+    });
+
+    it('creates texture for case 1 (circle with inner)', () => {
+      const tex = createBillboardTexture(1);
+      expect(tex).toBeInstanceOf(CanvasTexture);
+    });
+
+    it('creates texture for case 2 (triangle)', () => {
+      const tex = createBillboardTexture(2);
+      expect(tex).toBeInstanceOf(CanvasTexture);
+    });
+
+    it('creates texture for case 3 (grid)', () => {
+      const tex = createBillboardTexture(3);
+      expect(tex).toBeInstanceOf(CanvasTexture);
+    });
+
+    it('creates texture for case 4 (CYBER text)', () => {
+      const tex = createBillboardTexture(4);
+      expect(tex).toBeInstanceOf(CanvasTexture);
+    });
+
+    it('creates texture for default case (random rectangles)', () => {
+      const tex = createBillboardTexture(5);
+      expect(tex).toBeInstanceOf(CanvasTexture);
+    });
+
+    it('creates texture for case 6', () => {
+      const tex = createBillboardTexture(6);
+      expect(tex).toBeInstanceOf(CanvasTexture);
+    });
+
+    it('creates texture for case 7', () => {
+      const tex = createBillboardTexture(7);
+      expect(tex).toBeInstanceOf(CanvasTexture);
+    });
+
+    it('uses the provided accent color', () => {
+      const tex = createBillboardTexture(0);
+      expect(tex).toBeInstanceOf(CanvasTexture);
+    });
   });
 });

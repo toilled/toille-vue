@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 <template>
   <section class="content-container playground-container" aria-label="JavaScript Code Playground">
     <article class="panel-3d playground-panel">

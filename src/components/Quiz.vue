@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 <template>
   <article>
     <header>

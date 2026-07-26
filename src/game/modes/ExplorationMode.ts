@@ -184,13 +184,19 @@ export class ExplorationMode implements GameMode {
     this.updateStoryObjectives(px, pz);
   }
 
+  private hasValidContext(ctx: GameContext | null | undefined): boolean {
+    return !!ctx?.updateObjective && !!ctx?.storyState;
+  }
+
+  private isMissionActive(ss: StoryState): boolean {
+    return ss.active && !ss.showingBriefing && !ss.showingDialogue && !ss.missionComplete;
+  }
+
   private canCheckObjective(
     ctx: GameContext | null | undefined,
     ss: StoryState | undefined
   ): boolean {
-    if (!ctx?.updateObjective || !ctx?.storyState) return false;
-    if (!ss?.active || ss.showingBriefing || ss.showingDialogue || ss.missionComplete) return false;
-    return true;
+    return !!ss && this.hasValidContext(ctx) && this.isMissionActive(ss);
   }
 
   private checkStoryTriggerProximity(px: number, pz: number) {

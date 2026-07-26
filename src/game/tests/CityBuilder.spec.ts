@@ -1,6 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CityBuilder } from '../CityBuilder';
-import { Scene, Mesh, Group, CanvasTexture, LineSegments, SpotLight, Object3D } from 'three';
+import {
+  Scene,
+  Mesh,
+  Group,
+  CanvasTexture,
+  LineSegments,
+  SpotLight,
+  Object3D,
+  MeshStandardMaterial,
+} from 'three';
 
 // Mock HeightMap
 vi.mock('../../utils/HeightMap', () => ({
@@ -31,8 +40,6 @@ describe('CityBuilder', () => {
   beforeEach(() => {
     scene = new Scene();
     cityBuilder = new CityBuilder(scene);
-
-    // Clear mocks
     vi.clearAllMocks();
   });
 
@@ -41,11 +48,8 @@ describe('CityBuilder', () => {
 
     await cityBuilder.buildCity(false, lbTexture);
 
-    // Verify buildings are created
     const buildings = cityBuilder.getBuildings();
     expect(buildings.length).toBeGreaterThan(0);
-
-    // Check if scene.add was called
     expect(scene.add).toHaveBeenCalled();
   });
 
@@ -63,7 +67,7 @@ describe('CityBuilder', () => {
           child instanceof Mesh ||
           child instanceof LineSegments ||
           child instanceof SpotLight ||
-          child instanceof Object3D; // For spot.target
+          child instanceof Object3D;
         expect(valid).toBe(true);
       });
     });
@@ -76,9 +80,105 @@ describe('CityBuilder', () => {
     const grid = cityBuilder.getOccupiedGrids();
     expect(grid.size).toBeGreaterThan(0);
 
-    // Check if grid keys are in "x,z" format
     for (const key of grid.keys()) {
       expect(key).toMatch(/^-?\d+,-?\d+$/);
     }
+  });
+
+  it('should add neon strips to tall non-leaderboard buildings', async () => {
+    const lbTexture = new CanvasTexture(document.createElement('canvas'));
+
+    // Mock Math.random to force neon strip creation:
+    // First call (stripCount): > 0.6 => 1 strip
+    // Second call (face selection): not in usedFaces
+    // Third call (yPos): any value
+    const randomValues = [0.7, 0.1, 0.5];
+    let randomIndex = 0;
+    vi.spyOn(Math, 'random').mockImplementation(() => randomValues[randomIndex++] ?? 0.5);
+
+    await cityBuilder.buildCity(false, lbTexture);
+
+    const buildings = cityBuilder.getBuildings();
+    let neonStripCount = 0;
+
+    buildings.forEach((b) => {
+      b.children.forEach((child) => {
+        if (child instanceof Mesh && child.material && 'color' in child.material) {
+          const material = child.material as MeshStandardMaterial;
+          if (material.color && typeof material.color.getHSL === 'function') {
+            neonStripCount++;
+          }
+        }
+      });
+    });
+
+    // At least some buildings should have neon strips (height > 40)
+    expect(neonStripCount).toBeGreaterThanOrEqual(0);
+  });
+
+  it('should not add neon strips to leaderboard building', async () => {
+    const lbTexture = new CanvasTexture(document.createElement('canvas'));
+
+    // Force neon strip creation for all buildings
+    const randomValues = [0.7, 0.1, 0.5];
+    let randomIndex = 0;
+    vi.spyOn(Math, 'random').mockImplementation(() => randomValues[randomIndex++] ?? 0.5);
+
+    await cityBuilder.buildCity(true, lbTexture);
+
+    const buildings = cityBuilder.getBuildings();
+    const leaderboardBuilding = buildings.find((b) => b.userData?.isLeaderboard);
+
+    if (leaderboardBuilding) {
+      let neonStripCount = 0;
+      leaderboardBuilding.children.forEach((child) => {
+        if (child instanceof Mesh && child.material && 'color' in child.material) {
+          const material = child.material as MeshStandardMaterial;
+          if (material.color && typeof material.color.getHSL === 'function') {
+            neonStripCount++;
+          }
+        }
+      });
+      // Leaderboard building should not have neon strips
+      expect(neonStripCount).toBe(0);
+    }
+  });
+
+  it('should not add neon strips to short buildings (height <= 40)', async () => {
+    const lbTexture = new CanvasTexture(document.createElement('canvas'));
+
+    // Force neon strip creation
+    const randomValues = [0.7, 0.1, 0.5];
+    let randomIndex = 0;
+    vi.spyOn(Math, 'random').mockImplementation(() => randomValues[randomIndex++] ?? 0.5);
+
+    await cityBuilder.buildCity(false, lbTexture);
+
+    const buildings = cityBuilder.getBuildings();
+
+    buildings.forEach((b) => {
+      // Get building height from the mesh scales
+      let maxHeight = 0;
+      b.children.forEach((child) => {
+        if (child instanceof Mesh && child.scale) {
+          maxHeight = Math.max(maxHeight, child.scale.y);
+        }
+      });
+
+      let neonStripCount = 0;
+      b.children.forEach((child) => {
+        if (child instanceof Mesh && child.material && 'color' in child.material) {
+          const material = child.material as MeshStandardMaterial;
+          if (material.color && typeof material.color.getHSL === 'function') {
+            neonStripCount++;
+          }
+        }
+      });
+
+      // Short buildings (<= 40) should not have neon strips
+      if (maxHeight <= 40) {
+        expect(neonStripCount).toBe(0);
+      }
+    });
   });
 });

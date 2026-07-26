@@ -4,7 +4,7 @@
       <article
         class="marginless page-content-card"
         :style="page?.accent ? pageStyleVars(page.accent) : undefined"
-        :aria-label="page?.title || t('notFound.pageNotFound')"
+        :aria-label="pageTitle"
       >
         <header>
           <h2 class="title">
@@ -27,7 +27,7 @@
           <PageNotFound v-else :name="String(route.params.name)" :pages="availablePages" />
         </div>
 
-        <PageSections v-if="page" v-bind="page.sections ? { sections: page.sections } : {}" />
+        <PageSections v-if="page" v-bind="pageSectionsProps" />
       </article>
     </section>
   </div>
@@ -80,13 +80,14 @@ const availablePages = computed(() => {
   return translatedPages.value.filter((p: Page) => !p.hidden);
 });
 
-/**
- * @description Sets dynamic head meta tags based on the current page.
- */
 const pageTitle = computed(() => {
-  const t = page.value?.title || '404';
-  return `${t} | Elliot Dickerson`;
+  const label = page.value?.title || t('notFound.pageNotFound');
+  return page.value?.title ? `${page.value.title} | Elliot Dickerson` : label;
 });
+
+const pageSectionsProps = computed(() =>
+  page.value?.sections ? { sections: page.value.sections } : {}
+);
 
 const description = computed(() => page.value?.metaDescription || t('meta.defaultDescription'));
 

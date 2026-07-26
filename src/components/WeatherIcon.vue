@@ -150,12 +150,15 @@ onMounted(() => {
   description.value = t('weather.loading');
   fetchWeather();
 });
+
+defineExpose({ toggleModal });
 </script>
 
 <style scoped>
 .weather-icon-container {
   width: 24px;
   height: 24px;
+  color: black;
   filter: invert(1);
   cursor: pointer;
   pointer-events: bounding-box;

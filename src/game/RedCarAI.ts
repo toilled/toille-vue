@@ -181,28 +181,33 @@ export class RedCarAI {
 
     if (longDist >= 5 || latDist >= 25) return;
 
+    const curDirX = Math.sin(this.car.userData.heading ?? 0);
+    const curDirZ = Math.cos(this.car.userData.heading ?? 0);
+    const bestDir = this.findBestDirection(curDirX, curDirZ, playerCar);
+
+    this.car.userData.heading = bestDir;
+    this.car.position.x += Math.sin(bestDir) * 6;
+    this.car.position.z += Math.cos(bestDir) * 6;
+  }
+
+  private findBestDirection(curDirX: number, curDirZ: number, playerCar: Group): number {
     const directions = [0, Math.PI / 2, Math.PI, -Math.PI / 2];
-    let bestDir = this.car.userData.heading ?? 0;
+    let bestDir = this.car!.userData.heading ?? 0;
     let minDst = Infinity;
-    const curDirX = Math.sin(bestDir);
-    const curDirZ = Math.cos(bestDir);
 
     for (const dir of directions) {
       const dx = Math.sin(dir);
       const dz = Math.cos(dir);
       if (dx * curDirX + dz * curDirZ < -0.9) continue;
       const d =
-        (this.car.position.x + dx * 100 - playerCar.position.x) ** 2 +
-        (this.car.position.z + dz * 100 - playerCar.position.z) ** 2;
+        (this.car!.position.x + dx * 100 - playerCar.position.x) ** 2 +
+        (this.car!.position.z + dz * 100 - playerCar.position.z) ** 2;
       if (d < minDst) {
         minDst = d;
         bestDir = dir;
       }
     }
-
-    this.car.userData.heading = bestDir;
-    this.car.position.x += Math.sin(bestDir) * 6;
-    this.car.position.z += Math.cos(bestDir) * 6;
+    return bestDir;
   }
 
   enforceBounds() {

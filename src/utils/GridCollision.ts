@@ -28,6 +28,15 @@ export function checkGridCollision(
   const { cx, cz } = getGridCenter(ix, iz);
   const dims = occupiedGrids.get(key);
   if (!dims) return false;
+
+  if (dims.isRound) {
+    const radius = Math.max(dims.halfW, dims.halfD);
+    const dx = x - cx;
+    const dz = z - cz;
+    const dist = Math.sqrt(dx * dx + dz * dz);
+    return dist < radius + margin;
+  }
+
   return Math.abs(x - cx) < dims.halfW + margin && Math.abs(z - cz) < dims.halfD + margin;
 }
 

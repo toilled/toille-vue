@@ -96,7 +96,8 @@ export class RedCarAI {
 
   private generateSpawnCandidate(config: ReturnType<typeof this.getSpawnConfig>) {
     const roadIndex = Math.floor(Math.random() * (GRID_SIZE + 1));
-    const roadCoordinate = config.startOffset + roadIndex * config.roadSpacing - config.roadSpacing / 2;
+    const roadCoordinate =
+      config.startOffset + roadIndex * config.roadSpacing - config.roadSpacing / 2;
     const otherCoord = (Math.random() - 0.5) * config.cityBounds;
 
     const axis = Math.random() > 0.5 ? 'x' : 'z';

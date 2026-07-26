@@ -1,6 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CityBuilder } from '../CityBuilder';
-import { Scene, Mesh, Group, CanvasTexture, LineSegments, SpotLight, Object3D } from 'three';
+import {
+  Scene,
+  Mesh,
+  Group,
+  CanvasTexture,
+  LineSegments,
+  SpotLight,
+  Object3D,
+  MeshStandardMaterial,
+} from 'three';
 
 // Mock HeightMap
 vi.mock('../../utils/HeightMap', () => ({
@@ -95,7 +104,7 @@ describe('CityBuilder', () => {
     buildings.forEach((b) => {
       b.children.forEach((child) => {
         if (child instanceof Mesh && child.material && 'color' in child.material) {
-          const material = child.material as any;
+          const material = child.material as MeshStandardMaterial;
           if (material.color && typeof material.color.getHSL === 'function') {
             neonStripCount++;
           }
@@ -124,7 +133,7 @@ describe('CityBuilder', () => {
       let neonStripCount = 0;
       leaderboardBuilding.children.forEach((child) => {
         if (child instanceof Mesh && child.material && 'color' in child.material) {
-          const material = child.material as any;
+          const material = child.material as MeshStandardMaterial;
           if (material.color && typeof material.color.getHSL === 'function') {
             neonStripCount++;
           }
@@ -159,7 +168,7 @@ describe('CityBuilder', () => {
       let neonStripCount = 0;
       b.children.forEach((child) => {
         if (child instanceof Mesh && child.material && 'color' in child.material) {
-          const material = child.material as any;
+          const material = child.material as MeshStandardMaterial;
           if (material.color && typeof material.color.getHSL === 'function') {
             neonStripCount++;
           }

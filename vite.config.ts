@@ -1,15 +1,15 @@
 /// <reference types="vitest" />
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
-import brotliCompress, { CompressionType } from "vite-plugin-bundler";
+import { compression } from "@medicomind/rolldown-compression";
 import { sharedPlugins } from "./vite.plugins";
 
 export default defineConfig({
   plugins: [
     vue(),
     ...sharedPlugins(),
-    brotliCompress({
-      type: CompressionType.BOTH,
+    compression({
+      algorithms: ['gzip', 'brotli'],
       threshold: 1024,
     }),
   ],
@@ -27,7 +27,7 @@ export default defineConfig({
   build: {
     target: "esnext",
     sourcemap: false,
-    rollupOptions: {
+    rolldownOptions: {
       output: {
         manualChunks(id: string): string | undefined {
           if (id.includes("node_modules")) {

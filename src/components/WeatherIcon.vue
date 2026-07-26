@@ -103,7 +103,7 @@ const processHourlyData = (hourly: OpenMeteoHourly) => {
 };
 
 const updateIcon = (code: number, temp: number) => {
-  let weatherDesc = '';
+  let weatherDesc: string;
 
   switch (true) {
     case code === 0:

@@ -3,37 +3,45 @@ import { KonamiManager } from '../KonamiManager';
 
 vi.mock('three', () => {
   return {
-    Scene: vi.fn(() => ({
-      add: vi.fn(),
-      remove: vi.fn(),
-    })),
-    BufferGeometry: vi.fn(() => ({
-      setAttribute: vi.fn(),
-    })),
+    Scene: vi.fn().mockImplementation(function () {
+      return {
+        add: vi.fn(),
+        remove: vi.fn(),
+      };
+    }),
+    BufferGeometry: vi.fn().mockImplementation(function () {
+      return {
+        setAttribute: vi.fn(),
+      };
+    }),
     BufferAttribute: vi.fn(),
-    Points: vi.fn(() => ({
-      frustumCulled: true,
-      geometry: {
-        attributes: {
-          position: {
-            array: new Float32Array(4500),
-            needsUpdate: false,
+    Points: vi.fn().mockImplementation(function () {
+      return {
+        frustumCulled: true,
+        geometry: {
+          attributes: {
+            position: {
+              array: new Float32Array(4500),
+              needsUpdate: false,
+            },
+            color: {
+              array: new Float32Array(4500),
+              needsUpdate: false,
+              setXYZ: vi.fn(),
+            },
           },
-          color: {
-            array: new Float32Array(4500),
-            needsUpdate: false,
-            setXYZ: vi.fn(),
-          },
+          dispose: vi.fn(),
         },
+        material: {
+          dispose: vi.fn(),
+        },
+      };
+    }),
+    PointsMaterial: vi.fn().mockImplementation(function () {
+      return {
         dispose: vi.fn(),
-      },
-      material: {
-        dispose: vi.fn(),
-      },
-    })),
-    PointsMaterial: vi.fn(() => ({
-      dispose: vi.fn(),
-    })),
+      };
+    }),
     Float32BufferAttribute: vi.fn(),
     AdditiveBlending: 2000,
   };

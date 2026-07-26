@@ -65,352 +65,406 @@ vi.stubGlobal(
 
 // Mock Three.js
 vi.mock('three', () => {
-  const mockMatrix4 = () => ({
-    elements: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-    copy: vi.fn(),
-    clone: vi.fn(),
-    multiply: vi.fn(),
-    decompose: vi.fn(),
-    compose: vi.fn(),
-    identity: vi.fn(),
-    invert: vi.fn(),
-  });
+  function mockMatrix4() {
+    return {
+      elements: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+      copy: vi.fn(),
+      clone: vi.fn(),
+      multiply: vi.fn(),
+      decompose: vi.fn(),
+      compose: vi.fn(),
+      identity: vi.fn(),
+      invert: vi.fn(),
+    };
+  }
   const THREE = {
-    Scene: vi.fn(() => ({
-      add: vi.fn(),
-      remove: vi.fn(),
-      fog: null,
-      background: null,
-    })),
-    PerspectiveCamera: vi.fn(() => ({
-      position: {
-        set: vi.fn(),
-        x: 0,
-        y: 0,
-        z: 0,
-        copy: vi.fn(),
-        distanceTo: vi.fn(),
-        lerp: vi.fn(),
-      },
-      rotation: { set: vi.fn(), copy: vi.fn(), x: 0, y: 0, z: 0 },
-      quaternion: { slerp: vi.fn() },
-      lookAt: vi.fn(),
-      updateProjectionMatrix: vi.fn(),
-    })),
-    WebGLRenderer: vi.fn(() => ({
-      setSize: vi.fn(),
-      getSize: vi.fn().mockImplementation((target: { width: number; height: number }) => {
-        target.width = 1024;
-        target.height = 768;
-        return target;
-      }),
-      render: vi.fn(),
-      domElement: document.createElement('canvas'),
-      setPixelRatio: vi.fn(),
-      dispose: vi.fn(),
-      shadowMap: { enabled: false, type: 0 },
-      toneMapping: 0,
-      toneMappingExposure: 1,
-    })),
-    WebGLRenderTarget: vi.fn(() => ({
-      texture: {},
-      setSize: vi.fn(),
-      dispose: vi.fn(),
-      samples: 0,
-    })),
-    Color: vi.fn(() => ({
-      r: 0,
-      g: 0,
-      b: 0,
-      setHSL: vi.fn(function (this: { setHSL: () => void }) {
-        return this;
-      }),
-      setHex: vi.fn(),
-      getHex: vi.fn(() => 0),
-      copy: vi.fn(function (this: Record<string, number>, c: Record<string, number>) {
-        if (c) {
-          this.r = c.r;
-          this.g = c.g;
-          this.b = c.b;
-        }
-        return this;
-      }),
-      clone: vi.fn(function (this: Record<string, number>) {
-        return { ...this };
-      }),
-      toArray: vi.fn((arr: number[] = [], offset = 0) => {
-        arr[offset] = 0;
-        arr[offset + 1] = 0;
-        arr[offset + 2] = 0;
-        return arr;
-      }),
-    })),
-    FogExp2: vi.fn(),
-    BoxGeometry: vi.fn(() => ({
-      translate: vi.fn(),
-      dispose: vi.fn(),
-    })),
-    CylinderGeometry: vi.fn(() => ({
-      rotateX: vi.fn(),
-      rotateZ: vi.fn(),
-      translate: vi.fn(),
-      dispose: vi.fn(),
-    })),
-    SphereGeometry: vi.fn(),
-    OctahedronGeometry: vi.fn(),
-    TorusGeometry: vi.fn(() => ({
-      rotateX: vi.fn(),
-    })),
-    ConeGeometry: vi.fn(() => ({
-      translate: vi.fn(),
-      dispose: vi.fn(),
-    })),
-    EdgesGeometry: vi.fn(() => ({
-      dispose: vi.fn(),
-    })),
-    PlaneGeometry: vi.fn(() => ({
-      attributes: {
+    Scene: vi.fn().mockImplementation(function () {
+      return {
+        add: vi.fn(),
+        remove: vi.fn(),
+        fog: null,
+        background: null,
+      };
+    }),
+    PerspectiveCamera: vi.fn().mockImplementation(function () {
+      return {
         position: {
-          count: 100,
-          getX: vi.fn(() => 0),
-          getY: vi.fn(() => 0),
-          getZ: vi.fn(() => 0),
-          setZ: vi.fn(),
-        },
-      },
-      computeVertexNormals: vi.fn(),
-    })),
-    BufferGeometry: vi.fn(() => ({
-      setAttribute: vi.fn(),
-      setFromPoints: vi.fn(),
-      dispose: vi.fn(),
-      attributes: {
-        position: {
-          array: new Float32Array(3000),
-          needsUpdate: false,
-        },
-        color: {
-          array: new Float32Array(3000),
-          needsUpdate: false,
-        },
-      },
-    })),
-    MeshBasicMaterial: vi.fn(() => ({
-      color: {
-        clone: vi.fn(() => ({ setHex: vi.fn(), getHex: vi.fn(() => 0) })),
-        setHex: vi.fn(),
-        getHex: vi.fn(() => 0),
-      },
-      map: null,
-      transparent: false,
-      opacity: 1,
-      dispose: vi.fn(),
-      clone: vi.fn(() => ({
-        color: {
-          clone: vi.fn(() => ({ setHex: vi.fn(), getHex: vi.fn(() => 0) })),
-          setHex: vi.fn(),
-          getHex: vi.fn(() => 0),
-        },
-        clone: vi.fn(),
-        dispose: vi.fn(),
-      })),
-    })),
-    MeshLambertMaterial: vi.fn(() => ({
-      clone: vi.fn(() => ({
-        clone: vi.fn(),
-      })),
-    })),
-    MeshStandardMaterial: vi.fn(() => ({
-      color: {
-        clone: vi.fn(() => ({ setHex: vi.fn(), getHex: vi.fn(() => 0) })),
-        setHex: vi.fn(),
-        getHex: vi.fn(() => 0),
-      },
-      map: null,
-      emissiveMap: null,
-      roughnessMap: null,
-      emissive: { clone: vi.fn(() => ({ setHex: vi.fn() })) },
-      emissiveIntensity: 0.8,
-      roughness: 0.5,
-      metalness: 0.8,
-      transparent: false,
-      opacity: 1,
-      clone: vi.fn(() => ({
-        color: {
-          clone: vi.fn(() => ({ setHex: vi.fn(), getHex: vi.fn(() => 0) })),
-          setHex: vi.fn(),
-          getHex: vi.fn(() => 0),
-        },
-        clone: vi.fn(),
-        dispose: vi.fn(),
-      })),
-      dispose: vi.fn(),
-    })),
-    PointsMaterial: vi.fn(),
-    LineBasicMaterial: vi.fn(() => ({
-      dispose: vi.fn(),
-    })),
-    LineSegments: vi.fn(() => ({
-      position: { set: vi.fn(), copy: vi.fn(), x: 0, y: 0, z: 0 },
-      rotation: { x: 0, y: 0, z: 0 },
-      scale: { set: vi.fn() },
-    })),
-    Line: vi.fn(),
-    Group: vi.fn(() => ({
-      add: vi.fn(),
-      position: {
-        set: vi.fn(),
-        x: 0,
-        y: 0,
-        z: 0,
-        copy: vi.fn(),
-        distanceToSquared: vi.fn(() => 100),
-        distanceTo: vi.fn(() => 10),
-        clone: vi.fn(() => ({
-          add: vi.fn(function (this: { x: number; y: number; z: number }) {
-            return this;
-          }),
-          sub: vi.fn(function (this: { x: number; y: number; z: number }) {
-            return this;
-          }),
-          normalize: vi.fn(function (this: { x: number; y: number; z: number }) {
-            return this;
-          }),
-          multiplyScalar: vi.fn(function (this: { x: number; y: number; z: number }) {
-            return this;
-          }),
+          set: vi.fn(),
           x: 0,
           y: 0,
           z: 0,
-          clone: vi.fn(function (this: { x: number; y: number; z: number }) {
-            return this;
-          }),
-          distanceTo: vi.fn(() => 10),
-        })),
-        add: vi.fn(),
-        sub: vi.fn(),
-        normalize: vi.fn(),
-        multiplyScalar: vi.fn(),
-      },
-      rotation: { x: 0, y: 0, z: 0 },
-      up: { x: 0, y: 1, z: 0, set: vi.fn(), copy: vi.fn() },
-      traverse: vi.fn(),
-      userData: {},
-      lookAt: vi.fn(),
-      matrixWorld: mockMatrix4(),
-      updateWorldMatrix: vi.fn(),
-    })),
-    DoubleSide: 2,
-    BackSide: 1,
-    Sprite: vi.fn(() => ({
-      position: { set: vi.fn(), x: 0, y: 0, z: 0 },
-      scale: { set: vi.fn() },
-      userData: {},
-    })),
-    SpriteMaterial: vi.fn(() => ({
-      dispose: vi.fn(),
-    })),
-    Mesh: vi.fn(() => ({
-      position: {
-        set: vi.fn(),
-        x: 0,
-        y: 0,
-        z: 0,
-        distanceToSquared: vi.fn(),
-        copy: vi.fn(),
-        clone: vi.fn(() => ({
-          sub: vi.fn(),
-          normalize: vi.fn(),
-          add: vi.fn(),
-        })),
-        add: vi.fn(),
-      },
-      rotation: { x: 0, y: 0, z: 0 },
-      up: { x: 0, y: 1, z: 0, set: vi.fn(), copy: vi.fn() },
-      scale: { set: vi.fn() },
-      userData: {},
-      add: vi.fn(),
-      lookAt: vi.fn(),
-      geometry: { dispose: vi.fn() },
-      material: { dispose: vi.fn(), color: { setHex: vi.fn() } },
-      traverse: vi.fn(),
-      matrixWorld: mockMatrix4(),
-      updateWorldMatrix: vi.fn(),
-    })),
-    InstancedMesh: vi.fn(() => ({
-      position: { set: vi.fn(), x: 0, y: 0, z: 0 },
-      rotation: { x: 0, y: 0, z: 0 },
-      up: { x: 0, y: 1, z: 0, set: vi.fn(), copy: vi.fn() },
-      scale: { set: vi.fn() },
-      userData: {},
-      add: vi.fn(),
-      lookAt: vi.fn(),
-      traverse: vi.fn(),
-      count: 0,
-      instanceMatrix: { needsUpdate: false },
-      instanceColor: null,
-      setMatrixAt: vi.fn(),
-      setColorAt: vi.fn(),
-      computeBoundingSphere: vi.fn(),
-      dispose: vi.fn(),
-      material: { color: { setHex: vi.fn() }, clone: vi.fn() },
-      geometry: { attributes: {} },
-      raycast: vi.fn(),
-      matrixWorld: mockMatrix4(),
-      updateWorldMatrix: vi.fn(),
-    })),
-    Points: vi.fn(() => ({
-      position: { set: vi.fn(), x: 0, y: 0, z: 0 },
-      geometry: {
+          copy: vi.fn(),
+          distanceTo: vi.fn(),
+          lerp: vi.fn(),
+        },
+        rotation: { set: vi.fn(), copy: vi.fn(), x: 0, y: 0, z: 0 },
+        quaternion: { slerp: vi.fn() },
+        lookAt: vi.fn(),
+        updateProjectionMatrix: vi.fn(),
+      };
+    }),
+    WebGLRenderer: vi.fn().mockImplementation(function () {
+      return {
+        setSize: vi.fn(),
+        getSize: vi.fn().mockImplementation((target: { width: number; height: number }) => {
+          target.width = 1024;
+          target.height = 768;
+          return target;
+        }),
+        render: vi.fn(),
+        domElement: document.createElement('canvas'),
+        setPixelRatio: vi.fn(),
+        dispose: vi.fn(),
+        shadowMap: { enabled: false, type: 0 },
+        toneMapping: 0,
+        toneMappingExposure: 1,
+      };
+    }),
+    WebGLRenderTarget: vi.fn().mockImplementation(function () {
+      return {
+        texture: {},
+        setSize: vi.fn(),
+        dispose: vi.fn(),
+        samples: 0,
+      };
+    }),
+    Color: vi.fn().mockImplementation(function () {
+      return {
+        r: 0,
+        g: 0,
+        b: 0,
+        setHSL: vi.fn(function (this: { setHSL: () => void }) {
+          return this;
+        }),
+        setHex: vi.fn(),
+        getHex: vi.fn(() => 0),
+        copy: vi.fn(function (this: Record<string, number>, c: Record<string, number>) {
+          if (c) {
+            this.r = c.r;
+            this.g = c.g;
+            this.b = c.b;
+          }
+          return this;
+        }),
+        clone: vi.fn(function (this: Record<string, number>) {
+          return { ...this };
+        }),
+        toArray: vi.fn((arr: number[] = [], offset = 0) => {
+          arr[offset] = 0;
+          arr[offset + 1] = 0;
+          arr[offset + 2] = 0;
+          return arr;
+        }),
+      };
+    }),
+    FogExp2: vi.fn(),
+    BoxGeometry: vi.fn().mockImplementation(function () {
+      return {
+        translate: vi.fn(),
+        dispose: vi.fn(),
+      };
+    }),
+    CylinderGeometry: vi.fn().mockImplementation(function () {
+      return {
+        rotateX: vi.fn(),
+        rotateZ: vi.fn(),
+        translate: vi.fn(),
+        dispose: vi.fn(),
+      };
+    }),
+    SphereGeometry: vi.fn(),
+    OctahedronGeometry: vi.fn(),
+    TorusGeometry: vi.fn().mockImplementation(function () {
+      return {
+        rotateX: vi.fn(),
+      };
+    }),
+    ConeGeometry: vi.fn().mockImplementation(function () {
+      return {
+        translate: vi.fn(),
+        dispose: vi.fn(),
+      };
+    }),
+    EdgesGeometry: vi.fn().mockImplementation(function () {
+      return {
+        dispose: vi.fn(),
+      };
+    }),
+    PlaneGeometry: vi.fn().mockImplementation(function () {
+      return {
         attributes: {
           position: {
-            array: new Float32Array(3000), // Mock size
+            count: 100,
+            getX: vi.fn(() => 0),
+            getY: vi.fn(() => 0),
+            getZ: vi.fn(() => 0),
+            setZ: vi.fn(),
+          },
+        },
+        computeVertexNormals: vi.fn(),
+      };
+    }),
+    BufferGeometry: vi.fn().mockImplementation(function () {
+      return {
+        setAttribute: vi.fn(),
+        setFromPoints: vi.fn(),
+        dispose: vi.fn(),
+        attributes: {
+          position: {
+            array: new Float32Array(3000),
             needsUpdate: false,
           },
           color: {
             array: new Float32Array(3000),
             needsUpdate: false,
-            setXYZ: vi.fn(),
           },
         },
+      };
+    }),
+    MeshBasicMaterial: vi.fn().mockImplementation(function () {
+      return {
+        color: {
+          clone: vi.fn(() => ({ setHex: vi.fn(), getHex: vi.fn(() => 0) })),
+          setHex: vi.fn(),
+          getHex: vi.fn(() => 0),
+        },
+        map: null,
+        transparent: false,
+        opacity: 1,
         dispose: vi.fn(),
-      },
-      material: {
+        clone: vi.fn(() => ({
+          color: {
+            clone: vi.fn(() => ({ setHex: vi.fn(), getHex: vi.fn(() => 0) })),
+            setHex: vi.fn(),
+            getHex: vi.fn(() => 0),
+          },
+          clone: vi.fn(),
+          dispose: vi.fn(),
+        })),
+      };
+    }),
+    MeshLambertMaterial: vi.fn().mockImplementation(function () {
+      return {
+        clone: vi.fn(() => ({
+          clone: vi.fn(),
+        })),
+      };
+    }),
+    MeshStandardMaterial: vi.fn().mockImplementation(function () {
+      return {
+        color: {
+          clone: vi.fn(() => ({ setHex: vi.fn(), getHex: vi.fn(() => 0) })),
+          setHex: vi.fn(),
+          getHex: vi.fn(() => 0),
+        },
+        map: null,
+        emissiveMap: null,
+        roughnessMap: null,
+        emissive: { clone: vi.fn(() => ({ setHex: vi.fn() })) },
+        emissiveIntensity: 0.8,
+        roughness: 0.5,
+        metalness: 0.8,
+        transparent: false,
+        opacity: 1,
+        clone: vi.fn(() => ({
+          color: {
+            clone: vi.fn(() => ({ setHex: vi.fn(), getHex: vi.fn(() => 0) })),
+            setHex: vi.fn(),
+            getHex: vi.fn(() => 0),
+          },
+          clone: vi.fn(),
+          dispose: vi.fn(),
+        })),
         dispose: vi.fn(),
-      },
-    })),
-    Float32BufferAttribute: vi.fn(() => ({
-      array: new Float32Array(3000),
-      needsUpdate: false,
-      setXYZ: vi.fn(),
-      getX: vi.fn(() => 0),
-      getY: vi.fn(() => 0),
-      getZ: vi.fn(() => 0),
-    })),
-    BufferAttribute: vi.fn(() => ({
-      array: new Float32Array(3000),
-      needsUpdate: false,
-      setXYZ: vi.fn(),
-      setX: vi.fn(),
-      setY: vi.fn(),
-      setZ: vi.fn(),
-      getX: vi.fn(() => 0),
-      getY: vi.fn(() => 0),
-      getZ: vi.fn(() => 0),
-    })),
-    CanvasTexture: vi.fn(() => ({
-      wrapS: 0,
-      wrapT: 0,
-      magFilter: 0,
-      anisotropy: 0,
-      repeat: {
-        set: vi.fn(),
-      },
-      offset: {
-        set: vi.fn(),
-      },
-      dispose: vi.fn(),
-    })),
+      };
+    }),
+    PointsMaterial: vi.fn(),
+    LineBasicMaterial: vi.fn().mockImplementation(function () {
+      return {
+        dispose: vi.fn(),
+      };
+    }),
+    LineSegments: vi.fn().mockImplementation(function () {
+      return {
+        position: { set: vi.fn(), copy: vi.fn(), x: 0, y: 0, z: 0 },
+        rotation: { x: 0, y: 0, z: 0 },
+        scale: { set: vi.fn() },
+      };
+    }),
+    Line: vi.fn(),
+    Group: vi.fn().mockImplementation(function () {
+      return {
+        add: vi.fn(),
+        position: {
+          set: vi.fn(),
+          x: 0,
+          y: 0,
+          z: 0,
+          copy: vi.fn(),
+          distanceToSquared: vi.fn(() => 100),
+          distanceTo: vi.fn(() => 10),
+          clone: vi.fn(() => ({
+            add: vi.fn(function (this: { x: number; y: number; z: number }) {
+              return this;
+            }),
+            sub: vi.fn(function (this: { x: number; y: number; z: number }) {
+              return this;
+            }),
+            normalize: vi.fn(function (this: { x: number; y: number; z: number }) {
+              return this;
+            }),
+            multiplyScalar: vi.fn(function (this: { x: number; y: number; z: number }) {
+              return this;
+            }),
+            x: 0,
+            y: 0,
+            z: 0,
+            clone: vi.fn(function (this: { x: number; y: number; z: number }) {
+              return this;
+            }),
+            distanceTo: vi.fn(() => 10),
+          })),
+          add: vi.fn(),
+          sub: vi.fn(),
+          normalize: vi.fn(),
+          multiplyScalar: vi.fn(),
+        },
+        rotation: { x: 0, y: 0, z: 0 },
+        up: { x: 0, y: 1, z: 0, set: vi.fn(), copy: vi.fn() },
+        traverse: vi.fn(),
+        userData: {},
+        lookAt: vi.fn(),
+        matrixWorld: mockMatrix4(),
+        updateWorldMatrix: vi.fn(),
+      };
+    }),
+    DoubleSide: 2,
+    BackSide: 1,
+    Sprite: vi.fn().mockImplementation(function () {
+      return {
+        position: { set: vi.fn(), x: 0, y: 0, z: 0 },
+        scale: { set: vi.fn() },
+        userData: {},
+      };
+    }),
+    SpriteMaterial: vi.fn().mockImplementation(function () {
+      return {
+        dispose: vi.fn(),
+      };
+    }),
+    Mesh: vi.fn().mockImplementation(function () {
+      return {
+        position: {
+          set: vi.fn(),
+          x: 0,
+          y: 0,
+          z: 0,
+          distanceToSquared: vi.fn(),
+          copy: vi.fn(),
+          clone: vi.fn(() => ({
+            sub: vi.fn(),
+            normalize: vi.fn(),
+            add: vi.fn(),
+          })),
+          add: vi.fn(),
+        },
+        rotation: { x: 0, y: 0, z: 0 },
+        up: { x: 0, y: 1, z: 0, set: vi.fn(), copy: vi.fn() },
+        scale: { set: vi.fn() },
+        userData: {},
+        add: vi.fn(),
+        lookAt: vi.fn(),
+        geometry: { dispose: vi.fn() },
+        material: { dispose: vi.fn(), color: { setHex: vi.fn() } },
+        traverse: vi.fn(),
+        matrixWorld: mockMatrix4(),
+        updateWorldMatrix: vi.fn(),
+      };
+    }),
+    InstancedMesh: vi.fn().mockImplementation(function () {
+      return {
+        position: { set: vi.fn(), x: 0, y: 0, z: 0 },
+        rotation: { x: 0, y: 0, z: 0 },
+        up: { x: 0, y: 1, z: 0, set: vi.fn(), copy: vi.fn() },
+        scale: { set: vi.fn() },
+        userData: {},
+        add: vi.fn(),
+        lookAt: vi.fn(),
+        traverse: vi.fn(),
+        count: 0,
+        instanceMatrix: { needsUpdate: false },
+        instanceColor: null,
+        setMatrixAt: vi.fn(),
+        setColorAt: vi.fn(),
+        computeBoundingSphere: vi.fn(),
+        dispose: vi.fn(),
+        material: { color: { setHex: vi.fn() }, clone: vi.fn() },
+        geometry: { attributes: {} },
+        raycast: vi.fn(),
+        matrixWorld: mockMatrix4(),
+        updateWorldMatrix: vi.fn(),
+      };
+    }),
+    Points: vi.fn().mockImplementation(function () {
+      return {
+        position: { set: vi.fn(), x: 0, y: 0, z: 0 },
+        geometry: {
+          attributes: {
+            position: {
+              array: new Float32Array(3000),
+              needsUpdate: false,
+            },
+            color: {
+              array: new Float32Array(3000),
+              needsUpdate: false,
+              setXYZ: vi.fn(),
+            },
+          },
+          dispose: vi.fn(),
+        },
+        material: {
+          dispose: vi.fn(),
+        },
+      };
+    }),
+    Float32BufferAttribute: vi.fn().mockImplementation(function () {
+      return {
+        array: new Float32Array(3000),
+        needsUpdate: false,
+        setXYZ: vi.fn(),
+        getX: vi.fn(() => 0),
+        getY: vi.fn(() => 0),
+        getZ: vi.fn(() => 0),
+      };
+    }),
+    BufferAttribute: vi.fn().mockImplementation(function () {
+      return {
+        array: new Float32Array(3000),
+        needsUpdate: false,
+        setXYZ: vi.fn(),
+        setX: vi.fn(),
+        setY: vi.fn(),
+        setZ: vi.fn(),
+        getX: vi.fn(() => 0),
+        getY: vi.fn(() => 0),
+        getZ: vi.fn(() => 0),
+      };
+    }),
+    CanvasTexture: vi.fn().mockImplementation(function () {
+      return {
+        wrapS: 0,
+        wrapT: 0,
+        magFilter: 0,
+        anisotropy: 0,
+        repeat: {
+          set: vi.fn(),
+        },
+        offset: {
+          set: vi.fn(),
+        },
+        dispose: vi.fn(),
+      };
+    }),
     RepeatWrapping: 1000,
     NearestFilter: 1001,
     MathUtils: {
@@ -418,82 +472,102 @@ vi.mock('three', () => {
       randFloat: vi.fn(() => 100),
     },
     AmbientLight: vi.fn(),
-    HemisphereLight: vi.fn(() => ({
-      position: { set: vi.fn() },
-      add: vi.fn(),
-    })),
-    PointLight: vi.fn(() => ({
-      position: { set: vi.fn(), x: 0, y: 0, z: 0 },
-      userData: {},
-      visible: true,
-      color: { getHex: vi.fn() },
-    })),
-    DirectionalLight: vi.fn(() => ({
-      position: { set: vi.fn(), x: 0, y: 0, z: 0 },
-      castShadow: false,
-      shadow: {
-        mapSize: { width: 1024, height: 1024 },
-        camera: { near: 0, far: 0, left: 0, right: 0, top: 0, bottom: 0 },
-        bias: 0,
-      },
-    })),
-    SpotLight: vi.fn(() => ({
-      position: { set: vi.fn(), x: 0, y: 0, z: 0 },
-      target: { position: { set: vi.fn(), x: 0, y: 0, z: 0 } },
-      userData: {},
-      add: vi.fn(),
-    })),
-    Object3D: vi.fn(() => ({
-      position: { set: vi.fn(), x: 0, y: 0, z: 0 },
-      add: vi.fn(),
-      traverse: vi.fn(),
-    })),
-    Quaternion: vi.fn(() => ({
-      setFromEuler: vi.fn(),
-      slerp: vi.fn(),
-    })),
-    Matrix4: vi.fn(() => ({
-      ...mockMatrix4(),
-      makeTranslation: vi.fn(),
-      makeRotationFromEuler: vi.fn(),
-      makeScale: vi.fn(),
-      multiplyMatrices: vi.fn(),
-      premultiply: vi.fn(),
-      setPosition: vi.fn(),
-      extractRotation: vi.fn(),
-      lookAt: vi.fn(),
-      scale: vi.fn(),
-      set: vi.fn(),
-      transpose: vi.fn(),
-      getInverse: vi.fn(),
-      applyToBufferAttribute: vi.fn(),
-    })),
-    Vector3: vi.fn(() => ({
-      x: 0,
-      y: 0,
-      z: 0,
-      lerp: vi.fn(),
-      subVectors: vi.fn(),
-      normalize: vi.fn(),
-      multiplyScalar: vi.fn(),
-      divideScalar: vi.fn(),
-      applyEuler: vi.fn(),
-    })),
+    HemisphereLight: vi.fn().mockImplementation(function () {
+      return {
+        position: { set: vi.fn() },
+        add: vi.fn(),
+      };
+    }),
+    PointLight: vi.fn().mockImplementation(function () {
+      return {
+        position: { set: vi.fn(), x: 0, y: 0, z: 0 },
+        userData: {},
+        visible: true,
+        color: { getHex: vi.fn() },
+      };
+    }),
+    DirectionalLight: vi.fn().mockImplementation(function () {
+      return {
+        position: { set: vi.fn(), x: 0, y: 0, z: 0 },
+        castShadow: false,
+        shadow: {
+          mapSize: { width: 1024, height: 1024 },
+          camera: { near: 0, far: 0, left: 0, right: 0, top: 0, bottom: 0 },
+          bias: 0,
+        },
+      };
+    }),
+    SpotLight: vi.fn().mockImplementation(function () {
+      return {
+        position: { set: vi.fn(), x: 0, y: 0, z: 0 },
+        target: { position: { set: vi.fn(), x: 0, y: 0, z: 0 } },
+        userData: {},
+        add: vi.fn(),
+      };
+    }),
+    Object3D: vi.fn().mockImplementation(function () {
+      return {
+        position: { set: vi.fn(), x: 0, y: 0, z: 0 },
+        add: vi.fn(),
+        traverse: vi.fn(),
+      };
+    }),
+    Quaternion: vi.fn().mockImplementation(function () {
+      return {
+        setFromEuler: vi.fn(),
+        slerp: vi.fn(),
+      };
+    }),
+    Matrix4: vi.fn().mockImplementation(function () {
+      return {
+        ...mockMatrix4(),
+        makeTranslation: vi.fn(),
+        makeRotationFromEuler: vi.fn(),
+        makeScale: vi.fn(),
+        multiplyMatrices: vi.fn(),
+        premultiply: vi.fn(),
+        setPosition: vi.fn(),
+        extractRotation: vi.fn(),
+        lookAt: vi.fn(),
+        scale: vi.fn(),
+        set: vi.fn(),
+        transpose: vi.fn(),
+        getInverse: vi.fn(),
+        applyToBufferAttribute: vi.fn(),
+      };
+    }),
+    Vector3: vi.fn().mockImplementation(function () {
+      return {
+        x: 0,
+        y: 0,
+        z: 0,
+        lerp: vi.fn(),
+        subVectors: vi.fn(),
+        normalize: vi.fn(),
+        multiplyScalar: vi.fn(),
+        divideScalar: vi.fn(),
+        applyEuler: vi.fn(),
+      };
+    }),
     Vector2: vi.fn(),
-    Raycaster: vi.fn(() => ({
-      setFromCamera: vi.fn(),
-      intersectObjects: vi.fn(() => []),
-      intersectObject: vi.fn(() => []),
-      params: { Points: { threshold: 1 } },
-    })),
+    Raycaster: vi.fn().mockImplementation(function () {
+      return {
+        setFromCamera: vi.fn(),
+        intersectObjects: vi.fn(() => []),
+        intersectObject: vi.fn(() => []),
+        params: { Points: { threshold: 1 } },
+      };
+    }),
     AdditiveBlending: 2000,
     PCFSoftShadowMap: 2,
     PCFShadowMap: 1,
     ACESFilmicToneMapping: 1,
-    Euler: vi.fn(() => ({
-      set: vi.fn(),
-      copy: vi.fn(),
-    })),
+    Euler: vi.fn().mockImplementation(function () {
+      return {
+        set: vi.fn(),
+        copy: vi.fn(),
+      };
+    }),
   };
   return THREE;
 });

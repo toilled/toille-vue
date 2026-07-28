@@ -106,11 +106,10 @@ export class TrafficAI {
       car.traverse((child) => {
         if (child instanceof Mesh) {
           const mat = child.material;
-          if (
-            !Array.isArray(mat) &&
-            child.userData.partType &&
-            child.userData.partType !== 'hitbox'
-          ) {
+          if (!Array.isArray(mat) && child.userData.partType !== 'hitbox') {
+            if (child.userData.originalOpacity === undefined) {
+              child.userData.originalOpacity = mat.opacity;
+            }
             const clone = mat.clone();
             clone.transparent = true;
             clone.depthWrite = false;

@@ -7,8 +7,8 @@ import {
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
-  PointLight,
   PlaneGeometry,
+  PointLight,
 } from 'three';
 
 export class CarFactory {
@@ -22,6 +22,8 @@ export class CarFactory {
   public carBodyMat1: MeshStandardMaterial;
   public carBodyMat2: MeshStandardMaterial;
   public carBodyMat3: MeshStandardMaterial;
+  public carBodyMat4: MeshStandardMaterial;
+  public carBodyMat5: MeshStandardMaterial;
   public policeBodyMat: MeshStandardMaterial;
   public wheelMat: MeshStandardMaterial;
   public tailLightMat: MeshBasicMaterial;
@@ -34,6 +36,13 @@ export class CarFactory {
   private underglowMat1: MeshBasicMaterial;
   private underglowMat2: MeshBasicMaterial;
   private hitboxMat: MeshBasicMaterial;
+  private windshieldGeo: BoxGeometry;
+  private windshieldMat: MeshStandardMaterial;
+  private neonAccentGeo: BoxGeometry;
+  private exhaustGeo: CylinderGeometry;
+  private exhaustMat: MeshStandardMaterial;
+  private chassisRailGeo: BoxGeometry;
+  private chassisRailMat: MeshStandardMaterial;
 
   constructor() {
     this.carGeo = new BoxGeometry(4, 2, 8);
@@ -61,6 +70,16 @@ export class CarFactory {
       color: 0x111111,
       roughness: 0.3,
       metalness: 0.7,
+    });
+    this.carBodyMat4 = new MeshStandardMaterial({
+      color: 0x1a0a0a,
+      roughness: 0.25,
+      metalness: 0.75,
+    });
+    this.carBodyMat5 = new MeshStandardMaterial({
+      color: 0x0a0a1a,
+      roughness: 0.3,
+      metalness: 0.65,
     });
     this.policeBodyMat = new MeshStandardMaterial({
       color: 0xeeeeee,
@@ -92,6 +111,32 @@ export class CarFactory {
       depthWrite: false,
       side: DoubleSide,
     });
+
+    this.windshieldGeo = new BoxGeometry(3.2, 1.2, 0.2);
+    this.windshieldMat = new MeshStandardMaterial({
+      color: 0x112233,
+      roughness: 0.05,
+      metalness: 0.9,
+      transparent: true,
+      opacity: 0.5,
+    });
+
+    this.neonAccentGeo = new BoxGeometry(0.15, 0.15, 7);
+
+    this.exhaustGeo = new CylinderGeometry(0.3, 0.3, 1.5, 8);
+    this.exhaustGeo.rotateX(Math.PI / 2);
+    this.exhaustMat = new MeshStandardMaterial({
+      color: 0x444444,
+      roughness: 0.4,
+      metalness: 0.8,
+    });
+
+    this.chassisRailGeo = new BoxGeometry(0.4, 0.4, 7);
+    this.chassisRailMat = new MeshStandardMaterial({
+      color: 0x1a1a1a,
+      roughness: 0.7,
+      metalness: 0.3,
+    });
   }
 
   public createCar(isPolice: boolean): Group {
@@ -103,12 +148,12 @@ export class CarFactory {
       bodyMat = this.policeBodyMat;
       bodyColor = this.policeBodyMat.color;
     } else {
-      const isSpecial = Math.random() > 0.8;
-      bodyMat = isSpecial
-        ? this.carBodyMat1
-        : Math.random() > 0.5
-          ? this.carBodyMat2
-          : this.carBodyMat3;
+      const r = Math.random();
+      if (r > 0.85) bodyMat = this.carBodyMat1;
+      else if (r > 0.7) bodyMat = this.carBodyMat4;
+      else if (r > 0.5) bodyMat = this.carBodyMat5;
+      else if (r > 0.25) bodyMat = this.carBodyMat2;
+      else bodyMat = this.carBodyMat3;
       bodyColor = bodyMat.color;
     }
 
@@ -128,6 +173,7 @@ export class CarFactory {
     }
 
     this.addLights(carGroup);
+    this.addCarDetails(carGroup, isTruck);
     this.addHitbox(carGroup);
 
     return carGroup;
@@ -146,6 +192,16 @@ export class CarFactory {
     trailer.castShadow = true;
     carGroup.add(trailer);
 
+    const cabRoofGeo = new BoxGeometry(4.8, 0.8, 5.5);
+    const cabRoof = new Mesh(cabRoofGeo, this.exhaustMat);
+    cabRoof.position.set(0, 3.6, 5);
+    carGroup.add(cabRoof);
+
+    const trailerEdgeGeo = new BoxGeometry(5.7, 0.3, 12.2);
+    const trailerEdge = new Mesh(trailerEdgeGeo, this.exhaustMat);
+    trailerEdge.position.set(0, 5.6, -4);
+    carGroup.add(trailerEdge);
+
     const positions = [
       [2.5, -0.5, 7],
       [-2.5, -0.5, 7],
@@ -161,6 +217,26 @@ export class CarFactory {
       w.userData = { ...w.userData, originalOpacity: 1.0, partType: 'wheel' };
       w.castShadow = true;
       carGroup.add(w);
+    });
+
+    const wheelWellGeo = new BoxGeometry(1.2, 1.5, 2);
+    const wheelWellMat = new MeshStandardMaterial({
+      color: 0x0a0a0a,
+      roughness: 0.9,
+      metalness: 0.1,
+    });
+    const wellPositions = [
+      [2.5, 0.2, 7],
+      [-2.5, 0.2, 7],
+      [2.8, 0.2, 0],
+      [-2.8, 0.2, 0],
+      [2.8, 0.2, -8],
+      [-2.8, 0.2, -8],
+    ];
+    wellPositions.forEach((pos) => {
+      const well = new Mesh(wheelWellGeo, wheelWellMat);
+      well.position.set(pos[0], pos[1], pos[2]);
+      carGroup.add(well);
     });
   }
 
@@ -263,6 +339,75 @@ export class CarFactory {
     hl2.userData = { ...hl2.userData, originalOpacity: 1.0, partType: 'headlight' };
     hl2.position.set(-1.5, 0, 4);
     carGroup.add(hl2);
+  }
+
+  private addCarDetails(carGroup: Group, isTruck: boolean) {
+    const windshield = new Mesh(this.windshieldGeo, this.windshieldMat);
+    windshield.position.set(0, 1.3, isTruck ? 5 : 2.5);
+    windshield.rotation.x = -0.15;
+    carGroup.add(windshield);
+
+    const rearWindow = new Mesh(this.windshieldGeo, this.windshieldMat);
+    rearWindow.scale.set(0.9, 0.8, 1);
+    rearWindow.position.set(0, 1.3, isTruck ? -1 : -2.5);
+    rearWindow.rotation.x = 0.1;
+    carGroup.add(rearWindow);
+
+    if (!isTruck) {
+      const accentColor = Math.random() > 0.5 ? 0xff00cc : 0x00ccff;
+      const accentMat = new MeshBasicMaterial({
+        color: accentColor,
+        transparent: true,
+        opacity: 0.6,
+      });
+      const accent = new Mesh(this.neonAccentGeo, accentMat);
+      accent.position.set(0, -0.8, 0);
+      carGroup.add(accent);
+
+      const sideAccent1 = new Mesh(new BoxGeometry(0.1, 0.1, 7), accentMat);
+      sideAccent1.position.set(2.1, -0.3, 0);
+      carGroup.add(sideAccent1);
+
+      const sideAccent2 = new Mesh(new BoxGeometry(0.1, 0.1, 7), accentMat);
+      sideAccent2.position.set(-2.1, -0.3, 0);
+      carGroup.add(sideAccent2);
+    }
+
+    const chassisL = new Mesh(this.chassisRailGeo, this.chassisRailMat);
+    chassisL.position.set(1.2, -0.9, 0);
+    carGroup.add(chassisL);
+
+    const chassisR = new Mesh(this.chassisRailGeo, this.chassisRailMat);
+    chassisR.position.set(-1.2, -0.9, 0);
+    carGroup.add(chassisR);
+
+    if (isTruck) {
+      const exhaust = new Mesh(this.exhaustGeo, this.exhaustMat);
+      exhaust.position.set(2.2, -0.3, -9);
+      carGroup.add(exhaust);
+
+      const exhaust2 = new Mesh(this.exhaustGeo, this.exhaustMat);
+      exhaust2.position.set(-2.2, -0.3, -9);
+      carGroup.add(exhaust2);
+
+      const bumperGeo = new BoxGeometry(5.5, 0.6, 0.4);
+      const bumper = new Mesh(bumperGeo, this.exhaustMat);
+      bumper.position.set(0, -0.5, 8.2);
+      carGroup.add(bumper);
+
+      const rearBumper = new Mesh(bumperGeo, this.exhaustMat);
+      rearBumper.position.set(0, -0.5, -10.2);
+      carGroup.add(rearBumper);
+    } else {
+      const bumperGeo = new BoxGeometry(4, 0.4, 0.3);
+      const bumper = new Mesh(bumperGeo, this.exhaustMat);
+      bumper.position.set(0, -0.5, 4.2);
+      carGroup.add(bumper);
+
+      const rearBumper = new Mesh(bumperGeo, this.exhaustMat);
+      rearBumper.position.set(0, -0.5, -4.2);
+      carGroup.add(rearBumper);
+    }
   }
 
   private addHitbox(carGroup: Group) {

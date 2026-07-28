@@ -2,20 +2,36 @@ import { CanvasTexture, NearestFilter, RepeatWrapping } from 'three';
 import { ROAD_WIDTH, CELL_SIZE } from '../game/config';
 
 function drawWindow(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
+  const frameW = Math.max(1, Math.floor(w * 0.12));
+  const frameH = Math.max(1, Math.floor(h * 0.15));
+
   if (Math.random() > 0.88) {
     const rand = Math.random();
-    if (rand > 0.8) ctx.fillStyle = '#ffffff';
-    else if (rand > 0.55) ctx.fillStyle = '#ffaa00';
-    else if (rand > 0.3) ctx.fillStyle = '#00ffcc';
-    else if (rand > 0.1) ctx.fillStyle = '#ff00cc';
-    else ctx.fillStyle = '#aa44ff';
-    ctx.globalAlpha = 0.6 + Math.random() * 0.4;
-    ctx.fillRect(x, y, w, h);
-    ctx.shadowColor = ctx.fillStyle;
-    ctx.shadowBlur = 6;
-    ctx.globalAlpha = 0.3;
-    ctx.fillRect(x - 1, y - 1, w + 2, h + 2);
+    let baseColor: string;
+    if (rand > 0.8) baseColor = '#ffffff';
+    else if (rand > 0.55) baseColor = '#ffaa00';
+    else if (rand > 0.3) baseColor = '#00ffcc';
+    else if (rand > 0.1) baseColor = '#ff00cc';
+    else baseColor = '#aa44ff';
+
+    const brightness = 0.5 + Math.random() * 0.5;
+    ctx.globalAlpha = brightness;
+    ctx.fillStyle = baseColor;
+    ctx.fillRect(x + frameW, y + frameH, w - frameW * 2, h - frameH * 2);
+
+    ctx.shadowColor = baseColor;
+    ctx.shadowBlur = 8;
+    ctx.globalAlpha = brightness * 0.4;
+    ctx.fillRect(x + frameW - 1, y + frameH - 1, w - frameW * 2 + 2, h - frameH * 2 + 2);
     ctx.shadowBlur = 0;
+
+    ctx.fillStyle = '#0a0a15';
+    ctx.globalAlpha = 0.9;
+    ctx.fillRect(x, y, w, frameH);
+    ctx.fillRect(x, y + h - frameH, w, frameH);
+    ctx.fillRect(x, y, frameW, h);
+    ctx.fillRect(x + w - frameW, y, frameW, h);
+
     ctx.globalAlpha = 1.0;
   } else {
     const darkRand = Math.random();
@@ -27,6 +43,14 @@ function drawWindow(ctx: CanvasRenderingContext2D, x: number, y: number, w: numb
       ctx.fillStyle = '#050505';
     }
     ctx.fillRect(x, y, w, h);
+
+    ctx.fillStyle = '#080810';
+    ctx.globalAlpha = 0.7;
+    ctx.fillRect(x, y, w, frameH);
+    ctx.fillRect(x, y + h - frameH, w, frameH);
+    ctx.fillRect(x, y, frameW, h);
+    ctx.fillRect(x + w - frameW, y, frameW, h);
+    ctx.globalAlpha = 1.0;
   }
 }
 

@@ -41,6 +41,10 @@ export class CityMaterials {
   public topEdgeMat!: LineBasicMaterial;
   public antennaMat!: MeshBasicMaterial;
   public billboardMaterials!: MeshBasicMaterial[];
+  public neonTrimMat1!: MeshBasicMaterial;
+  public neonTrimMat2!: MeshBasicMaterial;
+  public columnMat!: MeshStandardMaterial;
+  public glassMat!: MeshStandardMaterial;
 
   // Geometries that can be reused
   public boxGeo!: BoxGeometry;
@@ -49,6 +53,10 @@ export class CityMaterials {
   public coneEdgesGeo!: EdgesGeometry;
   public cylinderGeo!: CylinderGeometry;
   public neonStripGeo!: BoxGeometry;
+  public ledgeGeo!: BoxGeometry;
+  public columnGeo!: BoxGeometry;
+  public neonTrimGeo!: BoxGeometry;
+  public parapetGeo!: BoxGeometry;
 
   async init() {
     this.windowTexture = await getCachedOrGenerate('window', createWindowTexture);
@@ -90,6 +98,17 @@ export class CityMaterials {
     this.cylinderGeo.translate(0, 0.5, 0);
 
     this.neonStripGeo = new BoxGeometry(0.5, 1, 0.5);
+
+    this.ledgeGeo = new BoxGeometry(1, 1, 1);
+    this.ledgeGeo.translate(0, 0.5, 0);
+
+    this.columnGeo = new BoxGeometry(1, 1, 1);
+    this.columnGeo.translate(0, 0.5, 0);
+
+    this.neonTrimGeo = new BoxGeometry(1, 1, 1);
+
+    this.parapetGeo = new BoxGeometry(1, 1, 1);
+    this.parapetGeo.translate(0, 0.5, 0);
   }
 
   private initBuildingMaterials() {
@@ -127,6 +146,23 @@ export class CityMaterials {
     this.topEdgeMat = new LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55 });
     this.antennaMat = new MeshBasicMaterial({ color: 0xaaaaaa });
 
+    this.neonTrimMat1 = new MeshBasicMaterial({ color: 0xff00cc, transparent: true, opacity: 0.7 });
+    this.neonTrimMat2 = new MeshBasicMaterial({ color: 0x00ccff, transparent: true, opacity: 0.7 });
+
+    this.columnMat = new MeshStandardMaterial({
+      color: 0x1a1a2e,
+      roughness: 0.6,
+      metalness: 0.5,
+    });
+
+    this.glassMat = new MeshStandardMaterial({
+      color: 0x112233,
+      roughness: 0.1,
+      metalness: 0.8,
+      transparent: true,
+      opacity: 0.4,
+    });
+
     this.billboardMaterials = this.billboardTextures.map(
       (tex) =>
         new MeshBasicMaterial({ map: tex, side: DoubleSide, transparent: true, opacity: 0.9 })
@@ -144,6 +180,10 @@ export class CityMaterials {
     this.edgeMat2.dispose();
     this.topEdgeMat.dispose();
     this.antennaMat.dispose();
+    this.neonTrimMat1.dispose();
+    this.neonTrimMat2.dispose();
+    this.columnMat.dispose();
+    this.glassMat.dispose();
     this.billboardMaterials.forEach((m) => m.dispose());
     this.boxGeo.dispose();
     this.edgesGeo.dispose();
@@ -151,5 +191,9 @@ export class CityMaterials {
     this.coneEdgesGeo.dispose();
     this.cylinderGeo.dispose();
     this.neonStripGeo.dispose();
+    this.ledgeGeo.dispose();
+    this.columnGeo.dispose();
+    this.neonTrimGeo.dispose();
+    this.parapetGeo.dispose();
   }
 }

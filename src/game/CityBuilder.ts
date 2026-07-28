@@ -310,12 +310,7 @@ export class CityBuilder {
       mainBlock.receiveShadow = true;
       buildingGroup.add(mainBlock);
 
-      const mainLine = new LineSegments(
-        this.materials.edgesGeo,
-        Math.random() > 0.5 ? this.materials.edgeMat1 : this.materials.edgeMat2
-      );
-      mainLine.scale.set(w, h, d);
-      buildingGroup.add(mainLine);
+      this.addNeonTrimEdges(buildingGroup, w, h, d);
     }
   }
 
@@ -330,6 +325,7 @@ export class CityBuilder {
     const segH = h / segments;
     let currentY = 0;
     let rot = 0;
+    const trimMat = Math.random() > 0.5 ? this.materials.neonTrimMat1 : this.materials.neonTrimMat2;
     for (let s = 0; s < segments; s++) {
       const seg = new Mesh(this.materials.boxGeo, materials);
       const scaleFactor = 1.0;
@@ -340,11 +336,13 @@ export class CityBuilder {
       seg.receiveShadow = true;
       buildingGroup.add(seg);
 
-      const segLine = new LineSegments(this.materials.edgesGeo, this.materials.edgeMat2);
-      segLine.scale.set(w * scaleFactor, segH, d * scaleFactor);
-      segLine.position.y = currentY;
-      segLine.rotation.y = rot;
-      buildingGroup.add(segLine);
+      if (s === segments - 1) {
+        const trim = new Mesh(this.materials.neonTrimGeo, trimMat);
+        trim.scale.set(w, 0.3, 0.3);
+        trim.position.set(0, currentY + segH, 0);
+        trim.rotation.y = rot;
+        buildingGroup.add(trim);
+      }
 
       currentY += segH;
       rot += Math.random() > 0.5 ? Math.PI / 10 : -Math.PI / 10;
@@ -375,10 +373,12 @@ export class CityBuilder {
       tierBlock.receiveShadow = true;
       buildingGroup.add(tierBlock);
 
-      const tierLine = new LineSegments(this.materials.edgesGeo, this.materials.topEdgeMat);
-      tierLine.scale.set(currentW, tierH, currentD);
-      tierLine.position.y = currentH;
-      buildingGroup.add(tierLine);
+      const trimMat =
+        Math.random() > 0.5 ? this.materials.neonTrimMat1 : this.materials.neonTrimMat2;
+      const tierTrim = new Mesh(this.materials.neonTrimGeo, trimMat);
+      tierTrim.scale.set(currentW, 0.3, 0.3);
+      tierTrim.position.set(0, currentH + tierH, 0);
+      buildingGroup.add(tierTrim);
 
       currentH += tierH;
     }
@@ -403,11 +403,11 @@ export class CityBuilder {
     spire.receiveShadow = true;
     buildingGroup.add(spire);
 
-    const spireLine = new LineSegments(this.materials.coneEdgesGeo, this.materials.topEdgeMat);
-    spireLine.scale.set(spireW, spireH, spireD);
-    spireLine.position.y = h;
-    spireLine.rotation.y = Math.PI / 4;
-    buildingGroup.add(spireLine);
+    const trimMat = Math.random() > 0.5 ? this.materials.neonTrimMat1 : this.materials.neonTrimMat2;
+    const baseTrim = new Mesh(this.materials.neonTrimGeo, trimMat);
+    baseTrim.scale.set(spireW + 1, 0.4, spireW + 1);
+    baseTrim.position.y = h;
+    buildingGroup.add(baseTrim);
   }
 
   private addGreebles(buildingGroup: Group, w: number, h: number, d: number) {
@@ -445,6 +445,153 @@ export class CityBuilder {
       gLine.position.copy(gMesh.position);
       buildingGroup.add(gLine);
     }
+  }
+
+  private addNeonTrimEdges(buildingGroup: Group, w: number, h: number, d: number) {
+    const trimMat = Math.random() > 0.5 ? this.materials.neonTrimMat1 : this.materials.neonTrimMat2;
+    const trimSize = 0.3;
+
+    const topTrim = new Mesh(this.materials.neonTrimGeo, trimMat);
+    topTrim.scale.set(w, trimSize, trimSize);
+    topTrim.position.set(0, h, 0);
+    buildingGroup.add(topTrim);
+
+    const bottomTrim = new Mesh(this.materials.neonTrimGeo, trimMat);
+    bottomTrim.scale.set(w, trimSize, trimSize);
+    bottomTrim.position.set(0, trimSize * 0.5, 0);
+    buildingGroup.add(bottomTrim);
+
+    const sideTrim1 = new Mesh(this.materials.neonTrimGeo, trimMat);
+    sideTrim1.scale.set(trimSize, trimSize, d);
+    sideTrim1.position.set(w / 2, h, 0);
+    buildingGroup.add(sideTrim1);
+
+    const sideTrim2 = new Mesh(this.materials.neonTrimGeo, trimMat);
+    sideTrim2.scale.set(trimSize, trimSize, d);
+    sideTrim2.position.set(-w / 2, h, 0);
+    buildingGroup.add(sideTrim2);
+
+    const frontTrim1 = new Mesh(this.materials.neonTrimGeo, trimMat);
+    frontTrim1.scale.set(w, trimSize, trimSize);
+    frontTrim1.position.set(0, h, d / 2);
+    buildingGroup.add(frontTrim1);
+
+    const frontTrim2 = new Mesh(this.materials.neonTrimGeo, trimMat);
+    frontTrim2.scale.set(w, trimSize, trimSize);
+    frontTrim2.position.set(0, h, -d / 2);
+    buildingGroup.add(frontTrim2);
+
+    const vTrimMat =
+      Math.random() > 0.5 ? this.materials.neonTrimMat1 : this.materials.neonTrimMat2;
+    const cornerPositions = [
+      { x: w / 2, z: d / 2 },
+      { x: -w / 2, z: d / 2 },
+      { x: w / 2, z: -d / 2 },
+      { x: -w / 2, z: -d / 2 },
+    ];
+    for (const pos of cornerPositions) {
+      const vTrim = new Mesh(this.materials.neonTrimGeo, vTrimMat);
+      vTrim.scale.set(trimSize, h, trimSize);
+      vTrim.position.set(pos.x, h / 2, pos.z);
+      buildingGroup.add(vTrim);
+    }
+  }
+
+  private addFacadeBands(buildingGroup: Group, w: number, h: number, d: number) {
+    if (h < 50) return;
+    const bandInterval = 15 + Math.random() * 10;
+    const bandCount = Math.floor(h / bandInterval);
+    const bandHeight = 1.5;
+    const bandDepth = 1.2;
+
+    for (let i = 1; i < bandCount; i++) {
+      const y = i * bandInterval;
+      if (y >= h) break;
+
+      const bandFront = new Mesh(this.materials.boxGeo, this.materials.columnMat);
+      bandFront.scale.set(w, bandHeight, bandDepth);
+      bandFront.position.set(0, y, d / 2 + bandDepth * 0.5);
+      bandFront.castShadow = true;
+      buildingGroup.add(bandFront);
+
+      const bandBack = new Mesh(this.materials.boxGeo, this.materials.columnMat);
+      bandBack.scale.set(w, bandHeight, bandDepth);
+      bandBack.position.set(0, y, -d / 2 - bandDepth * 0.5);
+      bandBack.castShadow = true;
+      buildingGroup.add(bandBack);
+
+      const bandLeft = new Mesh(this.materials.boxGeo, this.materials.columnMat);
+      bandLeft.scale.set(bandDepth, bandHeight, d);
+      bandLeft.position.set(-w / 2 - bandDepth * 0.5, y, 0);
+      bandLeft.castShadow = true;
+      buildingGroup.add(bandLeft);
+
+      const bandRight = new Mesh(this.materials.boxGeo, this.materials.columnMat);
+      bandRight.scale.set(bandDepth, bandHeight, d);
+      bandRight.position.set(w / 2 + bandDepth * 0.5, y, 0);
+      bandRight.castShadow = true;
+      buildingGroup.add(bandRight);
+    }
+  }
+
+  private addCornerColumns(buildingGroup: Group, w: number, h: number, d: number) {
+    if (h < 60 || Math.random() > 0.7) return;
+    const colWidth = 1.5 + Math.random() * 1.5;
+    const colMat = Math.random() > 0.6 ? this.materials.columnMat : this.materials.roofMaterial;
+    const offset = colWidth * 0.15;
+    const corners = [
+      { x: w / 2 + offset, z: d / 2 + offset },
+      { x: -w / 2 - offset, z: d / 2 + offset },
+      { x: w / 2 + offset, z: -d / 2 - offset },
+      { x: -w / 2 - offset, z: -d / 2 - offset },
+    ];
+
+    for (const corner of corners) {
+      const col = new Mesh(this.materials.boxGeo, colMat);
+      col.scale.set(colWidth, h, colWidth);
+      col.position.set(corner.x, 0, corner.z);
+      col.castShadow = true;
+      col.receiveShadow = true;
+      buildingGroup.add(col);
+    }
+
+    if (h > 100 && Math.random() > 0.5) {
+      const capHeight = 3 + Math.random() * 5;
+      for (const corner of corners) {
+        const cap = new Mesh(this.materials.boxGeo, this.materials.roofMaterial);
+        cap.scale.set(colWidth + 1, capHeight, colWidth + 1);
+        cap.position.set(corner.x, h, corner.z);
+        cap.castShadow = true;
+        buildingGroup.add(cap);
+      }
+    }
+  }
+
+  private addRoofParapet(buildingGroup: Group, w: number, h: number, d: number) {
+    if (Math.random() > 0.6) return;
+    const parapetH = 2 + Math.random() * 3;
+    const parapetThick = 0.8;
+    const mat = Math.random() > 0.5 ? this.materials.columnMat : this.materials.roofMaterial;
+
+    const pFront = new Mesh(this.materials.boxGeo, mat);
+    pFront.scale.set(w, parapetH, parapetThick);
+    pFront.position.set(0, h + parapetH * 0.5, d / 2 + parapetThick * 0.5);
+    buildingGroup.add(pFront);
+
+    const pBack = new Mesh(this.materials.boxGeo, mat);
+    pBack.scale.set(w, parapetH, parapetThick);
+    pBack.position.set(0, h + parapetH * 0.5, -d / 2 - parapetThick * 0.5);
+    buildingGroup.add(pBack);
+
+    const pLeft = new Mesh(this.materials.boxGeo, mat);
+    pLeft.scale.set(parapetThick, parapetH, d);
+    pLeft.position.set(-w / 2 - parapetThick * 0.5, h + parapetH * 0.5, 0);
+    buildingGroup.add(pLeft);
+
+    const pRight = new Mesh(this.materials.boxGeo, mat);
+    pRight.scale.set(parapetThick, parapetH, d);
+    pRight.position.set(w / 2 + parapetThick * 0.5, h + parapetH * 0.5, 0);
+    buildingGroup.add(pRight);
   }
 
   private addNeonStrip(
@@ -489,6 +636,16 @@ export class CityBuilder {
       antenna.scale.set(1.5, 15 + Math.random() * 40, 1.5);
       antenna.position.set((Math.random() - 0.5) * 10, h, (Math.random() - 0.5) * 10);
       buildingGroup.add(antenna);
+
+      if (Math.random() > 0.5) {
+        const tipMat = new MeshBasicMaterial({
+          color: Math.random() > 0.5 ? 0xff0000 : 0x00ff00,
+        });
+        const tip = new Mesh(this.materials.boxGeo, tipMat);
+        tip.scale.set(0.8, 1.5, 0.8);
+        tip.position.set(antenna.position.x, h + 15 + Math.random() * 40, antenna.position.z);
+        buildingGroup.add(tip);
+      }
     }
     if (Math.random() > 0.6) {
       const antenna2 = new Mesh(this.materials.coneGeo, this.materials.antennaMat);
@@ -500,15 +657,42 @@ export class CityBuilder {
 
   private addRooftopDetails(buildingGroup: Group, style: string, h: number, w: number, d: number) {
     if (style === 'SPIRE' || style === 'CYLINDRICAL') return;
-    const detailCount = Math.floor(Math.random() * 3);
+    const detailCount = 2 + Math.floor(Math.random() * 4);
     for (let i = 0; i < detailCount; i++) {
-      const dh = 2 + Math.random() * 6;
-      const dw = 3 + Math.random() * 8;
-      const dd = 3 + Math.random() * 8;
+      const dh = 3 + Math.random() * 8;
+      const dw = 4 + Math.random() * 12;
+      const dd = 4 + Math.random() * 12;
       const detail = new Mesh(this.materials.boxGeo, this.materials.roofMaterial);
       detail.scale.set(dw, dh, dd);
       detail.position.set((Math.random() - 0.5) * w * 0.6, h, (Math.random() - 0.5) * d * 0.6);
+      detail.castShadow = true;
       buildingGroup.add(detail);
+
+      if (Math.random() > 0.6 && dh > 5) {
+        const ventPipe = new Mesh(this.materials.cylinderGeo, this.materials.antennaMat);
+        ventPipe.scale.set(0.8, dh * 0.3, 0.8);
+        ventPipe.position.set(
+          detail.position.x + (Math.random() - 0.5) * dw * 0.5,
+          h + dh,
+          detail.position.z + (Math.random() - 0.5) * dd * 0.5
+        );
+        buildingGroup.add(ventPipe);
+      }
+    }
+
+    if (Math.random() > 0.7 && h > 80) {
+      const tankW = 3 + Math.random() * 5;
+      const tankH = 4 + Math.random() * 6;
+      const tank = new Mesh(this.materials.cylinderGeo, this.materials.columnMat);
+      tank.scale.set(tankW, tankH, tankW);
+      tank.position.set((Math.random() - 0.5) * w * 0.4, h, (Math.random() - 0.5) * d * 0.4);
+      tank.castShadow = true;
+      buildingGroup.add(tank);
+
+      const tankStand = new Mesh(this.materials.boxGeo, this.materials.antennaMat);
+      tankStand.scale.set(tankW + 1, 2, tankW + 1);
+      tankStand.position.set(tank.position.x, h - 1, tank.position.z);
+      buildingGroup.add(tankStand);
     }
   }
 
@@ -558,6 +742,11 @@ export class CityBuilder {
     w: number,
     d: number
   ) {
+    if (style !== 'CYLINDRICAL') {
+      this.addFacadeBands(buildingGroup, w, h, d);
+      this.addCornerColumns(buildingGroup, w, h, d);
+      this.addRoofParapet(buildingGroup, w, h, d);
+    }
     this.addNeonStrip(buildingGroup, isLeaderboard, h, w, d);
     this.addAntenna(buildingGroup, style, h);
     this.addRooftopDetails(buildingGroup, style, h, w, d);

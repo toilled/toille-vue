@@ -389,8 +389,9 @@ export class TrafficSpawner {
     carGroup.traverse((child) => {
       if (child instanceof Mesh) {
         const mat = child.material;
-        if (!Array.isArray(mat) && child.userData.originalOpacity !== undefined) {
-          mat.opacity = child.userData.originalOpacity;
+        if (!Array.isArray(mat)) {
+          mat.opacity =
+            child.userData.originalOpacity !== undefined ? child.userData.originalOpacity : 1.0;
         }
       }
     });

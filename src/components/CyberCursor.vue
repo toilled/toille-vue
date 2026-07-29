@@ -24,22 +24,20 @@ function addParticle(x: number, y: number) {
   if (particles.length >= maxParticles) {
     particles.shift();
   }
-  const color = Math.random() > 0.4 ? 'rgba(0, 255, 204, ' : 'rgba(255, 0, 127, ';
+  const color = Math.random() > 0.4 ? 'rgba(0, 255, 204, ' : 'rgba(255, 0, 204, ';
   particles.push({
     x,
     y,
-    vx: (Math.random() - 0.5) * 1.5,
-    vy: (Math.random() - 0.5) * 1.5 - 0.5,
-    size: Math.random() * 3 + 1.5,
-    alpha: 0.9,
+    vx: (Math.random() - 0.5) * 2,
+    vy: (Math.random() - 0.5) * 2 - 0.5,
+    size: Math.random() * 5 + 3,
+    alpha: 1.0,
     color,
   });
 }
 
 function handleMouseMove(e: MouseEvent) {
-  if (Math.random() < 0.6) {
-    addParticle(e.clientX, e.clientY);
-  }
+  addParticle(e.clientX, e.clientY);
 }
 
 function render() {
@@ -54,19 +52,21 @@ function render() {
     const p = particles[i];
     p.x += p.vx;
     p.y += p.vy;
-    p.alpha -= 0.035;
+    p.alpha -= 0.02;
 
     if (p.alpha <= 0) {
       particles.splice(i, 1);
       continue;
     }
 
+    ctx.save();
     ctx.beginPath();
     ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
     ctx.fillStyle = `${p.color}${p.alpha})`;
-    ctx.shadowBlur = 8;
-    ctx.shadowColor = p.color.includes('255, 0') ? '#ff007f' : '#00ffcc';
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = p.color.includes('255, 0') ? '#ff00cc' : '#00ffcc';
     ctx.fill();
+    ctx.restore();
   }
 
   animationFrameId = requestAnimationFrame(render);

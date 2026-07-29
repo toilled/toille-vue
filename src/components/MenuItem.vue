@@ -2,6 +2,7 @@
   <li class="menu-item">
     <a
       :href="'#' + sectionId"
+      @mouseenter="handleMouseEnter"
       @click.prevent="handleClick"
       :class="{ active: isActive }"
       :aria-current="isActive ? 'page' : undefined"
@@ -15,6 +16,7 @@
 <script setup lang="ts">
 import type { Ref } from 'vue';
 import { Page } from '../interfaces/Page';
+import { cyberSFX } from '../utils/CyberSFX';
 
 const props = defineProps<{
   page: Page;
@@ -35,7 +37,12 @@ const isActive = computed(() => {
   return activeSection?.value === sectionId.value;
 });
 
+function handleMouseEnter() {
+  cyberSFX.playHover();
+}
+
 function handleClick() {
+  cyberSFX.playClick();
   if (route.path === '/') {
     if (navigateToSection) {
       navigateToSection(sectionId.value);

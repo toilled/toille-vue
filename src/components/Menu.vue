@@ -23,7 +23,11 @@
     </button>
     <div class="nav-tools" :class="{ show: showTools }">
       <button
-        @click="$emit('explore')"
+        @mouseenter="playHoverSound"
+        @click="
+          playClickSound();
+          $emit('explore');
+        "
         class="icon-wrapper"
         :class="{ disabled: !cityOn || cityFallback }"
         :aria-label="t('menu.exploreCity')"
@@ -33,7 +37,11 @@
       </button>
 
       <button
-        @click="$emit('demo')"
+        @mouseenter="playHoverSound"
+        @click="
+          playClickSound();
+          $emit('demo');
+        "
         class="icon-wrapper"
         :class="{ disabled: !cityOn || cityFallback }"
         :aria-label="t('menu.demo')"
@@ -42,7 +50,11 @@
         <img src="/64k-icon.svg" :alt="t('menu.demo')" class="icon" />
       </button>
       <button
-        @click="toggleSound"
+        @mouseenter="playHoverSound"
+        @click="
+          playClickSound();
+          toggleSound();
+        "
         class="icon-wrapper"
         :aria-label="t('menu.toggleSound')"
         data-label="Sound"
@@ -51,7 +63,11 @@
         <img v-else src="/mute-icon.svg" :alt="t('menu.toggleSound')" class="icon" />
       </button>
       <button
-        @click="$emit('toggle-content')"
+        @mouseenter="playHoverSound"
+        @click="
+          playClickSound();
+          $emit('toggle-content');
+        "
         class="icon-wrapper"
         :aria-label="t('menu.toggleVisibility')"
         data-label="View"
@@ -208,7 +224,15 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 
-import { Page } from '../interfaces/Page';
+import { cyberSFX } from '../utils/CyberSFX';
+
+function playHoverSound() {
+  cyberSFX.playHover();
+}
+
+function playClickSound() {
+  cyberSFX.playClick();
+}
 import { cyberpunkAudio } from '../utils/CyberpunkAudio';
 import { audioManager } from '../utils/AudioManager';
 import { cityBackground } from '../utils/CityBackgroundManager';

@@ -2,7 +2,16 @@
   <div>
     <h3 v-if="heading" class="sub-heading">{{ heading }}</h3>
     <div class="what-i-do-grid" :style="{ '--columns': columns || 3 }">
-      <div v-for="(item, i) in items" :key="i" class="do-card">
+      <div
+        v-for="(item, i) in items"
+        :key="i"
+        class="do-card"
+        :style="getCardStyle(i)"
+        @mouseenter="handleMouseEnter(i)"
+        @mousemove="(e) => handleMouseMove(e, i)"
+        @mouseleave="handleMouseLeave(i)"
+        @click="handleClick"
+      >
         <div class="do-card-accent" :class="accentClass(i)"></div>
         <div class="do-card-icon">{{ item.icon }}</div>
         <h4 class="do-card-title">{{ item.title }}</h4>
@@ -14,12 +23,55 @@
 
 <script setup lang="ts">
 import type { PageSectionItem } from '../../interfaces/Page';
+import { cyberSFX } from '../../utils/CyberSFX';
 
 defineProps<{
   heading?: string;
   columns?: number;
   items?: PageSectionItem[];
 }>();
+
+const activeTilts = ref<Record<number, { x: number; y: number }>>({});
+
+function getCardStyle(index: number) {
+  const tilt = activeTilts.value[index];
+  if (!tilt) return {};
+  return {
+    transform: `perspective(600px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale3d(1.03, 1.03, 1.03)`,
+  };
+}
+
+function handleMouseEnter(index: number) {
+  cyberSFX.playHover();
+}
+
+function handleMouseMove(e: MouseEvent, index: number) {
+  const target = e.currentTarget as HTMLElement;
+  if (!target) return;
+  const rect = target.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  const centerX = rect.width / 2;
+  const centerY = rect.height / 2;
+
+  activeTilts.value = {
+    ...activeTilts.value,
+    [index]: {
+      x: -((y - centerY) / centerY) * 10,
+      y: ((x - centerX) / centerX) * 10,
+    },
+  };
+}
+
+function handleMouseLeave(index: number) {
+  const copy = { ...activeTilts.value };
+  delete copy[index];
+  activeTilts.value = copy;
+}
+
+function handleClick() {
+  cyberSFX.playClick();
+}
 
 function accentClass(index: number): string {
   const classes = ['fullstack', 'ux', 'interactive'];

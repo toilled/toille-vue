@@ -67,6 +67,7 @@
   />
   <EpilepsyWarning />
   <Desktop v-if="desktopMode" @shutdown="toggleDesktop" />
+  <CyberCursor />
 </template>
 
 <script setup lang="ts">
@@ -76,6 +77,7 @@ import type { Component } from 'vue';
 import AppHeader from './components/AppHeader.vue';
 import AppFooter from './components/AppFooter.vue';
 import AppOverlays from './components/AppOverlays.vue';
+import CyberCursor from './components/CyberCursor.vue';
 import { useGameState } from './composables/useGameState';
 import { useDesktopMode } from './composables/useDesktopMode';
 import { useUIStore } from './stores/uiStore';

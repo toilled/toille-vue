@@ -1,5 +1,6 @@
 <template>
   <div class="desktop-overlay" @click.self="onDesktopClick">
+    <div class="crt-scanlines" aria-hidden="true" />
     <div class="desktop-wallpaper">
       <div class="wallpaper-grid" />
       <div class="wallpaper-glow" />
@@ -23,7 +24,7 @@
       :key="w.id"
       :win="w"
       :component="componentMap[w.component]"
-      @close="closeWindow(w.id)"
+      @close="handleCloseWindow(w.id)"
       @minimize="minimizeWindow(w.id)"
       @maximize="maximizeWindow(w.id)"
       @focus="focusWindow(w.id)"
@@ -190,9 +191,17 @@ const startApps = shortcuts.map((s) => ({
   icon: s.icon,
 }));
 
+import { cyberSFX } from '../utils/CyberSFX';
+
+function handleCloseWindow(id: string) {
+  cyberSFX.playWindowClose();
+  closeWindow(id);
+}
+
 function onShortcutOpen(id: string) {
   const sc = shortcuts.find((s) => s.id === id);
   if (!sc) return;
+  cyberSFX.playWindowOpen();
   const opts: {
     title: string;
     component: string;
@@ -295,5 +304,15 @@ function onDesktopClick() {
   align-content: flex-start;
   flex: 1;
   padding-bottom: 44px;
+}
+
+.crt-scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+  background-size: 100% 4px;
+  opacity: 0.35;
 }
 </style>

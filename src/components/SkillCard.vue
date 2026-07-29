@@ -10,6 +10,8 @@
         :href="skill.link"
         :target="skill.link ? '_blank' : undefined"
         :rel="skill.link ? 'noopener noreferrer' : undefined"
+        @mouseenter="handleMouseEnter(skill)"
+        @click="handleClick(skill)"
       >
         <img
           v-if="skill.icon && skill.icon.includes('/')"
@@ -25,6 +27,8 @@
 </template>
 
 <script setup lang="ts">
+import { cyberSFX } from '../utils/CyberSFX';
+
 interface Skill {
   name: string;
   icon?: string;
@@ -35,6 +39,18 @@ defineProps<{
   skills: Skill[];
   category?: string;
 }>();
+
+function handleMouseEnter(skill: Skill) {
+  if (skill.link) {
+    cyberSFX.playHover();
+  }
+}
+
+function handleClick(skill: Skill) {
+  if (skill.link) {
+    cyberSFX.playClick();
+  }
+}
 </script>
 
 <style scoped>

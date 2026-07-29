@@ -1,4 +1,19 @@
 import { vi } from 'vitest';
+import url from 'node:url';
+
+// Patch node:url fileURLToPath to prevent Node.js Windows file:/// URL path errors in jsdom
+const origFileURLToPath = url.fileURLToPath;
+url.fileURLToPath = function (path: string | URL): string {
+  const str = typeof path === 'string' ? path : path.href;
+  if (str.startsWith('file:///') && !str.match(/^file:\/\/\/[a-zA-Z]:/)) {
+    return 'C:\\' + str.replace('file:///', '').replace(/\//g, '\\');
+  }
+  try {
+    return origFileURLToPath.call(url, path);
+  } catch {
+    return 'C:\\dummy';
+  }
+};
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -135,7 +150,45 @@ vi.mock('three', async () => {
       applyMatrix4() {
         return this;
       }
-      computeVertexNormals() {}
+      dispose() {}
+    },
+    RingGeometry: class {
+      groups: any[] = [];
+      morphAttributes: Record<string, any> = {};
+      attributes: any = { position: { count: 0, itemSize: 3, array: new Float32Array() } };
+      index: any = null;
+      parameters: any;
+      constructor() {}
+      translate() {}
+      rotateX = vi.fn();
+      rotateY = vi.fn();
+      rotateZ = vi.fn();
+      dispose() {}
+    },
+    TorusGeometry: class {
+      groups: any[] = [];
+      morphAttributes: Record<string, any> = {};
+      attributes: any = { position: { count: 0, itemSize: 3, array: new Float32Array() } };
+      index: any = null;
+      parameters: any;
+      constructor() {}
+      translate() {}
+      rotateX = vi.fn();
+      rotateY = vi.fn();
+      rotateZ = vi.fn();
+      dispose() {}
+    },
+    OctahedronGeometry: class {
+      groups: any[] = [];
+      morphAttributes: Record<string, any> = {};
+      attributes: any = { position: { count: 0, itemSize: 3, array: new Float32Array() } };
+      index: any = null;
+      parameters: any;
+      constructor() {}
+      translate() {}
+      rotateX = vi.fn();
+      rotateY = vi.fn();
+      rotateZ = vi.fn();
       dispose() {}
     },
     SphereGeometry: class {
@@ -739,3 +792,28 @@ vi.stubGlobal(
   }
 );
 vi.stubGlobal('webkitAudioContext', (globalThis as any).AudioContext);
+
+// Patch jsdom ResourceLoader to prevent invalid file:/// URL errors on Windows
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const jsdomResourceLoader = require('jsdom/lib/jsdom/browser/resources/ResourceLoader');
+  if (jsdomResourceLoader && jsdomResourceLoader.prototype) {
+    const origFetch = jsdomResourceLoader.prototype.fetch;
+    jsdomResourceLoader.prototype.fetch = function (urlString: string, options: any) {
+      if (
+        typeof urlString === 'string' &&
+        urlString.startsWith('file:///') &&
+        !urlString.match(/^file:\/\/\/[a-zA-Z]:/)
+      ) {
+        return Promise.resolve(Buffer.from(''));
+      }
+      try {
+        return origFetch.call(this, urlString, options);
+      } catch {
+        return Promise.resolve(Buffer.from(''));
+      }
+    };
+  }
+} catch {
+  // Ignore if jsdom structure is not present
+}

@@ -173,15 +173,32 @@ vi.mock('three', () => {
       };
     }),
     SphereGeometry: vi.fn(),
-    OctahedronGeometry: vi.fn(),
+    OctahedronGeometry: vi.fn().mockImplementation(function () {
+      return {
+        rotation: { x: 0, y: 0, z: 0 },
+        position: { x: 0, y: 0, z: 0, set: vi.fn() },
+        scale: { set: vi.fn() },
+        dispose: vi.fn(),
+      };
+    }),
     TorusGeometry: vi.fn().mockImplementation(function () {
       return {
         rotateX: vi.fn(),
+        rotation: { x: 0, y: 0, z: 0 },
+        position: { x: 0, y: 0, z: 0, set: vi.fn() },
+        dispose: vi.fn(),
       };
     }),
     ConeGeometry: vi.fn().mockImplementation(function () {
       return {
         translate: vi.fn(),
+        dispose: vi.fn(),
+      };
+    }),
+    RingGeometry: vi.fn().mockImplementation(function () {
+      return {
+        rotation: { x: 0, y: 0, z: 0 },
+        position: { x: 0, y: 0, z: 0, set: vi.fn() },
         dispose: vi.fn(),
       };
     }),

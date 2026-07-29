@@ -1,11 +1,17 @@
 // fallow-ignore-file security-sink
 <template>
   <component
+    ref="cardRef"
     :is="tag"
     class="feature-card"
+    :class="{ 'has-link': link }"
     :href="href"
     :target="target"
     :rel="rel"
+    :style="cardStyle"
+    @mouseenter="handleMouseEnter"
+    @mousemove="handleMouseMove"
+    @mouseleave="handleMouseLeave"
     @click="handleClick"
     :tabindex="link ? 0 : undefined"
     :role="role"
@@ -23,6 +29,8 @@
 </template>
 
 <script setup lang="ts">
+import { cyberSFX } from '../utils/CyberSFX';
+
 const props = defineProps<{
   icon: string;
   title: string;
@@ -36,6 +44,48 @@ const router = useRouter();
 const navigateToSection =
   inject<(id: string, behavior?: ScrollBehavior) => void>('navigateToSection');
 
+const cardRef = ref<HTMLElement | null>(null);
+const tiltX = ref(0);
+const tiltY = ref(0);
+const spotX = ref(50);
+const spotY = ref(50);
+
+const cardStyle = computed(() => {
+  if (!tiltX.value && !tiltY.value) return {};
+  return {
+    transform: `perspective(600px) rotateX(${tiltX.value}deg) rotateY(${tiltY.value}deg) scale3d(1.02, 1.02, 1.02)`,
+    '--spot-x': `${spotX.value}%`,
+    '--spot-y': `${spotY.value}%`,
+  };
+});
+
+function handleMouseEnter() {
+  if (props.link) {
+    cyberSFX.playHover();
+  }
+}
+
+function handleMouseMove(e: MouseEvent) {
+  if (!cardRef.value || !props.link) return;
+  const rect = cardRef.value.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  const centerX = rect.width / 2;
+  const centerY = rect.height / 2;
+
+  tiltX.value = -((y - centerY) / centerY) * 6;
+  tiltY.value = ((x - centerX) / centerX) * 6;
+  spotX.value = Math.round((x / rect.width) * 100);
+  spotY.value = Math.round((y / rect.height) * 100);
+}
+
+function handleMouseLeave() {
+  tiltX.value = 0;
+  tiltY.value = 0;
+  spotX.value = 50;
+  spotY.value = 50;
+}
+
 const isExternal = computed(() => props.link?.startsWith('http') ?? false);
 const tag = computed(() => (props.link ? 'a' : 'div'));
 const href = computed(() => (props.link && !props.isHash ? props.link : undefined));
@@ -45,6 +95,7 @@ const role = computed(() => (props.link && props.isHash ? 'link' : undefined));
 
 function handleClick() {
   if (!props.link) return;
+  cyberSFX.playClick();
 
   if (props.isHash && navigateToSection) {
     const sectionId = props.link.replace(/^#/, '');

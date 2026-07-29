@@ -21,6 +21,8 @@ import { getHeight } from '../utils/HeightMap';
 import { getCachedHeightmap, cacheHeightmap } from '../utils/TextureCache';
 import { CityMaterials } from './CityMaterials';
 
+import { HologramLandmarks } from './HologramLandmarks';
+
 export class CityBuilder {
   private scene: Scene;
   private buildings: Object3D[] = [];
@@ -28,6 +30,7 @@ export class CityBuilder {
   private materials: CityMaterials;
   private ground: Mesh | null = null;
   private directionalLights: DirectionalLight[] = [];
+  public hologramLandmarks: HologramLandmarks | null = null;
 
   constructor(scene: Scene) {
     this.scene = scene;
@@ -51,6 +54,9 @@ export class CityBuilder {
     this.setupLighting();
     await this.createGround();
     await this.createBuildings(lbTexture);
+
+    this.hologramLandmarks = new HologramLandmarks();
+    this.scene.add(this.hologramLandmarks.group);
 
     this.scene.fog = new FogExp2(0x0a0015, isMobile ? 0.0005 : 0.0009);
   }

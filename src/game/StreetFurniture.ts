@@ -389,10 +389,6 @@ export class StreetFurniture {
     }
   }
 
-  getItems(): Group[] {
-    return this.items;
-  }
-
   dispose() {
     for (const item of this.items) {
       item.traverse((child) => {

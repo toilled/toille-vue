@@ -292,6 +292,46 @@ vi.mock('three', () => {
       };
     }),
     Line: vi.fn(),
+    LOD: vi.fn().mockImplementation(function () {
+      return {
+        addLevel: vi.fn(),
+        update: vi.fn(),
+        position: {
+          set: vi.fn(),
+          x: 0,
+          y: 0,
+          z: 0,
+          copy: vi.fn(),
+          distanceToSquared: vi.fn(() => 100),
+          distanceTo: vi.fn(() => 10),
+          clone: vi.fn(() => ({ x: 0, y: 0, z: 0 })),
+          add: vi.fn(),
+          sub: vi.fn(),
+          normalize: vi.fn(),
+          multiplyScalar: vi.fn(),
+        },
+        rotation: { x: 0, y: 0, z: 0, set: vi.fn() },
+        scale: { set: vi.fn(), x: 1, y: 1, z: 1 },
+        up: { x: 0, y: 1, z: 0, set: vi.fn(), copy: vi.fn() },
+        children: [],
+        traverse: vi.fn(),
+        userData: {},
+        lookAt: vi.fn(),
+        add: vi.fn(),
+        remove: vi.fn(),
+        matrixWorld: {
+          elements: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+          copy: vi.fn(),
+          clone: vi.fn(),
+          multiply: vi.fn(),
+          decompose: vi.fn(),
+          compose: vi.fn(),
+          identity: vi.fn(),
+          invert: vi.fn(),
+        },
+        updateWorldMatrix: vi.fn(),
+      };
+    }),
     Group: vi.fn().mockImplementation(function () {
       return {
         add: vi.fn(),
@@ -541,6 +581,41 @@ vi.mock('three', () => {
         x: 0,
         y: 0,
         z: 0,
+        set: vi.fn(function (
+          this: { x: number; y: number; z: number },
+          x: number,
+          y: number,
+          z: number
+        ) {
+          this.x = x;
+          this.y = y;
+          this.z = z;
+        }),
+        copy: vi.fn(function (
+          this: { x: number; y: number; z: number },
+          v: { x: number; y: number; z: number }
+        ) {
+          if (v) {
+            this.x = v.x;
+            this.y = v.y;
+            this.z = v.z;
+          }
+          return this;
+        }),
+        add: vi.fn(function (
+          this: { x: number; y: number; z: number },
+          v: { x: number; y: number; z: number }
+        ) {
+          if (v) {
+            this.x += v.x;
+            this.y += v.y;
+            this.z += v.z;
+          }
+          return this;
+        }),
+        clone: vi.fn(function (this: { x: number; y: number; z: number }) {
+          return { x: this.x, y: this.y, z: this.z };
+        }),
         lerp: vi.fn(),
         subVectors: vi.fn(),
         normalize: vi.fn(),

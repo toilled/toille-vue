@@ -28,22 +28,23 @@ export class LODManager {
       const dims = gridKey ? occupiedGrids.get(gridKey) : null;
 
       const lod = new LOD();
+      lod.position.set(building.position.x, building.position.y, building.position.z);
 
+      building.position.set(0, 0, 0);
       lod.addLevel(building, 0);
 
       const midGroup = this.createMidDetail(building, dims);
       if (midGroup) {
-        midGroup.position.copy(building.position);
+        midGroup.position.set(0, 0, 0);
         lod.addLevel(midGroup, 800);
       }
 
       const lowGroup = this.createLowDetail(building);
       if (lowGroup) {
-        lowGroup.position.copy(building.position);
+        lowGroup.position.set(0, 0, 0);
         lod.addLevel(lowGroup, 1600);
       }
 
-      this.scene.remove(building);
       this.scene.add(lod);
       buildings[i] = lod;
       this.lods.push(lod);

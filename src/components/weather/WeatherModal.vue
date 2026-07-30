@@ -3,7 +3,7 @@
     <div
       v-if="show"
       class="weather-modal-overlay"
-      @click.self="$emit('close')"
+      @click.self.stop="$emit('close')"
       role="dialog"
       aria-modal="true"
       :aria-labelledby="t('weather.forecast')"
@@ -11,7 +11,7 @@
       <article class="weather-modal">
         <header class="modal-header">
           <h2>{{ t('weather.forecast') }}</h2>
-          <button class="close-btn" @click="$emit('close')" :aria-label="t('weather.close')">
+          <button class="close-btn" @click.stop="$emit('close')" :aria-label="t('weather.close')">
             &times;
           </button>
         </header>

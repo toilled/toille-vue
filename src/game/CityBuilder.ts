@@ -20,6 +20,8 @@ import { createGroundTexture, createGroundNormalMap } from '../utils/TextureGene
 import { getHeight } from '../utils/HeightMap';
 import { getCachedHeightmap, cacheHeightmap } from '../utils/TextureCache';
 import { CityMaterials } from './CityMaterials';
+import { StreetFurniture } from './StreetFurniture';
+import { LODManager } from './LODManager';
 
 export class CityBuilder {
   private scene: Scene;
@@ -28,10 +30,14 @@ export class CityBuilder {
   private materials: CityMaterials;
   private ground: Mesh | null = null;
   private directionalLights: DirectionalLight[] = [];
+  private streetFurniture: StreetFurniture;
+  private lodManager: LODManager;
 
   constructor(scene: Scene) {
     this.scene = scene;
     this.materials = new CityMaterials();
+    this.streetFurniture = new StreetFurniture(scene);
+    this.lodManager = new LODManager(scene);
   }
 
   public getBuildings(): Object3D[] {
@@ -51,8 +57,19 @@ export class CityBuilder {
     this.setupLighting();
     await this.createGround();
     await this.createBuildings(lbTexture);
+    this.lodManager.wrapBuildings(this.buildings, this.occupiedGrids);
+    this.buildings = this.lodManager.getBuildings();
+    this.streetFurniture.generate(this.occupiedGrids);
 
     this.scene.fog = new FogExp2(0x0a0015, isMobile ? 0.0005 : 0.0009);
+  }
+
+  public updateStreetFurniture(time: number) {
+    this.streetFurniture.update(time);
+  }
+
+  public updateLOD(camera: import('three').Camera) {
+    this.lodManager.update(camera);
   }
 
   private setupLighting() {
@@ -632,5 +649,7 @@ export class CityBuilder {
     if (this.ground?.material) {
       (this.ground.material as MeshStandardMaterial).dispose();
     }
+    this.streetFurniture.dispose();
+    this.lodManager.dispose();
   }
 }

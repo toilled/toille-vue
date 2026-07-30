@@ -314,6 +314,21 @@ const showStoryTriggerPrompt = computed(
 );
 const currentLookAt = new Vector3(0, 0, 0);
 
+// Camera orbit state
+let orbitPulse = 0;
+let orbitLookOffset = new Vector3(0, 0, 0);
+let orbitLookTarget = new Vector3(0, 0, 0);
+const orbitLookAtTarget = new Vector3(0, 0, 0);
+const idleLookTargets = [
+  new Vector3(0, 0, 0),
+  new Vector3(100, 0, -50),
+  new Vector3(-80, 20, 60),
+  new Vector3(50, -10, 80),
+  new Vector3(-40, 10, -100),
+];
+let currentLookTargetIdx = 0;
+let lookTargetTimer = 0;
+
 // Sparks system
 let sparkSystem: SparkSystem;
 
@@ -870,19 +885,39 @@ function updateCamera(time: number, now: number) {
   const introProgress =
     startTime.value === 0 ? 0 : Math.min(1, (now - startTime.value) / INTRO_DURATION_MS);
 
-  camera.position.x = Math.sin(time * ORBIT_SPEED) * orbitRadius;
-  camera.position.z = Math.cos(time * ORBIT_SPEED) * orbitRadius;
+  orbitPulse += 0.002;
+
+  const slowPulse = Math.sin(orbitPulse * 0.3) * 40;
+  const slowPulse2 = Math.sin(orbitPulse * 0.15 + 1) * 25;
+  const radiusMod = orbitRadius + slowPulse + slowPulse2;
+
+  lookTargetTimer += 0.003;
+  if (lookTargetTimer > 1) {
+    lookTargetTimer = 0;
+    currentLookTargetIdx = (currentLookTargetIdx + 1) % idleLookTargets.length;
+    orbitLookTarget.copy(idleLookTargets[currentLookTargetIdx]);
+  }
+
+  camera.position.x = Math.sin(time * ORBIT_SPEED) * radiusMod;
+  camera.position.z = Math.cos(time * ORBIT_SPEED) * radiusMod;
+
+  const heightVariation = Math.sin(orbitPulse * 0.5) * 15;
+  const dynamicTargetY = targetY + heightVariation;
 
   if (startTime.value === 0) {
     camera.position.y = CAMERA_START_Y;
   } else if (introProgress < 1) {
     const ease = 1 - Math.pow(1 - introProgress, 3);
-    camera.position.y = CAMERA_START_Y + (targetY - CAMERA_START_Y) * ease;
-  } else if (Math.abs(camera.position.y - targetY) > 1) {
-    camera.position.y += (targetY - camera.position.y) * CAMERA_LERP_FACTOR;
+    camera.position.y = CAMERA_START_Y + (dynamicTargetY - CAMERA_START_Y) * ease;
+  } else {
+    camera.position.y += (dynamicTargetY - camera.position.y) * CAMERA_LERP_FACTOR;
   }
 
-  currentLookAt.lerp(ZERO_VEC, CAMERA_LOOK_AT_LERP);
+  const lookOffset = Math.sin(orbitPulse * 0.2) * 30;
+  orbitLookOffset.set(lookOffset, Math.sin(orbitPulse * 0.25) * 10, Math.cos(orbitPulse * 0.2) * 20);
+
+  orbitLookAtTarget.copy(orbitLookTarget).add(orbitLookOffset);
+  currentLookAt.lerp(orbitLookAtTarget, CAMERA_LOOK_AT_LERP);
   camera.lookAt(currentLookAt);
 }
 
@@ -921,6 +956,8 @@ function animate() {
   trafficSystem?.update(activeCar.value);
   storyItemsManager?.updateTriggerAnimation(time * 1000);
   pagePanelRenderer?.update(now);
+  cityBuilder?.updateStreetFurniture(time);
+  cityBuilder?.updateLOD(camera);
 
   updateCamera(time, now);
   renderFrame();

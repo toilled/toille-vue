@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CityBuilder } from '../CityBuilder';
-import { Scene, Mesh, Group, LOD, CanvasTexture, MeshStandardMaterial } from 'three';
+import { Scene, Mesh, Group, CanvasTexture, MeshStandardMaterial } from 'three';
 
 // Mock HeightMap
 vi.mock('../../utils/HeightMap', () => ({
@@ -51,7 +51,7 @@ describe('CityBuilder', () => {
     const buildings = cityBuilder.getBuildings();
 
     buildings.forEach((b) => {
-      expect(b instanceof Group || b instanceof LOD).toBe(true);
+      expect(b).toBeInstanceOf(Group);
       expect(b.children.length).toBeGreaterThan(0);
     });
   });

@@ -959,7 +959,6 @@ function animate() {
   storyItemsManager?.updateTriggerAnimation(time * 1000);
   pagePanelRenderer?.update(now);
   cityBuilder?.updateStreetFurniture(time);
-  cityBuilder?.updateLOD(camera);
 
   updateCamera(time, now);
   renderFrame();

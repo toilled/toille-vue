@@ -9,8 +9,6 @@ import {
   MeshStandardMaterial,
   Scene,
   SphereGeometry,
-  Vector3,
-  MathUtils,
   PlaneGeometry,
   DoubleSide,
   BoxGeometry,
@@ -18,7 +16,7 @@ import {
   LineBasicMaterial,
   LineSegments,
 } from 'three';
-import { CELL_SIZE, GRID_SIZE, START_OFFSET, BOUNDS } from './config';
+import { CELL_SIZE, GRID_SIZE, ROAD_WIDTH, START_OFFSET } from './config';
 import { getHeight } from '../utils/HeightMap';
 
 export class StreetFurniture {
@@ -31,24 +29,22 @@ export class StreetFurniture {
     this.scene = scene;
   }
 
-  generate(
-    occupiedGrids: Map<string, { halfW: number; halfD: number; isRound?: boolean }>
-  ) {
+  generate(occupiedGrids: Map<string, { halfW: number; halfD: number; isRound?: boolean }>) {
     this.generateLampPosts();
     this.generateEmptyCellDecorations(occupiedGrids);
     this.generateFireEscapes(occupiedGrids);
   }
 
   private generateLampPosts() {
-    const spacing = CELL_SIZE;
-    for (let x = 0; x < GRID_SIZE; x++) {
-      for (let z = 0; z < GRID_SIZE; z++) {
-        const xPos = START_OFFSET + x * CELL_SIZE + CELL_SIZE / 2;
-        const zPos = START_OFFSET + z * CELL_SIZE + CELL_SIZE / 2;
-        this.addLampPost(xPos, START_OFFSET - CELL_SIZE / 2);
-        this.addLampPost(xPos, -START_OFFSET + CELL_SIZE / 2);
-        this.addLampPost(START_OFFSET - CELL_SIZE / 2, zPos);
-        this.addLampPost(-START_OFFSET + CELL_SIZE / 2, zPos);
+    for (let i = 0; i <= GRID_SIZE; i++) {
+      const roadPos = START_OFFSET - CELL_SIZE / 2 + i * CELL_SIZE;
+      const roadSide = ROAD_WIDTH / 2 + 2;
+      for (let j = 1; j < GRID_SIZE; j += 2) {
+        const cellCenter = START_OFFSET + j * CELL_SIZE;
+        this.addLampPost(cellCenter, roadPos - roadSide);
+        this.addLampPost(cellCenter, roadPos + roadSide);
+        this.addLampPost(roadPos - roadSide, cellCenter);
+        this.addLampPost(roadPos + roadSide, cellCenter);
       }
     }
   }
@@ -172,7 +168,11 @@ export class StreetFurniture {
     group.add(signGlow);
 
     const frameEdges = new EdgesGeometry(new PlaneGeometry(8, 5));
-    const frameMat = new LineBasicMaterial({ color: new Color(color), transparent: true, opacity: 0.6 });
+    const frameMat = new LineBasicMaterial({
+      color: new Color(color),
+      transparent: true,
+      opacity: 0.6,
+    });
     const frame = new LineSegments(frameEdges, frameMat);
     frame.position.copy(sign.position);
     frame.rotation.y = sign.rotation.y;
@@ -188,7 +188,6 @@ export class StreetFurniture {
 
     const hologramColors = [0xff00cc, 0x00ffcc, 0xaa44ff, 0x00ff88, 0xff6600];
     const color = hologramColors[Math.floor(Math.random() * hologramColors.length)];
-    const hsl = new Color(color);
 
     const coreGeo = new ConeGeometry(3, 8 + Math.random() * 6, 8);
     const coreMat = new MeshBasicMaterial({
@@ -310,14 +309,28 @@ export class StreetFurniture {
             new BoxGeometry(0.3, stepH, 0.3),
             new MeshStandardMaterial({ color: 0x222233, metalness: 0.5, roughness: 0.7 })
           );
-          this.positionFireEscapePart(ladder, face, dims, -stepW / 2 + 0.5, s * stepH + stepH / 2, 0);
+          this.positionFireEscapePart(
+            ladder,
+            face,
+            dims,
+            -stepW / 2 + 0.5,
+            s * stepH + stepH / 2,
+            0
+          );
           group.add(ladder);
 
           const ladder2 = new Mesh(
             new BoxGeometry(0.3, stepH, 0.3),
             new MeshStandardMaterial({ color: 0x222233, metalness: 0.5, roughness: 0.7 })
           );
-          this.positionFireEscapePart(ladder2, face, dims, stepW / 2 - 0.5, s * stepH + stepH / 2, 0);
+          this.positionFireEscapePart(
+            ladder2,
+            face,
+            dims,
+            stepW / 2 - 0.5,
+            s * stepH + stepH / 2,
+            0
+          );
           group.add(ladder2);
         }
       }
@@ -366,11 +379,13 @@ export class StreetFurniture {
       holo.position.y = data.baseY + float;
 
       const pulse = 0.6 + Math.sin(time * 2 + data.pulsePhase) * 0.4;
-      holo.children.forEach((child) => {
-        if (child instanceof Mesh && child.material instanceof MeshBasicMaterial) {
-          child.material.opacity = 0.5 * pulse;
+      if (holo.children && holo.children.length) {
+        for (const child of holo.children) {
+          if (child instanceof Mesh && child.material instanceof MeshBasicMaterial) {
+            child.material.opacity = 0.5 * pulse;
+          }
         }
-      });
+      }
     }
   }
 

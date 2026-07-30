@@ -276,8 +276,6 @@ function activateStoryTrigger() {
 
 const isMobile = ref(checkMobile());
 
-const ZERO_VEC = new Vector3(0, 0, 0);
-
 // Controls State
 const controls = ref({
   left: false,
@@ -914,7 +912,11 @@ function updateCamera(time: number, now: number) {
   }
 
   const lookOffset = Math.sin(orbitPulse * 0.2) * 30;
-  orbitLookOffset.set(lookOffset, Math.sin(orbitPulse * 0.25) * 10, Math.cos(orbitPulse * 0.2) * 20);
+  orbitLookOffset.set(
+    lookOffset,
+    Math.sin(orbitPulse * 0.25) * 10,
+    Math.cos(orbitPulse * 0.2) * 20
+  );
 
   orbitLookAtTarget.copy(orbitLookTarget).add(orbitLookOffset);
   currentLookAt.lerp(orbitLookAtTarget, CAMERA_LOOK_AT_LERP);

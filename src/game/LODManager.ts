@@ -3,16 +3,12 @@ import {
   Object3D,
   Group,
   Mesh,
-  MeshStandardMaterial,
-  BoxGeometry,
-  EdgesGeometry,
   LineSegments,
   LineBasicMaterial,
   Scene,
   Camera,
   Vector3,
 } from 'three';
-import { getHeight } from '../utils/HeightMap';
 
 export class LODManager {
   private lods: LOD[] = [];
@@ -26,13 +22,9 @@ export class LODManager {
     buildings: Object3D[],
     occupiedGrids: Map<string, { halfW: number; halfD: number; isRound?: boolean }>
   ) {
-    const tmpVec = new Vector3();
-
     for (let i = buildings.length - 1; i >= 0; i--) {
       const building = buildings[i];
-      const pos = building.position;
-      const h = pos.y;
-      const gridKey = this.findGridKey(pos, occupiedGrids);
+      const gridKey = this.findGridKey(building.position, occupiedGrids);
       const dims = gridKey ? occupiedGrids.get(gridKey) : null;
 
       const lod = new LOD();
@@ -78,7 +70,7 @@ export class LODManager {
 
   private createMidDetail(
     building: Object3D,
-    dims?: { halfW: number; halfD: number; isRound?: boolean } | null
+    _dims?: { halfW: number; halfD: number; isRound?: boolean } | null
   ): Object3D | null {
     const mainMesh = this.findMainMesh(building);
     if (!mainMesh) return null;
@@ -113,24 +105,13 @@ export class LODManager {
     const mainMesh = this.findMainMesh(building);
     if (!mainMesh) return null;
 
-    const scale = mainMesh.scale;
-    const boxGeo = new BoxGeometry(1, 1, 1);
-    boxGeo.translate(0, 0.5, 0);
-
-    const origMat = mainMesh.material;
-    let color = 0x1a1a2e;
-    if (!Array.isArray(origMat) && origMat instanceof MeshStandardMaterial) {
-      color = origMat.color.getHex();
+    const box = mainMesh.clone();
+    box.geometry = mainMesh.geometry.clone();
+    if (Array.isArray(box.material)) {
+      box.material = box.material.map((m) => m.clone());
+    } else {
+      box.material = box.material.clone();
     }
-
-    const mat = new MeshStandardMaterial({
-      color,
-      roughness: 0.6,
-      metalness: 0.4,
-    });
-
-    const box = new Mesh(boxGeo, mat);
-    box.scale.copy(scale);
     box.castShadow = true;
     box.receiveShadow = true;
     return box;
@@ -140,10 +121,8 @@ export class LODManager {
     let result: Mesh | null = null;
     building.traverse((child) => {
       if (child instanceof Mesh && !child.userData.isLeaderboard) {
-        const parent = child.parent;
         const isGeometryChild =
-          child.geometry.type === 'BoxGeometry' ||
-          child.geometry.type === 'CylinderGeometry';
+          child.geometry.type === 'BoxGeometry' || child.geometry.type === 'CylinderGeometry';
         const scale = child.scale;
         if (isGeometryChild && scale.x > 50 && scale.z > 50 && !result) {
           result = child;

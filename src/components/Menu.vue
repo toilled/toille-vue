@@ -185,22 +185,21 @@
           <line x1="12" y1="17" x2="12" y2="21" />
         </svg>
       </button>
-      <button
+      <span
         class="icon-wrapper"
         :aria-label="t('menu.weather')"
         data-label="Weather"
+        role="button"
+        tabindex="0"
         @click="weatherRef?.toggleModal()"
+        @keydown.enter.prevent="weatherRef?.toggleModal()"
+        @keydown.space.prevent="weatherRef?.toggleModal()"
       >
         <WeatherIcon ref="weatherRef" />
-      </button>
-      <button
-        class="icon-wrapper"
-        :aria-label="t('menu.language')"
-        data-label="Lang"
-        @click.stop="langRef?.toggle()"
-      >
-        <LanguageSelector ref="langRef" />
-      </button>
+      </span>
+      <span class="icon-wrapper" data-label="Lang">
+        <LanguageSelector />
+      </span>
     </div>
   </div>
 </template>
@@ -234,7 +233,6 @@ defineEmits<{
 
 const showTools = ref(false);
 const weatherRef = ref<{ toggleModal: () => void } | null>(null);
-const langRef = ref<{ toggle: () => void } | null>(null);
 
 const soundOn = computed(() => audioManager.isSoundEnabled.value);
 const cityOn = computed(() => cityBackground.isEnabled.value);

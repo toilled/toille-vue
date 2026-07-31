@@ -21,11 +21,20 @@ const locales = ['en', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'ar', 'zh-CN', 'ja', 
 
 let generated = 0;
 
+function injectTeleports(template, teleports) {
+  let html = template;
+  for (const [target, content] of Object.entries(teleports ?? {})) {
+    if (!content) continue;
+    html = html.replace(`<${target}>`, `<${target}>${content}`);
+  }
+  return html;
+}
+
 for (const locale of locales) {
   for (const route of ssgRoutes) {
-    const { html: appHtml, title, lang } = await render(route, locale);
+    const { html: appHtml, title, lang, teleports } = await render(route, locale);
 
-    let html = template.replace('<!--app-html-->', appHtml);
+    let html = injectTeleports(template.replace('<!--app-html-->', appHtml), teleports);
     html = html.replace('lang="en"', `lang="${lang}"`);
     html = html.replace('<title>Elliot Dickerson</title>', `<title>${title}</title>`);
 

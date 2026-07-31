@@ -1,4 +1,4 @@
-import { renderToString } from '@vue/server-renderer';
+import { renderToString, type SSRContext } from '@vue/server-renderer';
 import { createApp } from './main';
 import { createHead } from '@unhead/vue/server';
 import i18n from './i18n';
@@ -82,10 +82,17 @@ export async function render(url: string, locale?: string) {
     await router.isReady();
 
     const pathname = new URL(url, 'http://localhost').pathname;
-    const html = await renderToString(app, {});
+    const context: SSRContext = {};
+    const html = await renderToString(app, context);
     const title = extractTitle(head.render());
 
-    return { html, statusCode: getStatusCode(pathname), title, lang: locale ?? 'en' };
+    return {
+      html,
+      statusCode: getStatusCode(pathname),
+      title,
+      lang: locale ?? 'en',
+      teleports: context.teleports ?? {},
+    };
   } catch (err) {
     console.error('SSR render error:', err);
     return {
@@ -93,6 +100,7 @@ export async function render(url: string, locale?: string) {
       statusCode: 500,
       title: '',
       lang: 'en',
+      teleports: {},
     };
   }
 }

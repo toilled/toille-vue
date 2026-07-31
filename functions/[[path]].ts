@@ -23,8 +23,17 @@ async function tryFetchIndexHtml(url: URL, context: RequestContext) {
   return { template, headers: new Headers(res.headers) };
 }
 
+function injectTeleports(template: string, teleports: Record<string, string>): string {
+  let html = template;
+  for (const [target, content] of Object.entries(teleports)) {
+    if (!content) continue;
+    html = html.replace(`<${target}>`, `<${target}>${content}`);
+  }
+  return html;
+}
+
 async function handleSsrRequest(url: URL, context: RequestContext) {
-  const { html: appHtml, statusCode } = await render(url.pathname);
+  const { html: appHtml, statusCode, teleports } = await render(url.pathname);
   const response = await context.next();
 
   const htmlResult: { template: string; headers: Headers } | null = isHtmlResponse(response)
@@ -33,7 +42,10 @@ async function handleSsrRequest(url: URL, context: RequestContext) {
 
   if (!htmlResult) return response;
 
-  const html = htmlResult.template.replace("<!--app-html-->", appHtml);
+  const html = injectTeleports(
+    htmlResult.template.replace("<!--app-html-->", appHtml),
+    teleports ?? {}
+  );
   htmlResult.headers.set("content-type", "text/html;charset=UTF-8");
   htmlResult.headers.set("cache-control", "public, max-age=0, must-revalidate");
 

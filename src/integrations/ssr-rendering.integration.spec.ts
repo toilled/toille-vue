@@ -78,7 +78,7 @@ vi.stubGlobal(
 );
 vi.stubGlobal('webkitAudioContext', (globalThis as Record<string, unknown>).AudioContext);
 
-import { renderToString } from '@vue/server-renderer';
+import { renderToString, type SSRContext } from '@vue/server-renderer';
 import { createApp } from '../main';
 import { createHead } from '@unhead/vue/server';
 
@@ -154,5 +154,50 @@ describe('SSR rendering integration', () => {
     const { html } = await renderPage('/nonexistent-page');
     expect(html).toBeDefined();
     expect(html).toContain('<div');
+  });
+
+  it.each([
+    '/',
+    '/about',
+    '/interests',
+    '/checker',
+    '/quiz',
+    '/noughts-and-crosses',
+    '/playground',
+  ])('hydrates %s without mismatch warnings', async (url) => {
+    const warnings: string[] = [];
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation((...args) => {
+      warnings.push(args.map(String).join(' '));
+    });
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation((...args) => {
+      warnings.push(args.map(String).join(' '));
+    });
+
+    const context: SSRContext = {};
+    const head = createHead();
+    const { app, router } = createApp(head, true);
+    await router.push(url);
+    await router.isReady();
+    const html = await renderToString(app, context);
+
+    document.body.innerHTML = `<div id="app">${html}</div>`;
+    const teleports = context.teleports?.body ?? '';
+    if (teleports) {
+      document.body.insertAdjacentHTML('afterbegin', teleports);
+    }
+
+    delete (document.body as unknown as { _lpa?: unknown })._lpa;
+
+    const headClient = createHead();
+    const { app: clientApp, router: clientRouter } = createApp(headClient, true);
+    await clientRouter.push(url);
+    await clientRouter.isReady();
+    clientApp.mount('#app');
+    clientApp.unmount();
+
+    errorSpy.mockRestore();
+    warnSpy.mockRestore();
+
+    expect(warnings.filter((w) => /hydrat|mismatch/i.test(w))).toEqual([]);
   });
 });

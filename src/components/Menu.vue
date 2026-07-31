@@ -470,24 +470,24 @@ const toggleCityBackground = () => {
   }
 }
 
-@media (min-width: 1024px) and (orientation: landscape) and (hover: hover) and (pointer: fine) {
-  .nav-wrapper {
+@media (min-width: 1024px) and (orientation: landscape) {
+  html[data-pointer='fine'] .nav-wrapper {
     flex: 1;
     flex-direction: column;
     align-items: stretch;
   }
 
-  .nav-links {
+  html[data-pointer='fine'] .nav-links {
     flex-direction: column;
     width: 100%;
     gap: 0.1rem;
   }
 
-  .tools-toggle {
+  html[data-pointer='fine'] .tools-toggle {
     display: none;
   }
 
-  .nav-tools {
+  html[data-pointer='fine'] .nav-tools {
     margin-top: auto;
     margin-left: 0;
     padding: 0.75rem 16px 0;
@@ -499,7 +499,7 @@ const toggleCityBackground = () => {
     overflow-x: hidden;
   }
 
-  .nav-tools > .icon-wrapper {
+  html[data-pointer='fine'] .nav-tools > .icon-wrapper {
     display: flex;
     align-items: center;
     gap: 0.3rem;
@@ -511,7 +511,7 @@ const toggleCityBackground = () => {
     overflow: hidden;
   }
 
-  .nav-tools > .icon-wrapper::after {
+  html[data-pointer='fine'] .nav-tools > .icon-wrapper::after {
     content: attr(data-label);
     font-size: 0.78rem;
     opacity: 0.85;

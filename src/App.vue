@@ -540,12 +540,12 @@ html {
   display: none;
 }
 
-@media (min-width: 1024px) and (orientation: landscape) and (hover: hover) and (pointer: fine) {
-  #content-wrapper {
+@media (min-width: 1024px) and (orientation: landscape) {
+  html[data-pointer='fine'] #content-wrapper {
     margin-left: 220px;
   }
 
-  .app-header {
+  html[data-pointer='fine'] .app-header {
     position: fixed;
     left: 0;
     top: 0;
@@ -559,7 +559,7 @@ html {
       8px 0 32px rgba(0, 0, 0, 0.2);
   }
 
-  .app-header::after {
+  html[data-pointer='fine'] .app-header::after {
     top: 0;
     bottom: 0;
     left: auto;
@@ -575,11 +575,11 @@ html {
     );
   }
 
-  .app-header .site-title {
+  html[data-pointer='fine'] .app-header .site-title {
     display: none;
   }
 
-  .header-nav {
+  html[data-pointer='fine'] .header-nav {
     flex-direction: column;
     justify-content: flex-start;
     align-items: stretch;
@@ -588,16 +588,16 @@ html {
     box-sizing: border-box;
   }
 
-  .app-main {
+  html[data-pointer='fine'] .app-main {
     padding: 2rem;
     min-height: 100vh;
   }
 
-  .app-main.content-collapsed {
+  html[data-pointer='fine'] .app-main.content-collapsed {
     min-height: 0;
   }
 
-  .title-above-main {
+  html[data-pointer='fine'] .title-above-main {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -606,19 +606,19 @@ html {
     border-bottom: 1px solid rgba(0, 255, 204, 0.15);
   }
 
-  .title-above-main h1.title {
+  html[data-pointer='fine'] .title-above-main h1.title {
     font-size: 3.5rem;
   }
 
-  .title-above-main .site-title {
+  html[data-pointer='fine'] .title-above-main .site-title {
     align-items: center;
   }
 
-  .title-above-main h2.subtitle {
+  html[data-pointer='fine'] .title-above-main h2.subtitle {
     font-size: 1.35rem;
   }
 
-  html {
+  html[data-pointer='fine'] {
     scroll-padding-top: 0;
   }
 }

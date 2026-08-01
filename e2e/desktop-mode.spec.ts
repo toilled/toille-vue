@@ -7,7 +7,7 @@ test.describe('Desktop mode', () => {
 
   test('can access desktop via header button on desktop viewport', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     const desktopBtn = page.locator('button, [role="button"]').filter({ hasText: /desktop/i });
     if ((await desktopBtn.count()) > 0) {
@@ -18,7 +18,7 @@ test.describe('Desktop mode', () => {
 
   test('desktop shows wallpaper and taskbar', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     const desktopBtn = page.locator('button, [role="button"]').filter({ hasText: /desktop/i });
     if ((await desktopBtn.count()) > 0) {
@@ -30,7 +30,7 @@ test.describe('Desktop mode', () => {
 
   test('desktop shows shortcut icons', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     const desktopBtn = page.locator('button, [role="button"]').filter({ hasText: /desktop/i });
     if ((await desktopBtn.count()) > 0) {
@@ -44,7 +44,7 @@ test.describe('Desktop mode', () => {
 test.describe('Navigation links exist', () => {
   test('homepage has navigation elements', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     const links = page.locator('a');
     const count = await links.count();
     expect(count).toBeGreaterThan(0);
@@ -54,14 +54,14 @@ test.describe('Navigation links exist', () => {
 test.describe('Page transitions', () => {
   test('can navigate between routes and back', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     await page.goto('/quiz');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await expect(page).toHaveURL(/quiz/);
 
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await expect(page).toHaveURL(/\/$/);
   });
 });

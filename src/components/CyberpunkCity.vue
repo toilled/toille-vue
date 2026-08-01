@@ -608,9 +608,9 @@ onMounted(() => {
   };
 
   if (typeof requestIdleCallback !== 'undefined') {
-    requestIdleCallback(doDeferredInit, { timeout: 3000 });
+    requestIdleCallback(doDeferredInit, { timeout: 100 });
   } else {
-    setTimeout(doDeferredInit, 100);
+    setTimeout(doDeferredInit, 0);
   }
 });
 

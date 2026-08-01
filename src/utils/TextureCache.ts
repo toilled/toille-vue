@@ -19,7 +19,11 @@ let dbPromise: Promise<IDBDatabase | null> | null = null;
 function openDB(): Promise<IDBDatabase | null> {
   if (!dbPromise) {
     dbPromise = new Promise((resolve) => {
-      if (typeof indexedDB === 'undefined') {
+      if (
+        typeof window === 'undefined' ||
+        typeof indexedDB === 'undefined' ||
+        import.meta.env.MODE === 'test'
+      ) {
         resolve(null);
         return;
       }
@@ -119,6 +123,16 @@ export async function getCachedOrGenerate(
   useNearestFilter = false,
   anisotropy?: number
 ): Promise<CanvasTexture> {
+  if (
+    typeof window === 'undefined' ||
+    typeof indexedDB === 'undefined' ||
+    import.meta.env.MODE === 'test'
+  ) {
+    const texture = generate();
+    if (anisotropy) texture.anisotropy = anisotropy;
+    return texture;
+  }
+
   const cached = await getCachedTexture(key);
   if (cached) {
     if (anisotropy) cached.anisotropy = anisotropy;

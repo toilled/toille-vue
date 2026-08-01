@@ -51,25 +51,18 @@ export class CityMaterials {
   public neonStripGeo!: BoxGeometry;
 
   async init() {
-    this.windowTexture = await getCachedOrGenerate('window', createWindowTexture);
-    this.windowRoughnessMap = await getCachedOrGenerate(
-      'window-roughness',
-      createWindowRoughnessMap,
-      false,
-      1
-    );
-
     const billboardCount = 8;
-    this.billboardTextures = [];
-    for (let i = 0; i < billboardCount; i++) {
-      const cached = await getCachedOrGenerate(
-        `billboard-${i}`,
-        () => createBillboardTexture(i),
-        false,
-        1
-      );
-      this.billboardTextures.push(cached);
-    }
+    const [windowTexture, windowRoughnessMap, ...billboardTextures] = await Promise.all([
+      getCachedOrGenerate('window', createWindowTexture),
+      getCachedOrGenerate('window-roughness', createWindowRoughnessMap, false, 1),
+      ...Array.from({ length: billboardCount }, (_, i) =>
+        getCachedOrGenerate(`billboard-${i}`, () => createBillboardTexture(i), false, 1)
+      ),
+    ]);
+
+    this.windowTexture = windowTexture;
+    this.windowRoughnessMap = windowRoughnessMap;
+    this.billboardTextures = billboardTextures;
 
     this.initGeometries();
     this.initBuildingMaterials();

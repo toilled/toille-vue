@@ -50,9 +50,8 @@ export class CityBuilder {
   }
 
   public async buildCity(isMobile: boolean, lbTexture: Texture) {
-    await this.materials.init();
     this.setupLighting();
-    await this.createGround();
+    await Promise.all([this.materials.init(), this.createGround()]);
     await this.createBuildings(lbTexture);
     this.streetFurniture.generate(this.occupiedGrids);
 
@@ -145,21 +144,45 @@ export class CityBuilder {
     this.scene.add(this.ground);
   }
 
-  private async createBuildings(lbTexture: Texture) {
-    const BATCH_SIZE = 4;
+  private generateGridCells(): { x: number; z: number }[] {
     const cells: { x: number; z: number }[] = [];
     for (let x = 0; x < GRID_SIZE; x++) {
       for (let z = 0; z < GRID_SIZE; z++) {
         cells.push({ x, z });
       }
     }
+    return cells;
+  }
 
-    for (let i = 0; i < cells.length; i += BATCH_SIZE) {
-      const batch = cells.slice(i, i + BATCH_SIZE);
-      for (const { x, z } of batch) {
-        this.createBuildingAt(x, z, lbTexture);
+  private processCellBatch(
+    cells: { x: number; z: number }[],
+    startIndex: number,
+    lbTexture: Texture,
+    frameBudgetMs: number
+  ): number {
+    const getTime = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    const start = getTime();
+    let index = startIndex;
+
+    while (index < cells.length) {
+      const { x, z } = cells[index++];
+      this.createBuildingAt(x, z, lbTexture);
+      if (getTime() - start >= frameBudgetMs) {
+        break;
       }
-      if (i + BATCH_SIZE < cells.length) {
+    }
+
+    return index;
+  }
+
+  private async createBuildings(lbTexture: Texture) {
+    const cells = this.generateGridCells();
+    const FRAME_BUDGET_MS = 12;
+    let i = 0;
+
+    while (i < cells.length) {
+      i = this.processCellBatch(cells, i, lbTexture, FRAME_BUDGET_MS);
+      if (i < cells.length) {
         await new Promise<void>((resolve) => setTimeout(resolve, 0));
       }
     }

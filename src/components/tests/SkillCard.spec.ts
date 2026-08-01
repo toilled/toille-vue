@@ -36,6 +36,6 @@ describe('SkillCard.vue', () => {
     const wrapper = mount(SkillCard, { props: { skills } });
     const imgs = wrapper.findAll('img');
     expect(imgs.length).toBe(1);
-    expect(imgs[0].attributes('src')).toBe('/ts-icon.svg');
+    expect(imgs[0].attributes('src')).toContain('ts-icon.svg');
   });
 });

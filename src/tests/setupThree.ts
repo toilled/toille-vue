@@ -1,7 +1,6 @@
 import { vi } from 'vitest';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 // @ts-expect-error: Mocking complex overload structure
 HTMLCanvasElement.prototype.getContext = vi.fn((contextId: string, _options?: any) => {
   if (
@@ -49,6 +48,19 @@ HTMLCanvasElement.prototype.getContext = vi.fn((contextId: string, _options?: an
   }
   return null;
 });
+
+// Mock HTMLImageElement src to prevent JSDOM on Windows from attempting fileURLToPath on relative /icon.svg URLs
+if (typeof window !== 'undefined' && typeof HTMLImageElement !== 'undefined') {
+  Object.defineProperty(HTMLImageElement.prototype, 'src', {
+    get() {
+      return this.getAttribute('src') || '';
+    },
+    set(val: string) {
+      this.setAttribute('src', val);
+    },
+    configurable: true,
+  });
+}
 
 class MockColor {
   r = 0;
